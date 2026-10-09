@@ -13,7 +13,7 @@ function fitViewport(bounds, size) {
   return { zoom, x: (size.width - (bounds.right - bounds.left) * zoom) / 2 - bounds.left * zoom, y: (size.height - (bounds.bottom - bounds.top) * zoom) / 2 - bounds.top * zoom };
 }
 
-export default function AssemblyCanvas({ project, board, catalog, selection, setSelection, pending, setPending, onTerminal, onPin, onPosition, onViewport, busy }) {
+export default function AssemblyCanvas({ project, board, catalog, selection, setSelection, pending, setPending, onTerminal, onPin, onPosition, onViewport, onInteraction, busy }) {
   const svgRef = useRef(null), drag = useRef(null);
   const [size, setSize] = useState({ width: 700, height: 570 });
   const [autoFit, setAutoFit] = useState(project.assembly.viewport.zoom === 1 && project.assembly.viewport.x === 0 && project.assembly.viewport.y === 0);
@@ -21,6 +21,7 @@ export default function AssemblyCanvas({ project, board, catalog, selection, set
   const viewport = autoFit ? fitViewport(bounds, size) : project.assembly.viewport;
   const boardPosition = project.assembly.positions.board;
   const selectedComponent = selection?.type === 'component' ? selection.id : null;
+  useEffect(() => () => onInteraction(false), [onInteraction]);
   const updateViewport = next => {
     setAutoFit(false);
     onViewport({ x: clamp(next.x, -50000, 50000), y: clamp(next.y, -50000, 50000), zoom: clamp(next.zoom, 0.2, 3) });
@@ -59,6 +60,7 @@ export default function AssemblyCanvas({ project, board, catalog, selection, set
     if (id) setSelection({ type: id === 'board' ? 'board' : 'component', id });
     svgRef.current.setPointerCapture(event.pointerId);
     drag.current = { id, x: event.clientX, y: event.clientY, position: id ? project.assembly.positions[id] : null, viewport, moved: false };
+    onInteraction(true);
   }
   function pointerMove(event) {
     const start = drag.current;
@@ -74,14 +76,20 @@ export default function AssemblyCanvas({ project, board, catalog, selection, set
     const start = drag.current;
     if (start && !start.id && !start.moved) { setSelection({ type: 'board', id: 'board' }); setPending(null); }
     drag.current = null;
+    if (start) onInteraction(false);
     if (svgRef.current.hasPointerCapture(event.pointerId)) svgRef.current.releasePointerCapture(event.pointerId);
+  }
+  function cancelDrag() {
+    if (!drag.current) return;
+    drag.current = null;
+    onInteraction(false);
   }
   const activate = callback => event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); callback(); } };
 
   return <div className={`assembly-canvas ${busy ? 'canvas-busy' : ''}`}>
     <div className="canvas-top"><span className="badge purple"><MousePointer2 size={12} />МОНТАЖ / {project.components.length} компонентов</span><span className="canvas-scale">{Math.round(viewport.zoom * 100)}%</span></div>
     {pending && <div className="connection-prompt"><span className="dot green-dot" />{pending.componentId ? 'Выберите контакт платы для соединения' : 'Выберите контакт компонента'}<button aria-label="Отменить соединение" className="icon-button" onClick={() => setPending(null)}><Unplug size={15} /></button></div>}
-    <svg ref={svgRef} className="assembly-svg" aria-label="Холст монтажа" onPointerDown={pointerDown} onPointerMove={pointerMove} onPointerUp={pointerUp} onPointerCancel={() => { drag.current = null; }} onLostPointerCapture={() => { drag.current = null; }} onKeyDown={event => { if (event.key === 'Escape') setPending(null); }}>
+    <svg ref={svgRef} className="assembly-svg" aria-label="Холст монтажа" onPointerDown={pointerDown} onPointerMove={pointerMove} onPointerUp={pointerUp} onPointerCancel={cancelDrag} onLostPointerCapture={cancelDrag} onKeyDown={event => { if (event.key === 'Escape') setPending(null); }}>
       <defs><pattern id="assembly-dots" width={24 * viewport.zoom} height={24 * viewport.zoom} x={viewport.x} y={viewport.y} patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r="0.8" fill="#3b465d" opacity=".65" /></pattern></defs><rect width="100%" height="100%" fill="url(#assembly-dots)" />
       <g transform={`translate(${viewport.x} ${viewport.y}) scale(${viewport.zoom})`}>
         {project.assembly.connections.map(wire => {

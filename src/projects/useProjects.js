@@ -2,29 +2,29 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { createProject, sortedProjects, validateName } from './model.js';
 import { withLogic } from '../logic/model.js';
 import { createWriteQueue, acknowledgeWrite } from './writeQueue.js';
+import { AUTOSAVE_DELAY_MS, AUTOSAVE_PREFERENCE_KEY } from './autosave.js';
 import * as storage from './storage.js';
 
 const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 export function useProjects() {
+  const [autoSaveEnabled, setAutoSaveEnabledState] = useState(() => {
+    try { return localStorage.getItem(AUTOSAVE_PREFERENCE_KEY) !== 'false'; }
+    catch { return true; }
+  });
   const [projects, setProjects] = useState([]), [active, setActiveState] = useState(null);
   const [loading, setLoading] = useState(true), [busy, setBusy] = useState(false);
   const [error, setError] = useState(''), [damaged, setDamaged] = useState([]);
   const [notice, setNotice] = useState(''), [path, setPath] = useState('');
-  const [autoState, setAutoState] = useState('idle'), [autoSaving, setAutoSaving] = useState(false);
+  const [autoState, setAutoState] = useState(autoSaveEnabled ? 'idle' : 'disabled'), [autoSaving, setAutoSaving] = useState(false);
   const activeRef = useRef(null), projectsRef = useRef([]), inFlight = useRef(false), autoInFlight = useRef(0);
   const timer = useRef(null), generation = useRef(0), paused = useRef(false), interacting = useRef(false), live = useRef(true);
+  const autoEnabled = useRef(autoSaveEnabled);
   const [write] = useState(() => createWriteQueue(storage.saveProject));
   const saved = projects.find(project => project.id === active?.id);
   const dirty = Boolean(active && !same(active, saved));
   const isWriting = useCallback(() => inFlight.current || autoInFlight.current > 0, []);
 
   const cancelAuto = useCallback(() => { generation.current++; clearTimeout(timer.current); timer.current = null; }, []);
-  const setActive = useCallback(value => {
-    const previous = activeRef.current, next = typeof value === 'function' ? value(previous) : value;
-    if (previous?.id !== next?.id || !same(previous?.logic, next?.logic)) { cancelAuto(); setAutoState('idle'); }
-    activeRef.current = next; setActiveState(next);
-  }, [cancelAuto]);
-
   useEffect(() => {
     live.current = true;
     let current = true;
@@ -48,44 +48,59 @@ export function useProjects() {
 
   const armAuto = useCallback(project => {
     cancelAuto();
+    if (!autoEnabled.current) { setAutoState('disabled'); return; }
     if (!project || !live.current || paused.current || interacting.current) return;
-    const ticket = generation.current, id = project.id, signature = JSON.stringify(project.logic);
+    if (same(project, projectsRef.current.find(item => item.id === project.id))) { setAutoState('saved'); return; }
+    const ticket = generation.current, id = project.id;
     setAutoState('waiting');
     timer.current = setTimeout(async () => {
       const snapshot = activeRef.current;
-      if (!snapshot || snapshot.id !== id || JSON.stringify(snapshot.logic) !== signature || paused.current || interacting.current || ticket !== generation.current) return;
+      if (!snapshot || snapshot.id !== id || !live.current || !autoEnabled.current || paused.current || interacting.current || ticket !== generation.current) return;
       if (same(snapshot, projectsRef.current.find(project => project.id === id))) { setAutoState('saved'); return; }
       autoInFlight.current++; setAutoSaving(true); setAutoState('saving');
       try {
         await persist(snapshot);
-        if (live.current && ticket === generation.current && activeRef.current?.id === id) { setAutoState('saved'); setNotice('Граф сохранён автоматически'); setError(''); }
+        if (live.current && ticket === generation.current && activeRef.current?.id === id) { setAutoState('saved'); setNotice('Проект сохранён автоматически'); setError(''); }
       } catch (error) {
         if (live.current && ticket === generation.current) { setAutoState('error'); setError(`Автосохранение не выполнено: ${String(error.message || error)}. Правки остаются в редакторе.`); }
       } finally { autoInFlight.current--; if (live.current) setAutoSaving(autoInFlight.current > 0); }
-    }, 2000);
+    }, AUTOSAVE_DELAY_MS);
   }, [cancelAuto, persist]);
+
+  const setActive = useCallback(value => {
+    const previous = activeRef.current, next = typeof value === 'function' ? value(previous) : value;
+    if (next === previous) return;
+    activeRef.current = next; setActiveState(next);
+    if (previous?.id !== next?.id) {
+      cancelAuto(); setAutoState(autoEnabled.current ? 'idle' : 'disabled');
+    } else armAuto(next);
+  }, [armAuto, cancelAuto]);
 
   const updateLogic = useCallback(logic => {
     const current = activeRef.current;
     if (!current || same(current.logic, logic)) return;
-    const project = withLogic(current, logic);
-    activeRef.current = project; setActiveState(project); armAuto(project);
-  }, [armAuto]);
-  const setLogicInteracting = useCallback(value => {
+    setActive(withLogic(current, logic));
+  }, [setActive]);
+  const setInteracting = useCallback(value => {
     if (interacting.current === value) return;
     interacting.current = value;
     if (value) cancelAuto();
     else {
-      const current = activeRef.current, saved = projectsRef.current.find(project => project.id === current?.id);
-      if (current && !same(current.logic, saved?.logic)) armAuto(current);
+      armAuto(activeRef.current);
     }
   }, [armAuto, cancelAuto]);
   const pauseAutosave = useCallback(() => { paused.current = true; cancelAuto(); }, [cancelAuto]);
   const resumeAutosave = useCallback(() => {
     if (!paused.current) return;
     paused.current = false;
-    const current = activeRef.current, saved = projectsRef.current.find(project => project.id === current?.id);
-    if (current && !same(current.logic, saved?.logic)) armAuto(current);
+    armAuto(activeRef.current);
+  }, [armAuto]);
+  const setAutoSaveEnabled = useCallback(value => {
+    autoEnabled.current = Boolean(value);
+    setAutoSaveEnabledState(autoEnabled.current);
+    try { localStorage.setItem(AUTOSAVE_PREFERENCE_KEY, String(autoEnabled.current)); }
+    catch { setError('Режим сохранения изменён для текущего сеанса, но настройку не удалось записать.'); }
+    armAuto(activeRef.current);
   }, [armAuto]);
 
   const run = useCallback(async task => {
@@ -104,7 +119,7 @@ export function useProjects() {
     const snapshot = activeRef.current;
     if (!snapshot) return false;
     cancelAuto();
-    await persist(snapshot); setAutoState('saved'); setNotice('Проект сохранён'); return true;
+    await persist(snapshot); setAutoState(autoEnabled.current ? 'saved' : 'disabled'); setNotice('Проект сохранён'); return true;
   }), [cancelAuto, persist, run]);
   const rename = (project, name) => run(async () => {
     const updated = await persist({ ...project, name: validateName(name) });
@@ -129,5 +144,5 @@ export function useProjects() {
     const result = await storage.exportProject(activeRef.current);
     if (result) setNotice('JSON проекта экспортирован'); return result;
   });
-  return { projects, active, setActive, loading, busy, error, setError, damaged, notice, path, dirty, create, save, rename, remove, openFile, exportFile, updateLogic, setLogicInteracting, autoState, autoSaving, isWriting, pauseAutosave, resumeAutosave };
+  return { projects, active, setActive, loading, busy, error, setError, damaged, notice, path, dirty, create, save, rename, remove, openFile, exportFile, updateLogic, setInteracting, autoSaveEnabled, setAutoSaveEnabled, autoState, autoSaving, isWriting, pauseAutosave, resumeAutosave };
 }
