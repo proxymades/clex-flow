@@ -1,0 +1,39 @@
+{
+  "name": "clex-flow",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "vite build",
+    "preview": "vite preview --host 127.0.0.1",
+    "tauri": "tauri",
+    "desktop": "tauri dev",
+    "desktop:build": "tauri build",
+    "test": "node --test tests/*.test.js",
+    "test:ui": "node tests/ui-smoke.cjs",
+    "lint": "eslint .",
+    "test:assembly-ui": "node tests/assembly-ui.cjs",
+    "test:logic-ui": "node tests/logic-ui.cjs",
+    "test:firmware-ui": "node tests/firmware-ui.cjs"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "2.10.1",
+    "@xyflow/react": "12.11.1",
+    "lucide-react": "^0.468.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.0",
+    "@tauri-apps/cli": "^2.10.0",
+    "@vitejs/plugin-react": "^5.0.0",
+    "eslint": "^9.39.0",
+    "eslint-plugin-react-hooks": "^7.0.0",
+    "eslint-plugin-react-refresh": "^0.4.24",
+    "globals": "^16.5.0",
+    "playwright": "1.64.0",
+    "vite": "^7.2.0"
+  },
+  "license": "MIT"
+}

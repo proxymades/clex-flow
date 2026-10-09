@@ -1,0 +1,68 @@
+{
+  "id": "clex.logic.gpio-set",
+  "version": "1.0.0",
+  "kind": "logic",
+  "name": "Установка GPIO",
+  "description": "Установить уровень внешнего светодиода по событию.",
+  "category": "gpio",
+  "categoryName": "GPIO",
+  "icon": "ArrowUpRight",
+  "color": "#8B5CF6",
+  "inputs": [
+    {
+      "id": "trigger",
+      "name": "Выполнить",
+      "type": "event",
+      "required": true
+    },
+    {
+      "id": "value",
+      "name": "Уровень",
+      "type": "boolean",
+      "required": false
+    }
+  ],
+  "outputs": [
+    {
+      "id": "done",
+      "name": "Готово",
+      "type": "event",
+      "required": false
+    }
+  ],
+  "parameters": {
+    "componentId": {
+      "label": "Компонент монтажа",
+      "type": "component",
+      "default": ""
+    },
+    "defaultValue": {
+      "label": "Уровень без входного значения",
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "constraints": {
+    "hardware": {
+      "modules": [
+        "clex.hardware.led"
+      ],
+      "terminal": "anode",
+      "mode": "output"
+    }
+  },
+  "compatibility": {
+    "projectFormat": 3,
+    "targets": [
+      "esp32s3"
+    ],
+    "espIdf": "5.4.4"
+  },
+  "firmware": {
+    "status": "implemented",
+    "generatorKey": "gpio-set",
+    "dependencies": [
+      "esp_driver_gpio"
+    ]
+  }
+}

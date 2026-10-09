@@ -1,0 +1,110 @@
+{
+  "id": "00000000-0000-4000-8000-000000000004",
+  "name": "Blink mount fixture",
+  "description": "Тестовая схема формата 2; аппаратно не проверена.",
+  "formatVersion": 2,
+  "createdAt": "2026-01-01T00:00:00.000Z",
+  "updatedAt": "2026-01-01T00:00:00.000Z",
+  "boardId": "waveshare-esp32-s3-eth",
+  "boardSettings": {
+    "camera": "disconnected"
+  },
+  "components": [
+    {
+      "id": "00000000-0000-4000-8000-000000000006",
+      "moduleId": "clex.hardware.led",
+      "moduleVersion": "1.0.0",
+      "name": "Внешний светодиод 1",
+      "parameters": {
+        "resistorOhms": 330,
+        "forwardVoltage": 2
+      }
+    },
+    {
+      "id": "00000000-0000-4000-8000-000000000003",
+      "moduleId": "clex.hardware.button",
+      "moduleVersion": "1.0.0",
+      "name": "Кнопка 1",
+      "parameters": {
+        "debounceMs": 30,
+        "pull": "up"
+      }
+    }
+  ],
+  "gpioAssignments": [
+    {
+      "componentId": "00000000-0000-4000-8000-000000000006",
+      "terminalId": "anode",
+      "pinId": "P34",
+      "gpio": 17,
+      "mode": "output"
+    },
+    {
+      "componentId": "00000000-0000-4000-8000-000000000003",
+      "terminalId": "signal",
+      "pinId": "P32",
+      "gpio": 16,
+      "mode": "input"
+    }
+  ],
+  "logic": {
+    "nodes": [],
+    "edges": [],
+    "viewport": {
+      "x": 0,
+      "y": 0,
+      "zoom": 1
+    }
+  },
+  "assembly": {
+    "positions": {
+      "board": {
+        "x": 100,
+        "y": 40
+      },
+      "00000000-0000-4000-8000-000000000006": {
+        "x": 670,
+        "y": 100
+      },
+      "00000000-0000-4000-8000-000000000003": {
+        "x": 670,
+        "y": 315
+      }
+    },
+    "connections": [
+      {
+        "id": "00000000-0000-4000-8000-000000000005",
+        "componentId": "00000000-0000-4000-8000-000000000006",
+        "terminalId": "anode",
+        "boardPinId": "P34"
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000001",
+        "componentId": "00000000-0000-4000-8000-000000000006",
+        "terminalId": "cathode",
+        "boardPinId": "P28"
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000007",
+        "componentId": "00000000-0000-4000-8000-000000000003",
+        "terminalId": "signal",
+        "boardPinId": "P32"
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000002",
+        "componentId": "00000000-0000-4000-8000-000000000003",
+        "terminalId": "ground",
+        "boardPinId": "P28"
+      }
+    ],
+    "viewport": {
+      "x": 0,
+      "y": 0,
+      "zoom": 1
+    }
+  },
+  "moduleVersions": {
+    "clex.hardware.led": "1.0.0",
+    "clex.hardware.button": "1.0.0"
+  }
+}

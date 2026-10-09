@@ -1,0 +1,64 @@
+/* global window */
+const assert = require('node:assert/strict');
+const fs = require('node:fs/promises');
+const { chromium } = require('playwright');
+(async () => {
+ const executablePath = process.env.CLEX_BROWSER_EXECUTABLE || process.argv[2];
+ const browser = await chromium.launch({headless:true,...(executablePath?{executablePath}:{})});
+ const page = await browser.newPage({viewport:{width:1440,height:1000}}), errors=[];
+ page.on('pageerror',error=>errors.push(error.message));
+ await page.addInitScript(()=>{
+  window.__clexWrites=0; window.__clexFail=false;
+  const original=Storage.prototype.setItem;
+  Storage.prototype.setItem=function(key,value){if(key==='clex-flow:projects:v1'){if(window.__clexFail)throw new DOMException('Test quota','QuotaExceededError');window.__clexWrites++;} return original.call(this,key,value);};
+ });
+ const data=()=>page.evaluate(()=>JSON.parse(Object.values(JSON.parse(localStorage.getItem('clex-flow:projects:v1')))[0]));
+ const waitSaved=()=>page.getByText('Граф сохранён',{exact:true}).waitFor();
+ const nodeTitle=name=>page.locator('.logic-node header').filter({hasText:name});
+ const port=name=>page.getByRole('button',{name,exact:true});
+ try {
+ await fs.mkdir('.artifacts',{recursive:true});
+ await page.goto(process.env.CLEX_PREVIEW_URL || 'http://127.0.0.1:1420');
+ const chooser=page.waitForEvent('filechooser'); await page.getByRole('button',{name:'Открыть JSON',exact:true}).click(); await (await chooser).setFiles('tests/fixtures/blink-mount-v2.clex.json');
+ await page.getByRole('button',{name:'Логика',exact:true}).click(); await page.getByText('Соберите логику эксперимента',{exact:true}).waitFor();
+ const openedWrites=await page.evaluate(()=>window.__clexWrites); await page.waitForTimeout(1000); assert.equal(await page.evaluate(()=>window.__clexWrites),openedWrites,'Opening graph must not write migrated project');
+ await page.getByRole('button',{name:'Добавить блок: Таймер',exact:true}).click(); assert.equal(await page.getByRole('spinbutton',{name:'Интервал, мс',exact:true}).inputValue(),'500');
+ await page.getByRole('button',{name:'Добавить блок: Переключение GPIO',exact:true}).click();
+ await port('Выход: Таймер 1 / Интервал, мс').click(); await port('Вход: Переключение GPIO 1 / Выполнить').click();
+ await page.getByRole('alert').filter({hasText:'Несовместимые типы'}).waitFor(); assert.equal(await page.locator('.react-flow__edge').count(),0);
+ await page.getByRole('button',{name:'Отменить связь логики',exact:true}).click();
+ const sourceHandle=await page.locator('.react-flow__node').filter({hasText:'Таймер 1'}).locator('.react-flow__handle.source[data-handleid="tick"]').boundingBox();
+ const targetHandle=await page.locator('.react-flow__node').filter({hasText:'Переключение GPIO 1'}).locator('.react-flow__handle.target[data-handleid="trigger"]').boundingBox();
+ await page.mouse.move(sourceHandle.x+sourceHandle.width/2,sourceHandle.y+sourceHandle.height/2); await page.mouse.down(); await page.mouse.move(targetHandle.x+targetHandle.width/2,targetHandle.y+targetHandle.height/2,{steps:12}); await page.mouse.up();
+ assert.equal(await page.locator('.react-flow__edge').count(),1); await waitSaved();
+ const saved=await data(); assert.equal(saved.formatVersion,3); assert.equal(saved.logic.nodes.length,2); assert.equal(saved.logic.edges[0].dataType,'event'); assert.equal(saved.components.length,2); assert.equal(saved.assembly.connections.length,4);
+ await nodeTitle('Таймер 1').click(); await page.getByRole('spinbutton',{name:'Интервал, мс',exact:true}).fill('1000'); await waitSaved();
+ await page.getByRole('button',{name:'Отменить изменение графа',exact:true}).click(); await nodeTitle('Таймер 1').click(); assert.equal(await page.getByRole('spinbutton',{name:'Интервал, мс',exact:true}).inputValue(),'500');
+ await page.getByRole('button',{name:'Повторить изменение графа',exact:true}).click(); await nodeTitle('Таймер 1').click(); assert.equal(await page.getByRole('spinbutton',{name:'Интервал, мс',exact:true}).inputValue(),'1000');
+ const beforeDrag=(await data()).logic.nodes[0].position; const box=await nodeTitle('Таймер 1').boundingBox();
+ await page.mouse.move(box.x+50,box.y+25); await page.mouse.down(); await page.mouse.move(box.x+110,box.y+70,{steps:8}); await page.mouse.up(); await waitSaved();
+ const moved=(await data()).logic.nodes[0].position; assert.notDeepEqual(moved,beforeDrag);
+ await page.getByRole('button',{name:'Отменить изменение графа',exact:true}).click(); await waitSaved(); assert.deepEqual((await data()).logic.nodes[0].position,beforeDrag,'Whole drag is one undo step');
+ await nodeTitle('Таймер 1').click(); await nodeTitle('Переключение GPIO 1').click({modifiers:['Meta']});
+ await page.getByRole('button',{name:'Копировать выделенные блоки',exact:true}).click(); await page.getByRole('button',{name:'Вставить блоки',exact:true}).click();
+ assert.equal(await page.locator('.react-flow__node').count(),4); assert.equal(await page.locator('.react-flow__edge').count(),2);
+ await page.getByRole('button',{name:'Отменить изменение графа',exact:true}).click(); assert.equal(await page.locator('.react-flow__node').count(),2);
+ await nodeTitle('Переключение GPIO 1').click(); await page.keyboard.press('Meta+d'); assert.equal(await page.locator('.react-flow__node').count(),3);
+ await page.keyboard.press('Delete'); assert.equal(await page.locator('.react-flow__node').count(),2);
+ await page.evaluate(()=>{window.__clexFail=true;}); await page.getByRole('button',{name:'Добавить блок: Сообщение в Serial',exact:true}).click();
+ await page.getByRole('alert').filter({hasText:'Автосохранение не выполнено'}).waitFor(); assert.equal(await page.locator('.react-flow__node').count(),3); assert.equal((await data()).logic.nodes.length,2);
+ await page.evaluate(()=>{window.__clexFail=false;}); await page.getByRole('button',{name:'Сохранить',exact:true}).first().click(); await waitSaved(); assert.equal((await data()).logic.nodes.length,3);
+ await nodeTitle('Сообщение в Serial 1').click(); await page.getByRole('textbox',{name:'Текст сообщения',exact:true}).fill('LED toggled');
+ await port('Выход: Переключение GPIO 1 / Готово').click(); await port('Вход: Сообщение в Serial 1 / Выполнить').click();
+ await port('Выход: Таймер 1 / Интервал, мс').click(); await port('Вход: Сообщение в Serial 1 / Число').click(); await waitSaved();
+ await page.getByRole('button',{name:'Показать весь граф',exact:true}).click(); await waitSaved(); await page.screenshot({path:'.artifacts/clex-flow-logic.png'});
+ await nodeTitle('Сообщение в Serial 1').click(); const writes=await page.evaluate(()=>window.__clexWrites); await page.getByRole('textbox',{name:'Текст сообщения',exact:true}).fill('Discard this');
+ await page.getByRole('button',{name:/Мои проекты/}).click(); await page.getByRole('dialog',{name:'Сохранить изменения?',exact:true}).waitFor(); await page.waitForTimeout(1100); assert.equal(await page.evaluate(()=>window.__clexWrites),writes,'Question pauses autosave');
+ await page.getByRole('button',{name:'Не сохранять',exact:true}).click(); await page.locator('.project-open').click(); await page.getByRole('button',{name:'Логика',exact:true}).click(); await nodeTitle('Сообщение в Serial 1').click(); assert.equal(await page.getByRole('textbox',{name:'Текст сообщения',exact:true}).inputValue(),'LED toggled');
+ await page.reload(); await page.locator('.project-open').click(); await page.getByRole('button',{name:'Логика',exact:true}).click(); await page.locator('.react-flow__edge').nth(2).waitFor(); assert.equal(await page.locator('.react-flow__node').count(),3); assert.equal(await page.locator('.react-flow__edge').count(),3);
+ assert.equal(await page.getByRole('button',{name:'Отменить изменение графа',exact:true}).isDisabled(),true,'History is session-local');
+ await page.setViewportSize({width:1000,height:700}); await page.getByRole('button',{name:'Показать весь граф',exact:true}).click(); await waitSaved(); await page.screenshot({path:'.artifacts/clex-flow-logic-small.png'});
+ assert.deepEqual(errors,[]);
+ console.log('PASS: React Flow, typed rejection, Blink chain, autosave/reload, grouped undo/redo, drag, selection/copy/paste, keyboard duplicate/delete, write failure recovery, paused discard, migrated assembly preserved, small layout. No runtime errors.');
+ } catch(error) {await page.screenshot({path:'.artifacts/clex-flow-logic-failure.png'});throw error;} finally {await browser.close();}
+})().catch(error=>{console.error(error);process.exitCode=1;});

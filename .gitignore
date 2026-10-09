@@ -1,0 +1,65 @@
+# Dependencies and caches
+node_modules/
+.npm/
+.pnpm-store/
+.vite/
+coverage/
+*.tsbuildinfo
+
+# Frontend and Tauri generated output (lockfiles remain tracked)
+dist/
+build/
+/src-tauri/target/
+/src-tauri/gen/
+.artifacts/
+*.dmg
+*.app/
+*.app.tar.gz
+
+# Temporary files and logs
+*.log
+*.tmp
+*.temp
+*.bak
+*.swp
+*.swo
+*~
+.cache/
+.tmp/
+
+# Local configuration and credentials
+.env
+.env.*
+!.env.example
+*.local
+.npmrc
+.cargo/config
+.cargo/config.toml
+config.local.*
+*.pem
+*.key
+*.p12
+*.pfx
+*.mobileprovision
+id_rsa*
+id_ed25519*
+credentials*.json
+*-adminsdk-*.json
+.aws/
+.ssh/
+.codex/
+.agents/
+
+# Editors
+.idea/
+.vscode/
+
+# OS files
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100/
+.Trashes/
+Thumbs.db
+Desktop.ini

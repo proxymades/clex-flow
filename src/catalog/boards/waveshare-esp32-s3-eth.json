@@ -1,0 +1,703 @@
+{
+  "id": "waveshare-esp32-s3-eth",
+  "name": "ESP32-S3-ETH",
+  "manufacturer": "Waveshare",
+  "mcu": "ESP32-S3R8",
+  "revision": null,
+  "espIdfVersion": "5.4.4",
+  "pinoutVerified": false,
+  "documentationVerified": true,
+  "verificationNote": "Разводка сверена с официальной схемой от 21.12.2024. Ревизия вашей платы не подтверждена. Не для ESP32-S3-ETH-M.",
+  "description": "W5500 · 16 МБ Flash · 8 МБ PSRAM. Профиль базовой ESP32-S3-ETH.",
+  "svg": "esp32-s3-eth.svg",
+  "width": 380,
+  "height": 700,
+  "orientation": "Вид сверху: USB сверху, RJ45 снизу. Контакт 1 справа вверху, 40 слева вверху.",
+  "sources": [
+    {
+      "title": "Waveshare: плата и распиновка",
+      "url": "https://docs.waveshare.com/ESP32-S3-ETH"
+    },
+    {
+      "title": "Официальное изображение контактов",
+      "url": "https://docs.waveshare.com/assets/images/ESP32-S3-ETH-details-15-b9d2e97a5122db37da6be5bac19e29b4.webp"
+    },
+    {
+      "title": "Схема, 21.12.2024",
+      "url": "https://files.waveshare.com/wiki/ESP32-S3-ETH/ESP32-S3-ETH-Schematic.pdf"
+    },
+    {
+      "title": "Ограничения GPIO ESP-IDF 5.4.4",
+      "url": "https://docs.espressif.com/projects/esp-idf/en/v5.4.4/esp32s3/api-reference/peripherals/gpio.html"
+    }
+  ],
+  "options": {
+    "camera": {
+      "label": "Камера на разъёме",
+      "default": "unknown",
+      "values": [
+        {
+          "value": "unknown",
+          "label": "Не проверено"
+        },
+        {
+          "value": "disconnected",
+          "label": "Камера отключена"
+        },
+        {
+          "value": "connected",
+          "label": "Камера подключена"
+        }
+      ]
+    }
+  },
+  "reservedGpios": {
+    "4": "TF / возможный RGB jumper",
+    "5": "TF MISO",
+    "6": "TF MOSI",
+    "7": "TF CLK",
+    "8": "Питание камеры",
+    "9": "W5500 RST",
+    "10": "W5500 INT",
+    "11": "W5500 MOSI",
+    "12": "W5500 MISO",
+    "13": "W5500 CLK",
+    "14": "W5500 CS",
+    "26": "Flash / octal PSRAM",
+    "27": "Flash / octal PSRAM",
+    "28": "Flash / octal PSRAM",
+    "29": "Flash / octal PSRAM",
+    "30": "Flash / octal PSRAM",
+    "31": "Flash / octal PSRAM",
+    "32": "Flash / octal PSRAM",
+    "33": "Flash / octal PSRAM",
+    "34": "Flash / octal PSRAM",
+    "35": "Flash / octal PSRAM",
+    "36": "Flash / octal PSRAM",
+    "37": "Flash / octal PSRAM"
+  },
+  "pins": [
+    {
+      "id": "P1",
+      "label": "GPIO20",
+      "physicalNumber": 1,
+      "side": "right",
+      "kind": "gpio",
+      "gpio": 20,
+      "x": 282,
+      "y": 160,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "reservedReason": "USB CDC/JTAG; сохраняем интерфейс прошивки"
+    },
+    {
+      "id": "P2",
+      "label": "GPIO19",
+      "physicalNumber": 2,
+      "side": "right",
+      "kind": "gpio",
+      "gpio": 19,
+      "x": 282,
+      "y": 184,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "reservedReason": "USB CDC/JTAG; сохраняем интерфейс прошивки"
+    },
+    {
+      "id": "P3",
+      "label": "GND",
+      "physicalNumber": 3,
+      "side": "right",
+      "kind": "ground",
+      "gpio": null,
+      "x": 282,
+      "y": 208,
+      "functions": [],
+      "capabilities": []
+    },
+    {
+      "id": "P4",
+      "label": "GPIO48",
+      "physicalNumber": 4,
+      "side": "right",
+      "kind": "gpio",
+      "gpio": 48,
+      "x": 282,
+      "y": 232,
+      "functions": [
+        "SDA"
+      ],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "sharedWith": "camera"
+    },
+    {
+      "id": "P5",
+      "label": "GPIO47",
+      "physicalNumber": 5,
+      "side": "right",
+      "kind": "gpio",
+      "gpio": 47,
+      "x": 282,
+      "y": 256,
+      "functions": [
+        "SCL"
+      ],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "sharedWith": "camera"
+    },
+    {
+      "id": "P6",
+      "label": "GPIO46",
+      "physicalNumber": 6,
+      "side": "right",
+      "kind": "gpio",
+      "gpio": 46,
+      "x": 282,
+      "y": 280,
+      "functions": [
+        "D2"
+      ],
+      "capabilities": [
+        "digital-input"
+      ],
+      "reservedReason": "Загрузочный strapping-контакт; запрещён политикой MVP",
+      "sharedWith": "camera"
+    },
+    {
+      "id": "P7",
+      "label": "GPIO45",
+      "physicalNumber": 7,
+      "side": "right",
+      "kind": "gpio",
+      "gpio": 45,
+      "x": 282,
+      "y": 304,
+      "functions": [
+        "D1"
+      ],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "reservedReason": "Загрузочный strapping-контакт; запрещён политикой MVP",
+      "sharedWith": "camera"
+    },
+    {
+      "id": "P8",
+      "label": "GND",
+      "physicalNumber": 8,
+      "side": "right",
+      "kind": "ground",
+      "gpio": null,
+      "x": 282,
+      "y": 328,
+      "functions": [],
+      "capabilities": []
+    },
+    {
+      "id": "P9",
+      "label": "GPIO42",
+      "physicalNumber": 9,
+      "side": "right",
+      "kind": "gpio",
+      "gpio": 42,
+      "x": 282,
+      "y": 352,
+      "functions": [
+        "D3"
+      ],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "sharedWith": "camera"
+    },
+    {
+      "id": "P10",
+      "label": "GPIO41",
+      "physicalNumber": 10,
+      "side": "right",
+      "kind": "gpio",
+      "gpio": 41,
+      "x": 282,
+      "y": 376,
+      "functions": [
+        "D0"
+      ],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "sharedWith": "camera"
+    },
+    {
+      "id": "P11",
+      "label": "GPIO40",
+      "physicalNumber": 11,
+      "side": "right",
+      "kind": "gpio",
+      "gpio": 40,
+      "x": 282,
+      "y": 400,
+      "functions": [
+        "D4"
+      ],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "sharedWith": "camera"
+    },
+    {
+      "id": "P12",
+      "label": "GPIO39",
+      "physicalNumber": 12,
+      "side": "right",
+      "kind": "gpio",
+      "gpio": 39,
+      "x": 282,
+      "y": 424,
+      "functions": [
+        "PCLK"
+      ],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "sharedWith": "camera"
+    },
+    {
+      "id": "P13",
+      "label": "GND",
+      "physicalNumber": 13,
+      "side": "right",
+      "kind": "ground",
+      "gpio": null,
+      "x": 282,
+      "y": 448,
+      "functions": [],
+      "capabilities": []
+    },
+    {
+      "id": "P14",
+      "label": "GPIO38",
+      "physicalNumber": 14,
+      "side": "right",
+      "kind": "gpio",
+      "gpio": 38,
+      "x": 282,
+      "y": 472,
+      "functions": [
+        "D5"
+      ],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "sharedWith": "camera"
+    },
+    {
+      "id": "P15",
+      "label": "GPIO37",
+      "physicalNumber": 15,
+      "side": "right",
+      "kind": "gpio",
+      "gpio": 37,
+      "x": 282,
+      "y": 496,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "reservedReason": "Octal PSRAM ESP32-S3R8; не использовать"
+    },
+    {
+      "id": "P16",
+      "label": "GPIO36",
+      "physicalNumber": 16,
+      "side": "right",
+      "kind": "gpio",
+      "gpio": 36,
+      "x": 282,
+      "y": 520,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "reservedReason": "Octal PSRAM ESP32-S3R8; не использовать"
+    },
+    {
+      "id": "P17",
+      "label": "GPIO35",
+      "physicalNumber": 17,
+      "side": "right",
+      "kind": "gpio",
+      "gpio": 35,
+      "x": 282,
+      "y": 544,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "reservedReason": "Octal PSRAM ESP32-S3R8; не использовать"
+    },
+    {
+      "id": "P18",
+      "label": "GND",
+      "physicalNumber": 18,
+      "side": "right",
+      "kind": "ground",
+      "gpio": null,
+      "x": 282,
+      "y": 568,
+      "functions": [],
+      "capabilities": []
+    },
+    {
+      "id": "P19",
+      "label": "GPIO34",
+      "physicalNumber": 19,
+      "side": "right",
+      "kind": "gpio",
+      "gpio": 34,
+      "x": 282,
+      "y": 592,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "reservedReason": "Octal PSRAM ESP32-S3R8; не использовать"
+    },
+    {
+      "id": "P20",
+      "label": "GPIO33",
+      "physicalNumber": 20,
+      "side": "right",
+      "kind": "gpio",
+      "gpio": 33,
+      "x": 282,
+      "y": 616,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "reservedReason": "Octal PSRAM ESP32-S3R8; не использовать"
+    },
+    {
+      "id": "P21",
+      "label": "GPIO43",
+      "physicalNumber": 21,
+      "side": "left",
+      "kind": "gpio",
+      "gpio": 43,
+      "x": 98,
+      "y": 616,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "reservedReason": "UART0; сохраняем последовательный интерфейс"
+    },
+    {
+      "id": "P22",
+      "label": "GPIO44",
+      "physicalNumber": 22,
+      "side": "left",
+      "kind": "gpio",
+      "gpio": 44,
+      "x": 98,
+      "y": 592,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "reservedReason": "UART0; сохраняем последовательный интерфейс"
+    },
+    {
+      "id": "P23",
+      "label": "GND",
+      "physicalNumber": 23,
+      "side": "left",
+      "kind": "ground",
+      "gpio": null,
+      "x": 98,
+      "y": 568,
+      "functions": [],
+      "capabilities": []
+    },
+    {
+      "id": "P24",
+      "label": "GPIO0",
+      "physicalNumber": 24,
+      "side": "left",
+      "kind": "gpio",
+      "gpio": 0,
+      "x": 98,
+      "y": 544,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "reservedReason": "Загрузочный strapping-контакт; запрещён политикой MVP"
+    },
+    {
+      "id": "P25",
+      "label": "GPIO1",
+      "physicalNumber": 25,
+      "side": "left",
+      "kind": "gpio",
+      "gpio": 1,
+      "x": 98,
+      "y": 520,
+      "functions": [
+        "VSYNC"
+      ],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "sharedWith": "camera"
+    },
+    {
+      "id": "P26",
+      "label": "GPIO2",
+      "physicalNumber": 26,
+      "side": "left",
+      "kind": "gpio",
+      "gpio": 2,
+      "x": 98,
+      "y": 496,
+      "functions": [
+        "HREF"
+      ],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "sharedWith": "camera"
+    },
+    {
+      "id": "P27",
+      "label": "GPIO3",
+      "physicalNumber": 27,
+      "side": "left",
+      "kind": "gpio",
+      "gpio": 3,
+      "x": 98,
+      "y": 472,
+      "functions": [
+        "XCLK"
+      ],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "reservedReason": "Загрузочный strapping-контакт; запрещён политикой MVP",
+      "sharedWith": "camera"
+    },
+    {
+      "id": "P28",
+      "label": "GND",
+      "physicalNumber": 28,
+      "side": "left",
+      "kind": "ground",
+      "gpio": null,
+      "x": 98,
+      "y": 448,
+      "functions": [],
+      "capabilities": []
+    },
+    {
+      "id": "P29",
+      "label": "GPIO15",
+      "physicalNumber": 29,
+      "side": "left",
+      "kind": "gpio",
+      "gpio": 15,
+      "x": 98,
+      "y": 424,
+      "functions": [
+        "D6"
+      ],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "sharedWith": "camera"
+    },
+    {
+      "id": "P30",
+      "label": "CHIP_UP",
+      "physicalNumber": 30,
+      "side": "left",
+      "kind": "control",
+      "gpio": null,
+      "x": 98,
+      "y": 400,
+      "functions": [],
+      "capabilities": []
+    },
+    {
+      "id": "P31",
+      "label": "GPIO18",
+      "physicalNumber": 31,
+      "side": "left",
+      "kind": "gpio",
+      "gpio": 18,
+      "x": 98,
+      "y": 376,
+      "functions": [
+        "D7"
+      ],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "sharedWith": "camera"
+    },
+    {
+      "id": "P32",
+      "label": "GPIO16",
+      "physicalNumber": 32,
+      "side": "left",
+      "kind": "gpio",
+      "gpio": 16,
+      "x": 98,
+      "y": 352,
+      "functions": [
+        "Возможный VSYNC jumper"
+      ],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "sharedWith": "camera"
+    },
+    {
+      "id": "P33",
+      "label": "GND",
+      "physicalNumber": 33,
+      "side": "left",
+      "kind": "ground",
+      "gpio": null,
+      "x": 98,
+      "y": 328,
+      "functions": [],
+      "capabilities": []
+    },
+    {
+      "id": "P34",
+      "label": "GPIO17",
+      "physicalNumber": 34,
+      "side": "left",
+      "kind": "gpio",
+      "gpio": 17,
+      "x": 98,
+      "y": 304,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ]
+    },
+    {
+      "id": "P35",
+      "label": "GPIO21",
+      "physicalNumber": 35,
+      "side": "left",
+      "kind": "gpio",
+      "gpio": 21,
+      "x": 98,
+      "y": 280,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "reservedReason": "Встроенный WS2812 RGB LED"
+    },
+    {
+      "id": "P36",
+      "label": "3V3",
+      "physicalNumber": 36,
+      "side": "left",
+      "kind": "power",
+      "gpio": null,
+      "x": 98,
+      "y": 256,
+      "functions": [],
+      "capabilities": [],
+      "voltage": 3.3
+    },
+    {
+      "id": "P37",
+      "label": "3V3_EN",
+      "physicalNumber": 37,
+      "side": "left",
+      "kind": "control",
+      "gpio": null,
+      "x": 98,
+      "y": 232,
+      "functions": [],
+      "capabilities": []
+    },
+    {
+      "id": "P38",
+      "label": "GND",
+      "physicalNumber": 38,
+      "side": "left",
+      "kind": "ground",
+      "gpio": null,
+      "x": 98,
+      "y": 208,
+      "functions": [],
+      "capabilities": []
+    },
+    {
+      "id": "P39",
+      "label": "VSYS",
+      "physicalNumber": 39,
+      "side": "left",
+      "kind": "power",
+      "gpio": null,
+      "x": 98,
+      "y": 184,
+      "functions": [],
+      "capabilities": [],
+      "voltage": 5
+    },
+    {
+      "id": "P40",
+      "label": "VBUS",
+      "physicalNumber": 40,
+      "side": "left",
+      "kind": "power",
+      "gpio": null,
+      "x": 98,
+      "y": 160,
+      "functions": [],
+      "capabilities": [],
+      "voltage": 5
+    }
+  ]
+}

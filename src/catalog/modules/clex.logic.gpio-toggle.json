@@ -1,0 +1,64 @@
+{
+  "id": "clex.logic.gpio-toggle",
+  "version": "1.0.0",
+  "kind": "logic",
+  "name": "Переключение GPIO",
+  "description": "Изменить уровень внешнего светодиода на противоположный.",
+  "category": "gpio",
+  "categoryName": "GPIO",
+  "icon": "Repeat2",
+  "color": "#A78BFA",
+  "inputs": [
+    {
+      "id": "trigger",
+      "name": "Выполнить",
+      "type": "event",
+      "required": true
+    }
+  ],
+  "outputs": [
+    {
+      "id": "done",
+      "name": "Готово",
+      "type": "event",
+      "required": false
+    },
+    {
+      "id": "state",
+      "name": "Новый уровень",
+      "type": "boolean",
+      "required": false,
+      "readyOn": "done"
+    }
+  ],
+  "parameters": {
+    "componentId": {
+      "label": "Компонент монтажа",
+      "type": "component",
+      "default": ""
+    }
+  },
+  "constraints": {
+    "hardware": {
+      "modules": [
+        "clex.hardware.led"
+      ],
+      "terminal": "anode",
+      "mode": "output"
+    }
+  },
+  "compatibility": {
+    "projectFormat": 3,
+    "targets": [
+      "esp32s3"
+    ],
+    "espIdf": "5.4.4"
+  },
+  "firmware": {
+    "status": "implemented",
+    "generatorKey": "gpio-toggle",
+    "dependencies": [
+      "esp_driver_gpio"
+    ]
+  }
+}

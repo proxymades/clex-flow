@@ -1,0 +1,87 @@
+name: Build macOS Apple Silicon
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Branch, commit or existing version tag to build for review'
+        required: true
+        default: main
+        type: string
+  release:
+    types: [published]
+
+# This workflow builds review artifacts. It cannot create tags or releases,
+# nor attach untested binaries to a Release.
+permissions:
+  contents: read
+
+concurrency:
+  group: macos-build-${{ github.event.release.tag_name || inputs.ref || github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 45
+    steps:
+      - name: Check out the explicitly selected source
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          ref: ${{ github.event.release.tag_name || inputs.ref || github.ref }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Verify runner architecture
+        run: node -e "if (process.arch !== 'arm64') throw new Error('Apple Silicon runner required')"
+
+      - name: Install the tested Rust toolchain
+        run: |
+          rustup toolchain install 1.93.1 --profile minimal --component rustfmt
+          rustup default 1.93.1
+          rustup target add aarch64-apple-darwin
+
+      - name: Install locked frontend dependencies
+        run: npm ci
+
+      - name: Verify versions and source
+        run: |
+          node scripts/check-version.mjs
+          npm run lint
+          npm test
+          cargo fmt --manifest-path src-tauri/Cargo.toml --check
+          cargo test --manifest-path src-tauri/Cargo.toml --locked
+
+      - name: Build review-only app and DMG using official Tauri action
+        uses: tauri-apps/tauri-action@1deb371b0cd8bd54025b384f1cd735e725c4060f # v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          projectPath: .
+          args: --target aarch64-apple-darwin --config src-tauri/tauri.release.conf.json --bundles app,dmg -- --locked
+          # No tagName, releaseName or releaseId: no publication is performed.
+          uploadWorkflowArtifacts: false
+
+      - name: Verify DMG and record checksums
+        working-directory: src-tauri/target/aarch64-apple-darwin/release/bundle/dmg
+        run: |
+          for image in *.dmg; do
+            hdiutil verify "$image" >&2
+            shasum -a 256 "$image"
+          done > SHA256SUMS.txt
+
+      - name: Store installers for manual testing
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: clex-flow-macos-apple-silicon-review-${{ github.run_number }}
+          path: |
+            src-tauri/target/aarch64-apple-darwin/release/bundle/dmg/*.dmg
+            src-tauri/target/aarch64-apple-darwin/release/bundle/dmg/SHA256SUMS.txt
+          if-no-files-found: error
+          retention-days: 30

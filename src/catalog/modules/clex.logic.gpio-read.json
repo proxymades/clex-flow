@@ -1,0 +1,64 @@
+{
+  "id": "clex.logic.gpio-read",
+  "version": "1.0.0",
+  "kind": "logic",
+  "name": "Чтение GPIO",
+  "description": "Считать уровень кнопки по событию.",
+  "category": "gpio",
+  "categoryName": "GPIO",
+  "icon": "ScanLine",
+  "color": "#38BDF8",
+  "inputs": [
+    {
+      "id": "trigger",
+      "name": "Выполнить",
+      "type": "event",
+      "required": true
+    }
+  ],
+  "outputs": [
+    {
+      "id": "done",
+      "name": "Готово",
+      "type": "event",
+      "required": false
+    },
+    {
+      "id": "level",
+      "name": "Уровень",
+      "type": "boolean",
+      "required": false,
+      "readyOn": "done"
+    }
+  ],
+  "parameters": {
+    "componentId": {
+      "label": "Компонент монтажа",
+      "type": "component",
+      "default": ""
+    }
+  },
+  "constraints": {
+    "hardware": {
+      "modules": [
+        "clex.hardware.button"
+      ],
+      "terminal": "signal",
+      "mode": "input"
+    }
+  },
+  "compatibility": {
+    "projectFormat": 3,
+    "targets": [
+      "esp32s3"
+    ],
+    "espIdf": "5.4.4"
+  },
+  "firmware": {
+    "status": "implemented",
+    "generatorKey": "gpio-read",
+    "dependencies": [
+      "esp_driver_gpio"
+    ]
+  }
+}

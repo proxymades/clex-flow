@@ -1,0 +1,71 @@
+{
+  "version": "1.0.0",
+  "kind": "hardware",
+  "inputs": [],
+  "outputs": [],
+  "compatibility": {
+    "projectFormat": 3,
+    "targets": [
+      "esp32s3"
+    ],
+    "espIdf": "5.4.4"
+  },
+  "firmware": {
+    "status": "implemented",
+    "dependencies": [
+      "esp_driver_gpio"
+    ],
+    "generatorKey": "gpio-led"
+  },
+  "id": "clex.hardware.led",
+  "name": "Внешний светодиод",
+  "category": "indicators",
+  "categoryName": "Индикаторы",
+  "description": "GPIO → резистор → анод; катод → GND.",
+  "icon": "Lightbulb",
+  "color": "#34D399",
+  "visual": {
+    "svg": "led.svg",
+    "width": 230,
+    "height": 185
+  },
+  "terminals": [
+    {
+      "id": "anode",
+      "label": "Анод через R",
+      "kind": "gpio-output",
+      "x": 0,
+      "y": 125
+    },
+    {
+      "id": "cathode",
+      "label": "Катод / GND",
+      "kind": "ground",
+      "x": 0,
+      "y": 160
+    }
+  ],
+  "parameters": {
+    "resistorOhms": {
+      "label": "Резистор, Ом",
+      "type": "number",
+      "default": 330,
+      "min": 220,
+      "max": 100000,
+      "step": 10
+    },
+    "forwardVoltage": {
+      "label": "Падение на LED, В",
+      "type": "number",
+      "default": 2,
+      "min": 1.6,
+      "max": 3.2,
+      "step": 0.1
+    }
+  },
+  "constraints": {
+    "signalVoltage": 3.3,
+    "maxCurrentMa": 8,
+    "requiresSeriesResistor": true
+  }
+}

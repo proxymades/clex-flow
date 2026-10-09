@@ -1,0 +1,73 @@
+{
+  "version": "1.0.0",
+  "kind": "hardware",
+  "inputs": [],
+  "outputs": [],
+  "compatibility": {
+    "projectFormat": 3,
+    "targets": [
+      "esp32s3"
+    ],
+    "espIdf": "5.4.4"
+  },
+  "firmware": {
+    "status": "implemented",
+    "dependencies": [
+      "esp_driver_gpio"
+    ],
+    "generatorKey": "gpio-button"
+  },
+  "id": "clex.hardware.button",
+  "name": "Кнопка",
+  "category": "input",
+  "categoryName": "Ввод",
+  "description": "Нормально разомкнутая кнопка: GPIO ↔ GND, внутренняя подтяжка вверх.",
+  "icon": "MousePointer2",
+  "color": "#8B5CF6",
+  "visual": {
+    "svg": "button.svg",
+    "width": 230,
+    "height": 185
+  },
+  "terminals": [
+    {
+      "id": "signal",
+      "label": "Сигнал / GPIO",
+      "kind": "gpio-input",
+      "x": 0,
+      "y": 125
+    },
+    {
+      "id": "ground",
+      "label": "Общий / GND",
+      "kind": "ground",
+      "x": 0,
+      "y": 160
+    }
+  ],
+  "parameters": {
+    "debounceMs": {
+      "label": "Антидребезг, мс",
+      "type": "number",
+      "default": 30,
+      "min": 5,
+      "max": 1000,
+      "step": 5
+    },
+    "pull": {
+      "label": "Подтяжка",
+      "type": "select",
+      "default": "up",
+      "options": [
+        {
+          "value": "up",
+          "label": "Внутренняя, вверх"
+        }
+      ]
+    }
+  },
+  "constraints": {
+    "signalVoltage": 3.3,
+    "normallyOpen": true
+  }
+}

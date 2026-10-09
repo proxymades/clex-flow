@@ -1,0 +1,737 @@
+{
+  "id": "espressif-devkitc-1-v1-1-n8r8",
+  "name": "ESP32-S3-DevKitC-1",
+  "manufacturer": "Espressif",
+  "mcu": "ESP32-S3-WROOM-1-N8R8",
+  "revision": "v1.1 / N8R8",
+  "espIdfVersion": "5.4.4",
+  "pinoutVerified": true,
+  "documentationVerified": true,
+  "verificationNote": "Документированный профиль v1.1 N8R8. Сверьте маркировку своей платы; другие ревизии имеют отличия.",
+  "description": "Два разъёма J1/J3. Octal PSRAM: GPIO35-37 заняты; RGB: GPIO38.",
+  "svg": "esp32-s3-devkitc-1.svg",
+  "width": 380,
+  "height": 750,
+  "orientation": "Вид со стороны компонентов: антенна сверху, USB снизу. J1 слева, J3 справа; нумерация сверху вниз.",
+  "sources": [
+    {
+      "title": "Espressif: DevKitC-1 v1.1",
+      "url": "https://docs.espressif.com/projects/esp-dev-kits/en/latest/esp32s3/esp32-s3-devkitc-1/user_guide_v1.1.html"
+    },
+    {
+      "title": "Ограничения GPIO ESP-IDF 5.4.4",
+      "url": "https://docs.espressif.com/projects/esp-idf/en/v5.4.4/esp32s3/api-reference/peripherals/gpio.html"
+    }
+  ],
+  "options": {},
+  "reservedGpios": {
+    "26": "Flash / octal PSRAM",
+    "27": "Flash / octal PSRAM",
+    "28": "Flash / octal PSRAM",
+    "29": "Flash / octal PSRAM",
+    "30": "Flash / octal PSRAM",
+    "31": "Flash / octal PSRAM",
+    "32": "Flash / octal PSRAM",
+    "33": "Flash / octal PSRAM",
+    "34": "Flash / octal PSRAM",
+    "35": "Flash / octal PSRAM",
+    "36": "Flash / octal PSRAM",
+    "37": "Flash / octal PSRAM"
+  },
+  "pins": [
+    {
+      "id": "J1.1",
+      "label": "3V3",
+      "physicalNumber": 1,
+      "side": "left",
+      "kind": "power",
+      "gpio": null,
+      "x": 98,
+      "y": 120,
+      "functions": [],
+      "capabilities": [],
+      "voltage": 3.3,
+      "header": "J1"
+    },
+    {
+      "id": "J1.2",
+      "label": "3V3",
+      "physicalNumber": 2,
+      "side": "left",
+      "kind": "power",
+      "gpio": null,
+      "x": 98,
+      "y": 144,
+      "functions": [],
+      "capabilities": [],
+      "voltage": 3.3,
+      "header": "J1"
+    },
+    {
+      "id": "J1.3",
+      "label": "RST",
+      "physicalNumber": 3,
+      "side": "left",
+      "kind": "control",
+      "gpio": null,
+      "x": 98,
+      "y": 168,
+      "functions": [],
+      "capabilities": [],
+      "header": "J1"
+    },
+    {
+      "id": "J1.4",
+      "label": "GPIO4",
+      "physicalNumber": 4,
+      "side": "left",
+      "kind": "gpio",
+      "gpio": 4,
+      "x": 98,
+      "y": 192,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "header": "J1"
+    },
+    {
+      "id": "J1.5",
+      "label": "GPIO5",
+      "physicalNumber": 5,
+      "side": "left",
+      "kind": "gpio",
+      "gpio": 5,
+      "x": 98,
+      "y": 216,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "header": "J1"
+    },
+    {
+      "id": "J1.6",
+      "label": "GPIO6",
+      "physicalNumber": 6,
+      "side": "left",
+      "kind": "gpio",
+      "gpio": 6,
+      "x": 98,
+      "y": 240,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "header": "J1"
+    },
+    {
+      "id": "J1.7",
+      "label": "GPIO7",
+      "physicalNumber": 7,
+      "side": "left",
+      "kind": "gpio",
+      "gpio": 7,
+      "x": 98,
+      "y": 264,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "header": "J1"
+    },
+    {
+      "id": "J1.8",
+      "label": "GPIO15",
+      "physicalNumber": 8,
+      "side": "left",
+      "kind": "gpio",
+      "gpio": 15,
+      "x": 98,
+      "y": 288,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "header": "J1"
+    },
+    {
+      "id": "J1.9",
+      "label": "GPIO16",
+      "physicalNumber": 9,
+      "side": "left",
+      "kind": "gpio",
+      "gpio": 16,
+      "x": 98,
+      "y": 312,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "header": "J1"
+    },
+    {
+      "id": "J1.10",
+      "label": "GPIO17",
+      "physicalNumber": 10,
+      "side": "left",
+      "kind": "gpio",
+      "gpio": 17,
+      "x": 98,
+      "y": 336,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "header": "J1"
+    },
+    {
+      "id": "J1.11",
+      "label": "GPIO18",
+      "physicalNumber": 11,
+      "side": "left",
+      "kind": "gpio",
+      "gpio": 18,
+      "x": 98,
+      "y": 360,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "header": "J1"
+    },
+    {
+      "id": "J1.12",
+      "label": "GPIO8",
+      "physicalNumber": 12,
+      "side": "left",
+      "kind": "gpio",
+      "gpio": 8,
+      "x": 98,
+      "y": 384,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "header": "J1"
+    },
+    {
+      "id": "J1.13",
+      "label": "GPIO3",
+      "physicalNumber": 13,
+      "side": "left",
+      "kind": "gpio",
+      "gpio": 3,
+      "x": 98,
+      "y": 408,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "reservedReason": "Загрузочный strapping-контакт; запрещён политикой MVP",
+      "header": "J1"
+    },
+    {
+      "id": "J1.14",
+      "label": "GPIO46",
+      "physicalNumber": 14,
+      "side": "left",
+      "kind": "gpio",
+      "gpio": 46,
+      "x": 98,
+      "y": 432,
+      "functions": [],
+      "capabilities": [
+        "digital-input"
+      ],
+      "reservedReason": "Загрузочный strapping-контакт; запрещён политикой MVP",
+      "header": "J1"
+    },
+    {
+      "id": "J1.15",
+      "label": "GPIO9",
+      "physicalNumber": 15,
+      "side": "left",
+      "kind": "gpio",
+      "gpio": 9,
+      "x": 98,
+      "y": 456,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "header": "J1"
+    },
+    {
+      "id": "J1.16",
+      "label": "GPIO10",
+      "physicalNumber": 16,
+      "side": "left",
+      "kind": "gpio",
+      "gpio": 10,
+      "x": 98,
+      "y": 480,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "header": "J1"
+    },
+    {
+      "id": "J1.17",
+      "label": "GPIO11",
+      "physicalNumber": 17,
+      "side": "left",
+      "kind": "gpio",
+      "gpio": 11,
+      "x": 98,
+      "y": 504,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "header": "J1"
+    },
+    {
+      "id": "J1.18",
+      "label": "GPIO12",
+      "physicalNumber": 18,
+      "side": "left",
+      "kind": "gpio",
+      "gpio": 12,
+      "x": 98,
+      "y": 528,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "header": "J1"
+    },
+    {
+      "id": "J1.19",
+      "label": "GPIO13",
+      "physicalNumber": 19,
+      "side": "left",
+      "kind": "gpio",
+      "gpio": 13,
+      "x": 98,
+      "y": 552,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "header": "J1"
+    },
+    {
+      "id": "J1.20",
+      "label": "GPIO14",
+      "physicalNumber": 20,
+      "side": "left",
+      "kind": "gpio",
+      "gpio": 14,
+      "x": 98,
+      "y": 576,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "header": "J1"
+    },
+    {
+      "id": "J1.21",
+      "label": "5V",
+      "physicalNumber": 21,
+      "side": "left",
+      "kind": "power",
+      "gpio": null,
+      "x": 98,
+      "y": 600,
+      "functions": [],
+      "capabilities": [],
+      "voltage": 5,
+      "header": "J1"
+    },
+    {
+      "id": "J1.22",
+      "label": "GND",
+      "physicalNumber": 22,
+      "side": "left",
+      "kind": "ground",
+      "gpio": null,
+      "x": 98,
+      "y": 624,
+      "functions": [],
+      "capabilities": [],
+      "header": "J1"
+    },
+    {
+      "id": "J3.1",
+      "label": "GND",
+      "physicalNumber": 1,
+      "side": "right",
+      "kind": "ground",
+      "gpio": null,
+      "x": 282,
+      "y": 120,
+      "functions": [],
+      "capabilities": [],
+      "header": "J3"
+    },
+    {
+      "id": "J3.2",
+      "label": "GPIO43",
+      "physicalNumber": 2,
+      "side": "right",
+      "kind": "gpio",
+      "gpio": 43,
+      "x": 282,
+      "y": 144,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "reservedReason": "USB-UART bridge / UART0",
+      "header": "J3"
+    },
+    {
+      "id": "J3.3",
+      "label": "GPIO44",
+      "physicalNumber": 3,
+      "side": "right",
+      "kind": "gpio",
+      "gpio": 44,
+      "x": 282,
+      "y": 168,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "reservedReason": "USB-UART bridge / UART0",
+      "header": "J3"
+    },
+    {
+      "id": "J3.4",
+      "label": "GPIO1",
+      "physicalNumber": 4,
+      "side": "right",
+      "kind": "gpio",
+      "gpio": 1,
+      "x": 282,
+      "y": 192,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "header": "J3"
+    },
+    {
+      "id": "J3.5",
+      "label": "GPIO2",
+      "physicalNumber": 5,
+      "side": "right",
+      "kind": "gpio",
+      "gpio": 2,
+      "x": 282,
+      "y": 216,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "header": "J3"
+    },
+    {
+      "id": "J3.6",
+      "label": "GPIO42",
+      "physicalNumber": 6,
+      "side": "right",
+      "kind": "gpio",
+      "gpio": 42,
+      "x": 282,
+      "y": 240,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "header": "J3"
+    },
+    {
+      "id": "J3.7",
+      "label": "GPIO41",
+      "physicalNumber": 7,
+      "side": "right",
+      "kind": "gpio",
+      "gpio": 41,
+      "x": 282,
+      "y": 264,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "header": "J3"
+    },
+    {
+      "id": "J3.8",
+      "label": "GPIO40",
+      "physicalNumber": 8,
+      "side": "right",
+      "kind": "gpio",
+      "gpio": 40,
+      "x": 282,
+      "y": 288,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "header": "J3"
+    },
+    {
+      "id": "J3.9",
+      "label": "GPIO39",
+      "physicalNumber": 9,
+      "side": "right",
+      "kind": "gpio",
+      "gpio": 39,
+      "x": 282,
+      "y": 312,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "header": "J3"
+    },
+    {
+      "id": "J3.10",
+      "label": "GPIO38",
+      "physicalNumber": 10,
+      "side": "right",
+      "kind": "gpio",
+      "gpio": 38,
+      "x": 282,
+      "y": 336,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "reservedReason": "Встроенный RGB LED ревизии v1.1",
+      "header": "J3"
+    },
+    {
+      "id": "J3.11",
+      "label": "GPIO37",
+      "physicalNumber": 11,
+      "side": "right",
+      "kind": "gpio",
+      "gpio": 37,
+      "x": 282,
+      "y": 360,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "reservedReason": "Octal PSRAM N8R8",
+      "header": "J3"
+    },
+    {
+      "id": "J3.12",
+      "label": "GPIO36",
+      "physicalNumber": 12,
+      "side": "right",
+      "kind": "gpio",
+      "gpio": 36,
+      "x": 282,
+      "y": 384,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "reservedReason": "Octal PSRAM N8R8",
+      "header": "J3"
+    },
+    {
+      "id": "J3.13",
+      "label": "GPIO35",
+      "physicalNumber": 13,
+      "side": "right",
+      "kind": "gpio",
+      "gpio": 35,
+      "x": 282,
+      "y": 408,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "reservedReason": "Octal PSRAM N8R8",
+      "header": "J3"
+    },
+    {
+      "id": "J3.14",
+      "label": "GPIO0",
+      "physicalNumber": 14,
+      "side": "right",
+      "kind": "gpio",
+      "gpio": 0,
+      "x": 282,
+      "y": 432,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "reservedReason": "Загрузочный strapping-контакт; запрещён политикой MVP",
+      "header": "J3"
+    },
+    {
+      "id": "J3.15",
+      "label": "GPIO45",
+      "physicalNumber": 15,
+      "side": "right",
+      "kind": "gpio",
+      "gpio": 45,
+      "x": 282,
+      "y": 456,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "reservedReason": "Загрузочный strapping-контакт; запрещён политикой MVP",
+      "header": "J3"
+    },
+    {
+      "id": "J3.16",
+      "label": "GPIO48",
+      "physicalNumber": 16,
+      "side": "right",
+      "kind": "gpio",
+      "gpio": 48,
+      "x": 282,
+      "y": 480,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "header": "J3"
+    },
+    {
+      "id": "J3.17",
+      "label": "GPIO47",
+      "physicalNumber": 17,
+      "side": "right",
+      "kind": "gpio",
+      "gpio": 47,
+      "x": 282,
+      "y": 504,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "header": "J3"
+    },
+    {
+      "id": "J3.18",
+      "label": "GPIO21",
+      "physicalNumber": 18,
+      "side": "right",
+      "kind": "gpio",
+      "gpio": 21,
+      "x": 282,
+      "y": 528,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "header": "J3"
+    },
+    {
+      "id": "J3.19",
+      "label": "GPIO20",
+      "physicalNumber": 19,
+      "side": "right",
+      "kind": "gpio",
+      "gpio": 20,
+      "x": 282,
+      "y": 552,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "reservedReason": "USB CDC/JTAG; сохраняем интерфейс прошивки",
+      "header": "J3"
+    },
+    {
+      "id": "J3.20",
+      "label": "GPIO19",
+      "physicalNumber": 20,
+      "side": "right",
+      "kind": "gpio",
+      "gpio": 19,
+      "x": 282,
+      "y": 576,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "reservedReason": "USB CDC/JTAG; сохраняем интерфейс прошивки",
+      "header": "J3"
+    },
+    {
+      "id": "J3.21",
+      "label": "GND",
+      "physicalNumber": 21,
+      "side": "right",
+      "kind": "ground",
+      "gpio": null,
+      "x": 282,
+      "y": 600,
+      "functions": [],
+      "capabilities": [],
+      "header": "J3"
+    },
+    {
+      "id": "J3.22",
+      "label": "GND",
+      "physicalNumber": 22,
+      "side": "right",
+      "kind": "ground",
+      "gpio": null,
+      "x": 282,
+      "y": 624,
+      "functions": [],
+      "capabilities": [],
+      "header": "J3"
+    }
+  ]
+}

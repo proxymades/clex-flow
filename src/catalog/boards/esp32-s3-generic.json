@@ -1,0 +1,21 @@
+{
+  "id": "esp32-s3-generic",
+  "name": "ESP32-S3",
+  "manufacturer": "Espressif",
+  "mcu": "ESP32-S3",
+  "espIdfVersion": "5.4.4",
+  "status": "target-only",
+  "pinoutVerified": false,
+  "description": "Целевая платформа. Конкретная модель и распиновка будут добавлены на этапе 2.",
+  "svg": null,
+  "pins": [],
+  "reservedPins": [],
+  "revision": null,
+  "documentationVerified": false,
+  "verificationNote": "Выберите конкретную плату: у общей платформы нет физической распиновки.",
+  "width": 380,
+  "height": 700,
+  "sources": [],
+  "options": {},
+  "reservedGpios": {}
+}

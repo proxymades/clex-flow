@@ -1,0 +1,52 @@
+{
+  "id": "clex.logic.timer",
+  "version": "1.0.0",
+  "kind": "logic",
+  "name": "Таймер",
+  "description": "Периодическое событие с заданным интервалом.",
+  "category": "events",
+  "categoryName": "События",
+  "icon": "Timer",
+  "color": "#34D399",
+  "inputs": [],
+  "outputs": [
+    {
+      "id": "tick",
+      "name": "Такт",
+      "type": "event",
+      "required": false
+    },
+    {
+      "id": "interval",
+      "name": "Интервал, мс",
+      "type": "number",
+      "required": false,
+      "static": true
+    }
+  ],
+  "parameters": {
+    "intervalMs": {
+      "label": "Интервал, мс",
+      "type": "integer",
+      "default": 500,
+      "min": 10,
+      "max": 3600000,
+      "step": 10
+    }
+  },
+  "constraints": {},
+  "compatibility": {
+    "projectFormat": 3,
+    "targets": [
+      "esp32s3"
+    ],
+    "espIdf": "5.4.4"
+  },
+  "firmware": {
+    "status": "implemented",
+    "generatorKey": "timer",
+    "dependencies": [
+      "esp_timer"
+    ]
+  }
+}

@@ -1,0 +1,69 @@
+{
+  "id": "clex.logic.serial",
+  "version": "1.0.0",
+  "kind": "logic",
+  "name": "Сообщение в Serial",
+  "description": "Вывести текст и необязательное число по событию.",
+  "category": "output",
+  "categoryName": "Вывод",
+  "icon": "Terminal",
+  "color": "#FB923C",
+  "inputs": [
+    {
+      "id": "trigger",
+      "name": "Выполнить",
+      "type": "event",
+      "required": true
+    },
+    {
+      "id": "text",
+      "name": "Текст",
+      "type": "text",
+      "required": false
+    },
+    {
+      "id": "number",
+      "name": "Число",
+      "type": "number",
+      "required": false
+    }
+  ],
+  "outputs": [
+    {
+      "id": "done",
+      "name": "Готово",
+      "type": "event",
+      "required": false
+    },
+    {
+      "id": "text",
+      "name": "Выведенный текст",
+      "type": "text",
+      "required": false,
+      "readyOn": "done"
+    }
+  ],
+  "parameters": {
+    "message": {
+      "label": "Текст сообщения",
+      "type": "text",
+      "default": "Hello from CLEX Flow",
+      "maxLength": 2000
+    }
+  },
+  "constraints": {},
+  "compatibility": {
+    "projectFormat": 3,
+    "targets": [
+      "esp32s3"
+    ],
+    "espIdf": "5.4.4"
+  },
+  "firmware": {
+    "status": "implemented",
+    "generatorKey": "serial",
+    "dependencies": [
+      "log"
+    ]
+  }
+}
