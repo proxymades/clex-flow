@@ -17,6 +17,7 @@
     "test:logic-ui": "node tests/logic-ui.cjs",
     "test:logic-drag-ui": "node tests/logic-drag-ui.cjs",
     "test:autosave-ui": "node tests/autosave-ui.cjs",
+    "test:canvas-ui": "node tests/canvas-ui.cjs",
     "test:firmware-ui": "node tests/firmware-ui.cjs",
     "test:sdk-ui": "node tests/sdk-ui.cjs"
   },

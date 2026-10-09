@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ReactFlow, Background, BackgroundVariant, MarkerType, SelectionMode } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import { Undo2, Redo2, Copy, ClipboardPaste, Files, Trash2, Plus, Minus, Maximize, Layers, Unplug } from 'lucide-react';
+import { Undo2, Redo2, Copy, ClipboardPaste, Files, Trash2, Layers, Unplug } from 'lucide-react';
+import CanvasControls from '../components/CanvasControls.jsx';
+import useCanvasKeys from '../components/useCanvasKeys.js';
 import LogicNode from './LogicNode.jsx';
 import { graphModule, hardwareBinding, connectionProblem, TYPE_COLORS } from './model.js';
 
@@ -11,6 +13,8 @@ const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 export default function LogicCanvas({ project, catalog, history, selection, setSelection, pending, onPort, onConnect, error, setError, busy, clipboard, onCopy, onPaste, onDuplicate, onRemove, issues, onInteraction }) {
   const [instance, setInstance] = useState(null), [measurements, setMeasurements] = useState({});
+  const fitView = () => instance?.fitView({ padding: 0.22, maxZoom: 1.1, duration: 0 });
+  const { spaceHeld } = useCanvasKeys({ onFit: fitView, onEscape: () => onPort(null), busy });
   const [positions, setPositions] = useState({});
   const draftPositions = useRef({}), draftViewport = useRef(null), dragging = useRef(false), interactions = useRef(new Set());
   const interaction = useCallback((kind, active) => {
@@ -35,7 +39,7 @@ export default function LogicCanvas({ project, catalog, history, selection, setS
   const modelNodes = useMemo(() => {
     const selected = new Set(selection.nodes), errors = new Map();
     for (const issue of issues) if (issue.severity === 'error' && issue.nodeId) errors.set(issue.nodeId, (errors.get(issue.nodeId) || 0) + 1);
-    return project.logic.nodes.map(node => ({ id: node.id, type: 'logic', position: node.position, measured: measurements[node.id] || emptyMeasurements, selected: selected.has(node.id), dragHandle: '.logic-drag-handle', ariaLabel: `Блок: ${node.name}`, data: { node, definition: graphModule(node, catalog), binding: hardwareBinding(node, project, catalog), issueCount: errors.get(node.id) || 0, onPort, pending } }));
+    return project.logic.nodes.map(node => ({ id: node.id, type: 'logic', position: node.position, measured: measurements[node.id] || emptyMeasurements, selected: selected.has(node.id), ariaLabel: `Блок: ${node.name}`, data: { node, definition: graphModule(node, catalog), binding: hardwareBinding(node, project, catalog), issueCount: errors.get(node.id) || 0, onPort, pending } }));
   }, [project, catalog, measurements, selection.nodes, issues, onPort, pending]);
   // Moving a node updates only its canvas position. Card data, validation,
   // firmware generation and project serialization stay outside the frame loop.
@@ -104,14 +108,14 @@ export default function LogicCanvas({ project, catalog, history, selection, setS
     const problem = connectionProblem(project.logic, catalog, connection);
     if (problem) setError(problem);
   }
-  return <main className="logic-canvas">
+  return <main className={`logic-canvas ${spaceHeld ? 'canvas-space-pan' : ''}`}>
     <div className="logic-toolbar"><div><button className="icon-button" title="Отменить · ⌘/Ctrl Z" aria-label="Отменить изменение графа" disabled={busy || !history.canUndo} onClick={history.undo}><Undo2 size={16} /></button><button className="icon-button" title="Повторить · ⌘/Ctrl Shift Z" aria-label="Повторить изменение графа" disabled={busy || !history.canRedo} onClick={history.redo}><Redo2 size={16} /></button><span className="toolbar-divider" /><button className="icon-button" title="Копировать · ⌘/Ctrl C" aria-label="Копировать выделенные блоки" disabled={busy || !selection.nodes.length} onClick={onCopy}><Copy size={16} /></button><button className="icon-button" title="Вставить · ⌘/Ctrl V" aria-label="Вставить блоки" disabled={busy || !clipboard?.nodes.length} onClick={onPaste}><ClipboardPaste size={16} /></button><button className="icon-button" title="Дублировать · ⌘/Ctrl D" aria-label="Дублировать выделенные блоки" disabled={busy || !selection.nodes.length} onClick={onDuplicate}><Files size={16} /></button><button className="icon-button danger-hover" title="Удалить · Delete" aria-label="Удалить выделение графа" disabled={busy || (!selection.nodes.length && !selection.edges.length)} onClick={onRemove}><Trash2 size={16} /></button></div></div>
-    <div className="reactflow-region"><ReactFlow nodes={nodes} edges={edges} nodeTypes={nodeTypes} defaultViewport={project.logic.viewport} onNodesChange={changeNodes} onEdgesChange={changeEdges} onNodeDragStart={beginDrag} onNodeDragStop={finishDrag} onSelectionDragStart={beginDrag} onSelectionDragStop={finishDrag} onInit={setInstance} onMoveStart={moveStart} onMoveEnd={moveEnd} onConnect={onConnect} onConnectEnd={endConnection} isValidConnection={connection => !connectionProblem(project.logic, catalog, connection)} onPaneClick={() => setSelection({ nodes: [], edges: [] })} nodeExtent={[[-5000, -5000], [5000, 5000]]} minZoom={0.2} maxZoom={3} nodesDraggable={!busy} nodesConnectable={!busy} edgesReconnectable={false} selectionMode={SelectionMode.Partial} selectionKeyCode="Shift" multiSelectionKeyCode={['Meta', 'Control']} deleteKeyCode={null} colorMode="dark" ariaLabelConfig={{ 'node.a11yDescription.default': 'Выделите блок. Стрелки перемещают, Delete удаляет.', 'edge.a11yDescription.default': 'Выделите связь. Delete удаляет.' }} onError={(_code, message) => setError(message)}>
+    <div className="reactflow-region"><ReactFlow nodes={nodes} edges={edges} nodeTypes={nodeTypes} defaultViewport={project.logic.viewport} onNodesChange={changeNodes} onEdgesChange={changeEdges} onNodeDragStart={beginDrag} onNodeDragStop={finishDrag} onSelectionDragStart={beginDrag} onSelectionDragStop={finishDrag} onInit={setInstance} onMoveStart={moveStart} onMoveEnd={moveEnd} onConnect={onConnect} onConnectEnd={endConnection} isValidConnection={connection => !connectionProblem(project.logic, catalog, connection)} onPaneClick={() => setSelection({ nodes: [], edges: [] })} nodeExtent={[[-5000, -5000], [5000, 5000]]} minZoom={0.2} maxZoom={3} nodesDraggable={!busy && !spaceHeld} nodesConnectable={!busy && !spaceHeld} edgesReconnectable={false} selectionMode={SelectionMode.Partial} selectionKeyCode="Shift" multiSelectionKeyCode={['Meta', 'Control']} deleteKeyCode={null} colorMode="dark" ariaLabelConfig={{ 'node.a11yDescription.default': 'Выделите блок. Стрелки перемещают, Delete удаляет.', 'edge.a11yDescription.default': 'Выделите связь. Delete удаляет.' }} onError={(_code, message) => setError(message)}>
       <Background variant={BackgroundVariant.Dots} gap={24} size={1} color="#34405b" />
     </ReactFlow>{!nodes.length && <div className="logic-empty"><Layers size={43} strokeWidth={1.2} /><h2>Соберите логику эксперимента</h2><p>Добавьте таймер и переключение GPIO.<br />Соедините «Такт» с входом «Выполнить».</p><span>Начните с библиотеки слева</span></div>}
     {pending && <div className="logic-connection-prompt"><span className="dot green-dot" />{pending.direction === 'output' ? 'Выберите совместимый вход блока' : 'Выберите совместимый выход блока'}<button className="icon-button" aria-label="Отменить связь логики" onClick={() => onPort(null)}><Unplug size={15} /></button></div>}
     {error && <div className="wiring-error logic-connect-error" role="alert"><span>{error}</span><button className="text-button" onClick={() => setError('')}>Закрыть</button></div>}
     </div>
-    <footer className="logic-canvas-footer"><span>{nodes.length} блоков · {edges.length} связей</span>    <div className="logic-zoom-controls"><button className="icon-button" aria-label="Уменьшить граф" disabled={busy} onClick={() => instance?.zoomOut()}><Minus size={16} /></button><span>{Math.round(project.logic.viewport.zoom * 100)}%</span><button className="icon-button" aria-label="Увеличить граф" disabled={busy} onClick={() => instance?.zoomIn()}><Plus size={16} /></button><button className="icon-button" aria-label="Показать весь граф" disabled={busy || !nodes.length} onClick={() => instance?.fitView({ padding: 0.22, maxZoom: 1.1 })}><Maximize size={16} /></button></div><span className="logic-footer-hint">Редактирование · без исполнения</span></footer>
+    <footer className="logic-canvas-footer"><span>{nodes.length} блоков · {edges.length} связей</span><CanvasControls subject="граф" zoom={project.logic.viewport.zoom} busy={busy} fitDisabled={!nodes.length} onZoomOut={() => instance?.zoomOut({ duration: 0 })} onZoomIn={() => instance?.zoomIn({ duration: 0 })} onFit={fitView} /><span className="canvas-navigation-hint">Пробел + перетаскивание · панорама</span></footer>
   </main>;
 }

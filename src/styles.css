@@ -22,3 +22,5 @@ select{font:inherit;color:inherit;background:#171d2b;border:1px solid #343e52;bo
 .toolchain-needed{display:flex;align-items:center;gap:10px;padding:7px 20px;background:#202035;border-bottom:1px solid #51446b;color:#b8acd5;font-size:10px;flex-shrink:0}.toolchain-needed .text-button{margin-left:auto;font-size:10px;white-space:nowrap}
 
 .autosave-toggle{display:flex;align-items:center;gap:10px;color:var(--text);font-size:12px;margin:16px 0;cursor:pointer}.autosave-toggle input{width:16px;height:16px;accent-color:#8b5cf6}.workspace-stage.save-error{color:#fb9db0}
+
+.canvas-controls{display:flex;align-items:center;gap:3px;flex-shrink:0;pointer-events:auto}.canvas-controls>span{font-size:9px;font-family:monospace;color:#8097b7;min-width:38px;text-align:center}.canvas-navigation-hint{font-size:8px;color:#7890ad}.logic-node{cursor:grab}.react-flow__node.dragging .logic-node{cursor:grabbing}.canvas-space-pan .assembly-svg,.canvas-space-pan .assembly-svg *,.canvas-space-pan .react-flow__node,.canvas-space-pan .react-flow__node *{cursor:grab!important}@media(max-width:1200px){.logic-canvas-footer .canvas-navigation-hint{display:none}}
