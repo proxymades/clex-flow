@@ -2,14 +2,14 @@
 
 CLEX Flow использует **существующую** ESP-IDF 5.4.4 и Python-окружение с инструментами ESP32-S3. Установка, обновление SDK, submodules и зависимостей из приложения не выполняются. Редакторы и просмотр кода доступны без SDK; процессы доступны только в Tauri.
 
-## Проверенная установка на этом Mac
+## Пример путей EIM на macOS
 
 ```text
 SDK:    ~/.espressif-s3/v5.4.4/esp-idf
 Python: ~/.espressif/tools/python/v5.4.4/venv/bin/python
 ```
 
-Это полный SDK из существующей конфигурации Espressif Installation Manager. Проверены `idf.py --version`, GCC, CMake, Ninja и реальная компиляция ESP32-S3. Другой каталог `.espressif/v5.4.4/esp-idf` имеет нужную версию исходников, но попытка сборки потребовала отсутствующие submodules; приложение их не устанавливает.
+Путь зависит от выбранного каталога установки. Используйте SDK с установленными инструментами ESP32-S3 и его Python-окружение.
 
 ## Настройки
 
@@ -41,6 +41,6 @@ Python: ~/.espressif/tools/python/v5.4.4/venv/bin/python
 
 Консоль firmware по умолчанию **USB Serial/JTAG**. Для USB-UART bridge выберите **UART0** в настройках и пересоберите. Подключите именно соответствующий разъём платы; генератор резервирует USB GPIO19/20 и UART GPIO43/44. Неправильный выбор разъёма может дать пустой монитор. Возможности IDF Monitor GDB, декодирование backtrace, ввод команд и автоподключение не реализованы.
 
-На этом этапе реальный serial-порт платы не обнаружен. Запись flash и Serial устройства **не испытывались**, несмотря на реализацию этих действий. Следующий аппаратный тест должен подтвердить модель/ревизию, монтаж LED с резистором на GPIO17, правильный порт, запись и мигание с шагом 500 мс.
+Перед первым Blink проверьте модель/ревизию, монтаж LED с резистором на GPIO17 и соответствующий USB-порт. Работа с физической платой пока не подтверждена аппаратными испытаниями.
 
 [Официальная установка ESP-IDF 5.4.4](https://docs.espressif.com/projects/esp-idf/en/v5.4.4/esp32s3/get-started/index.html), [esp_timer](https://docs.espressif.com/projects/esp-idf/en/v5.4.4/esp32s3/api-reference/system/esp_timer.html), [возможности IDF Monitor](https://docs.espressif.com/projects/esp-idf/en/v5.4.4/esp32s3/api-guides/tools/idf-monitor.html).
