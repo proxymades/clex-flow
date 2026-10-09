@@ -12,7 +12,7 @@ export function useProjects() {
   const [notice, setNotice] = useState(''), [path, setPath] = useState('');
   const [autoState, setAutoState] = useState('idle'), [autoSaving, setAutoSaving] = useState(false);
   const activeRef = useRef(null), projectsRef = useRef([]), inFlight = useRef(false), autoInFlight = useRef(0);
-  const timer = useRef(null), generation = useRef(0), paused = useRef(false), live = useRef(true);
+  const timer = useRef(null), generation = useRef(0), paused = useRef(false), interacting = useRef(false), live = useRef(true);
   const [write] = useState(() => createWriteQueue(storage.saveProject));
   const saved = projects.find(project => project.id === active?.id);
   const dirty = Boolean(active && !same(active, saved));
@@ -48,12 +48,12 @@ export function useProjects() {
 
   const armAuto = useCallback(project => {
     cancelAuto();
-    if (!project || paused.current) return;
+    if (!project || !live.current || paused.current || interacting.current) return;
     const ticket = generation.current, id = project.id, signature = JSON.stringify(project.logic);
     setAutoState('waiting');
     timer.current = setTimeout(async () => {
       const snapshot = activeRef.current;
-      if (!snapshot || snapshot.id !== id || JSON.stringify(snapshot.logic) !== signature || paused.current || ticket !== generation.current) return;
+      if (!snapshot || snapshot.id !== id || JSON.stringify(snapshot.logic) !== signature || paused.current || interacting.current || ticket !== generation.current) return;
       if (same(snapshot, projectsRef.current.find(project => project.id === id))) { setAutoState('saved'); return; }
       autoInFlight.current++; setAutoSaving(true); setAutoState('saving');
       try {
@@ -62,7 +62,7 @@ export function useProjects() {
       } catch (error) {
         if (live.current && ticket === generation.current) { setAutoState('error'); setError(`Автосохранение не выполнено: ${String(error.message || error)}. Правки остаются в редакторе.`); }
       } finally { autoInFlight.current--; if (live.current) setAutoSaving(autoInFlight.current > 0); }
-    }, 800);
+    }, 2000);
   }, [cancelAuto, persist]);
 
   const updateLogic = useCallback(logic => {
@@ -71,6 +71,15 @@ export function useProjects() {
     const project = withLogic(current, logic);
     activeRef.current = project; setActiveState(project); armAuto(project);
   }, [armAuto]);
+  const setLogicInteracting = useCallback(value => {
+    if (interacting.current === value) return;
+    interacting.current = value;
+    if (value) cancelAuto();
+    else {
+      const current = activeRef.current, saved = projectsRef.current.find(project => project.id === current?.id);
+      if (current && !same(current.logic, saved?.logic)) armAuto(current);
+    }
+  }, [armAuto, cancelAuto]);
   const pauseAutosave = useCallback(() => { paused.current = true; cancelAuto(); }, [cancelAuto]);
   const resumeAutosave = useCallback(() => {
     if (!paused.current) return;
@@ -120,5 +129,5 @@ export function useProjects() {
     const result = await storage.exportProject(activeRef.current);
     if (result) setNotice('JSON проекта экспортирован'); return result;
   });
-  return { projects, active, setActive, loading, busy, error, setError, damaged, notice, path, dirty, create, save, rename, remove, openFile, exportFile, updateLogic, autoState, autoSaving, isWriting, pauseAutosave, resumeAutosave };
+  return { projects, active, setActive, loading, busy, error, setError, damaged, notice, path, dirty, create, save, rename, remove, openFile, exportFile, updateLogic, setLogicInteracting, autoState, autoSaving, isWriting, pauseAutosave, resumeAutosave };
 }
