@@ -2,6 +2,8 @@ mod idf;
 mod idf_environment;
 mod menu;
 mod projects;
+mod sdk;
+mod sdk_installer;
 use tauri::{Emitter, Manager};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -38,6 +40,13 @@ pub fn run() {
             idf::idf_monitor,
             idf::idf_cancel,
             idf::idf_events,
+            sdk::sdk_list,
+            sdk::sdk_refresh_versions,
+            sdk::sdk_register,
+            sdk::sdk_select,
+            sdk::sdk_install,
+            sdk::sdk_install_plan,
+            sdk::sdk_remove,
         ])
         .run(tauri::generate_context!())
         .expect("Не удалось запустить CLEX Flow");

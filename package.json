@@ -15,7 +15,8 @@
     "lint": "eslint .",
     "test:assembly-ui": "node tests/assembly-ui.cjs",
     "test:logic-ui": "node tests/logic-ui.cjs",
-    "test:firmware-ui": "node tests/firmware-ui.cjs"
+    "test:firmware-ui": "node tests/firmware-ui.cjs",
+    "test:sdk-ui": "node tests/sdk-ui.cjs"
   },
   "dependencies": {
     "@tauri-apps/api": "2.10.1",

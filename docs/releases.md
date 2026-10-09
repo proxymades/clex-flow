@@ -32,14 +32,14 @@ npm run tauri -- build --target aarch64-apple-darwin --config src-tauri/tauri.re
 
 ## GitHub Actions
 
-Файл: `.github/workflows/build-macos.yml`. Runner `macos-15` / ARM64, target `aarch64-apple-darwin`, Node 22, проверенная Rust 1.93.1. Actions закреплены полными SHA. Используется официальный `tauri-apps/tauri-action`, существующие lockfiles и `beforeBuildCommand`; загрузка/установка ESP-IDF не выполняется.
+Файл: `.github/workflows/build-macos.yml`. Матрица: macOS ARM64 (`macos-15`), macOS x64 (`macos-15-intel`) и Windows x64 (`windows-latest`). Target соответственно `aarch64-apple-darwin`, `x86_64-apple-darwin`, `x86_64-pc-windows-msvc`; Node 22 и Rust 1.93.1. Actions закреплены полными SHA. Используется официальный `tauri-apps/tauri-action`, существующие lockfiles и `beforeBuildCommand`; загрузка/установка ESP-IDF не выполняется.
 
 Триггеры:
 
-1. В Actions явно выберите **Build macOS Apple Silicon → Run workflow**, указав проверяемую ветку, commit или существующий тег.
+1. В Actions явно выберите **Build desktop installers → Run workflow**, указав проверяемую ветку, commit или существующий тег.
 2. Сборка также запускается на событии `release.published`, после того как владелец отдельно создаст и опубликует Release. Проверяются соответствие тега версии и Pre-release для 0.1.0.
 
-Push обычного коммита или тега сам по себе ничего не публикует и не запускает workflow. Права `contents: read`; action не получает `tagName`, `releaseName` или `releaseId`. Поэтому она не может создать тег/Release или прикрепить установщик к нему. Результат – review artifact с `.dmg` и SHA-256, срок хранения 30 дней. Проверка структуры DMG и unit-тесты не заменяют испытание приложения.
+Push обычного коммита или тега сам по себе ничего не публикует и не запускает workflow. Права `contents: read`; action не получает `tagName`, `releaseName` или `releaseId`. Поэтому она не может создать тег/Release или прикрепить установщик к нему. Результат – review artifact с `.dmg` или `.exe` и SHA-256, срок хранения 30 дней. Проверка структуры DMG и unit-тесты не заменяют испытание приложения.
 
 Порядок выпуска после проверки артефакта:
 
@@ -61,3 +61,5 @@ Release overlay сейчас использует **ad-hoc** signing identity `-
 Для обычного внешнего распространения подготовьте Apple Developer ID Application, подпись приложения/DMG, отправку в Apple notary service и stapling. Сертификат, пароль и Apple credentials храните в GitHub Secrets или защищённом локальном окружении. Подпись и нотариализация не настроены в текущем workflow.
 
 Источники: [официальный pipeline Tauri](https://v2.tauri.app/distribute/pipelines/github/), [build-only режим tauri-action](https://github.com/tauri-apps/tauri-action#tips-and-caveats), [подпись macOS](https://v2.tauri.app/distribute/sign/macos/), [DMG](https://v2.tauri.app/distribute/dmg/).
+
+Windows использует `src-tauri/tauri.windows.release.conf.json` и NSIS; эта сборка и работа SDK на Windows пока требуют проверки на реальной системе. SDK/компиляторы не включаются в установщики ни одной платформы.

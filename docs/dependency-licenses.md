@@ -1,6 +1,6 @@
 # Лицензии зависимостей 0.1.0
 
-Проверены текущие `package-lock.json` и Cargo resolution для **aarch64-apple-darwin**: 241 npm-запись (включая development/optional) и 265 Cargo-пакетов (включая build/test). Версии не обновлялись. [Машиночитаемый список](dependency-licenses.json), [уведомления и полные тексты](../THIRD_PARTY_NOTICES.md).
+Проверены текущие `package-lock.json` и Cargo resolution для **aarch64-apple-darwin**: 241 npm-запись (включая development/optional) и 299 Cargo-пакетов (включая build/test). Версии не обновлялись. [Машиночитаемый список](dependency-licenses.json), [уведомления и полные тексты](../THIRD_PARTY_NOTICES.md).
 
 Для оригинальных файлов CLEX Flow добавлена **MIT License**. Она не заменяет условия сторонних библиотек. В проверенном дереве нет GPL/AGPL-зависимостей, которые потребовали бы лицензировать собственный код CLEX Flow под ними.
 

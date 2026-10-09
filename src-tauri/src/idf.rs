@@ -20,7 +20,8 @@ use tauri::{Emitter, Manager};
 pub struct Service(pub Arc<Inner>);
 #[derive(Default)]
 pub struct Inner {
-    environment: Mutex<Option<Environment>>,
+    pub(crate) environment: Mutex<Option<Environment>>,
+    pub(crate) sdk_gate: Mutex<()>,
     active: Mutex<Option<Active>>,
     builds: Mutex<HashMap<String, Build>>,
     events: Mutex<VecDeque<Event>>,
@@ -39,6 +40,7 @@ pub struct Build {
     pub project_dir: String,
     pub binary: String,
     pub environment_root: String,
+    pub environment_identity: String,
     hashes: Vec<(String, String)>,
 }
 #[derive(Clone, Serialize)]
@@ -51,6 +53,8 @@ pub struct Event {
     pub stream: String,
     pub text: String,
     pub build: Option<Build>,
+    pub downloaded: Option<u64>,
+    pub total: Option<u64>,
 }
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -73,7 +77,7 @@ fn id_valid(id: &str) -> bool {
             }
         })
 }
-fn publish(
+pub(crate) fn publish(
     app: &tauri::AppHandle,
     inner: &Inner,
     id: &str,
@@ -91,6 +95,8 @@ fn publish(
         stream: stream.into(),
         text: text.chars().take(8192).collect(),
         build,
+        downloaded: None,
+        total: None,
     };
     if let Ok(mut events) = inner.events.lock() {
         if events.len() >= 1500 {
@@ -160,7 +166,7 @@ fn prepare(
     Ok(dir)
 }
 #[cfg(unix)]
-fn stop_group(pid: u32) {
+pub(crate) fn stop_group(pid: u32) {
     unsafe {
         libc::kill(-(pid as i32), libc::SIGTERM);
     }
@@ -170,7 +176,7 @@ fn stop_group(pid: u32) {
     }
 }
 #[cfg(windows)]
-fn stop_group(pid: u32) {
+pub(crate) fn stop_group(pid: u32) {
     let _ = Command::new("taskkill")
         .args(["/PID", &pid.to_string(), "/T", "/F"])
         .stdout(Stdio::null())
@@ -225,13 +231,39 @@ fn serial_chunks(mut pipe: impl Read, mut emit: impl FnMut(&str)) -> std::io::Re
     }
     Ok(())
 }
-fn execute(
+pub(crate) fn execute(
     app: &tauri::AppHandle,
     inner: &Arc<Inner>,
     id: &str,
     operation: &str,
+    cmd: Command,
+    cancel: &Arc<AtomicBool>,
+) -> Result<bool, String> {
+    let app = app.clone();
+    let event_inner = inner.clone();
+    let event_id = id.to_string();
+    let op = operation.to_string();
+    let emit = Arc::new(move |status: &str, stream: &str, text: &str| {
+        publish(
+            &app,
+            &event_inner,
+            &event_id,
+            &op,
+            status,
+            stream,
+            text,
+            None,
+        )
+    });
+    execute_process(inner, operation, cmd, cancel, emit)
+}
+type ProcessOutput = Arc<dyn Fn(&str, &str, &str) + Send + Sync>;
+pub(crate) fn execute_process(
+    inner: &Arc<Inner>,
+    operation: &str,
     mut cmd: Command,
     cancel: &Arc<AtomicBool>,
+    emit: ProcessOutput,
 ) -> Result<bool, String> {
     if cancel.load(Ordering::SeqCst) {
         return Ok(false);
@@ -276,15 +308,11 @@ fn execute(
         ),
     ] {
         if let Some(pipe) = pipe {
-            let app = app.clone();
-            let inner = inner.clone();
-            let id = id.to_string();
+            let emit = emit.clone();
             let op = operation.to_string();
             readers.push(thread::spawn(move || {
-                if op == "monitor" && stream == "stdout" {
-                    let _ = serial_chunks(pipe, |text| {
-                        publish(&app, &inner, &id, &op, "output", stream, text, None)
-                    });
+                if (op == "monitor" && stream == "stdout") || op.starts_with("sdk_") {
+                    let _ = serial_chunks(pipe, |text| emit("output", stream, text));
                 } else {
                     let mut reader = BufReader::new(pipe);
                     let mut bytes = Vec::new();
@@ -298,18 +326,9 @@ fn execute(
                                     && stream == "stderr"
                                     && text == "__CLEX_MONITOR_READY__"
                                 {
-                                    publish(
-                                        &app,
-                                        &inner,
-                                        &id,
-                                        &op,
-                                        "connected",
-                                        stream,
-                                        "Последовательный порт открыт",
-                                        None,
-                                    );
+                                    emit("connected", stream, "Последовательный порт открыт");
                                 } else {
-                                    publish(&app, &inner, &id, &op, "output", stream, &text, None);
+                                    emit("output", stream, &text);
                                 }
                             }
                         }
@@ -351,7 +370,7 @@ fn execute(
     }
     Ok(true)
 }
-fn reserve(inner: &Arc<Inner>, id: &str) -> Result<Arc<AtomicBool>, String> {
+pub(crate) fn reserve(inner: &Arc<Inner>, id: &str) -> Result<Arc<AtomicBool>, String> {
     if !id_valid(id) {
         return Err("Некорректный ID операции".into());
     }
@@ -367,7 +386,7 @@ fn reserve(inner: &Arc<Inner>, id: &str) -> Result<Arc<AtomicBool>, String> {
     });
     Ok(cancel)
 }
-fn finish(
+pub(crate) fn finish(
     app: &tauri::AppHandle,
     inner: &Arc<Inner>,
     id: &str,
@@ -420,35 +439,26 @@ pub async fn idf_environment(
     if inner.active.lock().map_err(|e| e.to_string())?.is_some() {
         return Err("Нельзя менять среду во время операции".into());
     }
-    let config = app
-        .path()
-        .app_config_dir()
-        .map_err(|e| e.to_string())?
-        .join("idf-settings.json");
-    let (mut root, mut python) = (root, python);
-    if root.is_none() && python.is_none() {
-        if let Ok(text) = fs::read_to_string(&config) {
-            if let Ok(value) = serde_json::from_str::<serde_json::Value>(&text) {
-                root = value["root"].as_str().map(str::to_owned);
-                python = value["python"].as_str().map(str::to_owned);
-            }
+    let lease = reserve(&inner, "00000000-0000-4000-8000-000000000001")?;
+    let check_inner = inner.clone();
+    let check_app = app.clone();
+    let result = tauri::async_runtime::spawn_blocking(move || {
+        crate::sdk::auto_environment(&check_app, &check_inner, root, python)
+    })
+    .await
+    .map_err(|e| e.to_string())
+    .and_then(|result| result);
+    drop(lease);
+    match &result {
+        Ok(environment) => {
+            *inner.environment.lock().map_err(|e| e.to_string())? = Some(environment.clone());
+        }
+        Err(_) => {
+            *inner.environment.lock().map_err(|e| e.to_string())? = None;
         }
     }
-    let environment =
-        tauri::async_runtime::spawn_blocking(move || idf_environment::discover(root, python))
-            .await
-            .map_err(|e| e.to_string())??;
-    fs::create_dir_all(config.parent().ok_or("Нет каталога настроек")?)
-        .map_err(|e| e.to_string())?;
-    fs::write(
-        config,
-        serde_json::to_vec_pretty(
-            &serde_json::json!({"root":environment.root,"python":environment.python}),
-        )
-        .map_err(|e| e.to_string())?,
-    )
-    .map_err(|e| e.to_string())?;
-    *inner.environment.lock().map_err(|e| e.to_string())? = Some(environment.clone());
+    release(&inner, "00000000-0000-4000-8000-000000000001");
+    let environment = result?;
     Ok(environment)
 }
 #[tauri::command]
@@ -466,6 +476,9 @@ pub fn idf_build(
     spec: Specification,
 ) -> Result<(), String> {
     let environment = env_from(&state)?;
+    if environment.sdk_version != crate::sdk::REQUIRED_VERSION {
+        return Err("Текущий генератор ESP32-S3 требует ESP-IDF 5.4.4; выберите совместимую версию в инструментах".into());
+    }
     let inner = state.0.clone();
     let cancel = reserve(&inner, &id)?;
     thread::spawn(move || {
@@ -508,6 +521,7 @@ pub fn idf_build(
                     .to_string_lossy()
                     .to_string(),
                 environment_root: environment.root.clone(),
+                environment_identity: environment.identity.clone(),
                 hashes,
             };
             inner
@@ -565,6 +579,9 @@ pub fn idf_flash(
         .cloned()
         .ok_or("Сначала выполните успешную сборку")?;
     verify_build(&build, &fingerprint, &environment.root)?;
+    if build.environment_identity != environment.identity {
+        return Err("Окружение SDK изменилось; выполните новую сборку".into());
+    }
     let inner = state.0.clone();
     let cancel = reserve(&inner, &id)?;
     thread::spawn(move || {
@@ -724,6 +741,7 @@ mod tests {
             project_dir: dir.path().to_string_lossy().to_string(),
             binary: "app.bin".into(),
             environment_root: "sdk".into(),
+            environment_identity: "env".into(),
             hashes: vec![("flash_args".into(), hash(b"verified flash args"))],
         };
         assert!(verify_build(&build, "abc", "sdk").is_ok());
@@ -744,4 +762,45 @@ mod tests {
         stop_group(child.id());
         assert!(!child.wait().unwrap().success());
     }
+}
+
+pub(crate) fn busy(inner: &Inner) -> bool {
+    inner
+        .active
+        .lock()
+        .map(|active| active.is_some())
+        .unwrap_or(true)
+}
+pub(crate) fn release(inner: &Inner, id: &str) {
+    if let Ok(mut active) = inner.active.lock() {
+        if active.as_ref().is_some_and(|active| active.id == id) {
+            *active = None;
+        }
+    }
+}
+pub(crate) fn publish_download(
+    app: &tauri::AppHandle,
+    inner: &Inner,
+    id: &str,
+    downloaded: u64,
+    total: Option<u64>,
+) {
+    let event = Event {
+        job_id: id.into(),
+        sequence: inner.sequence.fetch_add(1, Ordering::SeqCst),
+        operation: "sdk_install".into(),
+        status: "progress".into(),
+        stream: "system".into(),
+        text: "Загрузка официального EIM".into(),
+        build: None,
+        downloaded: Some(downloaded),
+        total,
+    };
+    if let Ok(mut events) = inner.events.lock() {
+        if events.len() >= 1500 {
+            events.pop_front();
+        }
+        events.push_back(event.clone());
+    }
+    let _ = app.emit("idf-event", event);
 }

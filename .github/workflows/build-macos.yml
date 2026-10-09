@@ -1,4 +1,4 @@
-name: Build macOS Apple Silicon
+name: Build desktop installers
 
 on:
   workflow_dispatch:
@@ -17,12 +17,31 @@ permissions:
   contents: read
 
 concurrency:
-  group: macos-build-${{ github.event.release.tag_name || inputs.ref || github.ref }}
+  group: desktop-build-${{ github.event.release.tag_name || inputs.ref || github.ref }}
   cancel-in-progress: false
 
 jobs:
   build:
-    runs-on: macos-15
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-15
+            target: aarch64-apple-darwin
+            config: src-tauri/tauri.release.conf.json
+            bundles: app,dmg
+            architecture: arm64
+          - runner: macos-15-intel
+            target: x86_64-apple-darwin
+            config: src-tauri/tauri.release.conf.json
+            bundles: app,dmg
+            architecture: x64
+          - runner: windows-latest
+            target: x86_64-pc-windows-msvc
+            config: src-tauri/tauri.windows.release.conf.json
+            bundles: nsis
+            architecture: x64
+    runs-on: ${{ matrix.runner }}
     timeout-minutes: 45
     steps:
       - name: Check out the explicitly selected source
@@ -39,13 +58,15 @@ jobs:
           cache: npm
 
       - name: Verify runner architecture
-        run: node -e "if (process.arch !== 'arm64') throw new Error('Apple Silicon runner required')"
+        env:
+          CLEX_EXPECTED_ARCH: ${{ matrix.architecture }}
+        run: node -e "if (process.arch !== process.env.CLEX_EXPECTED_ARCH) throw new Error('Runner architecture mismatch')"
 
       - name: Install the tested Rust toolchain
         run: |
           rustup toolchain install 1.93.1 --profile minimal --component rustfmt
           rustup default 1.93.1
-          rustup target add aarch64-apple-darwin
+          rustup target add ${{ matrix.target }}
 
       - name: Install locked frontend dependencies
         run: npm ci
@@ -64,24 +85,35 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           projectPath: .
-          args: --target aarch64-apple-darwin --config src-tauri/tauri.release.conf.json --bundles app,dmg -- --locked
+          args: --target ${{ matrix.target }} --config ${{ matrix.config }} --bundles ${{ matrix.bundles }} -- --locked
           # No tagName, releaseName or releaseId: no publication is performed.
           uploadWorkflowArtifacts: false
 
       - name: Verify DMG and record checksums
-        working-directory: src-tauri/target/aarch64-apple-darwin/release/bundle/dmg
+        if: runner.os == 'macOS'
+        working-directory: src-tauri/target/${{ matrix.target }}/release/bundle/dmg
         run: |
           for image in *.dmg; do
             hdiutil verify "$image" >&2
             shasum -a 256 "$image"
           done > SHA256SUMS.txt
 
+      - name: Record Windows installer checksum
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $installers = Get-ChildItem 'src-tauri/target/${{ matrix.target }}/release/bundle/nsis/*.exe'
+          if (-not $installers) { throw 'Installer missing' }
+          $installers | Get-FileHash -Algorithm SHA256 | Format-Table -AutoSize | Out-String | Set-Content -Encoding utf8 'src-tauri/target/${{ matrix.target }}/release/bundle/nsis/SHA256SUMS.txt'
+
       - name: Store installers for manual testing
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: clex-flow-macos-apple-silicon-review-${{ github.run_number }}
+          name: clex-flow-${{ matrix.target }}-review-${{ github.run_number }}
           path: |
-            src-tauri/target/aarch64-apple-darwin/release/bundle/dmg/*.dmg
-            src-tauri/target/aarch64-apple-darwin/release/bundle/dmg/SHA256SUMS.txt
+            src-tauri/target/${{ matrix.target }}/release/bundle/dmg/*.dmg
+            src-tauri/target/${{ matrix.target }}/release/bundle/dmg/SHA256SUMS.txt
+            src-tauri/target/${{ matrix.target }}/release/bundle/nsis/*.exe
+            src-tauri/target/${{ matrix.target }}/release/bundle/nsis/SHA256SUMS.txt
           if-no-files-found: error
           retention-days: 30

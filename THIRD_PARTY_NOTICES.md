@@ -13,6 +13,7 @@ This snapshot covers Cargo resolution for macOS Apple Silicon (including build/t
 | Cargo | alloc-no-stdlib | 2.0.4 | BSD-3-Clause | [source](https://crates.io/api/v1/crates/alloc-no-stdlib/2.0.4/download) |
 | Cargo | alloc-stdlib | 0.2.2 | BSD-3-Clause | [source](https://crates.io/api/v1/crates/alloc-stdlib/0.2.2/download) |
 | Cargo | anyhow | 1.0.102 | MIT OR Apache-2.0 | [source](https://crates.io/api/v1/crates/anyhow/1.0.102/download) |
+| Cargo | atomic-waker | 1.1.2 | Apache-2.0 OR MIT | [source](https://crates.io/api/v1/crates/atomic-waker/1.1.2/download) |
 | Cargo | autocfg | 1.5.0 | Apache-2.0 OR MIT | [source](https://crates.io/api/v1/crates/autocfg/1.5.0/download) |
 | Cargo | base64 | 0.21.7 | MIT OR Apache-2.0 | [source](https://crates.io/api/v1/crates/base64/0.21.7/download) |
 | Cargo | base64 | 0.22.1 | MIT OR Apache-2.0 | [source](https://crates.io/api/v1/crates/base64/0.22.1/download) |
@@ -76,6 +77,13 @@ This snapshot covers Cargo resolution for macOS Apple Silicon (including build/t
 | Cargo | foreign-types-shared | 0.3.1 | MIT/Apache-2.0 | [source](https://crates.io/api/v1/crates/foreign-types-shared/0.3.1/download) |
 | Cargo | form_urlencoded | 1.2.2 | MIT OR Apache-2.0 | [source](https://crates.io/api/v1/crates/form_urlencoded/1.2.2/download) |
 | Cargo | futf | 0.1.5 | MIT / Apache-2.0 | [source](https://crates.io/api/v1/crates/futf/0.1.5/download) |
+| Cargo | futures-channel | 0.3.32 | MIT OR Apache-2.0 | [source](https://crates.io/api/v1/crates/futures-channel/0.3.32/download) |
+| Cargo | futures-core | 0.3.32 | MIT OR Apache-2.0 | [source](https://crates.io/api/v1/crates/futures-core/0.3.32/download) |
+| Cargo | futures-io | 0.3.32 | MIT OR Apache-2.0 | [source](https://crates.io/api/v1/crates/futures-io/0.3.32/download) |
+| Cargo | futures-macro | 0.3.32 | MIT OR Apache-2.0 | [source](https://crates.io/api/v1/crates/futures-macro/0.3.32/download) |
+| Cargo | futures-sink | 0.3.32 | MIT OR Apache-2.0 | [source](https://crates.io/api/v1/crates/futures-sink/0.3.32/download) |
+| Cargo | futures-task | 0.3.32 | MIT OR Apache-2.0 | [source](https://crates.io/api/v1/crates/futures-task/0.3.32/download) |
+| Cargo | futures-util | 0.3.32 | MIT OR Apache-2.0 | [source](https://crates.io/api/v1/crates/futures-util/0.3.32/download) |
 | Cargo | fxhash | 0.2.1 | Apache-2.0/MIT | [source](https://crates.io/api/v1/crates/fxhash/0.2.1/download) |
 | Cargo | generic-array | 0.14.7 | MIT | [source](https://crates.io/api/v1/crates/generic-array/0.14.7/download) |
 | Cargo | getrandom | 0.1.16 | MIT OR Apache-2.0 | [source](https://crates.io/api/v1/crates/getrandom/0.1.16/download) |
@@ -89,6 +97,12 @@ This snapshot covers Cargo resolution for macOS Apple Silicon (including build/t
 | Cargo | hex | 0.4.3 | MIT OR Apache-2.0 | [source](https://crates.io/api/v1/crates/hex/0.4.3/download) |
 | Cargo | html5ever | 0.29.1 | MIT OR Apache-2.0 | [source](https://crates.io/api/v1/crates/html5ever/0.29.1/download) |
 | Cargo | http | 1.4.0 | MIT OR Apache-2.0 | [source](https://crates.io/api/v1/crates/http/1.4.0/download) |
+| Cargo | http-body | 1.0.1 | MIT | [source](https://crates.io/api/v1/crates/http-body/1.0.1/download) |
+| Cargo | http-body-util | 0.1.3 | MIT | [source](https://crates.io/api/v1/crates/http-body-util/0.1.3/download) |
+| Cargo | httparse | 1.10.1 | MIT OR Apache-2.0 | [source](https://crates.io/api/v1/crates/httparse/1.10.1/download) |
+| Cargo | hyper | 1.9.0 | MIT | [source](https://crates.io/api/v1/crates/hyper/1.9.0/download) |
+| Cargo | hyper-tls | 0.6.0 | MIT/Apache-2.0 | [source](https://crates.io/api/v1/crates/hyper-tls/0.6.0/download) |
+| Cargo | hyper-util | 0.1.20 | MIT | [source](https://crates.io/api/v1/crates/hyper-util/0.1.20/download) |
 | Cargo | iana-time-zone | 0.1.65 | MIT OR Apache-2.0 | [source](https://crates.io/api/v1/crates/iana-time-zone/0.1.65/download) |
 | Cargo | ico | 0.5.0 | MIT | [source](https://crates.io/api/v1/crates/ico/0.5.0/download) |
 | Cargo | icu_collections | 2.1.1 | Unicode-3.0 | [source](https://crates.io/api/v1/crates/icu_collections/2.1.1/download) |
@@ -104,6 +118,8 @@ This snapshot covers Cargo resolution for macOS Apple Silicon (including build/t
 | Cargo | indexmap | 1.9.3 | Apache-2.0 OR MIT | [source](https://crates.io/api/v1/crates/indexmap/1.9.3/download) |
 | Cargo | indexmap | 2.13.0 | Apache-2.0 OR MIT | [source](https://crates.io/api/v1/crates/indexmap/2.13.0/download) |
 | Cargo | infer | 0.19.0 | MIT | [source](https://crates.io/api/v1/crates/infer/0.19.0/download) |
+| Cargo | ipnet | 2.12.0 | MIT OR Apache-2.0 | [source](https://crates.io/api/v1/crates/ipnet/2.12.0/download) |
+| Cargo | iri-string | 0.7.12 | MIT OR Apache-2.0 | [source](https://crates.io/api/v1/crates/iri-string/0.7.12/download) |
 | Cargo | itoa | 1.0.17 | MIT OR Apache-2.0 | [source](https://crates.io/api/v1/crates/itoa/1.0.17/download) |
 | Cargo | json-patch | 3.0.1 | MIT/Apache-2.0 | [source](https://crates.io/api/v1/crates/json-patch/3.0.1/download) |
 | Cargo | jsonptr | 0.6.3 | MIT OR Apache-2.0 | [source](https://crates.io/api/v1/crates/jsonptr/0.6.3/download) |
@@ -122,6 +138,7 @@ This snapshot covers Cargo resolution for macOS Apple Silicon (including build/t
 | Cargo | miniz_oxide | 0.8.9 | MIT OR Zlib OR Apache-2.0 | [source](https://crates.io/api/v1/crates/miniz_oxide/0.8.9/download) |
 | Cargo | mio | 1.1.1 | MIT | [source](https://crates.io/api/v1/crates/mio/1.1.1/download) |
 | Cargo | muda | 0.17.1 | Apache-2.0 OR MIT | [source](https://crates.io/api/v1/crates/muda/0.17.1/download) |
+| Cargo | native-tls | 0.2.18 | MIT OR Apache-2.0 | [source](https://crates.io/api/v1/crates/native-tls/0.2.18/download) |
 | Cargo | new_debug_unreachable | 1.0.6 | MIT | [source](https://crates.io/api/v1/crates/new_debug_unreachable/1.0.6/download) |
 | Cargo | nodrop | 0.1.14 | MIT/Apache-2.0 | [source](https://crates.io/api/v1/crates/nodrop/0.1.14/download) |
 | Cargo | num-conv | 0.2.0 | MIT OR Apache-2.0 | [source](https://crates.io/api/v1/crates/num-conv/0.2.0/download) |
@@ -177,15 +194,19 @@ This snapshot covers Cargo resolution for macOS Apple Silicon (including build/t
 | Cargo | regex | 1.12.3 | MIT OR Apache-2.0 | [source](https://crates.io/api/v1/crates/regex/1.12.3/download) |
 | Cargo | regex-automata | 0.4.14 | MIT OR Apache-2.0 | [source](https://crates.io/api/v1/crates/regex-automata/0.4.14/download) |
 | Cargo | regex-syntax | 0.8.10 | MIT OR Apache-2.0 | [source](https://crates.io/api/v1/crates/regex-syntax/0.8.10/download) |
+| Cargo | reqwest | 0.13.2 | MIT OR Apache-2.0 | [source](https://crates.io/api/v1/crates/reqwest/0.13.2/download) |
 | Cargo | rfd | 0.16.0 | MIT | [source](https://crates.io/api/v1/crates/rfd/0.16.0/download) |
 | Cargo | rustc_version | 0.4.1 | MIT OR Apache-2.0 | [source](https://crates.io/api/v1/crates/rustc_version/0.4.1/download) |
 | Cargo | rustix | 1.1.4 | Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT | [source](https://crates.io/api/v1/crates/rustix/1.1.4/download) |
+| Cargo | rustls-pki-types | 1.15.1 | MIT OR Apache-2.0 | [source](https://crates.io/api/v1/crates/rustls-pki-types/1.15.1/download) |
 | Cargo | same-file | 1.0.6 | Unlicense/MIT | [source](https://crates.io/api/v1/crates/same-file/1.0.6/download) |
 | Cargo | schemars | 0.8.22 | MIT | [source](https://crates.io/api/v1/crates/schemars/0.8.22/download) |
 | Cargo | schemars | 0.9.0 | MIT | [source](https://crates.io/api/v1/crates/schemars/0.9.0/download) |
 | Cargo | schemars | 1.2.1 | MIT | [source](https://crates.io/api/v1/crates/schemars/1.2.1/download) |
 | Cargo | schemars_derive | 0.8.22 | MIT | [source](https://crates.io/api/v1/crates/schemars_derive/0.8.22/download) |
 | Cargo | scopeguard | 1.2.0 | MIT OR Apache-2.0 | [source](https://crates.io/api/v1/crates/scopeguard/1.2.0/download) |
+| Cargo | security-framework | 3.7.0 | MIT OR Apache-2.0 | [source](https://crates.io/api/v1/crates/security-framework/3.7.0/download) |
+| Cargo | security-framework-sys | 2.17.0 | MIT OR Apache-2.0 | [source](https://crates.io/api/v1/crates/security-framework-sys/2.17.0/download) |
 | Cargo | selectors | 0.24.0 | MPL-2.0 | [source](https://crates.io/api/v1/crates/selectors/0.24.0/download) |
 | Cargo | semver | 1.0.27 | MIT OR Apache-2.0 | [source](https://crates.io/api/v1/crates/semver/1.0.27/download) |
 | Cargo | serde | 1.0.228 | MIT OR Apache-2.0 | [source](https://crates.io/api/v1/crates/serde/1.0.228/download) |
@@ -206,6 +227,7 @@ This snapshot covers Cargo resolution for macOS Apple Silicon (including build/t
 | Cargo | simd-adler32 | 0.3.8 | MIT | [source](https://crates.io/api/v1/crates/simd-adler32/0.3.8/download) |
 | Cargo | siphasher | 0.3.11 | MIT/Apache-2.0 | [source](https://crates.io/api/v1/crates/siphasher/0.3.11/download) |
 | Cargo | siphasher | 1.0.2 | MIT/Apache-2.0 | [source](https://crates.io/api/v1/crates/siphasher/1.0.2/download) |
+| Cargo | slab | 0.4.12 | MIT | [source](https://crates.io/api/v1/crates/slab/0.4.12/download) |
 | Cargo | smallvec | 1.15.1 | MIT OR Apache-2.0 | [source](https://crates.io/api/v1/crates/smallvec/1.15.1/download) |
 | Cargo | socket2 | 0.6.2 | MIT OR Apache-2.0 | [source](https://crates.io/api/v1/crates/socket2/0.6.2/download) |
 | Cargo | stable_deref_trait | 1.2.1 | MIT OR Apache-2.0 | [source](https://crates.io/api/v1/crates/stable_deref_trait/1.2.1/download) |
@@ -215,6 +237,7 @@ This snapshot covers Cargo resolution for macOS Apple Silicon (including build/t
 | Cargo | swift-rs | 1.0.7 | MIT OR Apache-2.0 | [source](https://crates.io/api/v1/crates/swift-rs/1.0.7/download) |
 | Cargo | syn | 1.0.109 | MIT OR Apache-2.0 | [source](https://crates.io/api/v1/crates/syn/1.0.109/download) |
 | Cargo | syn | 2.0.117 | MIT OR Apache-2.0 | [source](https://crates.io/api/v1/crates/syn/2.0.117/download) |
+| Cargo | sync_wrapper | 1.0.2 | Apache-2.0 | [source](https://crates.io/api/v1/crates/sync_wrapper/1.0.2/download) |
 | Cargo | synstructure | 0.13.2 | MIT | [source](https://crates.io/api/v1/crates/synstructure/0.13.2/download) |
 | Cargo | tao | 0.34.6 | Apache-2.0 | [source](https://crates.io/api/v1/crates/tao/0.34.6/download) |
 | Cargo | tauri | 2.10.3 | Apache-2.0 OR MIT | [source](https://crates.io/api/v1/crates/tauri/2.10.3/download) |
@@ -239,11 +262,20 @@ This snapshot covers Cargo resolution for macOS Apple Silicon (including build/t
 | Cargo | time-macros | 0.2.27 | MIT OR Apache-2.0 | [source](https://crates.io/api/v1/crates/time-macros/0.2.27/download) |
 | Cargo | tinystr | 0.8.2 | Unicode-3.0 | [source](https://crates.io/api/v1/crates/tinystr/0.8.2/download) |
 | Cargo | tokio | 1.50.0 | MIT | [source](https://crates.io/api/v1/crates/tokio/1.50.0/download) |
+| Cargo | tokio-native-tls | 0.3.1 | MIT | [source](https://crates.io/api/v1/crates/tokio-native-tls/0.3.1/download) |
+| Cargo | tokio-util | 0.7.18 | MIT | [source](https://crates.io/api/v1/crates/tokio-util/0.7.18/download) |
 | Cargo | toml | 0.9.12+spec-1.1.0 | MIT OR Apache-2.0 | [source](https://crates.io/api/v1/crates/toml/0.9.12+spec-1.1.0/download) |
 | Cargo | toml_datetime | 0.7.5+spec-1.1.0 | MIT OR Apache-2.0 | [source](https://crates.io/api/v1/crates/toml_datetime/0.7.5+spec-1.1.0/download) |
 | Cargo | toml_parser | 1.0.9+spec-1.1.0 | MIT OR Apache-2.0 | [source](https://crates.io/api/v1/crates/toml_parser/1.0.9+spec-1.1.0/download) |
 | Cargo | toml_writer | 1.0.6+spec-1.1.0 | MIT OR Apache-2.0 | [source](https://crates.io/api/v1/crates/toml_writer/1.0.6+spec-1.1.0/download) |
+| Cargo | tower | 0.5.3 | MIT | [source](https://crates.io/api/v1/crates/tower/0.5.3/download) |
+| Cargo | tower-http | 0.6.8 | MIT | [source](https://crates.io/api/v1/crates/tower-http/0.6.8/download) |
+| Cargo | tower-layer | 0.3.3 | MIT | [source](https://crates.io/api/v1/crates/tower-layer/0.3.3/download) |
+| Cargo | tower-service | 0.3.3 | MIT | [source](https://crates.io/api/v1/crates/tower-service/0.3.3/download) |
+| Cargo | tracing | 0.1.44 | MIT | [source](https://crates.io/api/v1/crates/tracing/0.1.44/download) |
+| Cargo | tracing-core | 0.1.36 | MIT | [source](https://crates.io/api/v1/crates/tracing-core/0.1.36/download) |
 | Cargo | tray-icon | 0.21.3 | MIT OR Apache-2.0 | [source](https://crates.io/api/v1/crates/tray-icon/0.21.3/download) |
+| Cargo | try-lock | 0.2.5 | MIT | [source](https://crates.io/api/v1/crates/try-lock/0.2.5/download) |
 | Cargo | typeid | 1.0.3 | MIT OR Apache-2.0 | [source](https://crates.io/api/v1/crates/typeid/1.0.3/download) |
 | Cargo | typenum | 1.19.0 | MIT OR Apache-2.0 | [source](https://crates.io/api/v1/crates/typenum/1.19.0/download) |
 | Cargo | unic-char-property | 0.9.0 | MIT/Apache-2.0 | [source](https://crates.io/api/v1/crates/unic-char-property/0.9.0/download) |
@@ -260,6 +292,7 @@ This snapshot covers Cargo resolution for macOS Apple Silicon (including build/t
 | Cargo | uuid | 1.21.0 | Apache-2.0 OR MIT | [source](https://crates.io/api/v1/crates/uuid/1.21.0/download) |
 | Cargo | version_check | 0.9.5 | MIT/Apache-2.0 | [source](https://crates.io/api/v1/crates/version_check/0.9.5/download) |
 | Cargo | walkdir | 2.5.0 | Unlicense/MIT | [source](https://crates.io/api/v1/crates/walkdir/2.5.0/download) |
+| Cargo | want | 0.3.1 | MIT | [source](https://crates.io/api/v1/crates/want/0.3.1/download) |
 | Cargo | window-vibrancy | 0.6.0 | Apache-2.0 OR MIT | [source](https://crates.io/api/v1/crates/window-vibrancy/0.6.0/download) |
 | Cargo | winnow | 0.7.14 | MIT | [source](https://crates.io/api/v1/crates/winnow/0.7.14/download) |
 | Cargo | writeable | 0.6.2 | Unicode-3.0 | [source](https://crates.io/api/v1/crates/writeable/0.6.2/download) |
@@ -269,6 +302,7 @@ This snapshot covers Cargo resolution for macOS Apple Silicon (including build/t
 | Cargo | zerocopy | 0.8.40 | BSD-2-Clause OR Apache-2.0 OR MIT | [source](https://crates.io/api/v1/crates/zerocopy/0.8.40/download) |
 | Cargo | zerofrom | 0.1.6 | Unicode-3.0 | [source](https://crates.io/api/v1/crates/zerofrom/0.1.6/download) |
 | Cargo | zerofrom-derive | 0.1.6 | Unicode-3.0 | [source](https://crates.io/api/v1/crates/zerofrom-derive/0.1.6/download) |
+| Cargo | zeroize | 1.9.1 | Apache-2.0 OR MIT | [source](https://crates.io/api/v1/crates/zeroize/1.9.1/download) |
 | Cargo | zerotrie | 0.2.3 | Unicode-3.0 | [source](https://crates.io/api/v1/crates/zerotrie/0.2.3/download) |
 | Cargo | zerovec | 0.11.5 | Unicode-3.0 | [source](https://crates.io/api/v1/crates/zerovec/0.11.5/download) |
 | Cargo | zerovec-derive | 0.11.2 | Unicode-3.0 | [source](https://crates.io/api/v1/crates/zerovec-derive/0.11.2/download) |
@@ -761,6 +795,7 @@ limitations under the License.
 
 - Cargo: **adler2 2.0.1**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/adler2/2.0.1/download)
 - Cargo: **anyhow 1.0.102**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/anyhow/1.0.102/download)
+- Cargo: **atomic-waker 1.1.2**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/atomic-waker/1.1.2/download)
 - Cargo: **camino 1.2.2**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/camino/1.2.2/download)
 - Cargo: **cargo-platform 0.1.9**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/cargo-platform/0.1.9/download)
 - Cargo: **cargo_metadata 0.19.2**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/cargo_metadata/0.19.2/download)
@@ -1105,6 +1140,7 @@ END OF TERMS AND CONDITIONS
 
 ### Notice 8
 
+- Cargo: **atomic-waker 1.1.2**, `LICENSE-APACHE` – [original](https://crates.io/api/v1/crates/atomic-waker/1.1.2/download)
 - Cargo: **autocfg 1.5.0**, `LICENSE-APACHE` – [original](https://crates.io/api/v1/crates/autocfg/1.5.0/download)
 - Cargo: **base64 0.21.7**, `LICENSE-APACHE` – [original](https://crates.io/api/v1/crates/base64/0.21.7/download)
 - Cargo: **base64 0.22.1**, `LICENSE-APACHE` – [original](https://crates.io/api/v1/crates/base64/0.22.1/download)
@@ -1133,6 +1169,8 @@ END OF TERMS AND CONDITIONS
 - Cargo: **hashbrown 0.16.1**, `LICENSE-APACHE` – [original](https://crates.io/api/v1/crates/hashbrown/0.16.1/download)
 - Cargo: **heck 0.5.0**, `LICENSE-APACHE` – [original](https://crates.io/api/v1/crates/heck/0.5.0/download)
 - Cargo: **html5ever 0.29.1**, `LICENSE-APACHE` – [original](https://crates.io/api/v1/crates/html5ever/0.29.1/download)
+- Cargo: **httparse 1.10.1**, `LICENSE-APACHE` – [original](https://crates.io/api/v1/crates/httparse/1.10.1/download)
+- Cargo: **hyper-tls 0.6.0**, `LICENSE-APACHE` – [original](https://crates.io/api/v1/crates/hyper-tls/0.6.0/download)
 - Cargo: **idna 1.1.0**, `LICENSE-APACHE` – [original](https://crates.io/api/v1/crates/idna/1.1.0/download)
 - Cargo: **idna_adapter 1.2.1**, `LICENSE-APACHE` – [original](https://crates.io/api/v1/crates/idna_adapter/1.2.1/download)
 - Cargo: **indexmap 1.9.3**, `LICENSE-APACHE` – [original](https://crates.io/api/v1/crates/indexmap/1.9.3/download)
@@ -1157,6 +1195,8 @@ END OF TERMS AND CONDITIONS
 - Cargo: **rustc_version 0.4.1**, `LICENSE-APACHE` – [original](https://crates.io/api/v1/crates/rustc_version/0.4.1/download)
 - Cargo: **rustix 1.1.4**, `LICENSE-APACHE` – [original](https://crates.io/api/v1/crates/rustix/1.1.4/download)
 - Cargo: **scopeguard 1.2.0**, `LICENSE-APACHE` – [original](https://crates.io/api/v1/crates/scopeguard/1.2.0/download)
+- Cargo: **security-framework 3.7.0**, `LICENSE-APACHE` – [original](https://crates.io/api/v1/crates/security-framework/3.7.0/download)
+- Cargo: **security-framework-sys 2.17.0**, `LICENSE-APACHE` – [original](https://crates.io/api/v1/crates/security-framework-sys/2.17.0/download)
 - Cargo: **serde_with 3.17.0**, `LICENSE-APACHE` – [original](https://crates.io/api/v1/crates/serde_with/3.17.0/download)
 - Cargo: **serde_with_macros 3.17.0**, `LICENSE-APACHE` – [original](https://crates.io/api/v1/crates/serde_with_macros/3.17.0/download)
 - Cargo: **servo_arc 0.2.0**, `LICENSE-APACHE` – [original](https://crates.io/api/v1/crates/servo_arc/0.2.0/download)
@@ -1387,6 +1427,58 @@ limitations under the License.
 
 ### Notice 9
 
+- Cargo: **atomic-waker 1.1.2**, `LICENSE-THIRD-PARTY` – [original](https://crates.io/api/v1/crates/atomic-waker/1.1.2/download)
+
+```text
+===============================================================================
+
+Copyright (c) 2016 Alex Crichton
+Copyright (c) 2017 The Tokio Authors
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+	http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+===============================================================================
+
+Copyright (c) 2016 Alex Crichton
+Copyright (c) 2017 The Tokio Authors
+
+Permission is hereby granted, free of charge, to any
+person obtaining a copy of this software and associated
+documentation files (the "Software"), to deal in the
+Software without restriction, including without
+limitation the rights to use, copy, modify, merge,
+publish, distribute, sublicense, and/or sell copies of
+the Software, and to permit persons to whom the Software
+is furnished to do so, subject to the following
+conditions:
+
+The above copyright notice and this permission notice
+shall be included in all copies or substantial portions
+of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
+ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
+TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT
+SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
+IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+DEALINGS IN THE SOFTWARE.
+```
+
+### Notice 10
+
 - Cargo: **autocfg 1.5.0**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/autocfg/1.5.0/download)
 
 ```text
@@ -1417,7 +1509,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Notice 10
+### Notice 11
 
 - Cargo: **base64 0.21.7**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/base64/0.21.7/download)
 - Cargo: **base64 0.22.1**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/base64/0.22.1/download)
@@ -1446,7 +1538,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ```
 
-### Notice 11
+### Notice 12
 
 - Cargo: **bitflags 1.3.2**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/bitflags/1.3.2/download)
 - Cargo: **bitflags 2.11.0**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/bitflags/2.11.0/download)
@@ -1485,7 +1577,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Notice 12
+### Notice 13
 
 - Cargo: **block-buffer 0.10.4**, `LICENSE-APACHE` – [original](https://crates.io/api/v1/crates/block-buffer/0.10.4/download)
 - Cargo: **cpufeatures 0.2.17**, `LICENSE-APACHE` – [original](https://crates.io/api/v1/crates/cpufeatures/0.2.17/download)
@@ -1697,7 +1789,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ```
 
-### Notice 13
+### Notice 14
 
 - Cargo: **block-buffer 0.10.4**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/block-buffer/0.10.4/download)
 
@@ -1729,7 +1821,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Notice 14
+### Notice 15
 
 - Cargo: **block2 0.6.2**, `LICENSE.md` – [original](https://raw.githubusercontent.com/madsmtm/objc2/b4167b582b2f75f9a1be75495c41b765344fd03c/LICENSE.md)
 - Cargo: **dispatch2 0.3.1**, `LICENSE.md` – [original](https://raw.githubusercontent.com/madsmtm/objc2/8852b424193ca41602281b3d7540d7c8ed51e49a/LICENSE.md)
@@ -1780,7 +1872,7 @@ identifiers in the crates (Xcode is required to use the crates, and when using
 Xcode you have already agreed to the Xcode license).
 ```
 
-### Notice 15
+### Notice 16
 
 - Cargo: **brotli 8.0.2**, `LICENSE.MIT` – [original](https://crates.io/api/v1/crates/brotli/8.0.2/download)
 
@@ -1806,7 +1898,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ```
 
-### Notice 16
+### Notice 17
 
 - Cargo: **bytes 1.11.1**, `LICENSE` – [original](https://crates.io/api/v1/crates/bytes/1.11.1/download)
 
@@ -1838,7 +1930,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Notice 17
+### Notice 18
 
 - Cargo: **cargo_toml 0.22.3**, `LICENSE` – [original](https://crates.io/api/v1/crates/cargo_toml/0.22.3/download)
 
@@ -2047,7 +2139,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Notice 18
+### Notice 19
 
 - Cargo: **cc 1.2.56**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/cc/1.2.56/download)
 - Cargo: **cfg-if 1.0.4**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/cfg-if/1.0.4/download)
@@ -2082,7 +2174,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Notice 19
+### Notice 20
 
 - Cargo: **cfb 0.7.3**, `LICENSE` – [original](https://crates.io/api/v1/crates/cfb/0.7.3/download)
 
@@ -2110,7 +2202,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Notice 20
+### Notice 21
 
 - Cargo: **chrono 0.4.44**, `LICENSE.txt` – [original](https://crates.io/api/v1/crates/chrono/0.4.44/download)
 
@@ -2356,7 +2448,7 @@ limitations under the License.
 ~~~~
 ```
 
-### Notice 21
+### Notice 22
 
 - Cargo: **cookie 0.18.1**, `LICENSE-APACHE` – [original](https://crates.io/api/v1/crates/cookie/0.18.1/download)
 
@@ -2565,7 +2657,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ```
 
-### Notice 22
+### Notice 23
 
 - Cargo: **cookie 0.18.1**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/cookie/0.18.1/download)
 
@@ -2598,7 +2690,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Notice 23
+### Notice 24
 
 - Cargo: **core-foundation 0.10.1**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/core-foundation/0.10.1/download)
 - Cargo: **core-foundation-sys 0.8.7**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/core-foundation-sys/0.8.7/download)
@@ -2635,7 +2727,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Notice 24
+### Notice 25
 
 - Cargo: **core-graphics 0.25.0**, `COPYRIGHT` – [original](https://crates.io/api/v1/crates/core-graphics/0.25.0/download)
 
@@ -2647,7 +2739,7 @@ option. All files in the project carrying such notice may not be
 copied, modified, or distributed except according to those terms.
 ```
 
-### Notice 25
+### Notice 26
 
 - Cargo: **cpufeatures 0.2.17**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/cpufeatures/0.2.17/download)
 
@@ -2679,13 +2771,14 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Notice 26
+### Notice 27
 
 - Cargo: **crc32fast 1.5.0**, `LICENSE-APACHE` – [original](https://crates.io/api/v1/crates/crc32fast/1.5.0/download)
 - Cargo: **foreign-types 0.5.0**, `LICENSE-APACHE` – [original](https://crates.io/api/v1/crates/foreign-types/0.5.0/download)
 - Cargo: **foreign-types-macros 0.2.3**, `LICENSE-APACHE` – [original](https://crates.io/api/v1/crates/foreign-types-macros/0.2.3/download)
 - Cargo: **foreign-types-shared 0.3.1**, `LICENSE-APACHE` – [original](https://crates.io/api/v1/crates/foreign-types-shared/0.3.1/download)
 - Cargo: **hex 0.4.3**, `LICENSE-APACHE` – [original](https://crates.io/api/v1/crates/hex/0.4.3/download)
+- Cargo: **native-tls 0.2.18**, `LICENSE-APACHE` – [original](https://crates.io/api/v1/crates/native-tls/0.2.18/download)
 - Cargo: **serde_spanned 1.0.4**, `LICENSE-APACHE` – [original](https://crates.io/api/v1/crates/serde_spanned/1.0.4/download)
 - Cargo: **toml 0.9.12+spec-1.1.0**, `LICENSE-APACHE` – [original](https://crates.io/api/v1/crates/toml/0.9.12+spec-1.1.0/download)
 - Cargo: **toml_datetime 0.7.5+spec-1.1.0**, `LICENSE-APACHE` – [original](https://crates.io/api/v1/crates/toml_datetime/0.7.5+spec-1.1.0/download)
@@ -2896,7 +2989,7 @@ DEALINGS IN THE SOFTWARE.
    limitations under the License.
 ```
 
-### Notice 27
+### Notice 28
 
 - Cargo: **crc32fast 1.5.0**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/crc32fast/1.5.0/download)
 
@@ -2924,7 +3017,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Notice 28
+### Notice 29
 
 - Cargo: **crossbeam-channel 0.5.15**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/crossbeam-channel/0.5.15/download)
 - Cargo: **crossbeam-utils 0.8.21**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/crossbeam-utils/0.8.21/download)
@@ -2959,7 +3052,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Notice 29
+### Notice 30
 
 - Cargo: **crossbeam-channel 0.5.15**, `LICENSE-THIRD-PARTY` – [original](https://crates.io/api/v1/crates/crossbeam-channel/0.5.15/download)
 
@@ -3559,7 +3652,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ```
 
-### Notice 30
+### Notice 31
 
 - Cargo: **crypto-common 0.1.7**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/crypto-common/0.1.7/download)
 
@@ -3591,7 +3684,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Notice 31
+### Notice 32
 
 - Cargo: **cssparser 0.29.6**, `LICENSE` – [original](https://crates.io/api/v1/crates/cssparser/0.29.6/download)
 - Cargo: **cssparser-macros 0.6.1**, `LICENSE` – [original](https://crates.io/api/v1/crates/cssparser-macros/0.6.1/download)
@@ -3972,7 +4065,7 @@ Exhibit B - "Incompatible With Secondary Licenses" Notice
   defined by the Mozilla Public License, v. 2.0.
 ```
 
-### Notice 32
+### Notice 33
 
 - Cargo: **ctor 0.2.9**, `LICENSE-APACHE` – [original](https://crates.io/api/v1/crates/ctor/0.2.9/download)
 
@@ -4180,7 +4273,7 @@ Apache License
    limitations under the License.
 ```
 
-### Notice 33
+### Notice 34
 
 - Cargo: **ctor 0.2.9**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/ctor/0.2.9/download)
 
@@ -4192,7 +4285,7 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ```
 
-### Notice 34
+### Notice 35
 
 - Cargo: **darling 0.21.3**, `LICENSE` – [original](https://crates.io/api/v1/crates/darling/0.21.3/download)
 - Cargo: **darling_core 0.21.3**, `LICENSE` – [original](https://crates.io/api/v1/crates/darling_core/0.21.3/download)
@@ -4222,7 +4315,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Notice 35
+### Notice 36
 
 - Cargo: **deranged 0.5.8**, `LICENSE-Apache` – [original](https://crates.io/api/v1/crates/deranged/0.5.8/download)
 
@@ -4431,7 +4524,7 @@ SOFTWARE.
    limitations under the License.
 ```
 
-### Notice 36
+### Notice 37
 
 - Cargo: **deranged 0.5.8**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/deranged/0.5.8/download)
 
@@ -4457,7 +4550,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Notice 37
+### Notice 38
 
 - Cargo: **derive_more 0.99.20**, `LICENSE` – [original](https://crates.io/api/v1/crates/derive_more/0.99.20/download)
 
@@ -4485,7 +4578,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Notice 38
+### Notice 39
 
 - Cargo: **digest 0.10.7**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/digest/0.10.7/download)
 
@@ -4517,7 +4610,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Notice 39
+### Notice 40
 
 - Cargo: **dirs 6.0.0**, `LICENSE-APACHE` – [original](https://crates.io/api/v1/crates/dirs/6.0.0/download)
 - Cargo: **dirs-sys 0.5.0**, `LICENSE-APACHE` – [original](https://crates.io/api/v1/crates/dirs-sys/0.5.0/download)
@@ -4699,7 +4792,7 @@ TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
    of your accepting any such warranty or additional liability.
 ```
 
-### Notice 40
+### Notice 41
 
 - Cargo: **dirs 6.0.0**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/dirs/6.0.0/download)
 - Cargo: **dirs-sys 0.5.0**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/dirs-sys/0.5.0/download)
@@ -4726,7 +4819,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Notice 41
+### Notice 42
 
 - Cargo: **dpi 0.1.2**, `LICENSE` – [original](https://crates.io/api/v1/crates/dpi/0.1.2/download)
 - Cargo: **tao 0.34.6**, `LICENSE` – [original](https://crates.io/api/v1/crates/tao/0.34.6/download)
@@ -4935,7 +5028,7 @@ Apache License
    limitations under the License.
 ```
 
-### Notice 42
+### Notice 43
 
 - Cargo: **dpi 0.1.2**, `LICENSE-LIBM-MIT` – [original](https://crates.io/api/v1/crates/dpi/0.1.2/download)
 
@@ -4993,7 +5086,7 @@ have been licensed under extremely permissive terms.
 ------------------------------------------------------------------------------
 ```
 
-### Notice 43
+### Notice 44
 
 - Cargo: **dtoa-short 0.3.5**, `LICENSE` – [original](https://crates.io/api/v1/crates/dtoa-short/0.3.5/download)
 
@@ -5373,7 +5466,7 @@ Exhibit B - "Incompatible With Secondary Licenses" Notice
   defined by the Mozilla Public License, v. 2.0.
 ```
 
-### Notice 44
+### Notice 45
 
 - Cargo: **dunce 1.0.5**, `LICENSE` – [original](https://crates.io/api/v1/crates/dunce/1.0.5/download)
 
@@ -5501,7 +5594,7 @@ express Statement of Purpose.
     this CC0 or use of the Work.
 ```
 
-### Notice 45
+### Notice 46
 
 - Cargo: **embed-resource 3.0.6**, `LICENSE` – [original](https://crates.io/api/v1/crates/embed-resource/3.0.6/download)
 
@@ -5529,10 +5622,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Notice 46
+### Notice 47
 
 - Cargo: **embed_plist 1.2.2**, `LICENSE-APACHE` – [original](https://crates.io/api/v1/crates/embed_plist/1.2.2/download)
+- Cargo: **iri-string 0.7.12**, `LICENSE-APACHE.txt` – [original](https://crates.io/api/v1/crates/iri-string/0.7.12/download)
 - Cargo: **utf8_iter 1.0.4**, `LICENSE-APACHE` – [original](https://crates.io/api/v1/crates/utf8_iter/1.0.4/download)
+- Cargo: **zeroize 1.9.1**, `LICENSE-APACHE` – [original](https://crates.io/api/v1/crates/zeroize/1.9.1/download)
 
 ```text
 
@@ -5739,7 +5834,7 @@ SOFTWARE.
    limitations under the License.
 ```
 
-### Notice 47
+### Notice 48
 
 - Cargo: **embed_plist 1.2.2**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/embed_plist/1.2.2/download)
 
@@ -5767,7 +5862,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Notice 48
+### Notice 49
 
 - Cargo: **equivalent 1.0.2**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/equivalent/1.0.2/download)
 
@@ -5799,7 +5894,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Notice 49
+### Notice 50
 
 - Cargo: **errno 0.3.14**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/errno/0.3.14/download)
 
@@ -5831,12 +5926,13 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Notice 50
+### Notice 51
 
 - Cargo: **fdeflate 0.3.7**, `LICENSE-APACHE` – [original](https://crates.io/api/v1/crates/fdeflate/0.3.7/download)
 - Cargo: **miniz_oxide 0.8.9**, `LICENSE-APACHE.md` – [original](https://crates.io/api/v1/crates/miniz_oxide/0.8.9/download)
 - Cargo: **pin-project-lite 0.2.17**, `LICENSE-APACHE` – [original](https://crates.io/api/v1/crates/pin-project-lite/0.2.17/download)
 - Cargo: **raw-window-handle 0.6.2**, `LICENSE-APACHE.md` – [original](https://crates.io/api/v1/crates/raw-window-handle/0.6.2/download)
+- Cargo: **sync_wrapper 1.0.2**, `LICENSE` – [original](https://crates.io/api/v1/crates/sync_wrapper/1.0.2/download)
 - Cargo: **tauri 2.10.3**, `LICENSE_APACHE-2.0` – [original](https://crates.io/api/v1/crates/tauri/2.10.3/download)
 - Cargo: **tauri-build 2.5.6**, `LICENSE_APACHE-2.0` – [original](https://crates.io/api/v1/crates/tauri-build/2.5.6/download)
 - Cargo: **tauri-codegen 2.5.5**, `LICENSE_APACHE-2.0` – [original](https://crates.io/api/v1/crates/tauri-codegen/2.5.5/download)
@@ -6031,7 +6127,7 @@ DEALINGS IN THE SOFTWARE.
    END OF TERMS AND CONDITIONS
 ```
 
-### Notice 51
+### Notice 52
 
 - Cargo: **fdeflate 0.3.7**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/fdeflate/0.3.7/download)
 
@@ -6063,7 +6159,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Notice 52
+### Notice 53
 
 - Cargo: **flate2 1.1.9**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/flate2/1.1.9/download)
 
@@ -6095,7 +6191,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Notice 53
+### Notice 54
 
 - Cargo: **fnv 1.0.7**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/fnv/1.0.7/download)
 
@@ -6127,7 +6223,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Notice 54
+### Notice 55
 
 - Cargo: **foreign-types 0.5.0**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/foreign-types/0.5.0/download)
 - Cargo: **foreign-types-macros 0.2.3**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/foreign-types-macros/0.2.3/download)
@@ -6155,7 +6251,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Notice 55
+### Notice 56
 
 - Cargo: **form_urlencoded 1.2.2**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/form_urlencoded/1.2.2/download)
 
@@ -6187,7 +6283,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Notice 56
+### Notice 57
 
 - Cargo: **futf 0.1.5**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/futf/0.1.5/download)
 - Cargo: **tendril 0.4.3**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/tendril/0.4.3/download)
@@ -6220,7 +6316,261 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Notice 57
+### Notice 58
+
+- Cargo: **futures-channel 0.3.32**, `LICENSE-APACHE` – [original](https://crates.io/api/v1/crates/futures-channel/0.3.32/download)
+- Cargo: **futures-core 0.3.32**, `LICENSE-APACHE` – [original](https://crates.io/api/v1/crates/futures-core/0.3.32/download)
+- Cargo: **futures-io 0.3.32**, `LICENSE-APACHE` – [original](https://crates.io/api/v1/crates/futures-io/0.3.32/download)
+- Cargo: **futures-macro 0.3.32**, `LICENSE-APACHE` – [original](https://crates.io/api/v1/crates/futures-macro/0.3.32/download)
+- Cargo: **futures-sink 0.3.32**, `LICENSE-APACHE` – [original](https://crates.io/api/v1/crates/futures-sink/0.3.32/download)
+- Cargo: **futures-task 0.3.32**, `LICENSE-APACHE` – [original](https://crates.io/api/v1/crates/futures-task/0.3.32/download)
+- Cargo: **futures-util 0.3.32**, `LICENSE-APACHE` – [original](https://crates.io/api/v1/crates/futures-util/0.3.32/download)
+
+```text
+                              Apache License
+                        Version 2.0, January 2004
+                     http://www.apache.org/licenses/
+
+TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
+
+1. Definitions.
+
+   "License" shall mean the terms and conditions for use, reproduction,
+   and distribution as defined by Sections 1 through 9 of this document.
+
+   "Licensor" shall mean the copyright owner or entity authorized by
+   the copyright owner that is granting the License.
+
+   "Legal Entity" shall mean the union of the acting entity and all
+   other entities that control, are controlled by, or are under common
+   control with that entity. For the purposes of this definition,
+   "control" means (i) the power, direct or indirect, to cause the
+   direction or management of such entity, whether by contract or
+   otherwise, or (ii) ownership of fifty percent (50%) or more of the
+   outstanding shares, or (iii) beneficial ownership of such entity.
+
+   "You" (or "Your") shall mean an individual or Legal Entity
+   exercising permissions granted by this License.
+
+   "Source" form shall mean the preferred form for making modifications,
+   including but not limited to software source code, documentation
+   source, and configuration files.
+
+   "Object" form shall mean any form resulting from mechanical
+   transformation or translation of a Source form, including but
+   not limited to compiled object code, generated documentation,
+   and conversions to other media types.
+
+   "Work" shall mean the work of authorship, whether in Source or
+   Object form, made available under the License, as indicated by a
+   copyright notice that is included in or attached to the work
+   (an example is provided in the Appendix below).
+
+   "Derivative Works" shall mean any work, whether in Source or Object
+   form, that is based on (or derived from) the Work and for which the
+   editorial revisions, annotations, elaborations, or other modifications
+   represent, as a whole, an original work of authorship. For the purposes
+   of this License, Derivative Works shall not include works that remain
+   separable from, or merely link (or bind by name) to the interfaces of,
+   the Work and Derivative Works thereof.
+
+   "Contribution" shall mean any work of authorship, including
+   the original version of the Work and any modifications or additions
+   to that Work or Derivative Works thereof, that is intentionally
+   submitted to Licensor for inclusion in the Work by the copyright owner
+   or by an individual or Legal Entity authorized to submit on behalf of
+   the copyright owner. For the purposes of this definition, "submitted"
+   means any form of electronic, verbal, or written communication sent
+   to the Licensor or its representatives, including but not limited to
+   communication on electronic mailing lists, source code control systems,
+   and issue tracking systems that are managed by, or on behalf of, the
+   Licensor for the purpose of discussing and improving the Work, but
+   excluding communication that is conspicuously marked or otherwise
+   designated in writing by the copyright owner as "Not a Contribution."
+
+   "Contributor" shall mean Licensor and any individual or Legal Entity
+   on behalf of whom a Contribution has been received by Licensor and
+   subsequently incorporated within the Work.
+
+2. Grant of Copyright License. Subject to the terms and conditions of
+   this License, each Contributor hereby grants to You a perpetual,
+   worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+   copyright license to reproduce, prepare Derivative Works of,
+   publicly display, publicly perform, sublicense, and distribute the
+   Work and such Derivative Works in Source or Object form.
+
+3. Grant of Patent License. Subject to the terms and conditions of
+   this License, each Contributor hereby grants to You a perpetual,
+   worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+   (except as stated in this section) patent license to make, have made,
+   use, offer to sell, sell, import, and otherwise transfer the Work,
+   where such license applies only to those patent claims licensable
+   by such Contributor that are necessarily infringed by their
+   Contribution(s) alone or by combination of their Contribution(s)
+   with the Work to which such Contribution(s) was submitted. If You
+   institute patent litigation against any entity (including a
+   cross-claim or counterclaim in a lawsuit) alleging that the Work
+   or a Contribution incorporated within the Work constitutes direct
+   or contributory patent infringement, then any patent licenses
+   granted to You under this License for that Work shall terminate
+   as of the date such litigation is filed.
+
+4. Redistribution. You may reproduce and distribute copies of the
+   Work or Derivative Works thereof in any medium, with or without
+   modifications, and in Source or Object form, provided that You
+   meet the following conditions:
+
+   (a) You must give any other recipients of the Work or
+       Derivative Works a copy of this License; and
+
+   (b) You must cause any modified files to carry prominent notices
+       stating that You changed the files; and
+
+   (c) You must retain, in the Source form of any Derivative Works
+       that You distribute, all copyright, patent, trademark, and
+       attribution notices from the Source form of the Work,
+       excluding those notices that do not pertain to any part of
+       the Derivative Works; and
+
+   (d) If the Work includes a "NOTICE" text file as part of its
+       distribution, then any Derivative Works that You distribute must
+       include a readable copy of the attribution notices contained
+       within such NOTICE file, excluding those notices that do not
+       pertain to any part of the Derivative Works, in at least one
+       of the following places: within a NOTICE text file distributed
+       as part of the Derivative Works; within the Source form or
+       documentation, if provided along with the Derivative Works; or,
+       within a display generated by the Derivative Works, if and
+       wherever such third-party notices normally appear. The contents
+       of the NOTICE file are for informational purposes only and
+       do not modify the License. You may add Your own attribution
+       notices within Derivative Works that You distribute, alongside
+       or as an addendum to the NOTICE text from the Work, provided
+       that such additional attribution notices cannot be construed
+       as modifying the License.
+
+   You may add Your own copyright statement to Your modifications and
+   may provide additional or different license terms and conditions
+   for use, reproduction, or distribution of Your modifications, or
+   for any such Derivative Works as a whole, provided Your use,
+   reproduction, and distribution of the Work otherwise complies with
+   the conditions stated in this License.
+
+5. Submission of Contributions. Unless You explicitly state otherwise,
+   any Contribution intentionally submitted for inclusion in the Work
+   by You to the Licensor shall be under the terms and conditions of
+   this License, without any additional terms or conditions.
+   Notwithstanding the above, nothing herein shall supersede or modify
+   the terms of any separate license agreement you may have executed
+   with Licensor regarding such Contributions.
+
+6. Trademarks. This License does not grant permission to use the trade
+   names, trademarks, service marks, or product names of the Licensor,
+   except as required for reasonable and customary use in describing the
+   origin of the Work and reproducing the content of the NOTICE file.
+
+7. Disclaimer of Warranty. Unless required by applicable law or
+   agreed to in writing, Licensor provides the Work (and each
+   Contributor provides its Contributions) on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+   implied, including, without limitation, any warranties or conditions
+   of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A
+   PARTICULAR PURPOSE. You are solely responsible for determining the
+   appropriateness of using or redistributing the Work and assume any
+   risks associated with Your exercise of permissions under this License.
+
+8. Limitation of Liability. In no event and under no legal theory,
+   whether in tort (including negligence), contract, or otherwise,
+   unless required by applicable law (such as deliberate and grossly
+   negligent acts) or agreed to in writing, shall any Contributor be
+   liable to You for damages, including any direct, indirect, special,
+   incidental, or consequential damages of any character arising as a
+   result of this License or out of the use or inability to use the
+   Work (including but not limited to damages for loss of goodwill,
+   work stoppage, computer failure or malfunction, or any and all
+   other commercial damages or losses), even if such Contributor
+   has been advised of the possibility of such damages.
+
+9. Accepting Warranty or Additional Liability. While redistributing
+   the Work or Derivative Works thereof, You may choose to offer,
+   and charge a fee for, acceptance of support, warranty, indemnity,
+   or other liability obligations and/or rights consistent with this
+   License. However, in accepting such obligations, You may act only
+   on Your own behalf and on Your sole responsibility, not on behalf
+   of any other Contributor, and only if You agree to indemnify,
+   defend, and hold each Contributor harmless for any liability
+   incurred by, or claims asserted against, such Contributor by reason
+   of your accepting any such warranty or additional liability.
+
+END OF TERMS AND CONDITIONS
+
+APPENDIX: How to apply the Apache License to your work.
+
+   To apply the Apache License to your work, attach the following
+   boilerplate notice, with the fields enclosed by brackets "[]"
+   replaced with your own identifying information. (Don't include
+   the brackets!)  The text should be enclosed in the appropriate
+   comment syntax for the file format. We also recommend that a
+   file or class name and description of purpose be included on the
+   same "printed page" as the copyright notice for easier
+   identification within third-party archives.
+
+Copyright (c) 2016 Alex Crichton
+Copyright (c) 2017 The Tokio Authors
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+	http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+```
+
+### Notice 59
+
+- Cargo: **futures-channel 0.3.32**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/futures-channel/0.3.32/download)
+- Cargo: **futures-core 0.3.32**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/futures-core/0.3.32/download)
+- Cargo: **futures-io 0.3.32**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/futures-io/0.3.32/download)
+- Cargo: **futures-macro 0.3.32**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/futures-macro/0.3.32/download)
+- Cargo: **futures-sink 0.3.32**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/futures-sink/0.3.32/download)
+- Cargo: **futures-task 0.3.32**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/futures-task/0.3.32/download)
+- Cargo: **futures-util 0.3.32**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/futures-util/0.3.32/download)
+
+```text
+Copyright (c) 2016 Alex Crichton
+Copyright (c) 2017 The Tokio Authors
+
+Permission is hereby granted, free of charge, to any
+person obtaining a copy of this software and associated
+documentation files (the "Software"), to deal in the
+Software without restriction, including without
+limitation the rights to use, copy, modify, merge,
+publish, distribute, sublicense, and/or sell copies of
+the Software, and to permit persons to whom the Software
+is furnished to do so, subject to the following
+conditions:
+
+The above copyright notice and this permission notice
+shall be included in all copies or substantial portions
+of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
+ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
+TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT
+SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
+IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+DEALINGS IN THE SOFTWARE.
+```
+
+### Notice 60
 
 - Cargo: **generic-array 0.14.7**, `LICENSE` – [original](https://crates.io/api/v1/crates/generic-array/0.14.7/download)
 
@@ -6248,7 +6598,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Notice 58
+### Notice 61
 
 - Cargo: **getrandom 0.1.16**, `LICENSE-APACHE` – [original](https://crates.io/api/v1/crates/getrandom/0.1.16/download)
 - Cargo: **getrandom 0.2.17**, `LICENSE-APACHE` – [original](https://crates.io/api/v1/crates/getrandom/0.2.17/download)
@@ -6464,7 +6814,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ```
 
-### Notice 59
+### Notice 62
 
 - Cargo: **getrandom 0.1.16**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/getrandom/0.1.16/download)
 - Cargo: **rand 0.7.3**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/rand/0.7.3/download)
@@ -6503,7 +6853,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Notice 60
+### Notice 63
 
 - Cargo: **getrandom 0.2.17**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/getrandom/0.2.17/download)
 
@@ -6536,7 +6886,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Notice 61
+### Notice 64
 
 - Cargo: **getrandom 0.3.4**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/getrandom/0.3.4/download)
 
@@ -6569,7 +6919,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Notice 62
+### Notice 65
 
 - Cargo: **getrandom 0.4.2**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/getrandom/0.4.2/download)
 
@@ -6602,7 +6952,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Notice 63
+### Notice 66
 
 - Cargo: **hashbrown 0.12.3**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/hashbrown/0.12.3/download)
 - Cargo: **hashbrown 0.16.1**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/hashbrown/0.16.1/download)
@@ -6635,7 +6985,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Notice 64
+### Notice 67
 
 - Cargo: **heck 0.5.0**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/heck/0.5.0/download)
 - Cargo: **unicode-segmentation 1.12.0**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/unicode-segmentation/1.12.0/download)
@@ -6668,7 +7018,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Notice 65
+### Notice 68
 
 - Cargo: **hex 0.4.3**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/hex/0.4.3/download)
 
@@ -6695,7 +7045,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Notice 66
+### Notice 69
 
 - Cargo: **html5ever 0.29.1**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/html5ever/0.29.1/download)
 - Cargo: **markup5ever 0.14.1**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/markup5ever/0.14.1/download)
@@ -6729,7 +7079,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Notice 67
+### Notice 70
 
 - Cargo: **http 1.4.0**, `LICENSE-APACHE` – [original](https://crates.io/api/v1/crates/http/1.4.0/download)
 
@@ -6937,7 +7287,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ```
 
-### Notice 68
+### Notice 71
 
 - Cargo: **http 1.4.0**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/http/1.4.0/download)
 
@@ -6969,7 +7319,175 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Notice 69
+### Notice 72
+
+- Cargo: **http-body 1.0.1**, `LICENSE` – [original](https://crates.io/api/v1/crates/http-body/1.0.1/download)
+
+```text
+Copyright (c) 2019-2024 Sean McArthur & Hyper Contributors
+
+Permission is hereby granted, free of charge, to any
+person obtaining a copy of this software and associated
+documentation files (the "Software"), to deal in the
+Software without restriction, including without
+limitation the rights to use, copy, modify, merge,
+publish, distribute, sublicense, and/or sell copies of
+the Software, and to permit persons to whom the Software
+is furnished to do so, subject to the following
+conditions:
+
+The above copyright notice and this permission notice
+shall be included in all copies or substantial portions
+of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
+ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
+TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT
+SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
+IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+DEALINGS IN THE SOFTWARE.
+```
+
+### Notice 73
+
+- Cargo: **http-body-util 0.1.3**, `LICENSE` – [original](https://crates.io/api/v1/crates/http-body-util/0.1.3/download)
+
+```text
+Copyright (c) 2019-2025 Sean McArthur & Hyper Contributors
+
+Permission is hereby granted, free of charge, to any
+person obtaining a copy of this software and associated
+documentation files (the "Software"), to deal in the
+Software without restriction, including without
+limitation the rights to use, copy, modify, merge,
+publish, distribute, sublicense, and/or sell copies of
+the Software, and to permit persons to whom the Software
+is furnished to do so, subject to the following
+conditions:
+
+The above copyright notice and this permission notice
+shall be included in all copies or substantial portions
+of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
+ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
+TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT
+SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
+IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+DEALINGS IN THE SOFTWARE.
+```
+
+### Notice 74
+
+- Cargo: **httparse 1.10.1**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/httparse/1.10.1/download)
+
+```text
+Copyright (c) 2015-2025 Sean McArthur
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+```
+
+### Notice 75
+
+- Cargo: **hyper 1.9.0**, `LICENSE` – [original](https://crates.io/api/v1/crates/hyper/1.9.0/download)
+
+```text
+Copyright (c) 2014-2026 Sean McArthur
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+```
+
+### Notice 76
+
+- Cargo: **hyper-tls 0.6.0**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/hyper-tls/0.6.0/download)
+
+```text
+Copyright (c) 2017 Sean McArthur
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+```
+
+### Notice 77
+
+- Cargo: **hyper-util 0.1.20**, `LICENSE` – [original](https://crates.io/api/v1/crates/hyper-util/0.1.20/download)
+
+```text
+Copyright (c) 2023-2025 Sean McArthur
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+```
+
+### Notice 78
 
 - Cargo: **iana-time-zone 0.1.65**, `LICENSE-APACHE` – [original](https://crates.io/api/v1/crates/iana-time-zone/0.1.65/download)
 
@@ -7177,7 +7695,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ```
 
-### Notice 70
+### Notice 79
 
 - Cargo: **iana-time-zone 0.1.65**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/iana-time-zone/0.1.65/download)
 
@@ -7209,7 +7727,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Notice 71
+### Notice 80
 
 - Cargo: **ico 0.5.0**, `LICENSE` – [original](https://crates.io/api/v1/crates/ico/0.5.0/download)
 
@@ -7237,7 +7755,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Notice 72
+### Notice 81
 
 - Cargo: **icu_collections 2.1.1**, `LICENSE` – [original](https://crates.io/api/v1/crates/icu_collections/2.1.1/download)
 - Cargo: **icu_locale_core 2.1.1**, `LICENSE` – [original](https://crates.io/api/v1/crates/icu_locale_core/2.1.1/download)
@@ -7307,7 +7825,7 @@ Portions of ICU4X may have been adapted from ICU4C and/or ICU4J.
 ICU 1.8.1 to ICU 57.1 © 1995-2016 International Business Machines Corporation and others.
 ```
 
-### Notice 73
+### Notice 82
 
 - Cargo: **ident_case 1.0.1**, `LICENSE` – [original](https://crates.io/api/v1/crates/ident_case/1.0.1/download)
 
@@ -7333,7 +7851,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Notice 74
+### Notice 83
 
 - Cargo: **idna 1.1.0**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/idna/1.1.0/download)
 - Cargo: **percent-encoding 2.3.2**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/percent-encoding/2.3.2/download)
@@ -7367,7 +7885,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Notice 75
+### Notice 84
 
 - Cargo: **idna_adapter 1.2.1**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/idna_adapter/1.2.1/download)
 
@@ -7399,7 +7917,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Notice 76
+### Notice 85
 
 - Cargo: **indexmap 1.9.3**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/indexmap/1.9.3/download)
 - Cargo: **indexmap 2.13.0**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/indexmap/2.13.0/download)
@@ -7432,7 +7950,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Notice 77
+### Notice 86
 
 - Cargo: **infer 0.19.0**, `LICENSE` – [original](https://crates.io/api/v1/crates/infer/0.19.0/download)
 
@@ -7460,7 +7978,261 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Notice 78
+### Notice 87
+
+- Cargo: **ipnet 2.12.0**, `LICENSE-APACHE` – [original](https://crates.io/api/v1/crates/ipnet/2.12.0/download)
+
+```text
+                                 Apache License
+                           Version 2.0, January 2004
+                        http://www.apache.org/licenses/
+
+   TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
+
+   1. Definitions.
+
+      "License" shall mean the terms and conditions for use, reproduction,
+      and distribution as defined by Sections 1 through 9 of this document.
+
+      "Licensor" shall mean the copyright owner or entity authorized by
+      the copyright owner that is granting the License.
+
+      "Legal Entity" shall mean the union of the acting entity and all
+      other entities that control, are controlled by, or are under common
+      control with that entity. For the purposes of this definition,
+      "control" means (i) the power, direct or indirect, to cause the
+      direction or management of such entity, whether by contract or
+      otherwise, or (ii) ownership of fifty percent (50%) or more of the
+      outstanding shares, or (iii) beneficial ownership of such entity.
+
+      "You" (or "Your") shall mean an individual or Legal Entity
+      exercising permissions granted by this License.
+
+      "Source" form shall mean the preferred form for making modifications,
+      including but not limited to software source code, documentation
+      source, and configuration files.
+
+      "Object" form shall mean any form resulting from mechanical
+      transformation or translation of a Source form, including but
+      not limited to compiled object code, generated documentation,
+      and conversions to other media types.
+
+      "Work" shall mean the work of authorship, whether in Source or
+      Object form, made available under the License, as indicated by a
+      copyright notice that is included in or attached to the work
+      (an example is provided in the Appendix below).
+
+      "Derivative Works" shall mean any work, whether in Source or Object
+      form, that is based on (or derived from) the Work and for which the
+      editorial revisions, annotations, elaborations, or other modifications
+      represent, as a whole, an original work of authorship. For the purposes
+      of this License, Derivative Works shall not include works that remain
+      separable from, or merely link (or bind by name) to the interfaces of,
+      the Work and Derivative Works thereof.
+
+      "Contribution" shall mean any work of authorship, including
+      the original version of the Work and any modifications or additions
+      to that Work or Derivative Works thereof, that is intentionally
+      submitted to Licensor for inclusion in the Work by the copyright owner
+      or by an individual or Legal Entity authorized to submit on behalf of
+      the copyright owner. For the purposes of this definition, "submitted"
+      means any form of electronic, verbal, or written communication sent
+      to the Licensor or its representatives, including but not limited to
+      communication on electronic mailing lists, source code control systems,
+      and issue tracking systems that are managed by, or on behalf of, the
+      Licensor for the purpose of discussing and improving the Work, but
+      excluding communication that is conspicuously marked or otherwise
+      designated in writing by the copyright owner as "Not a Contribution."
+
+      "Contributor" shall mean Licensor and any individual or Legal Entity
+      on behalf of whom a Contribution has been received by Licensor and
+      subsequently incorporated within the Work.
+
+   2. Grant of Copyright License. Subject to the terms and conditions of
+      this License, each Contributor hereby grants to You a perpetual,
+      worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+      copyright license to reproduce, prepare Derivative Works of,
+      publicly display, publicly perform, sublicense, and distribute the
+      Work and such Derivative Works in Source or Object form.
+
+   3. Grant of Patent License. Subject to the terms and conditions of
+      this License, each Contributor hereby grants to You a perpetual,
+      worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+      (except as stated in this section) patent license to make, have made,
+      use, offer to sell, sell, import, and otherwise transfer the Work,
+      where such license applies only to those patent claims licensable
+      by such Contributor that are necessarily infringed by their
+      Contribution(s) alone or by combination of their Contribution(s)
+      with the Work to which such Contribution(s) was submitted. If You
+      institute patent litigation against any entity (including a
+      cross-claim or counterclaim in a lawsuit) alleging that the Work
+      or a Contribution incorporated within the Work constitutes direct
+      or contributory patent infringement, then any patent licenses
+      granted to You under this License for that Work shall terminate
+      as of the date such litigation is filed.
+
+   4. Redistribution. You may reproduce and distribute copies of the
+      Work or Derivative Works thereof in any medium, with or without
+      modifications, and in Source or Object form, provided that You
+      meet the following conditions:
+
+      (a) You must give any other recipients of the Work or
+          Derivative Works a copy of this License; and
+
+      (b) You must cause any modified files to carry prominent notices
+          stating that You changed the files; and
+
+      (c) You must retain, in the Source form of any Derivative Works
+          that You distribute, all copyright, patent, trademark, and
+          attribution notices from the Source form of the Work,
+          excluding those notices that do not pertain to any part of
+          the Derivative Works; and
+
+      (d) If the Work includes a "NOTICE" text file as part of its
+          distribution, then any Derivative Works that You distribute must
+          include a readable copy of the attribution notices contained
+          within such NOTICE file, excluding those notices that do not
+          pertain to any part of the Derivative Works, in at least one
+          of the following places: within a NOTICE text file distributed
+          as part of the Derivative Works; within the Source form or
+          documentation, if provided along with the Derivative Works; or,
+          within a display generated by the Derivative Works, if and
+          wherever such third-party notices normally appear. The contents
+          of the NOTICE file are for informational purposes only and
+          do not modify the License. You may add Your own attribution
+          notices within Derivative Works that You distribute, alongside
+          or as an addendum to the NOTICE text from the Work, provided
+          that such additional attribution notices cannot be construed
+          as modifying the License.
+
+      You may add Your own copyright statement to Your modifications and
+      may provide additional or different license terms and conditions
+      for use, reproduction, or distribution of Your modifications, or
+      for any such Derivative Works as a whole, provided Your use,
+      reproduction, and distribution of the Work otherwise complies with
+      the conditions stated in this License.
+
+   5. Submission of Contributions. Unless You explicitly state otherwise,
+      any Contribution intentionally submitted for inclusion in the Work
+      by You to the Licensor shall be under the terms and conditions of
+      this License, without any additional terms or conditions.
+      Notwithstanding the above, nothing herein shall supersede or modify
+      the terms of any separate license agreement you may have executed
+      with Licensor regarding such Contributions.
+
+   6. Trademarks. This License does not grant permission to use the trade
+      names, trademarks, service marks, or product names of the Licensor,
+      except as required for reasonable and customary use in describing the
+      origin of the Work and reproducing the content of the NOTICE file.
+
+   7. Disclaimer of Warranty. Unless required by applicable law or
+      agreed to in writing, Licensor provides the Work (and each
+      Contributor provides its Contributions) on an "AS IS" BASIS,
+      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+      implied, including, without limitation, any warranties or conditions
+      of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A
+      PARTICULAR PURPOSE. You are solely responsible for determining the
+      appropriateness of using or redistributing the Work and assume any
+      risks associated with Your exercise of permissions under this License.
+
+   8. Limitation of Liability. In no event and under no legal theory,
+      whether in tort (including negligence), contract, or otherwise,
+      unless required by applicable law (such as deliberate and grossly
+      negligent acts) or agreed to in writing, shall any Contributor be
+      liable to You for damages, including any direct, indirect, special,
+      incidental, or consequential damages of any character arising as a
+      result of this License or out of the use or inability to use the
+      Work (including but not limited to damages for loss of goodwill,
+      work stoppage, computer failure or malfunction, or any and all
+      other commercial damages or losses), even if such Contributor
+      has been advised of the possibility of such damages.
+
+   9. Accepting Warranty or Additional Liability. While redistributing
+      the Work or Derivative Works thereof, You may choose to offer,
+      and charge a fee for, acceptance of support, warranty, indemnity,
+      or other liability obligations and/or rights consistent with this
+      License. However, in accepting such obligations, You may act only
+      on Your own behalf and on Your sole responsibility, not on behalf
+      of any other Contributor, and only if You agree to indemnify,
+      defend, and hold each Contributor harmless for any liability
+      incurred by, or claims asserted against, such Contributor by reason
+      of your accepting any such warranty or additional liability.
+
+   END OF TERMS AND CONDITIONS
+
+   APPENDIX: How to apply the Apache License to your work.
+
+      To apply the Apache License to your work, attach the following
+      boilerplate notice, with the fields enclosed by brackets "{}"
+      replaced with your own identifying information. (Don't include
+      the brackets!)  The text should be enclosed in the appropriate
+      comment syntax for the file format. We also recommend that a
+      file or class name and description of purpose be included on the
+      same "printed page" as the copyright notice for easier
+      identification within third-party archives.
+
+   Copyright 2017 Juniper Networks, Inc.
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+```
+
+### Notice 88
+
+- Cargo: **ipnet 2.12.0**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/ipnet/2.12.0/download)
+
+```text
+Copyright 2017 Juniper Networks, Inc.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+```
+
+### Notice 89
+
+- Cargo: **iri-string 0.7.12**, `LICENSE-MIT.txt` – [original](https://crates.io/api/v1/crates/iri-string/0.7.12/download)
+
+```text
+Copyright 2019-2024 YOSHIOKA Takuma
+
+Permission is hereby granted, free of charge, to any
+person obtaining a copy of this software and associated
+documentation files (the "Software"), to deal in the
+Software without restriction, including without
+limitation the rights to use, copy, modify, merge,
+publish, distribute, sublicense, and/or sell copies of
+the Software, and to permit persons to whom the Software
+is furnished to do so, subject to the following
+conditions:
+
+The above copyright notice and this permission notice
+shall be included in all copies or substantial portions
+of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
+ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
+TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT
+SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
+IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+DEALINGS IN THE SOFTWARE.
+```
+
+### Notice 90
 
 - Cargo: **json-patch 3.0.1**, `LICENSE-APACHE` – [original](https://crates.io/api/v1/crates/json-patch/3.0.1/download)
 
@@ -7668,7 +8440,7 @@ SOFTWARE.
    limitations under the License.
 ```
 
-### Notice 79
+### Notice 91
 
 - Cargo: **json-patch 3.0.1**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/json-patch/3.0.1/download)
 
@@ -7696,7 +8468,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Notice 80
+### Notice 92
 
 - Cargo: **jsonptr 0.6.3**, `LICENSE-APACHE` – [original](https://crates.io/api/v1/crates/jsonptr/0.6.3/download)
 
@@ -7904,7 +8676,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ```
 
-### Notice 81
+### Notice 93
 
 - Cargo: **jsonptr 0.6.3**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/jsonptr/0.6.3/download)
 
@@ -7932,7 +8704,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Notice 82
+### Notice 94
 
 - Cargo: **keyboard-types 0.7.0**, `LICENSE-APACHE` – [original](https://crates.io/api/v1/crates/keyboard-types/0.7.0/download)
 
@@ -8140,7 +8912,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ```
 
-### Notice 83
+### Notice 95
 
 - Cargo: **keyboard-types 0.7.0**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/keyboard-types/0.7.0/download)
 
@@ -8166,7 +8938,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ```
 
-### Notice 84
+### Notice 96
 
 - Cargo: **libc 0.2.182**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/libc/0.2.182/download)
 
@@ -8198,7 +8970,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Notice 85
+### Notice 97
 
 - Cargo: **lock_api 0.4.14**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/lock_api/0.4.14/download)
 - Cargo: **parking_lot 0.12.5**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/parking_lot/0.12.5/download)
@@ -8233,7 +9005,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Notice 86
+### Notice 98
 
 - Cargo: **matches 0.1.10**, `LICENSE` – [original](https://crates.io/api/v1/crates/matches/0.1.10/download)
 
@@ -8265,7 +9037,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Notice 87
+### Notice 99
 
 - Cargo: **mime 0.3.17**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/mime/0.3.17/download)
 
@@ -8291,7 +9063,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ```
 
-### Notice 88
+### Notice 100
 
 - Cargo: **miniz_oxide 0.8.9**, `LICENSE` – [original](https://crates.io/api/v1/crates/miniz_oxide/0.8.9/download)
 
@@ -8323,7 +9095,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Notice 89
+### Notice 101
 
 - Cargo: **miniz_oxide 0.8.9**, `LICENSE-MIT.md` – [original](https://crates.io/api/v1/crates/miniz_oxide/0.8.9/download)
 
@@ -8354,7 +9126,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Notice 90
+### Notice 102
 
 - Cargo: **miniz_oxide 0.8.9**, `LICENSE-ZLIB.md` – [original](https://crates.io/api/v1/crates/miniz_oxide/0.8.9/download)
 
@@ -8375,7 +9147,7 @@ Permission is granted to anyone to use this software for any purpose, including 
 3. This notice may not be removed or altered from any source distribution.
 ```
 
-### Notice 91
+### Notice 103
 
 - Cargo: **mio 1.1.1**, `LICENSE` – [original](https://crates.io/api/v1/crates/mio/1.1.1/download)
 
@@ -8401,7 +9173,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ```
 
-### Notice 92
+### Notice 104
 
 - Cargo: **muda 0.17.1**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/muda/0.17.1/download)
 - Cargo: **tray-icon 0.21.3**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/tray-icon/0.21.3/download)
@@ -8430,7 +9202,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Notice 93
+### Notice 105
 
 - Cargo: **muda 0.17.1**, `LICENSE.spdx` – [original](https://crates.io/api/v1/crates/muda/0.17.1/download)
 
@@ -8456,7 +9228,33 @@ PackageDownloadLocation: git+ssh://github.com/tauri-apps/muda.git
 Creator: Person: Daniel Thompson-Yvetot
 ```
 
-### Notice 94
+### Notice 106
+
+- Cargo: **native-tls 0.2.18**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/native-tls/0.2.18/download)
+
+```text
+Copyright (c) 2016 The rust-native-tls Developers
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
+### Notice 107
 
 - Cargo: **new_debug_unreachable 1.0.6**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/new_debug_unreachable/1.0.6/download)
 
@@ -8488,7 +9286,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Notice 95
+### Notice 108
 
 - Cargo: **nodrop 0.1.14**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/nodrop/0.1.14/download)
 
@@ -8520,7 +9318,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Notice 96
+### Notice 109
 
 - Cargo: **num-conv 0.2.0**, `LICENSE-Apache` – [original](https://crates.io/api/v1/crates/num-conv/0.2.0/download)
 
@@ -8729,7 +9527,7 @@ DEALINGS IN THE SOFTWARE.
    limitations under the License.
 ```
 
-### Notice 97
+### Notice 110
 
 - Cargo: **num-conv 0.2.0**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/num-conv/0.2.0/download)
 
@@ -8755,7 +9553,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Notice 98
+### Notice 111
 
 - Cargo: **option-ext 0.2.0**, `LICENSE.txt` – [original](https://crates.io/api/v1/crates/option-ext/0.2.0/download)
 
@@ -9135,7 +9933,7 @@ Exhibit B - "Incompatible With Secondary Licenses" Notice
   defined by the Mozilla Public License, v. 2.0.
 ```
 
-### Notice 99
+### Notice 112
 
 - Cargo: **phf 0.10.1**, `LICENSE` – [original](https://raw.githubusercontent.com/sfackler/rust-phf/bed01538ae576876f11189d541875d228acef9e8/LICENSE)
 - Cargo: **phf 0.8.0**, `LICENSE` – [original](https://raw.githubusercontent.com/sfackler/rust-phf/81c7cc5b48649108428671d3b8ad151f6fbdb359/LICENSE)
@@ -9169,7 +9967,7 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ```
 
-### Notice 100
+### Notice 113
 
 - Cargo: **phf 0.11.3**, `LICENSE` – [original](https://crates.io/api/v1/crates/phf/0.11.3/download)
 - Cargo: **phf_codegen 0.11.3**, `LICENSE` – [original](https://crates.io/api/v1/crates/phf_codegen/0.11.3/download)
@@ -9200,7 +9998,7 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ```
 
-### Notice 101
+### Notice 114
 
 - Cargo: **plist 1.8.0**, `LICENCE` – [original](https://crates.io/api/v1/crates/plist/1.8.0/download)
 
@@ -9226,7 +10024,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Notice 102
+### Notice 115
 
 - Cargo: **png 0.17.16**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/png/0.17.16/download)
 
@@ -9258,7 +10056,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Notice 103
+### Notice 116
 
 - Cargo: **powerfmt 0.2.0**, `LICENSE-Apache` – [original](https://crates.io/api/v1/crates/powerfmt/0.2.0/download)
 
@@ -9467,7 +10265,7 @@ DEALINGS IN THE SOFTWARE.
    limitations under the License.
 ```
 
-### Notice 104
+### Notice 117
 
 - Cargo: **powerfmt 0.2.0**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/powerfmt/0.2.0/download)
 
@@ -9493,7 +10291,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Notice 105
+### Notice 118
 
 - Cargo: **ppv-lite86 0.2.21**, `LICENSE-APACHE` – [original](https://crates.io/api/v1/crates/ppv-lite86/0.2.21/download)
 
@@ -9701,7 +10499,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ```
 
-### Notice 106
+### Notice 119
 
 - Cargo: **ppv-lite86 0.2.21**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/ppv-lite86/0.2.21/download)
 
@@ -9733,7 +10531,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Notice 107
+### Notice 120
 
 - Cargo: **precomputed-hash 0.1.1**, `LICENSE` – [original](https://crates.io/api/v1/crates/precomputed-hash/0.1.1/download)
 
@@ -9761,7 +10559,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Notice 108
+### Notice 121
 
 - Cargo: **proc-macro-hack 0.5.20+deprecated**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/proc-macro-hack/0.5.20+deprecated/download)
 
@@ -9793,7 +10591,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Notice 109
+### Notice 122
 
 - Cargo: **quick-xml 0.38.4**, `LICENSE-MIT.md` – [original](https://crates.io/api/v1/crates/quick-xml/0.38.4/download)
 
@@ -9823,7 +10621,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ```
 
-### Notice 110
+### Notice 123
 
 - Cargo: **rand 0.7.3**, `COPYRIGHT` – [original](https://crates.io/api/v1/crates/rand/0.7.3/download)
 - Cargo: **rand 0.8.5**, `COPYRIGHT` – [original](https://crates.io/api/v1/crates/rand/0.8.5/download)
@@ -9848,7 +10646,7 @@ The Rand project includes code from the Rust project
 published under these same licenses.
 ```
 
-### Notice 111
+### Notice 124
 
 - Cargo: **rand 0.8.5**, `LICENSE-APACHE` – [original](https://crates.io/api/v1/crates/rand/0.8.5/download)
 
@@ -10031,7 +10829,7 @@ TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
 END OF TERMS AND CONDITIONS
 ```
 
-### Notice 112
+### Notice 125
 
 - Cargo: **rand_core 0.6.4**, `LICENSE-APACHE` – [original](https://crates.io/api/v1/crates/rand_core/0.6.4/download)
 
@@ -10225,7 +11023,7 @@ APPENDIX: How to apply the Apache License to your work.
    identification within third-party archives.
 ```
 
-### Notice 113
+### Notice 126
 
 - Cargo: **rand_pcg 0.2.1**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/rand_pcg/0.2.1/download)
 
@@ -10258,7 +11056,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Notice 114
+### Notice 127
 
 - Cargo: **raw-window-handle 0.6.2**, `LICENSE-MIT.md` – [original](https://crates.io/api/v1/crates/raw-window-handle/0.6.2/download)
 
@@ -10286,7 +11084,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Notice 115
+### Notice 128
 
 - Cargo: **raw-window-handle 0.6.2**, `LICENSE-ZLIB.md` – [original](https://crates.io/api/v1/crates/raw-window-handle/0.6.2/download)
 
@@ -10304,7 +11102,241 @@ Permission is granted to anyone to use this software for any purpose, including 
 3. This notice may not be removed or altered from any source distribution.
 ```
 
-### Notice 116
+### Notice 129
+
+- Cargo: **reqwest 0.13.2**, `LICENSE-APACHE` – [original](https://crates.io/api/v1/crates/reqwest/0.13.2/download)
+
+```text
+                              Apache License
+                        Version 2.0, January 2004
+                     http://www.apache.org/licenses/
+
+TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
+
+1. Definitions.
+
+   "License" shall mean the terms and conditions for use, reproduction,
+   and distribution as defined by Sections 1 through 9 of this document.
+
+   "Licensor" shall mean the copyright owner or entity authorized by
+   the copyright owner that is granting the License.
+
+   "Legal Entity" shall mean the union of the acting entity and all
+   other entities that control, are controlled by, or are under common
+   control with that entity. For the purposes of this definition,
+   "control" means (i) the power, direct or indirect, to cause the
+   direction or management of such entity, whether by contract or
+   otherwise, or (ii) ownership of fifty percent (50%) or more of the
+   outstanding shares, or (iii) beneficial ownership of such entity.
+
+   "You" (or "Your") shall mean an individual or Legal Entity
+   exercising permissions granted by this License.
+
+   "Source" form shall mean the preferred form for making modifications,
+   including but not limited to software source code, documentation
+   source, and configuration files.
+
+   "Object" form shall mean any form resulting from mechanical
+   transformation or translation of a Source form, including but
+   not limited to compiled object code, generated documentation,
+   and conversions to other media types.
+
+   "Work" shall mean the work of authorship, whether in Source or
+   Object form, made available under the License, as indicated by a
+   copyright notice that is included in or attached to the work
+   (an example is provided in the Appendix below).
+
+   "Derivative Works" shall mean any work, whether in Source or Object
+   form, that is based on (or derived from) the Work and for which the
+   editorial revisions, annotations, elaborations, or other modifications
+   represent, as a whole, an original work of authorship. For the purposes
+   of this License, Derivative Works shall not include works that remain
+   separable from, or merely link (or bind by name) to the interfaces of,
+   the Work and Derivative Works thereof.
+
+   "Contribution" shall mean any work of authorship, including
+   the original version of the Work and any modifications or additions
+   to that Work or Derivative Works thereof, that is intentionally
+   submitted to Licensor for inclusion in the Work by the copyright owner
+   or by an individual or Legal Entity authorized to submit on behalf of
+   the copyright owner. For the purposes of this definition, "submitted"
+   means any form of electronic, verbal, or written communication sent
+   to the Licensor or its representatives, including but not limited to
+   communication on electronic mailing lists, source code control systems,
+   and issue tracking systems that are managed by, or on behalf of, the
+   Licensor for the purpose of discussing and improving the Work, but
+   excluding communication that is conspicuously marked or otherwise
+   designated in writing by the copyright owner as "Not a Contribution."
+
+   "Contributor" shall mean Licensor and any individual or Legal Entity
+   on behalf of whom a Contribution has been received by Licensor and
+   subsequently incorporated within the Work.
+
+2. Grant of Copyright License. Subject to the terms and conditions of
+   this License, each Contributor hereby grants to You a perpetual,
+   worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+   copyright license to reproduce, prepare Derivative Works of,
+   publicly display, publicly perform, sublicense, and distribute the
+   Work and such Derivative Works in Source or Object form.
+
+3. Grant of Patent License. Subject to the terms and conditions of
+   this License, each Contributor hereby grants to You a perpetual,
+   worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+   (except as stated in this section) patent license to make, have made,
+   use, offer to sell, sell, import, and otherwise transfer the Work,
+   where such license applies only to those patent claims licensable
+   by such Contributor that are necessarily infringed by their
+   Contribution(s) alone or by combination of their Contribution(s)
+   with the Work to which such Contribution(s) was submitted. If You
+   institute patent litigation against any entity (including a
+   cross-claim or counterclaim in a lawsuit) alleging that the Work
+   or a Contribution incorporated within the Work constitutes direct
+   or contributory patent infringement, then any patent licenses
+   granted to You under this License for that Work shall terminate
+   as of the date such litigation is filed.
+
+4. Redistribution. You may reproduce and distribute copies of the
+   Work or Derivative Works thereof in any medium, with or without
+   modifications, and in Source or Object form, provided that You
+   meet the following conditions:
+
+   (a) You must give any other recipients of the Work or
+       Derivative Works a copy of this License; and
+
+   (b) You must cause any modified files to carry prominent notices
+       stating that You changed the files; and
+
+   (c) You must retain, in the Source form of any Derivative Works
+       that You distribute, all copyright, patent, trademark, and
+       attribution notices from the Source form of the Work,
+       excluding those notices that do not pertain to any part of
+       the Derivative Works; and
+
+   (d) If the Work includes a "NOTICE" text file as part of its
+       distribution, then any Derivative Works that You distribute must
+       include a readable copy of the attribution notices contained
+       within such NOTICE file, excluding those notices that do not
+       pertain to any part of the Derivative Works, in at least one
+       of the following places: within a NOTICE text file distributed
+       as part of the Derivative Works; within the Source form or
+       documentation, if provided along with the Derivative Works; or,
+       within a display generated by the Derivative Works, if and
+       wherever such third-party notices normally appear. The contents
+       of the NOTICE file are for informational purposes only and
+       do not modify the License. You may add Your own attribution
+       notices within Derivative Works that You distribute, alongside
+       or as an addendum to the NOTICE text from the Work, provided
+       that such additional attribution notices cannot be construed
+       as modifying the License.
+
+   You may add Your own copyright statement to Your modifications and
+   may provide additional or different license terms and conditions
+   for use, reproduction, or distribution of Your modifications, or
+   for any such Derivative Works as a whole, provided Your use,
+   reproduction, and distribution of the Work otherwise complies with
+   the conditions stated in this License.
+
+5. Submission of Contributions. Unless You explicitly state otherwise,
+   any Contribution intentionally submitted for inclusion in the Work
+   by You to the Licensor shall be under the terms and conditions of
+   this License, without any additional terms or conditions.
+   Notwithstanding the above, nothing herein shall supersede or modify
+   the terms of any separate license agreement you may have executed
+   with Licensor regarding such Contributions.
+
+6. Trademarks. This License does not grant permission to use the trade
+   names, trademarks, service marks, or product names of the Licensor,
+   except as required for reasonable and customary use in describing the
+   origin of the Work and reproducing the content of the NOTICE file.
+
+7. Disclaimer of Warranty. Unless required by applicable law or
+   agreed to in writing, Licensor provides the Work (and each
+   Contributor provides its Contributions) on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+   implied, including, without limitation, any warranties or conditions
+   of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A
+   PARTICULAR PURPOSE. You are solely responsible for determining the
+   appropriateness of using or redistributing the Work and assume any
+   risks associated with Your exercise of permissions under this License.
+
+8. Limitation of Liability. In no event and under no legal theory,
+   whether in tort (including negligence), contract, or otherwise,
+   unless required by applicable law (such as deliberate and grossly
+   negligent acts) or agreed to in writing, shall any Contributor be
+   liable to You for damages, including any direct, indirect, special,
+   incidental, or consequential damages of any character arising as a
+   result of this License or out of the use or inability to use the
+   Work (including but not limited to damages for loss of goodwill,
+   work stoppage, computer failure or malfunction, or any and all
+   other commercial damages or losses), even if such Contributor
+   has been advised of the possibility of such damages.
+
+9. Accepting Warranty or Additional Liability. While redistributing
+   the Work or Derivative Works thereof, You may choose to offer,
+   and charge a fee for, acceptance of support, warranty, indemnity,
+   or other liability obligations and/or rights consistent with this
+   License. However, in accepting such obligations, You may act only
+   on Your own behalf and on Your sole responsibility, not on behalf
+   of any other Contributor, and only if You agree to indemnify,
+   defend, and hold each Contributor harmless for any liability
+   incurred by, or claims asserted against, such Contributor by reason
+   of your accepting any such warranty or additional liability.
+
+END OF TERMS AND CONDITIONS
+
+APPENDIX: How to apply the Apache License to your work.
+
+   To apply the Apache License to your work, attach the following
+   boilerplate notice, with the fields enclosed by brackets "[]"
+   replaced with your own identifying information. (Don't include
+   the brackets!)  The text should be enclosed in the appropriate
+   comment syntax for the file format. We also recommend that a
+   file or class name and description of purpose be included on the
+   same "printed page" as the copyright notice for easier
+   identification within third-party archives.
+
+Copyright 2016 Sean McArthur
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+	http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+```
+
+### Notice 130
+
+- Cargo: **reqwest 0.13.2**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/reqwest/0.13.2/download)
+
+```text
+Copyright (c) 2016-2026 Sean McArthur
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+```
+
+### Notice 131
 
 - Cargo: **rfd 0.16.0**, `LICENSE` – [original](https://crates.io/api/v1/crates/rfd/0.16.0/download)
 
@@ -10332,7 +11364,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Notice 117
+### Notice 132
 
 - Cargo: **rustix 1.1.4**, `COPYRIGHT` – [original](https://crates.io/api/v1/crates/rustix/1.1.4/download)
 
@@ -10368,7 +11400,7 @@ is licensed under:
 at your option.
 ```
 
-### Notice 118
+### Notice 133
 
 - Cargo: **rustix 1.1.4**, `LICENSE-Apache-2.0_WITH_LLVM-exception` – [original](https://crates.io/api/v1/crates/rustix/1.1.4/download)
 
@@ -10594,7 +11626,247 @@ the License, but only in their entirety and only with respect to the Combined
 Software.
 ```
 
-### Notice 119
+### Notice 134
+
+- Cargo: **rustls-pki-types 1.15.1**, `LICENSE-APACHE` – [original](https://crates.io/api/v1/crates/rustls-pki-types/1.15.1/download)
+
+```text
+                              Apache License
+                        Version 2.0, January 2004
+                     http://www.apache.org/licenses/
+
+TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
+
+1. Definitions.
+
+   "License" shall mean the terms and conditions for use, reproduction,
+   and distribution as defined by Sections 1 through 9 of this document.
+
+   "Licensor" shall mean the copyright owner or entity authorized by
+   the copyright owner that is granting the License.
+
+   "Legal Entity" shall mean the union of the acting entity and all
+   other entities that control, are controlled by, or are under common
+   control with that entity. For the purposes of this definition,
+   "control" means (i) the power, direct or indirect, to cause the
+   direction or management of such entity, whether by contract or
+   otherwise, or (ii) ownership of fifty percent (50%) or more of the
+   outstanding shares, or (iii) beneficial ownership of such entity.
+
+   "You" (or "Your") shall mean an individual or Legal Entity
+   exercising permissions granted by this License.
+
+   "Source" form shall mean the preferred form for making modifications,
+   including but not limited to software source code, documentation
+   source, and configuration files.
+
+   "Object" form shall mean any form resulting from mechanical
+   transformation or translation of a Source form, including but
+   not limited to compiled object code, generated documentation,
+   and conversions to other media types.
+
+   "Work" shall mean the work of authorship, whether in Source or
+   Object form, made available under the License, as indicated by a
+   copyright notice that is included in or attached to the work
+   (an example is provided in the Appendix below).
+
+   "Derivative Works" shall mean any work, whether in Source or Object
+   form, that is based on (or derived from) the Work and for which the
+   editorial revisions, annotations, elaborations, or other modifications
+   represent, as a whole, an original work of authorship. For the purposes
+   of this License, Derivative Works shall not include works that remain
+   separable from, or merely link (or bind by name) to the interfaces of,
+   the Work and Derivative Works thereof.
+
+   "Contribution" shall mean any work of authorship, including
+   the original version of the Work and any modifications or additions
+   to that Work or Derivative Works thereof, that is intentionally
+   submitted to Licensor for inclusion in the Work by the copyright owner
+   or by an individual or Legal Entity authorized to submit on behalf of
+   the copyright owner. For the purposes of this definition, "submitted"
+   means any form of electronic, verbal, or written communication sent
+   to the Licensor or its representatives, including but not limited to
+   communication on electronic mailing lists, source code control systems,
+   and issue tracking systems that are managed by, or on behalf of, the
+   Licensor for the purpose of discussing and improving the Work, but
+   excluding communication that is conspicuously marked or otherwise
+   designated in writing by the copyright owner as "Not a Contribution."
+
+   "Contributor" shall mean Licensor and any individual or Legal Entity
+   on behalf of whom a Contribution has been received by Licensor and
+   subsequently incorporated within the Work.
+
+2. Grant of Copyright License. Subject to the terms and conditions of
+   this License, each Contributor hereby grants to You a perpetual,
+   worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+   copyright license to reproduce, prepare Derivative Works of,
+   publicly display, publicly perform, sublicense, and distribute the
+   Work and such Derivative Works in Source or Object form.
+
+3. Grant of Patent License. Subject to the terms and conditions of
+   this License, each Contributor hereby grants to You a perpetual,
+   worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+   (except as stated in this section) patent license to make, have made,
+   use, offer to sell, sell, import, and otherwise transfer the Work,
+   where such license applies only to those patent claims licensable
+   by such Contributor that are necessarily infringed by their
+   Contribution(s) alone or by combination of their Contribution(s)
+   with the Work to which such Contribution(s) was submitted. If You
+   institute patent litigation against any entity (including a
+   cross-claim or counterclaim in a lawsuit) alleging that the Work
+   or a Contribution incorporated within the Work constitutes direct
+   or contributory patent infringement, then any patent licenses
+   granted to You under this License for that Work shall terminate
+   as of the date such litigation is filed.
+
+4. Redistribution. You may reproduce and distribute copies of the
+   Work or Derivative Works thereof in any medium, with or without
+   modifications, and in Source or Object form, provided that You
+   meet the following conditions:
+
+   (a) You must give any other recipients of the Work or
+       Derivative Works a copy of this License; and
+
+   (b) You must cause any modified files to carry prominent notices
+       stating that You changed the files; and
+
+   (c) You must retain, in the Source form of any Derivative Works
+       that You distribute, all copyright, patent, trademark, and
+       attribution notices from the Source form of the Work,
+       excluding those notices that do not pertain to any part of
+       the Derivative Works; and
+
+   (d) If the Work includes a "NOTICE" text file as part of its
+       distribution, then any Derivative Works that You distribute must
+       include a readable copy of the attribution notices contained
+       within such NOTICE file, excluding those notices that do not
+       pertain to any part of the Derivative Works, in at least one
+       of the following places: within a NOTICE text file distributed
+       as part of the Derivative Works; within the Source form or
+       documentation, if provided along with the Derivative Works; or,
+       within a display generated by the Derivative Works, if and
+       wherever such third-party notices normally appear. The contents
+       of the NOTICE file are for informational purposes only and
+       do not modify the License. You may add Your own attribution
+       notices within Derivative Works that You distribute, alongside
+       or as an addendum to the NOTICE text from the Work, provided
+       that such additional attribution notices cannot be construed
+       as modifying the License.
+
+   You may add Your own copyright statement to Your modifications and
+   may provide additional or different license terms and conditions
+   for use, reproduction, or distribution of Your modifications, or
+   for any such Derivative Works as a whole, provided Your use,
+   reproduction, and distribution of the Work otherwise complies with
+   the conditions stated in this License.
+
+5. Submission of Contributions. Unless You explicitly state otherwise,
+   any Contribution intentionally submitted for inclusion in the Work
+   by You to the Licensor shall be under the terms and conditions of
+   this License, without any additional terms or conditions.
+   Notwithstanding the above, nothing herein shall supersede or modify
+   the terms of any separate license agreement you may have executed
+   with Licensor regarding such Contributions.
+
+6. Trademarks. This License does not grant permission to use the trade
+   names, trademarks, service marks, or product names of the Licensor,
+   except as required for reasonable and customary use in describing the
+   origin of the Work and reproducing the content of the NOTICE file.
+
+7. Disclaimer of Warranty. Unless required by applicable law or
+   agreed to in writing, Licensor provides the Work (and each
+   Contributor provides its Contributions) on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+   implied, including, without limitation, any warranties or conditions
+   of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A
+   PARTICULAR PURPOSE. You are solely responsible for determining the
+   appropriateness of using or redistributing the Work and assume any
+   risks associated with Your exercise of permissions under this License.
+
+8. Limitation of Liability. In no event and under no legal theory,
+   whether in tort (including negligence), contract, or otherwise,
+   unless required by applicable law (such as deliberate and grossly
+   negligent acts) or agreed to in writing, shall any Contributor be
+   liable to You for damages, including any direct, indirect, special,
+   incidental, or consequential damages of any character arising as a
+   result of this License or out of the use or inability to use the
+   Work (including but not limited to damages for loss of goodwill,
+   work stoppage, computer failure or malfunction, or any and all
+   other commercial damages or losses), even if such Contributor
+   has been advised of the possibility of such damages.
+
+9. Accepting Warranty or Additional Liability. While redistributing
+   the Work or Derivative Works thereof, You may choose to offer,
+   and charge a fee for, acceptance of support, warranty, indemnity,
+   or other liability obligations and/or rights consistent with this
+   License. However, in accepting such obligations, You may act only
+   on Your own behalf and on Your sole responsibility, not on behalf
+   of any other Contributor, and only if You agree to indemnify,
+   defend, and hold each Contributor harmless for any liability
+   incurred by, or claims asserted against, such Contributor by reason
+   of your accepting any such warranty or additional liability.
+
+END OF TERMS AND CONDITIONS
+
+APPENDIX: How to apply the Apache License to your work.
+
+   To apply the Apache License to your work, attach the following
+   boilerplate notice, with the fields enclosed by brackets "[]"
+   replaced with your own identifying information. (Don't include
+   the brackets!)  The text should be enclosed in the appropriate
+   comment syntax for the file format. We also recommend that a
+   file or class name and description of purpose be included on the
+   same "printed page" as the copyright notice for easier
+   identification within third-party archives.
+
+Copyright 2023 Dirkjan Ochtman
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+	http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+```
+
+### Notice 135
+
+- Cargo: **rustls-pki-types 1.15.1**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/rustls-pki-types/1.15.1/download)
+
+```text
+Copyright (c) 2023 Dirkjan Ochtman <dirkjan@ochtman.nl>
+
+Permission is hereby granted, free of charge, to any
+person obtaining a copy of this software and associated
+documentation files (the "Software"), to deal in the
+Software without restriction, including without
+limitation the rights to use, copy, modify, merge,
+publish, distribute, sublicense, and/or sell copies of
+the Software, and to permit persons to whom the Software
+is furnished to do so, subject to the following
+conditions:
+
+The above copyright notice and this permission notice
+shall be included in all copies or substantial portions
+of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
+ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
+TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT
+SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
+IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+DEALINGS IN THE SOFTWARE.
+```
+
+### Notice 136
 
 - Cargo: **same-file 1.0.6**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/same-file/1.0.6/download)
 
@@ -10622,7 +11894,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ```
 
-### Notice 120
+### Notice 137
 
 - Cargo: **schemars 0.8.22**, `LICENSE` – [original](https://crates.io/api/v1/crates/schemars/0.8.22/download)
 - Cargo: **schemars 0.9.0**, `LICENSE` – [original](https://crates.io/api/v1/crates/schemars/0.9.0/download)
@@ -10653,7 +11925,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Notice 121
+### Notice 138
 
 - Cargo: **scopeguard 1.2.0**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/scopeguard/1.2.0/download)
 
@@ -10685,7 +11957,35 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Notice 122
+### Notice 139
+
+- Cargo: **security-framework 3.7.0**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/security-framework/3.7.0/download)
+- Cargo: **security-framework-sys 2.17.0**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/security-framework-sys/2.17.0/download)
+
+```text
+The MIT License (MIT)
+
+Copyright (c) 2015 Steven Fackler
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of
+this software and associated documentation files (the "Software"), to deal in
+the Software without restriction, including without limitation the rights to
+use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+the Software, and to permit persons to whom the Software is furnished to do so,
+subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+```
+
+### Notice 140
 
 - Cargo: **selectors 0.24.0**, `LICENSE` – [original](https://raw.githubusercontent.com/servo/servo/e82d7868d999d84f6d59719e4c397e5252aecb85/LICENSE)
 
@@ -11065,7 +12365,7 @@ This Source Code Form is "Incompatible With Secondary Licenses", as
 defined by the Mozilla Public License, v. 2.0.
 ```
 
-### Notice 123
+### Notice 141
 
 - Cargo: **serde_spanned 1.0.4**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/serde_spanned/1.0.4/download)
 - Cargo: **toml 0.9.12+spec-1.1.0**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/toml/0.9.12+spec-1.1.0/download)
@@ -11095,7 +12395,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Notice 124
+### Notice 142
 
 - Cargo: **serde_with 3.17.0**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/serde_with/3.17.0/download)
 - Cargo: **serde_with_macros 3.17.0**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/serde_with_macros/3.17.0/download)
@@ -11128,7 +12428,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Notice 125
+### Notice 143
 
 - Cargo: **serialize-to-javascript 0.1.2**, `LICENSE-APACHE` – [original](https://crates.io/api/v1/crates/serialize-to-javascript/0.1.2/download)
 - Cargo: **serialize-to-javascript-impl 0.1.2**, `LICENSE-APACHE` – [original](https://crates.io/api/v1/crates/serialize-to-javascript-impl/0.1.2/download)
@@ -11347,7 +12647,7 @@ DEALINGS IN THE SOFTWARE.
    limitations under the License.
 ```
 
-### Notice 126
+### Notice 144
 
 - Cargo: **serialize-to-javascript 0.1.2**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/serialize-to-javascript/0.1.2/download)
 - Cargo: **serialize-to-javascript-impl 0.1.2**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/serialize-to-javascript-impl/0.1.2/download)
@@ -11376,7 +12676,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Notice 127
+### Notice 145
 
 - Cargo: **sha2 0.10.9**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/sha2/0.10.9/download)
 
@@ -11410,7 +12710,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Notice 128
+### Notice 146
 
 - Cargo: **shlex 1.3.0**, `LICENSE-APACHE` – [original](https://crates.io/api/v1/crates/shlex/1.3.0/download)
 
@@ -11430,7 +12730,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ```
 
-### Notice 129
+### Notice 147
 
 - Cargo: **shlex 1.3.0**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/shlex/1.3.0/download)
 
@@ -11458,7 +12758,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ```
 
-### Notice 130
+### Notice 148
 
 - Cargo: **simd-adler32 0.3.8**, `LICENSE.md` – [original](https://crates.io/api/v1/crates/simd-adler32/0.3.8/download)
 
@@ -11486,7 +12786,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Notice 131
+### Notice 149
 
 - Cargo: **siphasher 0.3.11**, `COPYING` – [original](https://crates.io/api/v1/crates/siphasher/0.3.11/download)
 
@@ -11500,7 +12800,7 @@ http://www.apache.org/licenses/LICENSE-2.0> or the MIT license
 option.
 ```
 
-### Notice 132
+### Notice 150
 
 - Cargo: **siphasher 1.0.2**, `COPYING` – [original](https://crates.io/api/v1/crates/siphasher/1.0.2/download)
 
@@ -11514,7 +12814,39 @@ http://www.apache.org/licenses/LICENSE-2.0> or the MIT license
 option.
 ```
 
-### Notice 133
+### Notice 151
+
+- Cargo: **slab 0.4.12**, `LICENSE` – [original](https://crates.io/api/v1/crates/slab/0.4.12/download)
+
+```text
+Copyright (c) 2019 Carl Lerche
+
+Permission is hereby granted, free of charge, to any
+person obtaining a copy of this software and associated
+documentation files (the "Software"), to deal in the
+Software without restriction, including without
+limitation the rights to use, copy, modify, merge,
+publish, distribute, sublicense, and/or sell copies of
+the Software, and to permit persons to whom the Software
+is furnished to do so, subject to the following
+conditions:
+
+The above copyright notice and this permission notice
+shall be included in all copies or substantial portions
+of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
+ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
+TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT
+SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
+IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+DEALINGS IN THE SOFTWARE.
+```
+
+### Notice 152
 
 - Cargo: **smallvec 1.15.1**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/smallvec/1.15.1/download)
 
@@ -11546,7 +12878,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Notice 134
+### Notice 153
 
 - Cargo: **stable_deref_trait 1.2.1**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/stable_deref_trait/1.2.1/download)
 
@@ -11578,7 +12910,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Notice 135
+### Notice 154
 
 - Cargo: **strsim 0.11.1**, `LICENSE` – [original](https://crates.io/api/v1/crates/strsim/0.11.1/download)
 
@@ -11608,7 +12940,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Notice 136
+### Notice 155
 
 - Cargo: **swift-rs 1.0.7**, `LICENSE-APACHE` – [original](https://crates.io/api/v1/crates/swift-rs/1.0.7/download)
 
@@ -11816,7 +13148,7 @@ SOFTWARE.
    limitations under the License.
 ```
 
-### Notice 137
+### Notice 156
 
 - Cargo: **swift-rs 1.0.7**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/swift-rs/1.0.7/download)
 
@@ -11842,7 +13174,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Notice 138
+### Notice 157
 
 - Cargo: **synstructure 0.13.2**, `LICENSE` – [original](https://crates.io/api/v1/crates/synstructure/0.13.2/download)
 
@@ -11856,7 +13188,7 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ```
 
-### Notice 139
+### Notice 158
 
 - Cargo: **tao 0.34.6**, `LICENSE.spdx` – [original](https://crates.io/api/v1/crates/tao/0.34.6/download)
 
@@ -11881,7 +13213,7 @@ PackageDownloadLocation: git+ssh://github.com/tauri-apps/tao.git
 Creator: Person: Daniel Thompson-Yvetot
 ```
 
-### Notice 140
+### Notice 159
 
 - Cargo: **tauri 2.10.3**, `LICENSE_MIT` – [original](https://crates.io/api/v1/crates/tauri/2.10.3/download)
 - Cargo: **tauri-build 2.5.6**, `LICENSE_MIT` – [original](https://crates.io/api/v1/crates/tauri-build/2.5.6/download)
@@ -11918,7 +13250,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Notice 141
+### Notice 160
 
 - Cargo: **tauri-plugin 2.5.4**, `LICENSE.spdx` – [original](https://raw.githubusercontent.com/tauri-apps/tauri/9b17a7aeae9a83222ffe829aa4e2d8a5ba6bed8c/LICENSE.spdx)
 
@@ -11945,7 +13277,7 @@ PackageDownloadLocation: git+ssh://github.com/tauri-apps/tauri.git
 Creator: Person: Daniel Thompson-Yvetot
 ```
 
-### Notice 142
+### Notice 161
 
 - Cargo: **tauri-plugin-dialog 2.6.0**, `LICENSE.spdx` – [original](https://crates.io/api/v1/crates/tauri-plugin-dialog/2.6.0/download)
 - Cargo: **tauri-plugin-fs 2.4.5**, `LICENSE.spdx` – [original](https://crates.io/api/v1/crates/tauri-plugin-fs/2.4.5/download)
@@ -11973,7 +13305,7 @@ PackageDownloadLocation: git+ssh://github.com/tauri-apps/tauri.git
 Creator: Person: Daniel Thompson-Yvetot
 ```
 
-### Notice 143
+### Notice 162
 
 - Cargo: **tauri-plugin-dialog 2.6.0**, `LICENSE_APACHE-2.0` – [original](https://crates.io/api/v1/crates/tauri-plugin-dialog/2.6.0/download)
 - Cargo: **tauri-plugin-fs 2.4.5**, `LICENSE_APACHE-2.0` – [original](https://crates.io/api/v1/crates/tauri-plugin-fs/2.4.5/download)
@@ -12158,7 +13490,7 @@ Creator: Person: Daniel Thompson-Yvetot
    END OF TERMS AND CONDITIONS
 ```
 
-### Notice 144
+### Notice 163
 
 - Cargo: **tauri-plugin-dialog 2.6.0**, `LICENSE_MIT` – [original](https://crates.io/api/v1/crates/tauri-plugin-dialog/2.6.0/download)
 - Cargo: **tauri-plugin-fs 2.4.5**, `LICENSE_MIT` – [original](https://crates.io/api/v1/crates/tauri-plugin-fs/2.4.5/download)
@@ -12187,7 +13519,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Notice 145
+### Notice 164
 
 - Cargo: **tauri-winres 0.3.5**, `LICENSE` – [original](https://crates.io/api/v1/crates/tauri-winres/0.3.5/download)
 
@@ -12222,7 +13554,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Notice 146
+### Notice 165
 
 - Cargo: **tempfile 3.27.0**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/tempfile/3.27.0/download)
 
@@ -12254,7 +13586,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Notice 147
+### Notice 166
 
 - Cargo: **time 0.3.47**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/time/0.3.47/download)
 - Cargo: **time-core 0.1.8**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/time-core/0.1.8/download)
@@ -12282,9 +13614,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Notice 148
+### Notice 167
 
 - Cargo: **tokio 1.50.0**, `LICENSE` – [original](https://crates.io/api/v1/crates/tokio/1.50.0/download)
+- Cargo: **tokio-util 0.7.18**, `LICENSE` – [original](https://crates.io/api/v1/crates/tokio-util/0.7.18/download)
 
 ```text
 MIT License
@@ -12310,7 +13643,107 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Notice 149
+### Notice 168
+
+- Cargo: **tokio-native-tls 0.3.1**, `LICENSE` – [original](https://crates.io/api/v1/crates/tokio-native-tls/0.3.1/download)
+- Cargo: **tracing 0.1.44**, `LICENSE` – [original](https://crates.io/api/v1/crates/tracing/0.1.44/download)
+- Cargo: **tracing-core 0.1.36**, `LICENSE` – [original](https://crates.io/api/v1/crates/tracing-core/0.1.36/download)
+
+```text
+Copyright (c) 2019 Tokio Contributors
+
+Permission is hereby granted, free of charge, to any
+person obtaining a copy of this software and associated
+documentation files (the "Software"), to deal in the
+Software without restriction, including without
+limitation the rights to use, copy, modify, merge,
+publish, distribute, sublicense, and/or sell copies of
+the Software, and to permit persons to whom the Software
+is furnished to do so, subject to the following
+conditions:
+
+The above copyright notice and this permission notice
+shall be included in all copies or substantial portions
+of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
+ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
+TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT
+SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
+IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+DEALINGS IN THE SOFTWARE.
+```
+
+### Notice 169
+
+- Cargo: **tower 0.5.3**, `LICENSE` – [original](https://crates.io/api/v1/crates/tower/0.5.3/download)
+- Cargo: **tower-layer 0.3.3**, `LICENSE` – [original](https://crates.io/api/v1/crates/tower-layer/0.3.3/download)
+- Cargo: **tower-service 0.3.3**, `LICENSE` – [original](https://crates.io/api/v1/crates/tower-service/0.3.3/download)
+
+```text
+Copyright (c) 2019 Tower Contributors
+
+Permission is hereby granted, free of charge, to any
+person obtaining a copy of this software and associated
+documentation files (the "Software"), to deal in the
+Software without restriction, including without
+limitation the rights to use, copy, modify, merge,
+publish, distribute, sublicense, and/or sell copies of
+the Software, and to permit persons to whom the Software
+is furnished to do so, subject to the following
+conditions:
+
+The above copyright notice and this permission notice
+shall be included in all copies or substantial portions
+of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
+ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
+TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT
+SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
+IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+DEALINGS IN THE SOFTWARE.
+```
+
+### Notice 170
+
+- Cargo: **tower-http 0.6.8**, `LICENSE` – [original](https://crates.io/api/v1/crates/tower-http/0.6.8/download)
+
+```text
+Copyright (c) 2019-2021 Tower Contributors
+
+Permission is hereby granted, free of charge, to any
+person obtaining a copy of this software and associated
+documentation files (the "Software"), to deal in the
+Software without restriction, including without
+limitation the rights to use, copy, modify, merge,
+publish, distribute, sublicense, and/or sell copies of
+the Software, and to permit persons to whom the Software
+is furnished to do so, subject to the following
+conditions:
+
+The above copyright notice and this permission notice
+shall be included in all copies or substantial portions
+of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
+ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
+TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT
+SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
+IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+DEALINGS IN THE SOFTWARE.
+```
+
+### Notice 171
 
 - Cargo: **tray-icon 0.21.3**, `LICENSE.spdx` – [original](https://crates.io/api/v1/crates/tray-icon/0.21.3/download)
 
@@ -12336,7 +13769,34 @@ PackageDownloadLocation: git+ssh://github.com/tauri-apps/tray-icon.git
 Creator: Person: Daniel Thompson-Yvetot
 ```
 
-### Notice 150
+### Notice 172
+
+- Cargo: **try-lock 0.2.5**, `LICENSE` – [original](https://crates.io/api/v1/crates/try-lock/0.2.5/download)
+
+```text
+Copyright (c) 2018-2023 Sean McArthur
+Copyright (c) 2016 Alex Crichton
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+```
+
+### Notice 173
 
 - Cargo: **typenum 1.19.0**, `LICENSE` – [original](https://crates.io/api/v1/crates/typenum/1.19.0/download)
 
@@ -12344,7 +13804,7 @@ Creator: Person: Daniel Thompson-Yvetot
 MIT OR Apache-2.0
 ```
 
-### Notice 151
+### Notice 174
 
 - Cargo: **typenum 1.19.0**, `LICENSE-APACHE` – [original](https://crates.io/api/v1/crates/typenum/1.19.0/download)
 
@@ -12552,7 +14012,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ```
 
-### Notice 152
+### Notice 175
 
 - Cargo: **typenum 1.19.0**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/typenum/1.19.0/download)
 
@@ -12580,7 +14040,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Notice 153
+### Notice 176
 
 - Cargo: **unicode-ident 1.0.24**, `LICENSE-UNICODE` – [original](https://crates.io/api/v1/crates/unicode-ident/1.0.24/download)
 
@@ -12626,7 +14086,7 @@ dealings in these Data Files or Software without prior written
 authorization of the copyright holder.
 ```
 
-### Notice 154
+### Notice 177
 
 - Cargo: **unicode-segmentation 1.12.0**, `COPYRIGHT` – [original](https://crates.io/api/v1/crates/unicode-segmentation/1.12.0/download)
 
@@ -12640,7 +14100,7 @@ notice may not be copied, modified, or distributed except
 according to those terms.
 ```
 
-### Notice 155
+### Notice 178
 
 - Cargo: **urlpattern 0.3.0**, `LICENSE` – [original](https://crates.io/api/v1/crates/urlpattern/0.3.0/download)
 
@@ -12668,7 +14128,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Notice 156
+### Notice 179
 
 - Cargo: **utf8_iter 1.0.4**, `COPYRIGHT` – [original](https://crates.io/api/v1/crates/utf8_iter/1.0.4/download)
 
@@ -12717,7 +14177,7 @@ licensed under the Apache License, Version 2.0 <LICENSE-APACHE> or
 <LICENSE-MIT> or <http://opensource.org/licenses/MIT>, at your option.
 ```
 
-### Notice 157
+### Notice 180
 
 - Cargo: **utf8_iter 1.0.4**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/utf8_iter/1.0.4/download)
 
@@ -12749,7 +14209,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Notice 158
+### Notice 181
 
 - Cargo: **uuid 1.21.0**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/uuid/1.21.0/download)
 
@@ -12782,7 +14242,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Notice 159
+### Notice 182
 
 - Cargo: **version_check 0.9.5**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/version_check/0.9.5/download)
 
@@ -12808,7 +14268,33 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ```
 
-### Notice 160
+### Notice 183
+
+- Cargo: **want 0.3.1**, `LICENSE` – [original](https://crates.io/api/v1/crates/want/0.3.1/download)
+
+```text
+Copyright (c) 2018-2019 Sean McArthur
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+```
+
+### Notice 184
 
 - Cargo: **window-vibrancy 0.6.0**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/window-vibrancy/0.6.0/download)
 
@@ -12836,7 +14322,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Notice 161
+### Notice 185
 
 - Cargo: **window-vibrancy 0.6.0**, `LICENSE.spdx` – [original](https://crates.io/api/v1/crates/window-vibrancy/0.6.0/download)
 
@@ -12862,7 +14348,7 @@ PackageDownloadLocation: git+ssh://github.com/tauri-apps/window-vibrancy.git
 Creator: Person: Daniel Thompson-Yvetot
 ```
 
-### Notice 162
+### Notice 186
 
 - Cargo: **winnow 0.7.14**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/winnow/0.7.14/download)
 
@@ -12887,7 +14373,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ```
 
-### Notice 163
+### Notice 187
 
 - Cargo: **wry 0.54.2**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/wry/0.54.2/download)
 
@@ -12915,7 +14401,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Notice 164
+### Notice 188
 
 - Cargo: **wry 0.54.2**, `LICENSE.spdx` – [original](https://crates.io/api/v1/crates/wry/0.54.2/download)
 
@@ -12942,7 +14428,7 @@ PackageDownloadLocation: git+ssh://github.com/tauri-apps/wry.git
 Creator: Person: Daniel Thompson-Yvetot
 ```
 
-### Notice 165
+### Notice 189
 
 - Cargo: **zerocopy 0.8.40**, `LICENSE-APACHE` – [original](https://crates.io/api/v1/crates/zerocopy/0.8.40/download)
 
@@ -13150,7 +14636,7 @@ Creator: Person: Daniel Thompson-Yvetot
    limitations under the License.
 ```
 
-### Notice 166
+### Notice 190
 
 - Cargo: **zerocopy 0.8.40**, `LICENSE-BSD` – [original](https://crates.io/api/v1/crates/zerocopy/0.8.40/download)
 
@@ -13181,7 +14667,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
 
-### Notice 167
+### Notice 191
 
 - Cargo: **zerocopy 0.8.40**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/zerocopy/0.8.40/download)
 
@@ -13213,7 +14699,39 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Notice 168
+### Notice 192
+
+- Cargo: **zeroize 1.9.1**, `LICENSE-MIT` – [original](https://crates.io/api/v1/crates/zeroize/1.9.1/download)
+
+```text
+Copyright (c) 2018-2026 The RustCrypto Project Developers
+
+Permission is hereby granted, free of charge, to any
+person obtaining a copy of this software and associated
+documentation files (the "Software"), to deal in the
+Software without restriction, including without
+limitation the rights to use, copy, modify, merge,
+publish, distribute, sublicense, and/or sell copies of
+the Software, and to permit persons to whom the Software
+is furnished to do so, subject to the following
+conditions:
+
+The above copyright notice and this permission notice
+shall be included in all copies or substantial portions
+of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
+ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
+TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT
+SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
+IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+DEALINGS IN THE SOFTWARE.
+```
+
+### Notice 193
 
 - npm: **@babel/code-frame 7.29.7**, `LICENSE` – [original](https://registry.npmjs.org/@babel/code-frame/-/code-frame-7.29.7.tgz)
 - npm: **@babel/compat-data 7.29.7**, `LICENSE` – [original](https://registry.npmjs.org/@babel/compat-data/-/compat-data-7.29.7.tgz)
@@ -13258,7 +14776,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ```
 
-### Notice 169
+### Notice 194
 
 - npm: **@babel/helpers 7.29.10**, `LICENSE` – [original](https://registry.npmjs.org/@babel/helpers/-/helpers-7.29.10.tgz)
 
@@ -13288,7 +14806,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ```
 
-### Notice 170
+### Notice 195
 
 - npm: **@babel/parser 7.29.9**, `LICENSE` – [original](https://registry.npmjs.org/@babel/parser/-/parser-7.29.9.tgz)
 
@@ -13314,7 +14832,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ```
 
-### Notice 171
+### Notice 196
 
 - npm: **@eslint-community/eslint-utils 4.10.1**, `LICENSE` – [original](https://registry.npmjs.org/@eslint-community/eslint-utils/-/eslint-utils-4.10.1.tgz)
 - npm: **@eslint-community/regexpp 4.12.2**, `LICENSE` – [original](https://registry.npmjs.org/@eslint-community/regexpp/-/regexpp-4.12.2.tgz)
@@ -13343,7 +14861,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Notice 172
+### Notice 197
 
 - npm: **eslint-visitor-keys 3.4.3**, `LICENSE` – [original](https://registry.npmjs.org/eslint-visitor-keys/-/eslint-visitor-keys-3.4.3.tgz)
 - npm: **eslint-visitor-keys 4.2.1**, `LICENSE` – [original](https://registry.npmjs.org/eslint-visitor-keys/-/eslint-visitor-keys-4.2.1.tgz)
@@ -13552,7 +15070,7 @@ SOFTWARE.
    limitations under the License.
 ```
 
-### Notice 173
+### Notice 198
 
 - npm: **@eslint/eslintrc 3.3.7**, `LICENSE` – [original](https://registry.npmjs.org/@eslint/eslintrc/-/eslintrc-3.3.7.tgz)
 - npm: **@eslint/js 9.39.5**, `LICENSE` – [original](https://registry.npmjs.org/@eslint/js/-/js-9.39.5.tgz)
@@ -13580,7 +15098,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ```
 
-### Notice 174
+### Notice 199
 
 - npm: **globals 14.0.0**, `license` – [original](https://registry.npmjs.org/globals/-/globals-14.0.0.tgz)
 - npm: **escape-string-regexp 4.0.0**, `license` – [original](https://registry.npmjs.org/escape-string-regexp/-/escape-string-regexp-4.0.0.tgz)
@@ -13605,7 +15123,7 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ```
 
-### Notice 175
+### Notice 200
 
 - npm: **@jridgewell/gen-mapping 0.3.13**, `LICENSE` – [original](https://registry.npmjs.org/@jridgewell/gen-mapping/-/gen-mapping-0.3.13.tgz)
 - npm: **@jridgewell/remapping 2.3.5**, `LICENSE` – [original](https://registry.npmjs.org/@jridgewell/remapping/-/remapping-2.3.5.tgz)
@@ -13634,7 +15152,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Notice 176
+### Notice 201
 
 - npm: **@jridgewell/resolve-uri 3.1.2**, `LICENSE` – [original](https://registry.npmjs.org/@jridgewell/resolve-uri/-/resolve-uri-3.1.2.tgz)
 
@@ -13660,7 +15178,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Notice 177
+### Notice 202
 
 - npm: **@rolldown/pluginutils 1.0.0-rc.3**, `LICENSE` – [original](https://registry.npmjs.org/@rolldown/pluginutils/-/pluginutils-1.0.0-rc.3.tgz)
 
@@ -13692,7 +15210,7 @@ end of terms and conditions
 The licenses of externally maintained libraries from which parts of the Software is derived are listed [here](https://github.com/rolldown/rolldown/blob/main/THIRD-PARTY-LICENSE).
 ```
 
-### Notice 178
+### Notice 203
 
 - npm: **@types/babel__core 7.20.5**, `LICENSE` – [original](https://registry.npmjs.org/@types/babel__core/-/babel__core-7.20.5.tgz)
 - npm: **@types/babel__generator 7.27.0**, `LICENSE` – [original](https://registry.npmjs.org/@types/babel__generator/-/babel__generator-7.27.0.tgz)
@@ -13731,7 +15249,7 @@ The licenses of externally maintained libraries from which parts of the Software
     SOFTWARE
 ```
 
-### Notice 179
+### Notice 204
 
 - npm: **@vitejs/plugin-react 5.2.0**, `LICENSE` – [original](https://registry.npmjs.org/@vitejs/plugin-react/-/plugin-react-5.2.0.tgz)
 
@@ -13759,7 +15277,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Notice 180
+### Notice 205
 
 - npm: **@xyflow/react 12.11.1**, `LICENSE` – [original](https://registry.npmjs.org/@xyflow/react/-/react-12.11.1.tgz)
 - npm: **@xyflow/system 0.0.78**, `LICENSE` – [original](https://registry.npmjs.org/@xyflow/system/-/system-0.0.78.tgz)
@@ -13788,7 +15306,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Notice 181
+### Notice 206
 
 - npm: **acorn 8.19.0**, `LICENSE` – [original](https://registry.npmjs.org/acorn/-/acorn-8.19.0.tgz)
 
@@ -13816,7 +15334,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ```
 
-### Notice 182
+### Notice 207
 
 - npm: **acorn-jsx 5.3.2**, `LICENSE` – [original](https://registry.npmjs.org/acorn-jsx/-/acorn-jsx-5.3.2.tgz)
 
@@ -13842,7 +15360,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ```
 
-### Notice 183
+### Notice 208
 
 - npm: **ajv 6.15.0**, `LICENSE` – [original](https://registry.npmjs.org/ajv/-/ajv-6.15.0.tgz)
 
@@ -13870,7 +15388,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Notice 184
+### Notice 209
 
 - npm: **ansi-styles 4.3.0**, `license` – [original](https://registry.npmjs.org/ansi-styles/-/ansi-styles-4.3.0.tgz)
 - npm: **callsites 3.1.0**, `license` – [original](https://registry.npmjs.org/callsites/-/callsites-3.1.0.tgz)
@@ -13895,7 +15413,7 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ```
 
-### Notice 185
+### Notice 210
 
 - npm: **argparse 2.0.1**, `LICENSE` – [original](https://registry.npmjs.org/argparse/-/argparse-2.0.1.tgz)
 
@@ -14156,7 +15674,7 @@ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT
 OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 ```
 
-### Notice 186
+### Notice 211
 
 - npm: **balanced-match 1.0.2**, `LICENSE.md` – [original](https://registry.npmjs.org/balanced-match/-/balanced-match-1.0.2.tgz)
 
@@ -14184,7 +15702,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Notice 187
+### Notice 212
 
 - npm: **brace-expansion 1.1.21**, `LICENSE` – [original](https://registry.npmjs.org/brace-expansion/-/brace-expansion-1.1.21.tgz)
 
@@ -14212,7 +15730,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Notice 188
+### Notice 213
 
 - npm: **browserslist 4.29.3**, `LICENSE` – [original](https://registry.npmjs.org/browserslist/-/browserslist-4.29.3.tgz)
 
@@ -14239,7 +15757,7 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ```
 
-### Notice 189
+### Notice 214
 
 - npm: **caniuse-lite 1.0.30001815**, `LICENSE` – [original](https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001815.tgz)
 
@@ -14641,7 +16159,7 @@ public licenses.
 Creative Commons may be contacted at creativecommons.org.
 ```
 
-### Notice 190
+### Notice 215
 
 - npm: **classcat 5.0.5**, `LICENSE.md` – [original](https://registry.npmjs.org/classcat/-/classcat-5.0.5.tgz)
 
@@ -14655,7 +16173,7 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ```
 
-### Notice 191
+### Notice 216
 
 - npm: **color-convert 2.0.1**, `LICENSE` – [original](https://registry.npmjs.org/color-convert/-/color-convert-2.0.1.tgz)
 
@@ -14682,7 +16200,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ```
 
-### Notice 192
+### Notice 217
 
 - npm: **color-name 1.1.4**, `LICENSE` – [original](https://registry.npmjs.org/color-name/-/color-name-1.1.4.tgz)
 
@@ -14697,7 +16215,7 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ```
 
-### Notice 193
+### Notice 218
 
 - npm: **concat-map 0.0.1**, `LICENSE` – [original](https://registry.npmjs.org/concat-map/-/concat-map-0.0.1.tgz)
 - npm: **json-stable-stringify-without-jsonify 1.0.1**, `LICENSE` – [original](https://registry.npmjs.org/json-stable-stringify-without-jsonify/-/json-stable-stringify-without-jsonify-1.0.1.tgz)
@@ -14723,7 +16241,7 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ```
 
-### Notice 194
+### Notice 219
 
 - npm: **convert-source-map 2.0.0**, `LICENSE` – [original](https://registry.npmjs.org/convert-source-map/-/convert-source-map-2.0.0.tgz)
 
@@ -14753,7 +16271,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 ```
 
-### Notice 195
+### Notice 220
 
 - npm: **cross-spawn 7.0.6**, `LICENSE` – [original](https://registry.npmjs.org/cross-spawn/-/cross-spawn-7.0.6.tgz)
 
@@ -14781,7 +16299,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ```
 
-### Notice 196
+### Notice 221
 
 - npm: **d3-color 3.1.0**, `LICENSE` – [original](https://registry.npmjs.org/d3-color/-/d3-color-3.1.0.tgz)
 
@@ -14801,7 +16319,7 @@ TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
 THIS SOFTWARE.
 ```
 
-### Notice 197
+### Notice 222
 
 - npm: **d3-dispatch 3.0.1**, `LICENSE` – [original](https://registry.npmjs.org/d3-dispatch/-/d3-dispatch-3.0.1.tgz)
 - npm: **d3-drag 3.0.0**, `LICENSE` – [original](https://registry.npmjs.org/d3-drag/-/d3-drag-3.0.0.tgz)
@@ -14827,7 +16345,7 @@ TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
 THIS SOFTWARE.
 ```
 
-### Notice 198
+### Notice 223
 
 - npm: **d3-ease 3.0.1**, `LICENSE` – [original](https://registry.npmjs.org/d3-ease/-/d3-ease-3.0.1.tgz)
 
@@ -14862,7 +16380,7 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
 
-### Notice 199
+### Notice 224
 
 - npm: **debug 4.4.3**, `LICENSE` – [original](https://registry.npmjs.org/debug/-/debug-4.4.3.tgz)
 
@@ -14888,7 +16406,7 @@ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN 
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ```
 
-### Notice 200
+### Notice 225
 
 - npm: **deep-is 0.1.4**, `LICENSE` – [original](https://registry.npmjs.org/deep-is/-/deep-is-0.1.4.tgz)
 
@@ -14917,7 +16435,7 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ```
 
-### Notice 201
+### Notice 226
 
 - npm: **electron-to-chromium 1.5.452**, `LICENSE` – [original](https://registry.npmjs.org/electron-to-chromium/-/electron-to-chromium-1.5.452.tgz)
 
@@ -14929,7 +16447,7 @@ Permission to use, copy, modify, and/or distribute this software for any purpose
 THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 ```
 
-### Notice 202
+### Notice 227
 
 - npm: **esbuild 0.28.2**, `LICENSE.md` – [original](https://registry.npmjs.org/esbuild/-/esbuild-0.28.2.tgz)
 
@@ -14957,7 +16475,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Notice 203
+### Notice 228
 
 - npm: **escalade 3.2.0**, `license` – [original](https://registry.npmjs.org/escalade/-/escalade-3.2.0.tgz)
 
@@ -14973,7 +16491,7 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ```
 
-### Notice 204
+### Notice 229
 
 - npm: **eslint-plugin-react-hooks 7.1.1**, `LICENSE` – [original](https://registry.npmjs.org/eslint-plugin-react-hooks/-/eslint-plugin-react-hooks-7.1.1.tgz)
 - npm: **hermes-estree 0.25.1**, `LICENSE` – [original](https://registry.npmjs.org/hermes-estree/-/hermes-estree-0.25.1.tgz)
@@ -15008,7 +16526,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Notice 205
+### Notice 230
 
 - npm: **eslint-plugin-react-refresh 0.4.26**, `LICENSE` – [original](https://registry.npmjs.org/eslint-plugin-react-refresh/-/eslint-plugin-react-refresh-0.4.26.tgz)
 
@@ -15036,7 +16554,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Notice 206
+### Notice 231
 
 - npm: **eslint-scope 8.4.0**, `LICENSE` – [original](https://registry.npmjs.org/eslint-scope/-/eslint-scope-8.4.0.tgz)
 
@@ -15065,7 +16583,7 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
 
-### Notice 207
+### Notice 232
 
 - npm: **espree 10.4.0**, `LICENSE` – [original](https://registry.npmjs.org/espree/-/espree-10.4.0.tgz)
 
@@ -15097,7 +16615,7 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
 
-### Notice 208
+### Notice 233
 
 - npm: **esquery 1.7.0**, `license.txt` – [original](https://registry.npmjs.org/esquery/-/esquery-1.7.0.tgz)
 
@@ -15128,7 +16646,7 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
 
-### Notice 209
+### Notice 234
 
 - npm: **estraverse 5.3.0**, `LICENSE.BSD` – [original](https://registry.npmjs.org/estraverse/-/estraverse-5.3.0.tgz)
 - npm: **esutils 2.0.3**, `LICENSE.BSD` – [original](https://registry.npmjs.org/esutils/-/esutils-2.0.3.tgz)
@@ -15155,7 +16673,7 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
 
-### Notice 210
+### Notice 235
 
 - npm: **fast-deep-equal 3.1.3**, `LICENSE` – [original](https://registry.npmjs.org/fast-deep-equal/-/fast-deep-equal-3.1.3.tgz)
 - npm: **json-schema-traverse 0.4.1**, `LICENSE` – [original](https://registry.npmjs.org/json-schema-traverse/-/json-schema-traverse-0.4.1.tgz)
@@ -15184,7 +16702,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Notice 211
+### Notice 236
 
 - npm: **fast-json-stable-stringify 2.1.0**, `LICENSE` – [original](https://registry.npmjs.org/fast-json-stable-stringify/-/fast-json-stable-stringify-2.1.0.tgz)
 
@@ -15212,7 +16730,7 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ```
 
-### Notice 212
+### Notice 237
 
 - npm: **fast-levenshtein 2.0.6**, `LICENSE.md` – [original](https://registry.npmjs.org/fast-levenshtein/-/fast-levenshtein-2.0.6.tgz)
 
@@ -15243,7 +16761,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 ```
 
-### Notice 213
+### Notice 238
 
 - npm: **fdir 6.5.0**, `LICENSE` – [original](https://registry.npmjs.org/fdir/-/fdir-6.5.0.tgz)
 
@@ -15257,7 +16775,7 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ```
 
-### Notice 214
+### Notice 239
 
 - npm: **file-entry-cache 8.0.0**, `LICENSE` – [original](https://registry.npmjs.org/file-entry-cache/-/file-entry-cache-8.0.0.tgz)
 
@@ -15285,7 +16803,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Notice 215
+### Notice 240
 
 - npm: **flat-cache 4.0.1**, `LICENSE` – [original](https://registry.npmjs.org/flat-cache/-/flat-cache-4.0.1.tgz)
 
@@ -15313,7 +16831,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Notice 216
+### Notice 241
 
 - npm: **flatted 3.4.4**, `LICENSE` – [original](https://registry.npmjs.org/flatted/-/flatted-3.4.4.tgz)
 
@@ -15335,7 +16853,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 PERFORMANCE OF THIS SOFTWARE.
 ```
 
-### Notice 217
+### Notice 242
 
 - npm: **fsevents 2.3.3**, `LICENSE` – [original](https://registry.npmjs.org/fsevents/-/fsevents-2.3.3.tgz)
 
@@ -15364,7 +16882,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ```
 
-### Notice 218
+### Notice 243
 
 - npm: **gensync 1.0.0-beta.2**, `LICENSE` – [original](https://registry.npmjs.org/gensync/-/gensync-1.0.0-beta.2.tgz)
 
@@ -15378,7 +16896,7 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ```
 
-### Notice 219
+### Notice 244
 
 - npm: **glob-parent 6.0.2**, `LICENSE` – [original](https://registry.npmjs.org/glob-parent/-/glob-parent-6.0.2.tgz)
 
@@ -15400,7 +16918,7 @@ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR
 IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 ```
 
-### Notice 220
+### Notice 245
 
 - npm: **ignore 5.3.2**, `LICENSE-MIT` – [original](https://registry.npmjs.org/ignore/-/ignore-5.3.2.tgz)
 
@@ -15428,7 +16946,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ```
 
-### Notice 221
+### Notice 246
 
 - npm: **is-extglob 2.1.1**, `LICENSE` – [original](https://registry.npmjs.org/is-extglob/-/is-extglob-2.1.1.tgz)
 - npm: **word-wrap 1.2.5**, `LICENSE` – [original](https://registry.npmjs.org/word-wrap/-/word-wrap-1.2.5.tgz)
@@ -15457,7 +16975,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ```
 
-### Notice 222
+### Notice 247
 
 - npm: **is-glob 4.0.3**, `LICENSE` – [original](https://registry.npmjs.org/is-glob/-/is-glob-4.0.3.tgz)
 
@@ -15485,7 +17003,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ```
 
-### Notice 223
+### Notice 248
 
 - npm: **isexe 2.0.0**, `LICENSE` – [original](https://registry.npmjs.org/isexe/-/isexe-2.0.0.tgz)
 - npm: **lru-cache 5.1.1**, `LICENSE` – [original](https://registry.npmjs.org/lru-cache/-/lru-cache-5.1.1.tgz)
@@ -15512,7 +17030,7 @@ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR
 IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 ```
 
-### Notice 224
+### Notice 249
 
 - npm: **js-tokens 4.0.0**, `LICENSE` – [original](https://registry.npmjs.org/js-tokens/-/js-tokens-4.0.0.tgz)
 
@@ -15540,7 +17058,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ```
 
-### Notice 225
+### Notice 250
 
 - npm: **js-yaml 4.3.2**, `LICENSE` – [original](https://registry.npmjs.org/js-yaml/-/js-yaml-4.3.2.tgz)
 
@@ -15568,7 +17086,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ```
 
-### Notice 226
+### Notice 251
 
 - npm: **jsesc 3.1.0**, `LICENSE-MIT.txt` – [original](https://registry.npmjs.org/jsesc/-/jsesc-3.1.0.tgz)
 - npm: **punycode 2.3.1**, `LICENSE-MIT.txt` – [original](https://registry.npmjs.org/punycode/-/punycode-2.3.1.tgz)
@@ -15596,7 +17114,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ```
 
-### Notice 227
+### Notice 252
 
 - npm: **json-buffer 3.0.1**, `LICENSE` – [original](https://registry.npmjs.org/json-buffer/-/json-buffer-3.0.1.tgz)
 
@@ -15625,7 +17143,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ```
 
-### Notice 228
+### Notice 253
 
 - npm: **json5 2.2.3**, `LICENSE.md` – [original](https://registry.npmjs.org/json5/-/json5-2.2.3.tgz)
 
@@ -15655,7 +17173,7 @@ SOFTWARE.
 [others]: https://github.com/json5/json5/contributors
 ```
 
-### Notice 229
+### Notice 254
 
 - npm: **levn 0.4.1**, `LICENSE` – [original](https://registry.npmjs.org/levn/-/levn-0.4.1.tgz)
 - npm: **optionator 0.9.4**, `LICENSE` – [original](https://registry.npmjs.org/optionator/-/optionator-0.9.4.tgz)
@@ -15687,7 +17205,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 ```
 
-### Notice 230
+### Notice 255
 
 - npm: **lodash.merge 4.6.2**, `LICENSE` – [original](https://registry.npmjs.org/lodash.merge/-/lodash.merge-4.6.2.tgz)
 
@@ -15741,7 +17259,7 @@ licenses; we recommend you read them, as their terms may differ from the
 terms above.
 ```
 
-### Notice 231
+### Notice 256
 
 - npm: **lucide-react 0.468.0**, `LICENSE` – [original](https://registry.npmjs.org/lucide-react/-/lucide-react-0.468.0.tgz)
 
@@ -15763,7 +17281,7 @@ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 ```
 
-### Notice 232
+### Notice 257
 
 - npm: **ms 2.1.3**, `license.md` – [original](https://registry.npmjs.org/ms/-/ms-2.1.3.tgz)
 
@@ -15791,7 +17309,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Notice 233
+### Notice 258
 
 - npm: **nanoid 3.3.20**, `LICENSE` – [original](https://registry.npmjs.org/nanoid/-/nanoid-3.3.20.tgz)
 
@@ -15818,7 +17336,7 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ```
 
-### Notice 234
+### Notice 259
 
 - npm: **node-releases 2.0.58**, `LICENSE` – [original](https://registry.npmjs.org/node-releases/-/node-releases-2.0.58.tgz)
 
@@ -15846,7 +17364,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ```
 
-### Notice 235
+### Notice 260
 
 - npm: **picocolors 1.1.1**, `LICENSE` – [original](https://registry.npmjs.org/picocolors/-/picocolors-1.1.1.tgz)
 
@@ -15868,7 +17386,7 @@ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 ```
 
-### Notice 236
+### Notice 261
 
 - npm: **picomatch 4.0.7**, `LICENSE` – [original](https://registry.npmjs.org/picomatch/-/picomatch-4.0.7.tgz)
 
@@ -15896,7 +17414,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ```
 
-### Notice 237
+### Notice 262
 
 - npm: **playwright 1.64.0**, `LICENSE` – [original](https://registry.npmjs.org/playwright/-/playwright-1.64.0.tgz)
 - npm: **playwright-core 1.64.0**, `LICENSE` – [original](https://registry.npmjs.org/playwright-core/-/playwright-core-1.64.0.tgz)
@@ -16106,7 +17624,7 @@ THE SOFTWARE.
    limitations under the License.
 ```
 
-### Notice 238
+### Notice 263
 
 - npm: **playwright 1.64.0**, `NOTICE` – [original](https://registry.npmjs.org/playwright/-/playwright-1.64.0.tgz)
 - npm: **playwright-core 1.64.0**, `NOTICE` – [original](https://registry.npmjs.org/playwright-core/-/playwright-core-1.64.0.tgz)
@@ -16119,7 +17637,7 @@ This software contains code derived from the Puppeteer project (https://github.c
 available under the Apache 2.0 license (https://github.com/puppeteer/puppeteer/blob/master/LICENSE).
 ```
 
-### Notice 239
+### Notice 264
 
 - npm: **postcss 8.5.29**, `LICENSE` – [original](https://registry.npmjs.org/postcss/-/postcss-8.5.29.tgz)
 
@@ -16146,7 +17664,7 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ```
 
-### Notice 240
+### Notice 265
 
 - npm: **rollup 4.64.3**, `LICENSE.md` – [original](https://registry.npmjs.org/rollup/-/rollup-4.64.3.tgz)
 
@@ -16832,7 +18350,7 @@ Repository: https://github.com/yargs/yargs-parser.git
 > ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 ```
 
-### Notice 241
+### Notice 266
 
 - npm: **shebang-command 2.0.0**, `license` – [original](https://registry.npmjs.org/shebang-command/-/shebang-command-2.0.0.tgz)
 
@@ -16848,7 +18366,7 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ```
 
-### Notice 242
+### Notice 267
 
 - npm: **source-map-js 1.2.2**, `LICENSE` – [original](https://registry.npmjs.org/source-map-js/-/source-map-js-1.2.2.tgz)
 
@@ -16883,7 +18401,7 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
 
-### Notice 243
+### Notice 268
 
 - npm: **tinyglobby 0.2.17**, `LICENSE` – [original](https://registry.npmjs.org/tinyglobby/-/tinyglobby-0.2.17.tgz)
 
@@ -16911,7 +18429,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Notice 244
+### Notice 269
 
 - npm: **update-browserslist-db 1.3.4**, `LICENSE` – [original](https://registry.npmjs.org/update-browserslist-db/-/update-browserslist-db-1.3.4.tgz)
 
@@ -16938,7 +18456,7 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ```
 
-### Notice 245
+### Notice 270
 
 - npm: **uri-js 4.4.1**, `LICENSE` – [original](https://registry.npmjs.org/uri-js/-/uri-js-4.4.1.tgz)
 
@@ -16956,7 +18474,7 @@ THIS SOFTWARE IS PROVIDED BY GARY COURT "AS IS" AND ANY EXPRESS OR IMPLIED WARRA
 The views and conclusions contained in the software and documentation are those of the authors and should not be interpreted as representing official policies, either expressed or implied, of Gary Court.
 ```
 
-### Notice 246
+### Notice 271
 
 - npm: **vite 7.3.7**, `LICENSE.md` – [original](https://registry.npmjs.org/vite/-/vite-7.3.7.tgz)
 
@@ -19083,7 +20601,7 @@ Repository: https://github.com/websockets/ws
 > CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ```
 
-### Notice 247
+### Notice 272
 
 - npm: **zod 4.6.5**, `LICENSE` – [original](https://registry.npmjs.org/zod/-/zod-4.6.5.tgz)
 
@@ -19111,7 +20629,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Notice 248
+### Notice 273
 
 - npm: **zod-validation-error 4.0.2**, `LICENSE` – [original](https://registry.npmjs.org/zod-validation-error/-/zod-validation-error-4.0.2.tgz)
 
@@ -19127,7 +20645,7 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ```
 
-### Notice 249
+### Notice 274
 
 - npm: **zustand 4.5.7**, `LICENSE` – [original](https://registry.npmjs.org/zustand/-/zustand-4.5.7.tgz)
 

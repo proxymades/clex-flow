@@ -25,6 +25,7 @@ const { chromium } = require('playwright');
   await page.screenshot({path:'.artifacts/clex-flow-firmware-preview.png'});
   await page.keyboard.press('Escape');
   await page.getByRole('button',{name:'Настройки',exact:true}).click();
+  await page.getByText('Указать существующую ESP-IDF',{exact:true}).click();
   assert.equal(await page.getByRole('button',{name:'Проверить пути',exact:true}).isDisabled(),true);
   await page.getByRole('combobox',{name:'Консоль прошивки',exact:true}).selectOption('uart');
   await page.getByRole('button',{name:'Эксперимент',exact:true}).click();
