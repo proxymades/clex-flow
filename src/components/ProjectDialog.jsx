@@ -22,7 +22,7 @@ export default function ProjectDialog({ project, onSubmit, onClose, busy }) {
       {!rename && <>
         <label className="field">Описание <span className="muted">необязательно</span><textarea disabled={busy} value={description} onChange={e => setDescription(e.target.value)} maxLength={4000} rows={3} placeholder="Что вы хотите попробовать?" /></label>
         <label className="field">Плата<select disabled={busy} value={boardId} onChange={e => setBoardId(e.target.value)}>{boards.map(board => <option key={board.id} value={board.id}>{board.name}{board.revision ? ` / ${board.revision}` : ''}</option>)}</select></label>
-        <div className="target-choice"><Cpu size={26} /><div><strong>{getBoard(boardId)?.name}</strong><small>{getBoard(boardId)?.manufacturer}</small></div><span className="badge green">ESP-IDF 5.4.4</span></div>
+        <div className="target-choice"><Cpu size={26} /><div><strong>{getBoard(boardId)?.name}</strong><small>{getBoard(boardId)?.manufacturer}</small></div><span className="badge green">ESP-IDF {getBoard(boardId)?.espIdfVersion}</span></div>
         <p className="fine-print">{getBoard(boardId)?.verificationNote} Файл проекта сохраняется локально.</p>
       </>}
       {error && <p role="alert" className="inline-error">{error}</p>}

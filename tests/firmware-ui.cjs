@@ -28,7 +28,7 @@ const { chromium } = require('playwright');
   await page.getByText('Указать существующую ESP-IDF',{exact:true}).click();
   assert.equal(await page.getByRole('button',{name:'Проверить пути',exact:true}).isDisabled(),true);
   await page.getByRole('combobox',{name:'Консоль прошивки',exact:true}).selectOption('uart');
-  await page.getByRole('button',{name:'Эксперимент',exact:true}).click();
+  await page.getByRole('button',{name:'Текущий проект',exact:true}).click();
   await page.getByRole('button',{name:'Посмотреть исходники прошивки',exact:true}).click();
   await page.getByRole('button',{name:'sdkconfig.defaults',exact:true}).click();
   assert.match(await page.locator('.firmware-source').innerText(),/UART_DEFAULT=y/);

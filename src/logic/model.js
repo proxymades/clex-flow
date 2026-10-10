@@ -114,7 +114,7 @@ export function hardwareBinding(node, project, catalog) {
 export function validateGraph(project, catalog) {
   const graph = project.logic, issues = [];
   const add = (severity, code, message, extra = {}) => issues.push({ severity, code, message, ...extra });
-  if (!graph.nodes.length) add('warning', 'logic-empty', 'Граф логики пуст. Добавьте таймер и действие.');
+  if (!graph.nodes.length) add('warning', 'logic-empty', 'Добавьте блоки во вкладке «Логика».');
   for (const node of graph.nodes) {
     const module = graphModule(node, catalog), fields = { nodeId: node.id };
     if (!module || module.version !== node.moduleVersion || module.compatibility.projectFormat !== 3 || !module.compatibility.targets.includes(boardFor(project, catalog)?.target || 'esp32s3') || module.compatibility.espIdf !== boardFor(project, catalog)?.espIdfVersion) { add('error', 'logic-module', `${node.name}: модуль отсутствует или версия несовместима.`, fields); continue; }

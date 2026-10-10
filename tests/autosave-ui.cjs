@@ -15,7 +15,7 @@ const { chromium } = require('playwright');
   const writes = () => page.evaluate(() => window.__projectWrites);
   const stored = () => page.evaluate(() => JSON.parse(Object.values(JSON.parse(localStorage.getItem('clex-flow:projects:v1')))[0]));
   const settings = () => page.getByRole('button', { name: 'Настройки', exact: true }).click();
-  const experiment = () => page.getByRole('button', { name: 'Эксперимент', exact: true }).click();
+  const experiment = () => page.getByRole('button', { name: 'Текущий проект', exact: true }).click();
   const toggle = () => page.getByRole('checkbox', { name: 'Автосохранение проектов', exact: true });
   const saved = () => page.getByText('Все изменения сохранены', { exact: true }).waitFor();
   try {

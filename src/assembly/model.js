@@ -86,8 +86,9 @@ export function addHardware(project, module, catalog = null) {
   if (project.moduleVersions[module.id] && project.moduleVersions[module.id] !== module.version) throw new Error('Проект использует другую версию этого модуля.');
   const id = crypto.randomUUID();
   let number = 1;
-  while (project.components.some(component => component.name === `${module.name} ${number}`)) number++;
-  const name = `${module.name} ${number}`;
+  const instanceName = number => module.display ? `${module.name} · №${number}` : `${module.name} ${number}`;
+  while (project.components.some(component => component.name === instanceName(number) || component.name === `${module.name} ${number}`)) number++;
+  const name = instanceName(number);
   const occupied = project.components.map(component => {
     const visual = catalog?.modules.find(item => item.id === component.moduleId)?.visual;
     return { ...project.assembly.positions[component.id], width: visual?.width || 230, height: visual?.height || 185 };
@@ -154,6 +155,6 @@ export function validateAssembly(project, catalog) {
     if (problem) issue('error', 'connection-invalid', problem, { componentId: wire.componentId, wireId: wire.id, pinId: wire.boardPinId });
   }
   if (JSON.stringify(project.gpioAssignments) !== JSON.stringify(gpioAssignments(project, catalog))) issue('error', 'gpio-cache', 'Назначения GPIO не совпадают с физическими соединениями. Переназначьте контакты в редакторе.');
-  if (!project.components.length && board.pins.length) issue('warning', 'empty-assembly', 'Добавьте внешний светодиод или кнопку из библиотеки.');
+  if (!project.components.length && board.pins.length) issue('warning', 'empty-assembly', 'Добавьте компоненты во вкладке «Монтаж».');
   return issues;
 }
