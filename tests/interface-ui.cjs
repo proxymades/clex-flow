@@ -1,4 +1,4 @@
-/* global window, document */
+/* global window, document, getComputedStyle */
 const assert = require('node:assert/strict');
 const {chromium} = require('playwright');
 (async()=>{
@@ -13,12 +13,22 @@ const {chromium} = require('playwright');
   assert.doesNotMatch(await page.locator('.blueprint').textContent(),/ESP32|S3/);
   assert.equal(await page.getByText('Путь к первому Blink',{exact:true}).count(),0);
   assert.equal(await page.locator('.version-tag').count(),0);
+  assert.equal(await page.locator('.sidebar-guide').isVisible(),true);
+  assert.equal(await page.locator('.page-heading h1').evaluate(e=>getComputedStyle(e).cursor),'default');
+  assert.equal(await page.getByRole('textbox',{name:'Поиск проектов'}).evaluate(e=>getComputedStyle(e).cursor),'text');
   await page.screenshot({animations:'disabled',path:'.artifacts/interface-home.png'});
   await page.getByRole('button',{name:/^Библиотека/}).click();
   const dialog=page.getByRole('dialog');await dialog.waitFor();
   assert.equal(await dialog.locator('.library-catalog-card').count(),3);
   await dialog.getByRole('textbox',{name:'Поиск в библиотеке'}).fill('дисплей');
   assert.equal(await dialog.locator('.library-catalog-card').count(),1);
+  const groups=dialog.locator('.library-catalog-details');
+  const first=await groups.nth(0).boundingBox(),second=await groups.nth(1).boundingBox();
+  assert.ok(second.y-first.y-first.height>=7,'interface details and terminal rows have vertical spacing');
+  const chips=await groups.nth(1).locator('span').evaluateAll(elements=>elements.map(e=>{const b=e.getBoundingClientRect();return{top:b.top,bottom:b.bottom};}));
+  const rows=[...new Set(chips.map(b=>b.top))].sort((a,b)=>a-b);
+  for(let i=1;i<rows.length;i++)assert.ok(rows[i]-Math.max(...chips.filter(b=>b.top===rows[i-1]).map(b=>b.bottom))>=7,'wrapped contact rows have vertical spacing');
+  await page.screenshot({animations:'disabled',path:'.artifacts/interface-library-contacts.png'});
   await dialog.getByRole('tab',{name:'Блоки логики',exact:true}).click();
   assert.equal(await dialog.locator('.library-catalog-card').count(),6);
   await dialog.getByRole('tab',{name:'Платы',exact:true}).click();
@@ -30,6 +40,8 @@ const {chromium} = require('playwright');
   await page.getByRole('button',{name:'Создать проект',exact:true}).click();
   await page.getByRole('heading',{name:'Interface check',exact:true}).waitFor();
   assert.equal(await page.locator('.workspace-library').count(),0);
+  assert.equal(await page.getByRole('button',{name:'Сохранить',exact:true}).count(),1);
+  assert.equal(await page.getByRole('button',{name:'Экспорт JSON',exact:true}).count(),1);
   assert.equal(await page.getByText('Формат проекта',{exact:true}).count(),0);
   assert.equal(await page.getByRole('button',{name:'Текущий проект',exact:true}).isEnabled(),true);
   await page.getByRole('button',{name:'Настройки',exact:true}).click();
@@ -40,6 +52,8 @@ const {chromium} = require('playwright');
   await page.setViewportSize({width:1000,height:700});
   await page.screenshot({animations:'disabled',path:'.artifacts/interface-overview-small.png'});
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>window.innerWidth),false);
+  const guide=await page.locator('.sidebar-guide').boundingBox(),bottom=await page.locator('.sidebar-bottom').boundingBox();
+  assert.ok(guide.y+guide.height<=bottom.y,'sidebar information does not overlap settings at 1000x700');
   assert.deepEqual(errors,[]);
   console.log('PASS: neutral home, single version, contextual project navigation, searchable real catalog and overview without hardware palette, small layout.');
  }finally{await browser.close();}

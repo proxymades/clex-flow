@@ -27,7 +27,7 @@ const {chromium}=require('playwright');
   assert.ok(Math.abs(await page.getByRole('log').evaluate(element=>element.scrollTop)-before)<3,'manual reading remains in place');
   await page.getByRole('button',{name:'К последним сообщениям',exact:true}).click();await tail();
   await page.evaluate(()=>window.logFixture.append(80));await tail();
-  await page.getByRole('button',{name:'Serial',exact:true}).click();
+  await page.getByRole('button',{name:'Монитор',exact:true}).click();
   await page.evaluate(()=>window.logFixture.append(90,'monitor'));await tail();
   await page.getByRole('button',{name:'Сборка и прошивка',exact:true}).click();await tail();
   assert.deepEqual(errors,[]);console.log('PASS: burst output follows tail; resizing and build footer preserve tail; manual scroll pauses; tail button resumes; Serial and tab switching follow.');

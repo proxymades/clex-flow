@@ -3,8 +3,8 @@
 </p>
 
 <h1 align="center">CLEX Flow</h1>
-<p align="center">Visual Microcontroller Studio</p>
-<p align="center"><strong>0.1.0 · Work in Progress · macOS Apple Silicon · MIT</strong></p>
+<p align="center">Визуальная среда разработки для микроконтроллеров</p>
+<p align="center"><strong>0.1.0 · В разработке · macOS Apple Silicon · MIT</strong></p>
 
 Визуальная среда разработки для микроконтроллеров и одноплатных компьютеров. Плата, аппаратные подключения и блоки логики объединяются в одном проекте. Проекты, инструменты и данные остаются на вашем компьютере.
 

@@ -13,7 +13,7 @@
     "windows": [
       {
         "label": "main",
-        "title": "CLEX Flow – Visual Microcontroller Studio",
+        "title": "CLEX Flow – Визуальная среда разработки",
         "width": 1440,
         "height": 940,
         "minWidth": 1000,

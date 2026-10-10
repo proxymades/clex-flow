@@ -2,7 +2,7 @@
   "id": "clex.logic.serial",
   "version": "1.0.0",
   "kind": "logic",
-  "name": "Сообщение в Serial",
+  "name": "Сообщение в монитор",
   "description": "Вывести текст и необязательное число по событию.",
   "category": "output",
   "categoryName": "Вывод",
@@ -47,7 +47,7 @@
     "message": {
       "label": "Текст сообщения",
       "type": "text",
-      "default": "Hello from CLEX Flow",
+      "default": "Сообщение CLEX Flow",
       "maxLength": 2000
     }
   },
