@@ -72,6 +72,9 @@ export function validateProject(project) {
   const assembly = project.assembly;
   if (!isObject(assembly) || !isObject(assembly.positions) || !Array.isArray(assembly.connections) || assembly.connections.length > 200 || !viewportValid(assembly.viewport)) throw new Error('Некорректное описание монтажа.');
   if (!point(assembly.positions.board) || [...ids].some(id => !point(assembly.positions[id])) || Object.entries(assembly.positions).some(([id, position]) => (id !== 'board' && !ids.has(id)) || !point(position))) throw new Error('Некорректные позиции монтажа.');
+  if (assembly.portSides !== undefined) {
+    if (!isObject(assembly.portSides) || Object.entries(assembly.portSides).some(([id, sides]) => !ids.has(id) || !isObject(sides) || Object.entries(sides).some(([terminal, side]) => !validKey(terminal) || !['left', 'right', 'top', 'bottom'].includes(side)))) throw new Error('Некорректные стороны контактов монтажа.');
+  }
   const wireIds = new Set(), endpoints = new Set();
   for (const wire of assembly.connections) {
     const key = `${wire?.componentId}/${wire?.terminalId}`;

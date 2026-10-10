@@ -104,7 +104,7 @@ export function removeHardware(project, catalog, id) {
   const components = project.components.filter(component => component.id !== id);
   const positions = Object.fromEntries(Object.entries(project.assembly.positions).filter(([key]) => key !== id));
   const moduleVersions = Object.fromEntries(Object.entries(project.moduleVersions).filter(([key]) => [...components, ...project.logic.nodes].some(component => component.moduleId === key)));
-  return withConnections({ ...project, components, moduleVersions, assembly: { ...project.assembly, positions } }, project.assembly.connections.filter(wire => wire.componentId !== id), catalog);
+  return withConnections({ ...project, components, moduleVersions, assembly: { ...project.assembly, positions, ...(project.assembly.portSides ? { portSides: Object.fromEntries(Object.entries(project.assembly.portSides).filter(([key]) => key !== id)) } : {}) } }, project.assembly.connections.filter(wire => wire.componentId !== id), catalog);
 }
 
 export function selectBoard(project, board) {

@@ -34,25 +34,32 @@ function BoardNode({ id, data }) {
 }
 
 function HardwareNode({ id, data }) {
-  const { component, module, terminals, selected, onTerminal, onSelect, busy } = data;
+  const { component, module, layout, terminals, selected, onTerminal, onSelect, busy } = data;
   const updateInternals = useUpdateNodeInternals();
-  useEffect(() => { updateInternals(id); }, [id, module, updateInternals]);
-  const width = module?.visual.width || 230, height = module?.visual.height || 185;
+  useEffect(() => { updateInternals(id); }, [id, module, layout, updateInternals]);
+  const { width, height, headerOffset } = layout;
   return <div className={'hardware-node assembly-hardware-node ' + (selected ? 'hardware-selected' : '')} style={{ width, height }} role="button" tabIndex={0} aria-label={'Компонент ' + component.name} onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onSelect(component.id); } }}>
     <svg width={width} height={height} viewBox={'0 0 ' + width + ' ' + height}>
       <rect width={width} height={height} rx="12" fill="#151c2a" stroke={selected ? module?.color || '#8b5cf6' : '#344158'} strokeWidth={selected ? 2 : 1} />
-      <rect x="0" y="14" width="3" height="29" rx="1" fill={module?.color || '#fb7185'} />
-      <text x="16" y="30" fill="#e2e8f0" fontSize="12" fontWeight="550">{component.name.length > 28 ? component.name.slice(0, 27) + '…' : component.name}</text>
-      <text x="16" y="49" fill="#72869f" fontSize="8" fontFamily="monospace">{module ? module.categoryName.toUpperCase() + ' / v' + component.moduleVersion : 'МОДУЛЬ НЕ УСТАНОВЛЕН'}</text>
-      {module && <image href={getAsset(module.visual.svg)} x="25" y="57" width="180" height="56" />}
-      {terminals.map(({ terminal, pin, active, color, connected }) => <g key={terminal.id} data-terminal={terminal.id} className="component-terminal nodrag nopan" role="button" tabIndex={0} aria-label={component.name + ': ' + terminal.label} onClick={event => { event.stopPropagation(); if (!busy) onTerminal(component, terminal); }} onKeyDown={activate(() => { if (!busy) onTerminal(component, terminal); })}>
-        <rect x="-12" y={terminal.y - 13} width="234" height="26" rx="4" fill={active ? '#8b5cf619' : 'transparent'} />
-        <circle cx={terminal.x} cy={terminal.y} r="6" fill={connected ? color : '#151c2a'} stroke={color} strokeWidth={active ? 3 : 1.7} />
-        <text x="16" y={terminal.y + 3} fill="#a8b8cb" fontSize="10">{terminal.label}</text>
-        <text x="214" y={terminal.y + 3} textAnchor="end" fill={pin ? color : '#5b6c86'} fontSize="10" fontFamily="monospace">{pin?.label || '–'}</text>
-      </g>)}
+      <rect x="0" y={14 + headerOffset} width="3" height="29" rx="1" fill={module?.color || '#fb7185'} />
+      <text x="16" y={30 + headerOffset} fill="#e2e8f0" fontSize="12" fontWeight="550">{component.name.length > 28 ? component.name.slice(0, 27) + '…' : component.name}</text>
+      <text x="16" y={49 + headerOffset} fill="#72869f" fontSize="8" fontFamily="monospace">{module ? module.categoryName.toUpperCase() + ' / v' + component.moduleVersion : 'МОДУЛЬ НЕ УСТАНОВЛЕН'}</text>
+      {module && <image href={getAsset(module.visual.svg)} x={(width - 180) / 2} y={57 + headerOffset} width="180" height="56" />}
+      {terminals.map(({ terminal, pin, active, color, connected }) => {
+        const vertical = terminal.side === 'top' || terminal.side === 'bottom';
+        const labelY = terminal.side === 'top' ? 14 : terminal.side === 'bottom' ? height - 24 : terminal.y + 3;
+        const pinY = terminal.side === 'top' ? 29 : height - 10;
+        const label = vertical && terminal.label.length > 13 ? terminal.label.slice(0, 12) + '…' : terminal.label;
+        return <g key={terminal.id} data-terminal={terminal.id} className="component-terminal nodrag nopan" role="button" tabIndex={0} aria-label={component.name + ': ' + terminal.label} onClick={event => { event.stopPropagation(); if (!busy) onTerminal(component, terminal); }} onKeyDown={activate(() => { if (!busy) onTerminal(component, terminal); })}>
+          <rect x={vertical ? terminal.x - 39 : -12} y={vertical ? (terminal.side === 'top' ? 0 : height - 38) : terminal.y - 13} width={vertical ? 78 : width + 4} height={vertical ? 38 : 26} rx="4" fill={active ? '#8b5cf619' : 'transparent'} />
+          <circle cx={terminal.x} cy={terminal.y} r="6" fill={connected ? color : '#151c2a'} stroke={color} strokeWidth={active ? 3 : 1.7} />
+          <text x={vertical ? terminal.x : 16} y={labelY} textAnchor={vertical ? 'middle' : 'start'} fill="#a8b8cb" fontSize={vertical ? 9 : 10}>{label}</text>
+          <text x={vertical ? terminal.x : width - 16} y={vertical ? pinY : terminal.y + 3} textAnchor={vertical ? 'middle' : 'end'} fill={pin ? color : '#5b6c86'} fontSize="9" fontFamily="monospace">{pin?.label || '–'}</text>
+          <title>{terminal.label + ' · ' + (pin?.label || 'Не подключён')}</title>
+        </g>;
+      })}
     </svg>
-    {terminals.map(({ terminal }) => <Handle key={terminal.id} type="source" id={terminal.id} position={Position.Left} className="assembly-handle" style={handleStyle(terminal.x, terminal.y)} isConnectable={!busy} aria-label={'Порт компонента ' + component.name + ': ' + terminal.label} title={terminal.label} onClick={event => { event.stopPropagation(); if (!busy) onTerminal(component, terminal); }} />)}
+    {terminals.map(({ terminal }) => <Handle key={terminal.id} type="source" id={terminal.id} position={Position[terminal.side[0].toUpperCase() + terminal.side.slice(1)]} className="assembly-handle" style={handleStyle(terminal.x, terminal.y)} isConnectable={!busy} aria-label={'Порт компонента ' + component.name + ': ' + terminal.label} title={terminal.label} onClick={event => { event.stopPropagation(); if (!busy) onTerminal(component, terminal); }} />)}
   </div>;
 }
 

@@ -1,11 +1,12 @@
 import { Cpu, Info, Trash2, Unplug, TriangleAlert, CheckCircle2, ArrowRight } from 'lucide-react';
+import { terminalSide, TERMINAL_SIDES } from './terminalLayout.js';
 import { moduleFor, moduleProblem, connectionProblem, pinProblem } from './model.js';
 
 function Sources({ board }) {
   return <details className="board-sources"><summary>Официальные источники</summary>{board.sources.map(source => <div key={source.url}><strong>{source.title}</strong><code>{source.url}</code></div>)}</details>;
 }
 
-export default function AssemblyInspector({ project, board, catalog, selection, busy, onConnect, onDisconnect, onRemoveWire, onRemoveComponent, onComponentChange, onBoardSetting }) {
+export default function AssemblyInspector({ project, board, catalog, selection, busy, onConnect, onDisconnect, onRemoveWire, onRemoveComponent, onComponentChange, onBoardSetting, onTerminalSide }) {
   const component = selection?.type === 'component' && project.components.find(item => item.id === selection.id);
   const module = component && moduleFor(component, catalog);
   const wire = selection?.type === 'wire' && project.assembly.connections.find(item => item.id === selection.id);
@@ -20,7 +21,7 @@ export default function AssemblyInspector({ project, board, catalog, selection, 
         const connected = project.assembly.connections.find(wire => wire.componentId === component.id && wire.terminalId === terminal.id);
         const missing = connected && !board.pins.some(pin => pin.id === connected.boardPinId);
         return <div className="terminal-setting" key={terminal.id}><label className="field">{terminal.label}<select aria-label={`Подключение: ${terminal.label}`} disabled={busy} value={connected?.boardPinId || ''} onChange={e => e.target.value ? onConnect(component.id, terminal.id, e.target.value) : onDisconnect(component.id, terminal.id)}><option value="">Не подключён</option>{missing && <option value={connected.boardPinId}>Контакт отсутствует: {connected.boardPinId}</option>}{board.pins.map(pin => { const problem = connectionProblem(project, catalog, component.id, terminal.id, pin.id); return <option key={pin.id} value={pin.id} disabled={Boolean(problem)}>{pin.label} · {pin.id}{problem ? ' · недоступен' : ''}</option>; })}</select></label>{connected && <button className="icon-button" disabled={busy} aria-label={`Отключить: ${terminal.label}`} onClick={() => onDisconnect(component.id, terminal.id)}><Unplug size={15} /></button>}</div>;
-      })}<p className="panel-note">Или нажмите контакт компонента на холсте, затем контакт платы. GND допускает несколько соединений.</p>
+      })}<div className="panel-label connections-heading">РАСПОЛОЖЕНИЕ КОНТАКТОВ</div>{module.terminals.map(terminal => <label className="field" key={'side:' + terminal.id}>{terminal.label}<select aria-label={'Сторона контакта: ' + terminal.label} disabled={busy} value={terminalSide(module, terminal, project.assembly.portSides?.[component.id])} onChange={event => onTerminalSide(component.id, terminal.id, event.target.value)}>{Object.entries(TERMINAL_SIDES).map(([side, label]) => <option key={side} value={side}>{label}</option>)}</select></label>)}<p className="panel-note">Сторона меняет только расположение точки на схеме. Назначение контакта, GPIO и соединения сохраняются. Физические контакты не являются входами/выходами логического графа.</p><p className="panel-note">Или нажмите контакт компонента на холсте, затем контакт платы. GND допускает несколько соединений.</p>
     </>}
     <button className="button remove-component" disabled={busy} onClick={() => onRemoveComponent(component.id)}><Trash2 size={15} />Удалить компонент</button></>;
   }

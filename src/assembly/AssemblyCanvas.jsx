@@ -6,6 +6,7 @@ import CanvasControls from '../components/CanvasControls.jsx';
 import useCanvasKeys from '../components/useCanvasKeys.js';
 import { moduleFor, pinProblem, connectionProblem } from './model.js';
 import { physicalConnection, physicalEdges } from './flow.js';
+import { terminalLayout } from './terminalLayout.js';
 import { AssemblyBoardNode, AssemblyHardwareNode } from './AssemblyNodes.jsx';
 import AssemblyWire from './AssemblyWire.jsx';
 
@@ -114,9 +115,9 @@ export default function AssemblyCanvas({ project, board, catalog, selection, set
       data: { board, pins, onPin: pinClick, busy: busy || spaceHeld },
     }];
     for (const component of project.components) {
-      const module = moduleFor(component, catalog), width = module?.visual.width || 230, height = module?.visual.height || 185;
+      const module = moduleFor(component, catalog), layout = terminalLayout(module, project.assembly.portSides?.[component.id]), { width, height } = layout;
       const selected = selection?.type === 'component' && selection.id === component.id;
-      const terminals = (module?.terminals || []).map(terminal => {
+      const terminals = layout.terminals.map(terminal => {
         const wire = project.assembly.connections.find(wire => wire.componentId === component.id && wire.terminalId === terminal.id);
         return { terminal, connected: Boolean(wire), pin: wire && board.pins.find(pin => pin.id === wire.boardPinId),
           active: pending?.componentId === component.id && pending.terminalId === terminal.id,
@@ -126,7 +127,7 @@ export default function AssemblyCanvas({ project, board, catalog, selection, set
         id: component.id, type: 'physicalHardware', position: project.assembly.positions[component.id], width, height,
         style: { width, height }, measured: measurements[component.id] || { width, height }, selected,
         ariaLabel: 'Компонент ' + component.name,
-        data: { component, module, terminals, selected, onTerminal: terminalClick, onSelect: selectNode, busy: busy || spaceHeld },
+        data: { component, module, layout, terminals, selected, onTerminal: terminalClick, onSelect: selectNode, busy: busy || spaceHeld },
       });
     }
     return nodes;
@@ -135,11 +136,11 @@ export default function AssemblyCanvas({ project, board, catalog, selection, set
   const edges = useMemo(() => physicalEdges(project).map(edge => {
     const wire = project.assembly.connections.find(wire => wire.id === edge.id);
     const component = project.components.find(component => component.id === wire.componentId), module = component && moduleFor(component, catalog);
-    const terminal = module?.terminals.find(terminal => terminal.id === wire.terminalId), pin = board.pins.find(pin => pin.id === wire.boardPinId);
+    const terminal = module?.terminals.find(terminal => terminal.id === wire.terminalId), targetLayout = terminalLayout(module, project.assembly.portSides?.[wire.componentId]), targetTerminal = targetLayout.terminals.find(item => item.id === wire.terminalId), pin = board.pins.find(pin => pin.id === wire.boardPinId);
     const diagnostic = connectionProblem(project, catalog, wire.componentId, wire.terminalId, wire.boardPinId);
     const selected = selection?.type === 'wire' && selection.id === wire.id;
     const label = 'Соединение ' + (component?.name || wire.componentId) + ': ' + (terminal?.label || wire.terminalId) + ' → ' + (pin?.label || wire.boardPinId);
-    return { ...edge, selected, ariaLabel: label, data: { label, diagnostic, selected, sourcePin: pin, boardWidth: board.width, boardHeight: board.height, ground: terminal?.kind === 'ground',
+    return { ...edge, selected, ariaLabel: label, data: { label, diagnostic, selected, sourcePin: pin, targetTerminal, targetWidth: targetLayout.width, targetHeight: targetLayout.height, boardWidth: board.width, boardHeight: board.height, ground: terminal?.kind === 'ground',
       color: diagnostic ? '#fb7185' : terminal?.kind === 'ground' ? '#7c8ba8' : terminal?.kind === 'gpio-output' ? '#34d399' : '#a78bfa',
       highlighted: selected || (selection?.type === 'component' && selection.id === wire.componentId), onSelect: selectWire } };
   }), [project, board, catalog, selection, selectWire]);
