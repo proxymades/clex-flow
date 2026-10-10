@@ -696,22 +696,71 @@ mod tests {
         .unwrap_err()
         .contains("остановлена"));
     }
+    fn assert_owned_eim_configuration(slot: &Path, allow_prerequisites: bool) {
+        let text = eim_config(slot, "5.4.4", allow_prerequisites);
+        let config: toml::Value =
+            toml::from_str(&text).expect("EIM configuration must be valid TOML");
+        // Compare decoded paths, not serialized slashes: Windows joins with
+        // backslashes, which TOML basic strings escape before writing.
+        for (key, expected) in [
+            ("path", slot.to_path_buf()),
+            ("esp_idf_json_path", slot.join("registry")),
+            ("tool_install_folder_name", slot.join("tools")),
+            ("tool_download_folder_name", slot.join("downloads")),
+            ("activation_script_path_override", slot.join("activation")),
+            ("config_file_save_path", slot.join("eim-settings.toml")),
+        ] {
+            assert_eq!(
+                config[key].as_str(),
+                Some(expected.to_string_lossy().as_ref()),
+                "{key}"
+            );
+        }
+        for (key, expected) in [
+            ("install_all_prerequisites", allow_prerequisites),
+            ("non_interactive", true),
+            ("skip_prerequisites_check", false),
+            ("recurse_submodules", true),
+            ("do_not_track", true),
+            ("cleanup", true),
+        ] {
+            assert_eq!(config[key].as_bool(), Some(expected), "{key}");
+        }
+        assert_eq!(
+            config["idf_versions"],
+            toml::Value::Array(vec![toml::Value::String("v5.4.4".into())])
+        );
+        assert_eq!(
+            config["target"],
+            toml::Value::Array(vec![toml::Value::String("esp32s3".into())])
+        );
+        assert_eq!(config["python_env_folder_name"].as_str(), Some("python"));
+        let args = eim_args(slot, allow_prerequisites);
+        assert_eq!(
+            args,
+            vec![
+                "--do-not-track".to_string(),
+                "true".into(),
+                "--log-file".into(),
+                slot.join("installation.log").to_string_lossy().into(),
+                "--esp-idf-json-path".into(),
+                slot.join("registry").to_string_lossy().into(),
+                "install".into(),
+                "--config".into(),
+                slot.join("install.toml").to_string_lossy().into(),
+                "--non-interactive".into(),
+                "true".into(),
+                "--install-all-prerequisites".into(),
+                allow_prerequisites.to_string(),
+            ]
+        );
+    }
     #[test]
     fn eim_configuration_uses_only_the_owned_slot() {
-        let slot = Path::new("/test/clex-sdk");
-        let config = eim_config(slot, "5.4.4", false);
-        for part in [
-            "/test/clex-sdk/tools",
-            "/test/clex-sdk/registry",
-            "/test/clex-sdk/activation",
-            "install_all_prerequisites = false",
-            "do_not_track = true",
-        ] {
-            assert!(config.contains(part));
-        }
-        let args = eim_args(slot, false);
-        assert!(args.contains(&"false".into()));
-        assert_eq!(args[0], "--do-not-track");
+        let directory = tempfile::tempdir().unwrap();
+        let slot = directory.path().join("CLEX SDK – тест");
+        assert_owned_eim_configuration(&slot, false);
+        assert_owned_eim_configuration(&slot, true);
     }
     #[test]
     fn mirrors_and_redirects_are_restricted() {
@@ -768,9 +817,22 @@ mod tests {
     }
     #[test]
     fn windows_paths_are_encoded_as_toml_basic_strings() {
-        let text = eim_config(Path::new(r"C:\Users\SDK Test\CLEX"), "5.4.4", false);
+        let slot = Path::new(r"C:\Users\SDK Test\CLEX");
+        let text = eim_config(slot, "5.4.4", false);
         assert!(text.contains(r"C:\\Users"));
         assert!(!text.contains("powershell -Command"));
+        assert_owned_eim_configuration(slot, false);
+    }
+    #[test]
+    fn eim_paths_round_trip_spaces_unicode_quotes_and_backslashes() {
+        // No directory creation or installer execution: test serialization only.
+        for slot in [
+            r#"/tmp/SDK тест/quoted "slot""#,
+            r#"C:\Users\Иван\SDK Test"#,
+            r"\\server\SDK share\CLEX",
+        ] {
+            assert_owned_eim_configuration(Path::new(slot), false);
+        }
     }
     #[cfg(unix)]
     #[test]

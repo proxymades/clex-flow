@@ -24,7 +24,8 @@
     "test:sdk-ui": "node tests/sdk-ui.cjs",
     "test:display-ui": "node tests/display-ui.cjs",
     "test:interface-ui": "node tests/interface-ui.cjs",
-    "test:process-log-ui": "node tests/process-log-ui.cjs"
+    "test:process-log-ui": "node tests/process-log-ui.cjs",
+    "test:wire-routing-ui": "node tests/wire-routing-ui.cjs"
   },
   "dependencies": {
     "@tauri-apps/api": "2.10.1",

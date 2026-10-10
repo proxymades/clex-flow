@@ -6,6 +6,8 @@ import CanvasControls from '../components/CanvasControls.jsx';
 import useCanvasKeys from '../components/useCanvasKeys.js';
 import { moduleFor, pinProblem, connectionProblem } from './model.js';
 import { physicalConnection, physicalEdges } from './flow.js';
+import { allocateWireLanes } from './wireRouting.js';
+import { wireColors, GROUND_COLOR } from './wireColors.js';
 import { terminalLayout } from './terminalLayout.js';
 import { AssemblyBoardNode, AssemblyHardwareNode } from './AssemblyNodes.jsx';
 import AssemblyWire from './AssemblyWire.jsx';
@@ -100,13 +102,15 @@ export default function AssemblyCanvas({ project, board, catalog, selection, set
     interaction('connection', false);
   }, [problemFor, onError, interaction]);
 
+  const colors = useMemo(() => wireColors(project, catalog), [project, catalog]);
   const modelNodes = useMemo(() => {
     const pins = board.pins.map(pin => {
       const blocked = pinProblem(project, pin, board);
+      const connectedWire = project.assembly.connections.find(wire => wire.boardPinId === pin.id);
       return { pin, blocked, selected: selection?.type === 'pin' && selection.id === pin.id,
         connected: project.assembly.connections.some(wire => wire.boardPinId === pin.id),
         candidate: pending?.componentId && !connectionProblem(project, catalog, pending.componentId, pending.terminalId, pin.id),
-        color: pin.kind === 'ground' ? '#7c8ba8' : pin.kind === 'power' ? '#fb7185' : pin.kind === 'control' ? '#e9b968' : blocked ? '#576179' : '#34d399' };
+        color: colors[connectedWire?.id] || (pin.kind === 'ground' ? GROUND_COLOR : pin.kind === 'power' ? '#fb7185' : pin.kind === 'control' ? '#e9b968' : blocked ? '#576179' : '#34d399') };
     });
     const nodes = [{
       id: 'board', type: 'physicalBoard', position: project.assembly.positions.board, width: board.width, height: board.height,
@@ -121,7 +125,7 @@ export default function AssemblyCanvas({ project, board, catalog, selection, set
         const wire = project.assembly.connections.find(wire => wire.componentId === component.id && wire.terminalId === terminal.id);
         return { terminal, connected: Boolean(wire), pin: wire && board.pins.find(pin => pin.id === wire.boardPinId),
           active: pending?.componentId === component.id && pending.terminalId === terminal.id,
-          color: terminal.kind === 'ground' ? '#7c8ba8' : module.color };
+          color: colors[wire?.id] || (terminal.kind === 'ground' ? GROUND_COLOR : module.color) };
       });
       nodes.push({
         id: component.id, type: 'physicalHardware', position: project.assembly.positions[component.id], width, height,
@@ -131,9 +135,9 @@ export default function AssemblyCanvas({ project, board, catalog, selection, set
       });
     }
     return nodes;
-  }, [project, board, catalog, selection, pending, measurements, pinClick, terminalClick, selectNode, busy, spaceHeld]);
+  }, [project, board, catalog, colors, selection, pending, measurements, pinClick, terminalClick, selectNode, busy, spaceHeld]);
   const nodes = useMemo(() => modelNodes.map(node => positions[node.id] ? { ...node, ...positions[node.id] } : node), [modelNodes, positions]);
-  const edges = useMemo(() => physicalEdges(project).map(edge => {
+  const edges = useMemo(() => allocateWireLanes(physicalEdges(project).map(edge => {
     const wire = project.assembly.connections.find(wire => wire.id === edge.id);
     const component = project.components.find(component => component.id === wire.componentId), module = component && moduleFor(component, catalog);
     const terminal = module?.terminals.find(terminal => terminal.id === wire.terminalId), targetLayout = terminalLayout(module, project.assembly.portSides?.[wire.componentId]), targetTerminal = targetLayout.terminals.find(item => item.id === wire.terminalId), pin = board.pins.find(pin => pin.id === wire.boardPinId);
@@ -141,9 +145,9 @@ export default function AssemblyCanvas({ project, board, catalog, selection, set
     const selected = selection?.type === 'wire' && selection.id === wire.id;
     const label = 'Соединение ' + (component?.name || wire.componentId) + ': ' + (terminal?.label || wire.terminalId) + ' → ' + (pin?.label || wire.boardPinId);
     return { ...edge, selected, ariaLabel: label, data: { label, diagnostic, selected, sourcePin: pin, targetTerminal, targetWidth: targetLayout.width, targetHeight: targetLayout.height, boardWidth: board.width, boardHeight: board.height, ground: terminal?.kind === 'ground',
-      color: diagnostic ? '#fb7185' : terminal?.kind === 'ground' ? '#7c8ba8' : terminal?.kind === 'gpio-output' ? '#34d399' : '#a78bfa',
+      color: diagnostic ? '#fb7185' : colors[wire.id],
       highlighted: selected || (selection?.type === 'component' && selection.id === wire.componentId), onSelect: selectWire } };
-  }), [project, board, catalog, selection, selectWire]);
+  })), [project, board, catalog, colors, selection, selectWire]);
 
   const commitPositions = useCallback(updates => {
     const moved = Object.fromEntries(Object.entries(updates).map(([id, change]) => [id, change.position]));

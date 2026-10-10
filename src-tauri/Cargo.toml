@@ -22,3 +22,6 @@ tempfile = "3"
 sha2 = "0.10"
 libc = "0.2"
 reqwest = { version = "0.13.2", default-features = false, features = ["blocking", "json", "native-tls"] }
+
+[dev-dependencies]
+toml = "=0.9.12"

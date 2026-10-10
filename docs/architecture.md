@@ -33,6 +33,8 @@ src/
     AssemblyNodes.jsx        SVG внутри узлов платы/компонентов, реальные контакты
     AssemblyWire.jsx         Физические провода через порты React Flow
     flow.js                  Связь handles/edges с существующим форматом
+    wireRouting.js           Отдельные дорожки и подходы физических проводов
+    wireColors.js            Цвета соединений и контактов по типу и ID
     HardwareLibrary.jsx      Каталог, категории и поиск
     AssemblyInspector.jsx    Свойства контакта, провода, компонента и платы
   logic/
