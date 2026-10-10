@@ -1,164 +1,219 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ReactFlow, Background, BackgroundVariant, ConnectionMode } from '@xyflow/react';
+import '@xyflow/react/dist/style.css';
 import { Unplug, Move, MousePointer2 } from 'lucide-react';
 import CanvasControls from '../components/CanvasControls.jsx';
 import useCanvasKeys from '../components/useCanvasKeys.js';
-import { getAsset } from '../catalog/index.js';
 import { moduleFor, pinProblem, connectionProblem } from './model.js';
+import { physicalConnection, physicalEdges } from './flow.js';
+import { AssemblyBoardNode, AssemblyHardwareNode } from './AssemblyNodes.jsx';
+import AssemblyWire from './AssemblyWire.jsx';
 
+const nodeTypes = { physicalBoard: AssemblyBoardNode, physicalHardware: AssemblyHardwareNode };
+const edgeTypes = { physical: AssemblyWire };
+const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
-function boundsFor(project, board, catalog) {
-  const elements = [{ ...project.assembly.positions.board, width: board.width, height: board.height }, ...project.components.map(component => ({ ...project.assembly.positions[component.id], width: moduleFor(component, catalog)?.visual.width || 230, height: moduleFor(component, catalog)?.visual.height || 185 }))];
-  return { left: Math.min(...elements.map(e => e.x)), top: Math.min(...elements.map(e => e.y)), right: Math.max(...elements.map(e => e.x + e.width)), bottom: Math.max(...elements.map(e => e.y + e.height)) };
-}
-function fitViewport(bounds, size) {
-  const zoom = clamp(Math.min((size.width - 70) / (bounds.right - bounds.left), (size.height - 60) / (bounds.bottom - bounds.top)), 0.2, 1);
-  return { zoom, x: (size.width - (bounds.right - bounds.left) * zoom) / 2 - bounds.left * zoom, y: (size.height - (bounds.bottom - bounds.top) * zoom) / 2 - bounds.top * zoom };
-}
+const viewportData = viewport => ({
+  x: clamp(viewport.x, -50000, 50000), y: clamp(viewport.y, -50000, 50000), zoom: clamp(viewport.zoom, 0.2, 3),
+});
 
-export default function AssemblyCanvas({ project, board, catalog, selection, setSelection, pending, setPending, onTerminal, onPin, onTransform, onInteraction, busy }) {
-  const svgRef = useRef(null), drag = useRef(null), draft = useRef(null), blockClick = useRef(false);
-  const [preview, setPreview] = useState(null);
-  const [size, setSize] = useState({ width: 700, height: 570 });
-  const [autoFit, setAutoFit] = useState(project.assembly.viewport.zoom === 1 && project.assembly.viewport.x === 0 && project.assembly.viewport.y === 0);
-  const bounds = useMemo(() => boundsFor(project, board, catalog), [project, board, catalog]);
-  const viewport = preview?.viewport || (autoFit ? fitViewport(bounds, size) : project.assembly.viewport);
-  const positions = useMemo(() => ({ ...project.assembly.positions, ...preview?.positions }), [project.assembly.positions, preview]);
-  const boardPosition = positions.board;
-  const { space, spaceHeld } = useCanvasKeys({ onFit: () => { if (!drag.current) updateViewport(fitViewport(bounds, size)); }, onEscape: () => setPending(null), busy });
-  const selectedComponent = selection?.type === 'component' ? selection.id : null;
-  useEffect(() => () => onInteraction(false), [onInteraction]);
-  const updateViewport = next => {
-    setAutoFit(false);
-    onTransform({ viewport: { x: clamp(next.x, -50000, 50000), y: clamp(next.y, -50000, 50000), zoom: clamp(next.zoom, 0.2, 3) } });
+export default function AssemblyCanvas({ project, board, catalog, selection, setSelection, pending, setPending, onTerminal, onPin, onConnect, onError, onTransform, onInteraction, busy }) {
+  const root = useRef(null);
+  const [instance, setInstance] = useState(null), [measurements, setMeasurements] = useState({}), [ready, setReady] = useState(false);
+  const [positions, setPositions] = useState({}), [zoom, setZoom] = useState(project.assembly.viewport.zoom);
+  const [size, setSize] = useState({ width: 0, height: 0 });
+  const draftPositions = useRef({}), dragging = useRef(false), interactions = useRef(new Set());
+  const initial = useRef(true), silentFits = useRef(0), connectionStart = useRef(null);
+  const autoFit = useRef(same(project.assembly.viewport, { x: 0, y: 0, zoom: 1 }));
+  const fitView = () => {
+    if (!instance || dragging.current) return;
+    autoFit.current = false;
+    return cameraAction(() => instance.fitView({ padding: 0.12, maxZoom: 1, duration: 0 }));
   };
-  const zoomAt = (factor, x = size.width / 2, y = size.height / 2) => {
-    const zoom = clamp(viewport.zoom * factor, 0.2, 3);
-    updateViewport({ zoom, x: x - (x - viewport.x) * zoom / viewport.zoom, y: y - (y - viewport.y) * zoom / viewport.zoom });
-  };
+  const { spaceHeld } = useCanvasKeys({ onFit: fitView, onEscape: () => setPending(null), busy });
+  const interaction = useCallback((kind, active) => {
+    const previous = interactions.current.size > 0;
+    if (active) interactions.current.add(kind); else interactions.current.delete(kind);
+    if (previous !== (interactions.current.size > 0)) onInteraction(interactions.current.size > 0);
+  }, [onInteraction]);
+  useEffect(() => () => { onInteraction(false); }, [onInteraction]);
   useEffect(() => {
-    const svg = svgRef.current;
     const observer = new ResizeObserver(entries => {
       const { width, height } = entries[0].contentRect;
-      setSize({ width: Math.max(100, width), height: Math.max(100, height) });
+      setSize(previous => previous.width === width && previous.height === height ? previous : { width, height });
     });
-    observer.observe(svg);
+    observer.observe(root.current);
     return () => observer.disconnect();
   }, []);
   useEffect(() => {
-    const svg = svgRef.current;
-    const wheel = event => {
-      event.preventDefault();
-      if (busy || drag.current) return;
-      const rect = svg.getBoundingClientRect();
-      const zoom = clamp(viewport.zoom * (event.deltaY < 0 ? 1.08 : 1 / 1.08), 0.2, 3);
-      const x = event.clientX - rect.left, y = event.clientY - rect.top;
-      setAutoFit(false);
-      onTransform({ viewport: { zoom, x: clamp(x - (x - viewport.x) * zoom / viewport.zoom, -50000, 50000), y: clamp(y - (y - viewport.y) * zoom / viewport.zoom, -50000, 50000) } });
-    };
-    svg.addEventListener('wheel', wheel, { passive: false });
-    return () => svg.removeEventListener('wheel', wheel);
-  }, [viewport.x, viewport.y, viewport.zoom, onTransform, busy]);
+    if (!instance || !size.width || !size.height) return;
+    let live = true;
+    const finish = () => { if (live) { initial.current = false; setReady(true); } };
+    if (autoFit.current) {
+      silentFits.current++;
+      instance.fitView({ padding: 0.12, maxZoom: 1, duration: 0 }).finally(() => { silentFits.current--; finish(); });
+    } else Promise.resolve().then(finish);
+    return () => { live = false; };
+  }, [instance, board.id, project.components.length, size.width, size.height]);
+  useEffect(() => {
+    if (instance && !autoFit.current && !interactions.current.size && !same(instance.getViewport(), project.assembly.viewport)) {
+      instance.setViewport(project.assembly.viewport, { duration: 0 });
+    }
+  }, [instance, project.assembly.viewport]);
 
-  function pointerDown(event) {
-    if (busy || event.button !== 0 || (!space.current && event.target.closest('[data-terminal], [data-pin], [data-wire]'))) return;
-    const id = space.current ? null : event.target.closest('[data-drag]')?.getAttribute('data-drag');
-    if (id) setSelection({ type: id === 'board' ? 'board' : 'component', id });
-    svgRef.current.setPointerCapture(event.pointerId);
-    draft.current = null;
-    drag.current = { id, x: event.clientX, y: event.clientY, position: id ? positions[id] : null, viewport, moved: false, panMode: space.current };
-    onInteraction(true);
-  }
-  function pointerMove(event) {
-    const start = drag.current;
-    if (!start) return;
-    const dx = event.clientX - start.x, dy = event.clientY - start.y;
-    if (Math.abs(dx) + Math.abs(dy) < 3 && !start.moved) return;
-    if (!start.moved) setAutoFit(false);
-    start.moved = true;
-    draft.current = start.id ? { viewport: start.viewport, positions: { [start.id]: { x: clamp(start.position.x + dx / start.viewport.zoom, -5000, 5000), y: clamp(start.position.y + dy / start.viewport.zoom, -5000, 5000) } } } : { viewport: { ...start.viewport, x: clamp(start.viewport.x + dx, -50000, 50000), y: clamp(start.viewport.y + dy, -50000, 50000) } };
-    setPreview(draft.current);
-  }
-  function pointerUp(event) {
-    const start = drag.current;
-    if (start && !start.id && !start.moved && !start.panMode) { setSelection({ type: 'board', id: 'board' }); setPending(null); }
-    if (start?.moved && draft.current) onTransform(draft.current);
-    blockClick.current = Boolean(start?.moved || start?.panMode);
-    requestAnimationFrame(() => { blockClick.current = false; });
-    drag.current = null;
-    draft.current = null; setPreview(null);
-    if (start) onInteraction(false);
-    if (svgRef.current.hasPointerCapture(event.pointerId)) svgRef.current.releasePointerCapture(event.pointerId);
-  }
-  function cancelDrag() {
-    if (!drag.current) return;
-    if (drag.current.moved && draft.current) onTransform(draft.current);
-    drag.current = null;
-    draft.current = null; setPreview(null);
-    onInteraction(false);
-  }
-  const activate = callback => event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); callback(); } };
+  const selectNode = useCallback(id => {
+    if (busy || spaceHeld) return;
+    setSelection({ type: id === 'board' ? 'board' : 'component', id });
+  }, [busy, spaceHeld, setSelection]);
+  const selectWire = useCallback(id => {
+    if (busy || spaceHeld) return;
+    setSelection({ type: 'wire', id }); setPending(null);
+  }, [busy, spaceHeld, setSelection, setPending]);
+  const pinClick = useCallback(pin => { if (!busy && !spaceHeld) onPin(pin); }, [busy, spaceHeld, onPin]);
+  const terminalClick = useCallback((component, terminal) => { if (!busy && !spaceHeld) onTerminal(component, terminal); }, [busy, spaceHeld, onTerminal]);
+  const problemFor = useCallback(connection => {
+    try {
+      const { componentId, terminalId, pinId } = physicalConnection(connection);
+      return connectionProblem(project, catalog, componentId, terminalId, pinId);
+    } catch (error) { return error.message; }
+  }, [project, catalog]);
+  const connect = useCallback(connection => {
+    if (busy || spaceHeld) return;
+    try {
+      const { componentId, terminalId, pinId } = physicalConnection(connection);
+      onConnect(componentId, terminalId, pinId);
+    } catch (error) { onError(error.message); }
+  }, [busy, spaceHeld, onConnect, onError]);
+  const connectStart = useCallback(event => {
+    connectionStart.current = { x: event.clientX, y: event.clientY };
+    interaction('connection', true);
+  }, [interaction]);
+  const connectEnd = useCallback((event, state) => {
+    const start = connectionStart.current;
+    const moved = start && Math.hypot(event.clientX - start.x, event.clientY - start.y) > 3;
+    if (moved && !state.isValid && state.fromNode && state.toNode && state.fromHandle && state.toHandle) {
+      const problem = problemFor({ source: state.fromNode.id, sourceHandle: state.fromHandle.id, target: state.toNode.id, targetHandle: state.toHandle.id });
+      if (problem) onError(problem);
+    }
+    connectionStart.current = null;
+    interaction('connection', false);
+  }, [problemFor, onError, interaction]);
 
-  return <div className={`assembly-canvas ${busy ? 'canvas-busy' : ''} ${spaceHeld ? 'canvas-space-pan' : ''}`}>
-    <div className="canvas-top"><span className="badge purple"><MousePointer2 size={12} />МОНТАЖ / {project.components.length} компонентов</span><span className="canvas-scale">{Math.round(viewport.zoom * 100)}%</span></div>
+  const modelNodes = useMemo(() => {
+    const pins = board.pins.map(pin => {
+      const blocked = pinProblem(project, pin, board);
+      return { pin, blocked, selected: selection?.type === 'pin' && selection.id === pin.id,
+        connected: project.assembly.connections.some(wire => wire.boardPinId === pin.id),
+        candidate: pending?.componentId && !connectionProblem(project, catalog, pending.componentId, pending.terminalId, pin.id),
+        color: pin.kind === 'ground' ? '#7c8ba8' : pin.kind === 'power' ? '#fb7185' : pin.kind === 'control' ? '#e9b968' : blocked ? '#576179' : '#34d399' };
+    });
+    const nodes = [{
+      id: 'board', type: 'physicalBoard', position: project.assembly.positions.board, width: board.width, height: board.height,
+      style: { width: board.width, height: board.height }, measured: measurements.board || { width: board.width, height: board.height },
+      selected: selection?.type === 'board' || selection?.type === 'pin', ariaLabel: 'Плата ' + board.name,
+      data: { board, pins, onPin: pinClick, busy: busy || spaceHeld },
+    }];
+    for (const component of project.components) {
+      const module = moduleFor(component, catalog), width = module?.visual.width || 230, height = module?.visual.height || 185;
+      const selected = selection?.type === 'component' && selection.id === component.id;
+      const terminals = (module?.terminals || []).map(terminal => {
+        const wire = project.assembly.connections.find(wire => wire.componentId === component.id && wire.terminalId === terminal.id);
+        return { terminal, connected: Boolean(wire), pin: wire && board.pins.find(pin => pin.id === wire.boardPinId),
+          active: pending?.componentId === component.id && pending.terminalId === terminal.id,
+          color: terminal.kind === 'ground' ? '#7c8ba8' : module.color };
+      });
+      nodes.push({
+        id: component.id, type: 'physicalHardware', position: project.assembly.positions[component.id], width, height,
+        style: { width, height }, measured: measurements[component.id] || { width, height }, selected,
+        ariaLabel: 'Компонент ' + component.name,
+        data: { component, module, terminals, selected, onTerminal: terminalClick, onSelect: selectNode, busy: busy || spaceHeld },
+      });
+    }
+    return nodes;
+  }, [project, board, catalog, selection, pending, measurements, pinClick, terminalClick, selectNode, busy, spaceHeld]);
+  const nodes = useMemo(() => modelNodes.map(node => positions[node.id] ? { ...node, ...positions[node.id] } : node), [modelNodes, positions]);
+  const edges = useMemo(() => physicalEdges(project).map(edge => {
+    const wire = project.assembly.connections.find(wire => wire.id === edge.id);
+    const component = project.components.find(component => component.id === wire.componentId), module = component && moduleFor(component, catalog);
+    const terminal = module?.terminals.find(terminal => terminal.id === wire.terminalId), pin = board.pins.find(pin => pin.id === wire.boardPinId);
+    const diagnostic = connectionProblem(project, catalog, wire.componentId, wire.terminalId, wire.boardPinId);
+    const selected = selection?.type === 'wire' && selection.id === wire.id;
+    const label = 'Соединение ' + (component?.name || wire.componentId) + ': ' + (terminal?.label || wire.terminalId) + ' → ' + (pin?.label || wire.boardPinId);
+    return { ...edge, selected, ariaLabel: label, data: { label, diagnostic, selected, sourcePin: pin, boardWidth: board.width, boardHeight: board.height, ground: terminal?.kind === 'ground',
+      color: diagnostic ? '#fb7185' : terminal?.kind === 'ground' ? '#7c8ba8' : terminal?.kind === 'gpio-output' ? '#34d399' : '#a78bfa',
+      highlighted: selected || (selection?.type === 'component' && selection.id === wire.componentId), onSelect: selectWire } };
+  }), [project, board, catalog, selection, selectWire]);
+
+  const commitPositions = useCallback(updates => {
+    const moved = Object.fromEntries(Object.entries(updates).map(([id, change]) => [id, change.position]));
+    if (!Object.keys(moved).length) return;
+    onTransform({ positions: moved, viewport: viewportData(instance?.getViewport() || project.assembly.viewport) });
+  }, [instance, project.assembly.viewport, onTransform]);
+  const beginDrag = useCallback(() => {
+    autoFit.current = false; dragging.current = true; interaction('drag', true);
+  }, [interaction]);
+  const finishDrag = useCallback(() => {
+    if (!dragging.current) return;
+    commitPositions(draftPositions.current);
+    draftPositions.current = {}; dragging.current = false; setPositions({});
+    interaction('drag', false);
+  }, [commitPositions, interaction]);
+  const changeNodes = useCallback(changes => {
+    const dimensions = changes.filter(change => change.type === 'dimensions' && change.dimensions);
+    if (dimensions.length) setMeasurements(previous => {
+      const next = { ...previous, ...Object.fromEntries(dimensions.map(change => [change.id, change.dimensions])) };
+      return same(previous, next) ? previous : next;
+    });
+    for (const change of changes) if (change.type === 'select' && change.selected) selectNode(change.id);
+    const moves = changes.filter(change => change.type === 'position' && change.position);
+    if (!busy && moves.length) {
+      const updates = Object.fromEntries(moves.map(change => [change.id, { position: { x: clamp(change.position.x, -5000, 5000), y: clamp(change.position.y, -5000, 5000) }, dragging: Boolean(change.dragging) }]));
+      if (dragging.current) { draftPositions.current = { ...draftPositions.current, ...updates }; setPositions(draftPositions.current); }
+      else { autoFit.current = false; commitPositions(updates); }
+    }
+  }, [busy, selectNode, commitPositions]);
+  const moveStart = useCallback(event => {
+    if (!event || initial.current || silentFits.current) return;
+    autoFit.current = false;
+    interaction('viewport', true);
+  }, [interaction]);
+  const moveEnd = useCallback((event, viewport) => {
+    const next = viewportData(viewport);
+    setZoom(next.zoom);
+    if (event && !initial.current && !silentFits.current && !dragging.current && !busy && !same(next, project.assembly.viewport)) onTransform({ viewport: next });
+    interaction('viewport', false);
+  }, [busy, project.assembly.viewport, onTransform, interaction]);
+  function cameraAction(action) {
+    interaction('viewport', true);
+    return Promise.resolve(action()).then(() => {
+      const next = viewportData(instance.getViewport());
+      setZoom(next.zoom);
+      if (!same(next, project.assembly.viewport)) onTransform({ viewport: next });
+    }).finally(() => interaction('viewport', false));
+  }
+  const zoomBy = factor => {
+    if (!instance || dragging.current) return;
+    autoFit.current = false;
+    return cameraAction(() => factor > 1 ? instance.zoomIn({ duration: 0 }) : instance.zoomOut({ duration: 0 }));
+  };
+
+  return <div className={['assembly-canvas', busy ? 'canvas-busy' : '', spaceHeld ? 'canvas-space-pan' : ''].join(' ')}>
+    <div className="canvas-top"><span className="badge purple"><MousePointer2 size={12} />МОНТАЖ / {project.components.length} компонентов</span><span className="canvas-scale">{Math.round(zoom * 100)}%</span></div>
     {pending && <div className="connection-prompt"><span className="dot green-dot" />{pending.componentId ? 'Выберите контакт платы для соединения' : 'Выберите контакт компонента'}<button aria-label="Отменить соединение" className="icon-button" onClick={() => setPending(null)}><Unplug size={15} /></button></div>}
-    <svg ref={svgRef} className="assembly-svg" aria-label="Холст монтажа" onPointerDown={pointerDown} onPointerMove={pointerMove} onPointerUp={pointerUp} onPointerCancel={cancelDrag} onLostPointerCapture={cancelDrag} onClickCapture={event => { if (blockClick.current) { event.preventDefault(); event.stopPropagation(); blockClick.current = false; } }}>
-      <defs><pattern id="assembly-dots" width={24 * viewport.zoom} height={24 * viewport.zoom} x={viewport.x} y={viewport.y} patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r="0.8" fill="#3b465d" opacity=".65" /></pattern></defs><rect width="100%" height="100%" fill="url(#assembly-dots)" />
-      <g transform={`translate(${viewport.x} ${viewport.y}) scale(${viewport.zoom})`}>
-        {project.assembly.connections.map(wire => {
-          const component = project.components.find(component => component.id === wire.componentId);
-          const module = component && moduleFor(component, catalog);
-          const terminal = module?.terminals.find(terminal => terminal.id === wire.terminalId);
-          const pin = board.pins.find(pin => pin.id === wire.boardPinId);
-          if (!terminal || !pin) return null;
-          const position = positions[component.id];
-          const start = { x: boardPosition.x + pin.x, y: boardPosition.y + pin.y }, end = { x: position.x + terminal.x, y: position.y + terminal.y };
-          const bend = Math.max(70, Math.abs(end.x - start.x) * 0.5);
-          const path = `M${start.x},${start.y} C${start.x + (pin.side === 'left' ? -bend : bend)},${start.y} ${end.x - bend},${end.y} ${end.x},${end.y}`;
-          const invalid = connectionProblem(project, catalog, wire.componentId, wire.terminalId, wire.boardPinId);
-          const selected = selection?.type === 'wire' && selection.id === wire.id;
-          const color = invalid ? '#fb7185' : terminal.kind === 'ground' ? '#7c8ba8' : terminal.kind === 'gpio-output' ? '#34d399' : '#a78bfa';
-          return <g key={wire.id} className="physical-wire" data-wire={wire.id} role="button" tabIndex={0} aria-label={`Соединение ${component.name}: ${terminal.label} → ${pin.label}`} onClick={event => { event.stopPropagation(); setSelection({ type: 'wire', id: wire.id }); setPending(null); }} onKeyDown={activate(() => setSelection({ type: 'wire', id: wire.id }))}>
-            <path d={path} fill="none" stroke="transparent" strokeWidth="18" /><path className="visible-wire" d={path} fill="none" stroke={color} strokeWidth={selected ? 4 : 2.2} strokeDasharray={terminal.kind === 'ground' ? '5 4' : undefined} opacity={selected || selectedComponent === component.id ? 1 : 0.75} /><title>{invalid || `${terminal.label} → ${pin.label}`}</title>
-          </g>;
-        })}
-        <g transform={`translate(${boardPosition.x} ${boardPosition.y})`}>
-          <image href={getAsset(board.svg)} width={board.width} height={board.height} data-drag="board" className="board-drawing" />
-          {board.pins.map(pin => {
-            const blocked = pinProblem(project, pin, board);
-            const selected = selection?.type === 'pin' && selection.id === pin.id;
-            const connected = project.assembly.connections.some(wire => wire.boardPinId === pin.id);
-            const candidate = pending?.componentId && !connectionProblem(project, catalog, pending.componentId, pending.terminalId, pin.id);
-            const color = pin.kind === 'ground' ? '#7c8ba8' : pin.kind === 'power' ? '#fb7185' : pin.kind === 'control' ? '#e9b968' : blocked ? '#576179' : '#34d399';
-            const label = `${pin.physicalNumber} · ${pin.label}`;
-            return <g key={pin.id} data-pin={pin.id} className={`board-pin ${selected || connected ? 'pin-selected' : ''} ${candidate ? 'pin-candidate' : ''}`} role="button" tabIndex={0} aria-label={`Контакт ${pin.id}: ${pin.label}${blocked ? ', ограничен' : ''}`} onClick={event => { event.stopPropagation(); if (!busy) onPin(pin); }} onKeyDown={activate(() => { if (!busy) onPin(pin); })}>
-              <rect x={pin.side === 'left' ? 2 : pin.x - 12} y={pin.y - 11} width="108" height="22" rx="4" fill={selected || connected ? '#24364a' : '#101722'} opacity={selected || connected ? 0.9 : 0.7} />
-              <circle cx={pin.x} cy={pin.y} r={candidate ? 6 : 5} fill={connected ? color : '#121c26'} stroke={color} strokeWidth={selected || candidate ? 2.5 : 1.5} />
-              <text x={pin.side === 'left' ? pin.x - 12 : pin.x + 12} y={pin.y + 3.5} textAnchor={pin.side === 'left' ? 'end' : 'start'} fill={blocked && pin.kind === 'gpio' ? '#69758e' : '#bbc9db'} fontSize="10" fontFamily="ui-monospace, monospace">{label}</text>
-              <title>{label} · {blocked || (pin.kind === 'gpio' ? 'Цифровой GPIO' : pin.kind === 'ground' ? 'Общая земля' : 'Питание / управление')}{pin.functions.length ? ` · ${pin.functions.join(', ')}` : ''}</title>
-            </g>;
-          })}
-        </g>
-        {project.components.map(component => {
-          const module = moduleFor(component, catalog), position = positions[component.id];
-          const selected = selectedComponent === component.id;
-          return <g key={component.id} transform={`translate(${position.x} ${position.y})`} className={`hardware-node ${selected ? 'hardware-selected' : ''}`} data-drag={component.id} role="button" tabIndex={0} aria-label={`Компонент ${component.name}`} onClick={() => setSelection({ type: 'component', id: component.id })} onKeyDown={activate(() => setSelection({ type: 'component', id: component.id }))}>
-            <rect width={module?.visual.width || 230} height={module?.visual.height || 185} rx="12" fill="#151c2a" stroke={selected ? module?.color || '#8b5cf6' : '#344158'} strokeWidth={selected ? 2 : 1} />
-            <rect x="0" y="14" width="3" height="29" rx="1" fill={module?.color || '#fb7185'} />
-            <text x="16" y="30" fill="#e2e8f0" fontSize="12" fontWeight="550">{component.name.length > 28 ? component.name.slice(0, 27) + '…' : component.name}</text><text x="16" y="49" fill="#72869f" fontSize="8" fontFamily="monospace">{module ? `${module.categoryName.toUpperCase()} / v${component.moduleVersion}` : 'МОДУЛЬ НЕ УСТАНОВЛЕН'}</text>
-            {module && <image href={getAsset(module.visual.svg)} x="25" y="57" width="180" height="56" />}
-            {module?.terminals.map(terminal => {
-              const wire = project.assembly.connections.find(wire => wire.componentId === component.id && wire.terminalId === terminal.id);
-              const pin = wire && board.pins.find(pin => pin.id === wire.boardPinId);
-              const active = pending?.componentId === component.id && pending.terminalId === terminal.id;
-              const color = terminal.kind === 'ground' ? '#7c8ba8' : module.color;
-              return <g key={terminal.id} data-terminal={terminal.id} role="button" tabIndex={0} className="component-terminal" aria-label={`${component.name}: ${terminal.label}`} onClick={event => { event.stopPropagation(); if (!busy) onTerminal(component, terminal); }} onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.stopPropagation(); event.preventDefault(); if (!busy) onTerminal(component, terminal); } }}>
-                <rect x="-12" y={terminal.y - 13} width="234" height="26" rx="4" fill={active ? '#8b5cf619' : 'transparent'} /><circle cx={terminal.x} cy={terminal.y} r="6" fill={wire ? color : '#151c2a'} stroke={color} strokeWidth={active ? 3 : 1.7} /><text x="16" y={terminal.y + 3} fill="#a8b8cb" fontSize="10">{terminal.label}</text><text x="214" y={terminal.y + 3} textAnchor="end" fill={pin ? color : '#5b6c86'} fontSize="10" fontFamily="monospace">{pin?.label || '—'}</text>
-              </g>;
-            })}
-          </g>;
-        })}
-      </g>
-    </svg>
-    <div className="canvas-toolbar"><span className="canvas-navigation-hint"><Move size={13} />Пробел + перетаскивание · панорама</span><CanvasControls subject="монтаж" zoom={viewport.zoom} busy={busy} onZoomOut={() => zoomAt(1 / 1.2)} onZoomIn={() => zoomAt(1.2)} onFit={() => updateViewport(fitViewport(bounds, size))} /></div>
+    <div ref={root} className="assembly-flow-region" data-ready={ready} aria-label="Холст монтажа">
+      <ReactFlow nodes={nodes} edges={edges} nodeTypes={nodeTypes} edgeTypes={edgeTypes} defaultViewport={project.assembly.viewport}
+        onInit={setInstance} onNodesChange={changeNodes} onNodeClick={(_event, node) => selectNode(node.id)}
+        onNodeDragStart={beginDrag} onNodeDragStop={finishDrag}
+        onMoveStart={moveStart} onMoveEnd={moveEnd} onConnect={connect} onConnectStart={connectStart} onConnectEnd={connectEnd}
+        isValidConnection={connection => !problemFor(connection)} connectionMode={ConnectionMode.Loose} connectOnClick={false}
+        onPaneClick={() => { setSelection({ type: 'board', id: 'board' }); setPending(null); }}
+        nodesDraggable={ready && !busy && !spaceHeld} nodesConnectable={ready && !busy && !spaceHeld} panOnDrag={ready} zoomOnScroll={ready} zoomOnPinch={ready} edgesReconnectable={false}
+        selectionKeyCode={null} multiSelectionKeyCode={null} deleteKeyCode={null} minZoom={0.2} maxZoom={3} colorMode="dark"
+        ariaLabelConfig={{ 'node.a11yDescription.default': 'Плата или компонент. Стрелки перемещают. Пробел и перетаскивание перемещают камеру.', 'edge.a11yDescription.default': 'Физическое соединение. Enter выбирает провод.' }}
+        onError={(_code, message) => onError(message)}>
+        <Background variant={BackgroundVariant.Dots} gap={24} size={0.8} color="#3b465d" />
+      </ReactFlow>
+    </div>
+    <div className="canvas-toolbar"><span className="canvas-navigation-hint"><Move size={13} />Пробел + перетаскивание · панорама</span><CanvasControls subject="монтаж" zoom={zoom} busy={busy || !ready} onZoomOut={() => zoomBy(1 / 1.2)} onZoomIn={() => zoomBy(1.2)} onFit={fitView} /></div>
   </div>;
 }

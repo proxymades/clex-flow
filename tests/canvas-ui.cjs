@@ -28,7 +28,7 @@ const { chromium } = require('playwright');
     await page.mouse.move(box.x + 45, box.y + 20); await page.mouse.down(); await page.mouse.move(box.x + 55, box.y + 25);
     await page.evaluate(() => new Promise(requestAnimationFrame)); const start = await counters();
     for (let i = 1; i <= 20; i++) { await page.mouse.move(box.x + 55 + i, box.y + 25 + i); await page.evaluate(() => new Promise(requestAnimationFrame)); }
-    assert.deepEqual(await counters(), start, 'SVG drag also stays outside project serialization and storage');
+    assert.deepEqual(await counters(), start, 'Assembly drag also stays outside project serialization and storage');
     assert.equal(await page.locator('.breadcrumb .dirty-dot').count(), 0);
     await page.mouse.up(); await save();
     const moved = (await stored()).assembly.positions; assert.notDeepEqual(moved, before);
@@ -39,7 +39,7 @@ const { chromium } = require('playwright');
     await page.mouse.move(panBox.x + 45, panBox.y + 20); await page.mouse.down();
     await page.mouse.move(panBox.x + 80, panBox.y + 45, { steps: 10 }); await page.mouse.up(); await page.keyboard.up('Space'); await save();
     assert.deepEqual((await stored()).assembly.positions, moved);
-    const svgBox = await page.locator('.assembly-svg').boundingBox(); await page.mouse.click(svgBox.x + 8, svgBox.y + 8);
+    const svgBox = await page.locator('.assembly-flow-region').boundingBox(); await page.mouse.click(svgBox.x + 8, svgBox.y + 8);
     await page.keyboard.press('f'); await save();
     const assemblyZoom = (await stored()).assembly.viewport.zoom;
     await page.getByRole('button', { name: 'Увеличить монтаж', exact: true }).click(); await save();
@@ -82,6 +82,6 @@ const { chromium } = require('playwright');
     await page.setViewportSize({ width: 1000, height: 700 }); await page.getByRole('button', { name: 'Показать весь граф', exact: true }).click();
     await page.getByRole('button', { name: 'Увеличить граф', exact: true }).waitFor();
     assert.deepEqual(errors, []);
-    console.log('PASS: shared controls and 1.2 zoom step, local SVG drag, whole-card logic drag, Space pan in both modes, F fit, all blocks/edges survive tabs and reload, small layout.');
+    console.log('PASS: shared controls and 1.2 zoom step, local Assembly drag, whole-card logic drag, Space pan in both modes, F fit, all blocks/edges survive tabs and reload, small layout.');
   } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; });
