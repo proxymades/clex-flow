@@ -1,6 +1,6 @@
 # GitHub и выпуск версий
 
-Сборка установщиков для macOS Apple Silicon и порядок выпуска версий через GitHub Releases.
+Проверки разработки, ручная сборка установщиков для macOS ARM64/Intel и Windows x64 и выпуск версий через GitHub Releases.
 
 ## Согласованность версии
 
@@ -28,25 +28,42 @@ npm run tauri -- build --target aarch64-apple-darwin --config src-tauri/tauri.re
 
 Нужны macOS Apple Silicon, Node.js 22.12+, Rust и Xcode Command Line Tools. ESP-IDF для сборки самого приложения не требуется. Для MCU-эксперимента нужна отдельная существующая ESP-IDF 5.4.4, как описано в [esp-idf.md](esp-idf.md).
 
-Установщик находится в `src-tauri/target/aarch64-apple-darwin/release/bundle/dmg/`. `.app` содержит MIT и сторонние уведомления в `Contents/Resources/`. Сборки/сертификаты не коммитятся.
+Для Windows x64 после тех же проверок выполните:
+
+```sh
+npm run tauri -- build --target x86_64-pc-windows-msvc --config src-tauri/tauri.windows.release.conf.json --bundles nsis -- --locked
+```
+
+Для macOS Intel замените target на `x86_64-apple-darwin`. Целевой target должен быть установлен через `rustup target add`.
+
+Установщик macOS находится в `src-tauri/target/<target>/release/bundle/dmg/`, Windows – в `src-tauri/target/<target>/release/bundle/nsis/`. `.app` содержит MIT и сторонние уведомления в `Contents/Resources/`. Сборки/сертификаты не коммитятся.
 
 ## GitHub Actions
 
 Файл: `.github/workflows/build-macos.yml`. Матрица: macOS ARM64 (`macos-15`), macOS x64 (`macos-15-intel`) и Windows x64 (`windows-latest`). Target соответственно `aarch64-apple-darwin`, `x86_64-apple-darwin`, `x86_64-pc-windows-msvc`; Node 22 и Rust 1.93.1. Actions закреплены полными SHA. Используется официальный `tauri-apps/tauri-action`, существующие lockfiles и `beforeBuildCommand`; загрузка/установка ESP-IDF не выполняется.
 
-Триггеры:
+### Обычная разработка
 
-1. В Actions явно выберите **Build desktop installers → Run workflow**, указав проверяемую ветку, commit или существующий тег.
-2. Сборка также запускается на событии `release.published`, после того как владелец отдельно создаст и опубликует Release. Проверяются соответствие тега версии и Pre-release для 0.1.0.
+При push в `main` и в pull requests запускается **Check source** (`check-source.yml`): согласованность версии, ESLint, unit-тесты JavaScript и сборка веб-интерфейса. Изменения только Markdown, документации и лицензии пропускают автоматические проверки.
 
-Push обычного коммита или тега сам по себе ничего не публикует и не запускает workflow. Права `contents: read`; action не получает `tagName`, `releaseName` или `releaseId`. Поэтому она не может создать тег/Release или прикрепить установщик к нему. Результат – review artifact с `.dmg` или `.exe` и SHA-256, срок хранения 30 дней. Проверка структуры DMG и unit-тесты не заменяют испытание приложения.
+**Check native source** (`check-native.yml`) запускается при изменении Rust/Tauri, файлов зависимостей, проверки версии или самого workflow. Проверяет форматирование и unit-тесты Rust на macOS и Windows, с кешированием зависимостей и результатов компиляции. Ресурсы интерфейса подготавливаются для нативных тестов; установщики не создаются. Проверки не устанавливают ESP-IDF и не запускают интеграционные тесты, требующие SDK или сети.
 
-Порядок выпуска после проверки артефакта:
+Оба workflow можно запустить вручную. Для новых изменений той же ветки устаревшие проверки отменяются.
 
-- Выберите конкретный проверенный commit; создайте `v0.1.0` на нём без перемещения существующих тегов.
-- Создайте Release `CLEX Flow v0.1.0` со статусом Pre-release, опишите фактические ограничения.
-- Если опубликованный Release вызвал новую сборку, проверьте именно новый артефакт; не считайте его проверенным только из-за одинаковой версии.
-- После проверки вручную прикрепите точный `.dmg` и его SHA-256. Workflow не выполняет это автоматически.
+### Подготовка версии
+
+Полная сборка установщиков запускается **только вручную**: **Build desktop installers → Run workflow**, с указанием конкретного проверенного commit или существующего тега. Push коммита/тега и создание Release не запускают её автоматически.
+
+Права всех workflow – `contents: read`. Сборка не передаёт Tauri action параметры `tagName`, `releaseName` или `releaseId`; автоматическая публикация отключена. Результат – artifact с `.dmg` или `.exe` и SHA-256, срок хранения 30 дней.
+
+Порядок выпуска по отдельному запросу:
+
+1. Выберите проверенный commit и вручную соберите установщики именно из него.
+2. Проверьте полученные файлы и их контрольные суммы на соответствующих системах.
+3. Перед созданием тега и Pre-release проверьте уже существующие теги и Releases. Используйте фактическую версию приложения; существующие теги не перемещайте.
+4. Создайте или обновите согласованный Pre-release, опишите реализованные возможности на русском языке и вручную прикрепите проверенные установщики из того же commit, что и тег. Без установщиков релиз может содержать исходный код.
+
+Уже опубликован Pre-release `v0.1.0`. Последующие изменения `main` не меняют этот тег и не публикуются автоматически. Для очередной версии сначала отдельно согласуются её номер и состав; обычная разработка номер версии не повышает.
 
 ## Проверка перед прикреплением DMG
 
@@ -62,4 +79,4 @@ Release overlay сейчас использует **ad-hoc** signing identity `-
 
 Источники: [официальный pipeline Tauri](https://v2.tauri.app/distribute/pipelines/github/), [build-only режим tauri-action](https://github.com/tauri-apps/tauri-action#tips-and-caveats), [подпись macOS](https://v2.tauri.app/distribute/sign/macos/), [DMG](https://v2.tauri.app/distribute/dmg/).
 
-Windows использует `src-tauri/tauri.windows.release.conf.json` и NSIS; эта сборка и работа SDK на Windows пока требуют проверки на реальной системе. SDK/компиляторы не включаются в установщики ни одной платформы.
+Windows использует `src-tauri/tauri.windows.release.conf.json` и NSIS; установщик успешно собран в Actions, его установка и работа SDK на пользовательской Windows требуют отдельной проверки. SDK/компиляторы не включаются в установщики ни одной платформы.

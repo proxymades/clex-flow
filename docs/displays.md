@@ -51,6 +51,6 @@ node scripts/generate-display-fonts.mjs
 
 I2C, параллельные дисплеи, OLED, страницы, картинки, динамические значения и интерактивные элементы пока не реализованы.
 
-Реальная компиляция статического экрана с кириллицей проверена. Запись этой прошивки на плату и отображение на физическом TFT ещё не проверены.
+Проверена реальная компиляция статического экрана с кириллицей. Пользователь подтвердил запись прошивки на Waveshare ESP32-S3-ETH и работу физического TFT-дисплея ST7789.
 
 Источники: [официальный пример ESP-IDF](https://github.com/espressif/esp-idf/blob/v5.4.4/examples/peripherals/lcd/spi_lcd_touch/main/spi_lcd_touch_example_main.c), [LVGL 9.2.2](https://components.espressif.com/components/lvgl/lvgl/versions/9.2.2), [конвертер шрифтов LVGL](https://github.com/lvgl/lv_font_conv).

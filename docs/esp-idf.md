@@ -41,7 +41,7 @@ Python: ~/.espressif/tools/python/v5.4.4/venv/bin/python
 
 Консоль firmware по умолчанию **USB Serial/JTAG**. Для USB-UART bridge выберите **UART0** в настройках и пересоберите. Подключите именно соответствующий разъём платы; генератор резервирует USB GPIO19/20 и UART GPIO43/44. Неправильный выбор разъёма может дать пустой монитор. Возможности IDF Monitor GDB, декодирование backtrace, ввод команд и автоподключение не реализованы.
 
-Перед первым Blink проверьте модель/ревизию, монтаж LED с резистором на GPIO17 и соответствующий USB-порт. Работа с физической платой пока не подтверждена аппаратными испытаниями.
+Перед первым Blink проверьте модель/ревизию, монтаж LED с резистором на GPIO17 и соответствующий USB-порт. Пользователь подтвердил запись прошивки на Waveshare ESP32-S3-ETH и работу дисплея ST7789; проверка Blink выполняется отдельно.
 
 [Официальная установка ESP-IDF 5.4.4](https://docs.espressif.com/projects/esp-idf/en/v5.4.4/esp32s3/get-started/index.html), [esp_timer](https://docs.espressif.com/projects/esp-idf/en/v5.4.4/esp32s3/api-reference/system/esp_timer.html), [возможности IDF Monitor](https://docs.espressif.com/projects/esp-idf/en/v5.4.4/esp32s3/api-guides/tools/idf-monitor.html).
 

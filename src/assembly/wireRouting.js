@@ -56,3 +56,13 @@ export function boardDetour({ sourceX, sourceY, targetX, targetY, targetPosition
   else points.push([right, targetY], [targetX, targetY]);
   return { path: roundedWirePath(points), points, spacing: targetPosition === 'left' ? spacing : 12 };
 }
+
+export function wireFitPadding(nodes, edges) {
+  if (!nodes.length) return 0.12;
+  const xs = nodes.flatMap(node => [node.position.x, node.position.x + (node.width || node.measured?.width || 0)]);
+  const ys = nodes.flatMap(node => [node.position.y, node.position.y + (node.height || node.measured?.height || 0)]);
+  const span = Math.min(Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys));
+  const routed = edges.filter(edge => edge.data.sourcePin?.x < edge.data.boardWidth / 2);
+  const margin = Math.max(0, ...routed.map(edge => 36 + (edge.data.laneIndex || 0) * 12));
+  return span > 0 ? Math.max(0.12, 2 * margin / span) : 0.12;
+}

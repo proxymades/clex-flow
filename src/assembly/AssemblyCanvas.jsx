@@ -6,7 +6,7 @@ import CanvasControls from '../components/CanvasControls.jsx';
 import useCanvasKeys from '../components/useCanvasKeys.js';
 import { moduleFor, pinProblem, connectionProblem } from './model.js';
 import { physicalConnection, physicalEdges } from './flow.js';
-import { allocateWireLanes } from './wireRouting.js';
+import { allocateWireLanes, wireFitPadding } from './wireRouting.js';
 import { wireColors, GROUND_COLOR } from './wireColors.js';
 import { terminalLayout } from './terminalLayout.js';
 import { AssemblyBoardNode, AssemblyHardwareNode } from './AssemblyNodes.jsx';
@@ -31,7 +31,7 @@ export default function AssemblyCanvas({ project, board, catalog, selection, set
   const fitView = () => {
     if (!instance || dragging.current) return;
     autoFit.current = false;
-    return cameraAction(() => instance.fitView({ padding: 0.12, maxZoom: 1, duration: 0 }));
+    return cameraAction(() => instance.fitView({ padding: wireFitPadding(instance.getNodes(), instance.getEdges()), maxZoom: 1, duration: 0 }));
   };
   const { spaceHeld } = useCanvasKeys({ onFit: fitView, onEscape: () => setPending(null), busy });
   const interaction = useCallback((kind, active) => {
@@ -54,10 +54,10 @@ export default function AssemblyCanvas({ project, board, catalog, selection, set
     const finish = () => { if (live) { initial.current = false; setReady(true); } };
     if (autoFit.current) {
       silentFits.current++;
-      instance.fitView({ padding: 0.12, maxZoom: 1, duration: 0 }).finally(() => { silentFits.current--; finish(); });
+      instance.fitView({ padding: wireFitPadding(instance.getNodes(), instance.getEdges()), maxZoom: 1, duration: 0 }).finally(() => { silentFits.current--; finish(); });
     } else Promise.resolve().then(finish);
     return () => { live = false; };
-  }, [instance, board.id, project.components.length, size.width, size.height]);
+  }, [instance, board.id, project.components.length, project.assembly.connections.length, size.width, size.height]);
   useEffect(() => {
     if (instance && !autoFit.current && !interactions.current.size && !same(instance.getViewport(), project.assembly.viewport)) {
       instance.setViewport(project.assembly.viewport, { duration: 0 });

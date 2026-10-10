@@ -8,8 +8,6 @@ on:
         required: true
         default: main
         type: string
-  release:
-    types: [published]
 
 # This workflow builds review artifacts. It cannot create tags or releases,
 # nor attach untested binaries to a Release.
@@ -17,7 +15,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: desktop-build-${{ github.event.release.tag_name || inputs.ref || github.ref }}
+  group: desktop-build-${{ inputs.ref || github.ref }}
   cancel-in-progress: false
 
 jobs:
@@ -47,7 +45,7 @@ jobs:
       - name: Check out the explicitly selected source
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
-          ref: ${{ github.event.release.tag_name || inputs.ref || github.ref }}
+          ref: ${{ inputs.ref || github.ref }}
           fetch-depth: 0
           persist-credentials: false
 
@@ -79,7 +77,7 @@ jobs:
           cargo fmt --manifest-path src-tauri/Cargo.toml --check
           cargo test --manifest-path src-tauri/Cargo.toml --locked
 
-      - name: Build review-only app and DMG using official Tauri action
+      - name: Build review-only desktop installers using official Tauri action
         uses: tauri-apps/tauri-action@1deb371b0cd8bd54025b384f1cd735e725c4060f # v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

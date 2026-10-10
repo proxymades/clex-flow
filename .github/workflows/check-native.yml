@@ -1,0 +1,74 @@
+name: Check native source
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src-tauri/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'scripts/check-version.mjs'
+      - '.github/workflows/check-native.yml'
+  pull_request:
+    paths:
+      - 'src-tauri/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'scripts/check-version.mjs'
+      - '.github/workflows/check-native.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: native-check-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  native:
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [macos-15, windows-latest]
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 20
+    steps:
+      - name: Check out source
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install the tested Rust toolchain
+        run: |
+          rustup toolchain install 1.93.1 --profile minimal --component rustfmt
+          rustup default 1.93.1
+
+      - name: Cache Rust dependencies and test build
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            src-tauri/target
+          key: native-${{ runner.os }}-${{ runner.arch }}-rust-1.93.1-${{ hashFiles('src-tauri/Cargo.lock') }}-${{ github.sha }}
+          restore-keys: |
+            native-${{ runner.os }}-${{ runner.arch }}-rust-1.93.1-${{ hashFiles('src-tauri/Cargo.lock') }}-
+
+      - name: Prepare frontend resources for native tests
+        run: |
+          npm ci
+          npm run build
+          node scripts/check-version.mjs
+
+      - name: Check Rust formatting
+        run: cargo fmt --manifest-path src-tauri/Cargo.toml --check
+
+      - name: Run native unit tests
+        run: cargo test --manifest-path src-tauri/Cargo.toml --locked
