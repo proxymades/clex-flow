@@ -11,7 +11,7 @@ const {chromium}=require('playwright');
  const saved=()=>page.evaluate(()=>JSON.parse(Object.values(JSON.parse(localStorage.getItem('clex-flow:projects:v1')))[0]));
  const save=async()=>{await page.getByRole('button',{name:'Сохранить',exact:true}).first().click();await page.getByText('Проект сохранён',{exact:true}).waitFor();};
  try{
-  await page.goto('http://127.0.0.1:1420');
+  await page.goto(process.env.CLEX_PREVIEW_URL||'http://127.0.0.1:1420');
   await page.getByRole('button',{name:'Новый проект',exact:true}).first().click();
   await page.getByRole('textbox',{name:'Название проекта'}).fill('Display test');
   await page.getByRole('button',{name:'Создать проект',exact:true}).click();
@@ -43,6 +43,7 @@ const {chromium}=require('playwright');
   await dialog.getByRole('button',{name:'Сохранить интерфейс',exact:true}).click();
   await page.locator('.logic-display-preview').getByText('Привет, мир! CLEX Flow',{exact:true}).waitFor();
   await save();const current=await saved(),id=fixture.components[0].id;
+  await require('node:fs/promises').writeFile('.artifacts/display-ui-project.json',JSON.stringify(current));
   assert.equal(current.logic.nodes[0].parameters.componentId,id);assert.equal(current.screens[id].background,'#123456');assert.equal(current.screens[id].elements[0].fontId,'montserrat_14');
   assert.deepEqual(current.gpioAssignments,fixture.gpioAssignments);assert.deepEqual(current.assembly.connections,fixture.assembly.connections);
   await page.getByRole('button',{name:'Посмотреть исходники прошивки',exact:true}).click();
