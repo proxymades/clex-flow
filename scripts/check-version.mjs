@@ -6,7 +6,7 @@ const lock = readJson('package-lock.json');
 const tauri = readJson('src-tauri/tauri.conf.json');
 const cargo = readFileSync('src-tauri/Cargo.toml', 'utf8').split(/\n\[/)[0];
 const cargoVersion = cargo.match(/^version\s*=\s*"([^"]+)"/m)?.[1];
-const cargoLock = readFileSync('src-tauri/Cargo.lock', 'utf8');
+const cargoLock = readFileSync('src-tauri/Cargo.lock', 'utf8').replace(/\r\n/g, '\n');
 const lockedVersion = cargoLock.match(/\[\[package\]\]\nname = "clex-flow"\nversion = "([^"]+)"/)?.[1];
 assert.match(pkg.version, /^\d+\.\d+\.\d+$/);
 for (const [file, version] of Object.entries({ 'package-lock.json': lock.version, 'package-lock root': lock.packages[''].version, 'tauri.conf.json': tauri.version, 'Cargo.toml': cargoVersion, 'Cargo.lock': lockedVersion })) {
