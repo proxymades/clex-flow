@@ -21,7 +21,8 @@
     "test:autosave-ui": "node tests/autosave-ui.cjs",
     "test:canvas-ui": "node tests/canvas-ui.cjs",
     "test:firmware-ui": "node tests/firmware-ui.cjs",
-    "test:sdk-ui": "node tests/sdk-ui.cjs"
+    "test:sdk-ui": "node tests/sdk-ui.cjs",
+    "test:display-ui": "node tests/display-ui.cjs"
   },
   "dependencies": {
     "@tauri-apps/api": "2.10.1",

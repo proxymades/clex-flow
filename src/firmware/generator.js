@@ -1,9 +1,10 @@
+import { displayFirmware, supportsDisplayDriver, GRAPHICS_CONFIG, GRAPHICS_FILES, GRAPHICS_SOURCES } from './drivers/display.js';
 import { validateProject } from '../projects/model.js';
 import { validateAssembly, boardFor } from '../assembly/model.js';
 import { validateGraph, hardwareBinding } from '../logic/model.js';
 
 const compare = (a, b) => a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
-const implementationKeys = {'clex.hardware.led':'gpio-led','clex.hardware.button':'gpio-button','clex.logic.timer':'timer','clex.logic.gpio-read':'gpio-read','clex.logic.gpio-set':'gpio-set','clex.logic.gpio-toggle':'gpio-toggle','clex.logic.serial':'serial'};
+const implementationKeys = {'clex.hardware.led':'gpio-led','clex.hardware.button':'gpio-button','clex.logic.timer':'timer','clex.logic.gpio-read':'gpio-read','clex.logic.gpio-set':'gpio-set','clex.logic.gpio-toggle':'gpio-toggle','clex.logic.serial':'serial','clex.logic.display':'display-view'};
 export const IMPLEMENTATIONS = Object.values(implementationKeys);
 export function cString(value) {
   if (value.includes('\0')) throw new Error('Текст сообщения содержит нулевой байт.');
@@ -19,10 +20,11 @@ export function generateFirmware(project, catalog, consoleMode = 'usb') {
   const board = boardFor(project,catalog);
   if (!['waveshare-esp32-s3-eth','espressif-devkitc-1-v1-1-n8r8'].includes(board.id)) throw new Error('Генератор поддерживает только проверенные профили ESP32-S3.');
   const nodes = [...project.logic.nodes].sort(compare), components = [...project.components].sort(compare);
-  if (!nodes.some(node=>node.moduleId==='clex.logic.timer') || !project.logic.edges.some(edge=>edge.dataType==='event')) throw new Error('Добавьте таймер и соедините его такт с действием.');
+  const graphics = displayFirmware(project, catalog, cString);
+  if (!graphics.runtime && (!nodes.some(node=>node.moduleId==='clex.logic.timer') || !project.logic.edges.some(edge=>edge.dataType==='event'))) throw new Error('Добавьте таймер и соедините его такт с действием.');
   for (const element of [...nodes,...components]) {
     const module = catalog.modules.find(module=>module.id===element.moduleId);
-    if (!module || module.version !== '1.0.0' || element.moduleVersion !== module.version || !implementationKeys[module.id] || implementationKeys[module.id] !== module.firmware?.generatorKey) throw new Error(`Нет проверенной реализации генератора для ${element.moduleId} v${element.moduleVersion}.`);
+    if (!module || module.version !== '1.0.0' || element.moduleVersion !== module.version || ((module.display && !supportsDisplayDriver(module.display, board.platform)) || (!module.display && (!implementationKeys[module.id] || implementationKeys[module.id] !== module.firmware?.generatorKey)))) throw new Error(`Нет проверенной реализации генератора для ${element.moduleId} v${element.moduleVersion}.`);
   }
   const index = new Map(nodes.map((node,i)=>[node.id,i])), hardware = new Map(components.map((component,i)=>[component.id,i]));
   const inputEdge = (node, port) => project.logic.edges.find(edge=>edge.target===node.id&&edge.targetHandle===port);
@@ -44,7 +46,9 @@ export function generateFirmware(project, catalog, consoleMode = 'usb') {
   if ([...textLengths.values()].reduce((sum,length)=>sum+length,0)>65536) throw new Error('Текстовые выходы требуют более 64 КиБ. Уменьшите число сообщений или длину текста.');
   const declarations = [], initializers = [], inputUpdates = [];
   for (let i=0;i<components.length;i++) {
-    const component=components[i], assignment=project.gpioAssignments.find(assignment=>assignment.componentId===component.id);
+    const component=components[i];
+    if (catalog.modules.find(module=>module.id===component.moduleId)?.display) continue;
+    const assignment=project.gpioAssignments.find(assignment=>assignment.componentId===component.id);
     if (!assignment) throw new Error('Компонент не имеет назначения GPIO.');
     const gpio=assignment.gpio, led=component.moduleId==='clex.hardware.led';
     declarations.push(led ? `static bool gpio_state_${i};` : `static bool input_stable_${i}, input_raw_${i};\nstatic int64_t input_changed_${i};`);
@@ -85,6 +89,7 @@ export function generateFirmware(project, catalog, consoleMode = 'usb') {
 #include "esp_timer.h"
 #include "esp_log.h"
 #include "esp_err.h"
+${graphics.source}
 static QueueHandle_t timer_queue;
 static atomic_uint dropped_events;
 ${declarations.join('\n')}
@@ -93,7 +98,7 @@ static void update_inputs(void) {
 ${inputUpdates.length?'  int64_t now = esp_timer_get_time();\n'+inputUpdates.join('\n'):'  /* No buttons in this project. */'}
 }
 ${functions.join('\n\n')}
-static void timer_callback(void *argument) {
+static void __attribute__((unused)) timer_callback(void *argument) {
   uint16_t event = *(const uint16_t *)argument;
   if (xQueueSend(timer_queue, &event, 0) != pdTRUE) atomic_fetch_add(&dropped_events, 1);
 }
@@ -105,6 +110,7 @@ static void flow_worker(void *argument) {
     uint16_t event;
     bool available = xQueueReceive(timer_queue, &event, pdMS_TO_TICKS(5)) == pdTRUE;
     update_inputs();
+${graphics.update}
     if (available) {
       switch (event) {
 ${timers.map(({i})=>`        case ${i}: node_${i}(); break;`).join('\n')}
@@ -117,6 +123,7 @@ ${timers.map(({i})=>`        case ${i}: node_${i}(); break;`).join('\n')}
   }
 }
 void app_main(void) {
+${graphics.initialize}
 ${initializers.join('\n')}
   timer_queue = xQueueCreate(128, sizeof(uint16_t));
   if (!timer_queue || xTaskCreate(flow_worker, "clex_flow", 8192, NULL, 5, NULL) != pdPASS) { ESP_LOGE("CLEX", "Cannot create worker"); abort(); }
@@ -130,13 +137,15 @@ ${timers.map(({node,i})=>`  static const uint16_t timer_node_${i} = ${i};
 `;
   const flashSize = board.id==='waveshare-esp32-s3-eth'?16:8;
   const config = `CONFIG_IDF_TARGET="esp32s3"\nCONFIG_ESPTOOLPY_FLASHSIZE_${flashSize}MB=y\nCONFIG_ESPTOOLPY_FLASHMODE_DIO=y\nCONFIG_FREERTOS_HZ=1000\nCONFIG_LOG_COLORS=n\nCONFIG_ESP_CONSOLE_${consoleMode==='usb'?'USB_SERIAL_JTAG':'UART_DEFAULT'}=y\nCONFIG_ESP_CONSOLE_SECONDARY_NONE=y\n`;
-  return { boardId: board.id, target: 'esp32s3', consoleMode, mainC: source, warnings: issues.filter(issue=>issue.severity==='warning'), files: {
+  const graphicsFiles = graphics.runtime ? { ...GRAPHICS_FILES, 'main/idf_component.yml': 'dependencies:\n  lvgl/lvgl: "=9.2.2"\n' } : {};
+  return { graphicsRuntime: graphics.runtime, boardId: board.id, target: 'esp32s3', consoleMode, mainC: source, warnings: issues.filter(issue=>issue.severity==='warning'), files: {
+    ...graphicsFiles,
     'CMakeLists.txt': 'cmake_minimum_required(VERSION 3.16)\nset(COMPONENTS main)\ninclude($ENV{IDF_PATH}/tools/cmake/project.cmake)\nproject(clex_flow_firmware)\n',
-    'main/CMakeLists.txt': 'idf_component_register(SRCS "main.c" INCLUDE_DIRS "." REQUIRES esp_driver_gpio esp_timer freertos log)\n',
-    'main/main.c': source, 'sdkconfig.defaults': config,
+    'main/CMakeLists.txt': graphics.runtime ? 'idf_component_register(SRCS "main.c" ' + GRAPHICS_SOURCES + ' INCLUDE_DIRS "." REQUIRES esp_lcd esp_driver_spi esp_driver_gpio esp_timer freertos log lvgl__lvgl)\n' : 'idf_component_register(SRCS "main.c" INCLUDE_DIRS "." REQUIRES esp_driver_gpio esp_timer freertos log)\n',
+    'main/main.c': source, 'sdkconfig.defaults': config + (graphics.runtime ? GRAPHICS_CONFIG : ''),
   } };
 }
 export async function firmwareFingerprint(bundle) {
-  const bytes = new TextEncoder().encode(JSON.stringify([bundle.boardId,bundle.consoleMode,bundle.mainC]));
+  const bytes = new TextEncoder().encode(JSON.stringify(bundle.graphicsRuntime ? [bundle.boardId,bundle.consoleMode,bundle.mainC,bundle.graphicsRuntime] : [bundle.boardId,bundle.consoleMode,bundle.mainC]));
   return [...new Uint8Array(await crypto.subtle.digest('SHA-256',bytes))].map(byte=>byte.toString(16).padStart(2,'0')).join('');
 }

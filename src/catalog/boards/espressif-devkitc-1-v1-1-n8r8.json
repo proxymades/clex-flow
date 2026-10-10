@@ -733,5 +733,15 @@
       "capabilities": [],
       "header": "J3"
     }
-  ]
+  ],
+  "target": "esp32s3",
+  "platform": "esp-idf",
+  "interfaces": {
+    "spi": {
+      "hosts": [
+        2,
+        3
+      ]
+    }
+  }
 }

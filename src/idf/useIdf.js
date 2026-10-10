@@ -17,7 +17,7 @@ export default function useIdf(project) {
   const [computed,setComputed]=useState({key:'',value:null,error:''});
   const generated=useMemo(()=>{if(!project)return {bundle:null,error:''};try{return {bundle:generateFirmware(project,catalog,consoleMode),error:''};}catch(error){return {bundle:null,error:error.message};}},[project,consoleMode]);
   const preview=generated.bundle;
-  const signature=preview?JSON.stringify([preview.boardId,preview.consoleMode,preview.mainC]):'';
+  const signature=preview?JSON.stringify([preview.boardId,preview.consoleMode,preview.mainC,preview.graphicsRuntime]):'';
   const fingerprint=computed.key===signature?computed.value:null;
   const generationError=generated.error||(computed.key===signature?computed.error:'');
   const current=useRef(null), received=useRef({sequences:new Set(),max:-1}), flight=useRef(false), probing=useRef(false), mounted=useRef(true);
@@ -72,7 +72,7 @@ export default function useIdf(project) {
     try{await invoke(operation.startsWith('sdk_')?operation:`idf_${operation}`,{id,...args});const backlog=await invoke('idf_events',{id});for(const event of backlog)ingest(event);return true;}
     catch(error){flight.current=false;setJob({id,operation,status:'failed'});setError(String(error));return false;}
   };
-  const startBuild=()=>preview&&fingerprint&&compatible?start('build',{spec:{boardId:preview.boardId,consoleMode,mainC:preview.mainC,fingerprint}}):Promise.resolve(false);
+  const startBuild=()=>preview&&fingerprint&&compatible?start('build',{spec:{boardId:preview.boardId,consoleMode,mainC:preview.mainC,graphicsRuntime:preview.graphicsRuntime,fingerprint}}):Promise.resolve(false);
   const startFlash=()=>build&&fingerprint&&port?start('flash',{buildId:build.id,fingerprint,port}):Promise.resolve(false);
   const startMonitor=()=>port?start('monitor',{port}):Promise.resolve(false);
   const cancel=async()=>{if(!current.current)return;try{await invoke('idf_cancel',{id:current.current.id});setJob(value=>value && !terminal.includes(value.status)?{...value,status:'stopping'}:value);}catch(error){setError(String(error));}};

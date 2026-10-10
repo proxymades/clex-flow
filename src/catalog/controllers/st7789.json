@@ -1,0 +1,15 @@
+{
+  "id": "sitronix.st7789",
+  "name": "ST7789",
+  "manufacturer": "Sitronix",
+  "implementedInterfaces": [
+    "spi"
+  ],
+  "drivers": [
+    {
+      "platform": "esp-idf",
+      "interface": "spi",
+      "key": "st7789-spi"
+    }
+  ]
+}

@@ -1,4 +1,4 @@
-/* global window, getComputedStyle */
+/* global getComputedStyle */
 const assert = require('node:assert/strict');
 const { chromium } = require('playwright');
 (async () => {

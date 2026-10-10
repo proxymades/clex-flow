@@ -1,0 +1,4 @@
+{
+  "latin-basic": {"name": "Basic Latin", "ranges": [[32,126]]},
+  "cyrillic": {"name": "Cyrillic", "ranges": [[1024,1279]]}
+}

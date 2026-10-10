@@ -1,3 +1,4 @@
+import { displayDescription, screenFor, screenIssues } from '../displays/model.js';
 import { connectionProblem as physicalConnectionProblem, boardFor } from '../assembly/model.js';
 
 export const PORT_TYPES = ['event', 'boolean', 'number', 'text'];
@@ -19,7 +20,7 @@ export function addNode(graph, module, components = []) {
   if (graph.nodes.length >= 100) throw new Error('В одном графе поддерживается до 100 блоков.');
   if (graph.nodes.some(node => node.moduleId === module.id && node.moduleVersion !== module.version)) throw new Error('Проект использует другую версию этого модуля.');
   const parameters = Object.fromEntries(Object.entries(module.parameters).map(([key, parameter]) => [key, parameter.default]));
-  if (module.constraints.hardware) parameters.componentId = components.find(component => module.constraints.hardware.modules.includes(component.moduleId))?.id || '';
+  if (module.constraints.hardware) parameters.componentId = components.find(component => module.constraints.hardware.modules?.includes(component.moduleId))?.id || '';
   let number = 1;
   while (graph.nodes.some(node => node.name === `${module.name} ${number}`)) number++;
   let slot = 0, position;
@@ -90,6 +91,10 @@ export function connectNodes(graph, catalog, connection) {
 
 export function hardwareBinding(node, project, catalog) {
   const module = graphModule(node, catalog), requirement = module?.constraints.hardware;
+  if (requirement?.kind === 'display') {
+    const component = project.components.find(component => component.id === node.parameters.componentId);
+    return { component, gpio: null, error: displayDescription(component, catalog) ? null : 'Выберите дисплей из монтажа.' };
+  }
   if (!requirement) return { component: null, gpio: null, error: null };
   const component = project.components.find(component => component.id === node.parameters.componentId);
   if (!component || !requirement.modules.includes(component.moduleId)) return { component: null, gpio: null, error: 'Выберите подходящий компонент монтажа.' };
@@ -112,7 +117,7 @@ export function validateGraph(project, catalog) {
   if (!graph.nodes.length) add('warning', 'logic-empty', 'Граф логики пуст. Добавьте таймер и действие.');
   for (const node of graph.nodes) {
     const module = graphModule(node, catalog), fields = { nodeId: node.id };
-    if (!module || module.version !== node.moduleVersion || module.compatibility.projectFormat !== 3 || !module.compatibility.targets.includes('esp32s3') || module.compatibility.espIdf !== boardFor(project, catalog)?.espIdfVersion) { add('error', 'logic-module', `${node.name}: модуль отсутствует или версия несовместима.`, fields); continue; }
+    if (!module || module.version !== node.moduleVersion || module.compatibility.projectFormat !== 3 || !module.compatibility.targets.includes(boardFor(project, catalog)?.target || 'esp32s3') || module.compatibility.espIdf !== boardFor(project, catalog)?.espIdfVersion) { add('error', 'logic-module', `${node.name}: модуль отсутствует или версия несовместима.`, fields); continue; }
     if (!node.name.trim()) add('error', 'logic-name', 'Укажите название блока.', fields);
     for (const [key, parameter] of Object.entries(module.parameters)) {
       const value = node.parameters[key];
@@ -121,6 +126,10 @@ export function validateGraph(project, catalog) {
       if (parameter.type === 'text' && (typeof value !== 'string' || value.length > parameter.maxLength)) add('error', 'logic-parameter', `${node.name}: текст не должен превышать ${parameter.maxLength} символов.`, fields);
     }
     const binding = hardwareBinding(node, project, catalog);
+    if (module.editor === 'screen' && binding.component) {
+      if (!project.screens?.[binding.component.id]) add('error', 'display-interface', node.name + ': создайте и сохраните интерфейс экрана.', fields);
+      else for (const message of screenIssues(screenFor(project, binding.component.id), displayDescription(binding.component, catalog))) add('error', 'display-interface', node.name + ': ' + message, fields);
+    }
     if (binding.error) add('error', 'logic-hardware', `${node.name}: ${binding.error}`, fields);
     for (const port of module.inputs.filter(port => port.required)) if (!graph.edges.some(edge => edge.target === node.id && edge.targetHandle === port.id)) add('error', 'logic-input', `${node.name}: подключите вход «${port.name}».`, fields);
     if (module.id === 'clex.logic.timer' && !graph.edges.some(edge => edge.source === node.id && edge.dataType === 'event')) add('warning', 'timer-unused', `${node.name}: такт пока не подключён к действию.`, fields);
@@ -133,6 +142,6 @@ export function validateGraph(project, catalog) {
     if (port.readyOn && !hasPath(graph.edges, source.id, edge.target, true)) add('error', 'logic-order', 'Значение должно передаваться после события «Готово» его источника. Соедините также события.', { edgeId: edge.id, nodeId: edge.target });
   }
   const roots = graph.nodes.filter(node => node.moduleId === 'clex.logic.timer').map(node => node.id);
-  for (const node of graph.nodes.filter(node => node.moduleId !== 'clex.logic.timer')) if (!roots.some(root => hasPath(graph.edges, root, node.id, true))) add('warning', 'logic-unreachable', `${node.name}: нет событийного пути от таймера.`, { nodeId: node.id });
+  for (const node of graph.nodes.filter(node => node.moduleId !== 'clex.logic.timer' && !graphModule(node, catalog)?.editor)) if (!roots.some(root => hasPath(graph.edges, root, node.id, true))) add('warning', 'logic-unreachable', `${node.name}: нет событийного пути от таймера.`, { nodeId: node.id });
   return issues;
 }

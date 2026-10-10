@@ -69,6 +69,16 @@ export function validateProject(project) {
     if (!isObject(edge) || !validKey(edge.id) || edgeIds.has(edge.id) || !nodeIds.has(edge.source) || !nodeIds.has(edge.target) || !validKey(edge.sourceHandle) || !validKey(edge.targetHandle) || !['event','boolean','number','text'].includes(edge.dataType) || inputs.has(input)) throw new Error('Некорректная, повторяющаяся или осиротевшая связь логики.');
     edgeIds.add(edge.id); inputs.add(input);
   }
+  if (project.screens !== undefined) {
+    if (!isObject(project.screens) || Object.entries(project.screens).some(([id, screen]) => !ids.has(id) || !isObject(screen) || screen.formatVersion !== 1 || typeof screen.background !== 'string' || !/^#[0-9a-f]{6}$/i.test(screen.background) || !Array.isArray(screen.elements) || screen.elements.length > 100)) throw new Error('Некорректные интерфейсы экранов.');
+    for (const screen of Object.values(project.screens)) {
+      const elementIds = new Set();
+      for (const element of screen.elements) {
+        if (!isObject(element) || !validKey(element.id) || elementIds.has(element.id) || element.type !== 'text' || !Number.isInteger(element.x) || !Number.isInteger(element.y) || element.x < 0 || element.y < 0 || element.x > 4096 || element.y > 4096 || !validKey(element.fontId) || typeof element.text !== 'string' || element.text.length > 500 || !/^#[0-9a-f]{6}$/i.test(element.color)) throw new Error('Некорректный элемент интерфейса экрана.');
+        elementIds.add(element.id);
+      }
+    }
+  }
   const assembly = project.assembly;
   if (!isObject(assembly) || !isObject(assembly.positions) || !Array.isArray(assembly.connections) || assembly.connections.length > 200 || !viewportValid(assembly.viewport)) throw new Error('Некорректное описание монтажа.');
   if (!point(assembly.positions.board) || [...ids].some(id => !point(assembly.positions[id])) || Object.entries(assembly.positions).some(([id, position]) => (id !== 'board' && !ids.has(id)) || !point(position))) throw new Error('Некорректные позиции монтажа.');

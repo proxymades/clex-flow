@@ -63,6 +63,7 @@ pub struct Specification {
     pub console_mode: String,
     pub main_c: String,
     pub fingerprint: String,
+    pub graphics_runtime: Option<String>,
 }
 fn hash(bytes: &[u8]) -> String {
     format!("{:x}", Sha256::digest(bytes))
@@ -134,13 +135,7 @@ fn prepare(
     {
         return Err("Некорректные параметры прошивки".into());
     }
-    let computed = hash(
-        &serde_json::to_vec(&(&spec.board_id, &spec.console_mode, &spec.main_c))
-            .map_err(|e| e.to_string())?,
-    );
-    if computed != spec.fingerprint {
-        return Err("Контрольная сумма исходников не совпадает".into());
-    }
+    verify_specification(spec)?;
     let env_hash = hash(environment.root.as_bytes());
     let dir = app
         .path()
@@ -148,9 +143,65 @@ fn prepare(
         .map_err(|e| e.to_string())?
         .join("firmware")
         .join(format!("{}-{}", spec.fingerprint, &env_hash[..12]));
+    write_project(&dir, spec)?;
+    Ok(dir)
+}
+fn verify_specification(spec: &Specification) -> Result<(), String> {
+    if spec
+        .graphics_runtime
+        .as_deref()
+        .is_some_and(|runtime| runtime != "lvgl-9.2.2")
+    {
+        return Err("Неизвестная графическая библиотека".into());
+    }
+    let bytes = if let Some(runtime) = &spec.graphics_runtime {
+        serde_json::to_vec(&(&spec.board_id, &spec.console_mode, &spec.main_c, runtime))
+    } else {
+        serde_json::to_vec(&(&spec.board_id, &spec.console_mode, &spec.main_c))
+    }
+    .map_err(|e| e.to_string())?;
+    if hash(&bytes) != spec.fingerprint {
+        return Err("Контрольная сумма исходников не совпадает".into());
+    }
+    Ok(())
+}
+fn write_project(dir: &PathBuf, spec: &Specification) -> Result<(), String> {
+    verify_specification(spec)?;
     fs::create_dir_all(dir.join("main")).map_err(|e| e.to_string())?;
     write_source(&dir.join("CMakeLists.txt"),"cmake_minimum_required(VERSION 3.16)\nset(COMPONENTS main)\ninclude($ENV{IDF_PATH}/tools/cmake/project.cmake)\nproject(clex_flow_firmware)\n")?;
-    write_source(&dir.join("main/CMakeLists.txt"),"idf_component_register(SRCS \"main.c\" INCLUDE_DIRS \".\" REQUIRES esp_driver_gpio esp_timer freertos log)\n")?;
+    let dependencies = if spec.graphics_runtime.is_some() {
+        "esp_lcd esp_driver_spi esp_driver_gpio esp_timer freertos log lvgl__lvgl"
+    } else {
+        "esp_driver_gpio esp_timer freertos log"
+    };
+    let mut font_sources = String::new();
+    if spec.graphics_runtime.is_some() {
+        let fonts: serde_json::Value =
+            serde_json::from_str(include_str!("../../src/displays/fonts/lvgl-fonts.json"))
+                .map_err(|e| e.to_string())?;
+        for font in fonts
+            .as_object()
+            .ok_or("Некорректный пакет шрифтов")?
+            .values()
+        {
+            let symbol = font["symbol"].as_str().ok_or("Нет имени шрифта")?;
+            let source = font["source"].as_str().ok_or("Нет исходников шрифта")?;
+            write_source(&dir.join(format!("main/{symbol}.c")), source)?;
+            font_sources.push_str(&format!(" \"{symbol}.c\""));
+        }
+    }
+    write_source(
+        &dir.join("main/CMakeLists.txt"),
+        &format!(
+            "idf_component_register(SRCS \"main.c\"{font_sources} INCLUDE_DIRS \".\" REQUIRES {dependencies})\n"
+        ),
+    )?;
+    if spec.graphics_runtime.is_some() {
+        write_source(
+            &dir.join("main/idf_component.yml"),
+            "dependencies:\n  lvgl/lvgl: \"=9.2.2\"\n",
+        )?;
+    }
     write_source(&dir.join("main/main.c"), &spec.main_c)?;
     let size = if spec.board_id == "waveshare-esp32-s3-eth" {
         16
@@ -163,7 +214,13 @@ fn prepare(
         "UART_DEFAULT"
     };
     write_source(&dir.join("sdkconfig.defaults"),&format!("CONFIG_IDF_TARGET=\"esp32s3\"\nCONFIG_ESPTOOLPY_FLASHSIZE_{size}MB=y\nCONFIG_ESPTOOLPY_FLASHMODE_DIO=y\nCONFIG_FREERTOS_HZ=1000\nCONFIG_LOG_COLORS=n\nCONFIG_ESP_CONSOLE_{console}=y\nCONFIG_ESP_CONSOLE_SECONDARY_NONE=y\n"))?;
-    Ok(dir)
+    if spec.graphics_runtime.is_some() {
+        let path = dir.join("sdkconfig.defaults");
+        let mut contents = fs::read_to_string(&path).map_err(|e| e.to_string())?;
+        contents.push_str("CONFIG_LV_COLOR_DEPTH_16=y\nCONFIG_LV_FONT_MONTSERRAT_14=y\nCONFIG_LV_FONT_MONTSERRAT_20=y\nCONFIG_LV_FONT_MONTSERRAT_28=y\n");
+        write_source(&path, &contents)?;
+    }
+    Ok(())
 }
 #[cfg(unix)]
 pub(crate) fn stop_group(pid: u32) {
@@ -495,6 +552,10 @@ pub fn idf_build(
         let result = (|| {
             let dir = prepare(&app, &environment, &spec)?;
             let mut cmd = sdk_command(&environment);
+            if spec.graphics_runtime.is_some() {
+                cmd.env("IDF_COMPONENT_MANAGER", "1")
+                    .env("IDF_COMPONENT_CACHE_PATH", dir.join("component-cache"));
+            }
             cmd.current_dir(&dir)
                 .args(["-D", "IDF_TARGET=esp32s3", "build"]);
             if !execute(&app, &inner, &id, "build", cmd, &cancel)? {
@@ -686,6 +747,58 @@ pub fn idf_events(state: tauri::State<'_, Service>, id: String) -> Result<Vec<Ev
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    #[ignore = "Integration: explicit frontend specification and isolated output directory"]
+    fn generated_project_matches_frontend_assets() {
+        let input = std::env::var("CLEX_TEST_FIRMWARE_SPEC").unwrap();
+        let dir = PathBuf::from(std::env::var("CLEX_TEST_PROJECT_DIR").unwrap());
+        let value: serde_json::Value =
+            serde_json::from_str(&fs::read_to_string(input).unwrap()).unwrap();
+        let spec: Specification = serde_json::from_value(value.clone()).unwrap();
+        write_project(&dir, &spec).unwrap();
+        for (file, expected) in value["files"].as_object().unwrap() {
+            assert_eq!(
+                fs::read_to_string(dir.join(file)).unwrap(),
+                expected.as_str().unwrap(),
+                "{file}"
+            );
+        }
+    }
+    #[test]
+    fn graphics_runtime_is_allowlisted_and_part_of_source_identity() {
+        let mut spec = Specification {
+            board_id: "waveshare-esp32-s3-eth".into(),
+            console_mode: "usb".into(),
+            main_c: "source".into(),
+            fingerprint: String::new(),
+            graphics_runtime: None,
+        };
+        spec.fingerprint =
+            hash(&serde_json::to_vec(&(&spec.board_id, &spec.console_mode, &spec.main_c)).unwrap());
+        assert!(verify_specification(&spec).is_ok());
+        spec.graphics_runtime = Some("lvgl-9.2.2".into());
+        assert!(verify_specification(&spec).is_err());
+        spec.fingerprint = hash(
+            &serde_json::to_vec(&(
+                &spec.board_id,
+                &spec.console_mode,
+                &spec.main_c,
+                "lvgl-9.2.2",
+            ))
+            .unwrap(),
+        );
+        let dir = tempfile::tempdir().unwrap();
+        write_project(&dir.path().to_path_buf(), &spec).unwrap();
+        assert_eq!(
+            fs::read_to_string(dir.path().join("main/idf_component.yml")).unwrap(),
+            "dependencies:\n  lvgl/lvgl: \"=9.2.2\"\n"
+        );
+        assert!(fs::read_to_string(dir.path().join("sdkconfig.defaults"))
+            .unwrap()
+            .contains("CONFIG_LV_FONT_MONTSERRAT_28=y"));
+        spec.graphics_runtime = Some("arbitrary/download".into());
+        assert!(verify_specification(&spec).is_err());
+    }
     #[test]
     fn reservation_is_exclusive_and_uuid_is_strict() {
         let inner = Arc::new(Inner::default());

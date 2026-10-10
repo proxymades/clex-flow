@@ -1,0 +1,291 @@
+{
+  "id": "clex.display.spi-240x320",
+  "version": "1.0.0",
+  "kind": "hardware",
+  "name": "TFT 240×320 · SPI",
+  "manufacturer": null,
+  "category": "displays",
+  "categoryName": "Дисплеи",
+  "description": "Дисплейный модуль 240×320 на контроллере ST7789. Подсветка подключена внутри; SPI, RGB565. Без внешнего контакта управления подсветкой.",
+  "icon": "Monitor",
+  "color": "#38bdf8",
+  "visual": {
+    "svg": "display.svg",
+    "width": 250,
+    "height": 375
+  },
+  "terminals": [
+    {
+      "id": "gnd",
+      "label": "GND",
+      "kind": "ground",
+      "x": 0,
+      "y": 125
+    },
+    {
+      "id": "vcc",
+      "label": "VCC · 3,3 В",
+      "kind": "power",
+      "x": 0,
+      "y": 160,
+      "voltage": 3.3
+    },
+    {
+      "id": "sclk",
+      "label": "SCL / SCLK",
+      "kind": "gpio-output",
+      "x": 0,
+      "y": 195,
+      "signal": "clock"
+    },
+    {
+      "id": "mosi",
+      "label": "SDA / MOSI",
+      "kind": "gpio-output",
+      "x": 0,
+      "y": 230,
+      "signal": "data"
+    },
+    {
+      "id": "reset",
+      "label": "RES / RST",
+      "kind": "gpio-output",
+      "x": 0,
+      "y": 265,
+      "signal": "reset"
+    },
+    {
+      "id": "dc",
+      "label": "DC",
+      "kind": "gpio-output",
+      "x": 0,
+      "y": 300,
+      "signal": "command"
+    },
+    {
+      "id": "cs",
+      "label": "CS",
+      "kind": "gpio-output",
+      "x": 0,
+      "y": 335,
+      "signal": "select"
+    }
+  ],
+  "parameters": {
+    "spiHost": {
+      "label": "Аппаратный SPI",
+      "type": "select",
+      "default": "3",
+      "options": [
+        {
+          "value": "2",
+          "label": "SPI2"
+        },
+        {
+          "value": "3",
+          "label": "SPI3"
+        }
+      ]
+    }
+  },
+  "constraints": {},
+  "inputs": [],
+  "outputs": [],
+  "compatibility": {
+    "projectFormat": 3,
+    "targets": [
+      "esp32s3"
+    ],
+    "espIdf": "5.4.4"
+  },
+  "firmware": {
+    "status": "implemented",
+    "generatorKey": "display",
+    "dependencies": [
+      "esp_lcd",
+      "esp_driver_spi",
+      "lvgl__lvgl"
+    ]
+  },
+  "display": {
+    "model": {
+      "name": "TFT SPI 240×320 (маркировка производителя неизвестна)",
+      "manufacturer": null,
+      "diagonalInches": null,
+      "backlight": "internal"
+    },
+    "controllerId": "sitronix.st7789",
+    "interface": "spi",
+    "resolution": {
+      "width": 240,
+      "height": 320
+    },
+    "colorFormats": [
+      "RGB565"
+    ],
+    "initialization": {
+      "pixelClockHz": 20000000,
+      "spiMode": 0,
+      "commandBits": 8,
+      "parameterBits": 8,
+      "rgbOrder": "RGB",
+      "invertColors": true,
+      "xGap": 0,
+      "yGap": 0,
+      "mirrorX": false,
+      "mirrorY": false,
+      "swapXY": false
+    },
+    "supportedPlatforms": [
+      "esp-idf"
+    ],
+    "driverKey": "st7789-spi",
+    "graphics": {
+      "features": [
+        "background",
+        "text"
+      ],
+      "maxElements": 32,
+      "fonts": [
+        {
+          "id": "montserrat_14",
+          "name": "Montserrat · латиница / кириллица",
+          "family": "ClexMontserrat",
+          "size": 14,
+          "ranges": [
+            [
+              32,
+              126
+            ],
+            [
+              1024,
+              1119
+            ],
+            [
+              1122,
+              1123
+            ],
+            [
+              1130,
+              1131
+            ],
+            [
+              1138,
+              1141
+            ],
+            [
+              1162,
+              1220
+            ],
+            [
+              1222,
+              1279
+            ],
+            [
+              10,
+              10
+            ]
+          ],
+          "lineHeight": 17,
+          "baseline": 3,
+          "characterSets": [
+            "latin-basic",
+            "cyrillic"
+          ]
+        },
+        {
+          "id": "montserrat_20",
+          "name": "Montserrat · латиница / кириллица",
+          "family": "ClexMontserrat",
+          "size": 20,
+          "ranges": [
+            [
+              32,
+              126
+            ],
+            [
+              1024,
+              1119
+            ],
+            [
+              1122,
+              1123
+            ],
+            [
+              1130,
+              1131
+            ],
+            [
+              1138,
+              1141
+            ],
+            [
+              1162,
+              1220
+            ],
+            [
+              1222,
+              1279
+            ],
+            [
+              10,
+              10
+            ]
+          ],
+          "lineHeight": 23,
+          "baseline": 4,
+          "characterSets": [
+            "latin-basic",
+            "cyrillic"
+          ]
+        },
+        {
+          "id": "montserrat_28",
+          "name": "Montserrat · латиница / кириллица",
+          "family": "ClexMontserrat",
+          "size": 28,
+          "ranges": [
+            [
+              32,
+              126
+            ],
+            [
+              1024,
+              1119
+            ],
+            [
+              1122,
+              1123
+            ],
+            [
+              1130,
+              1131
+            ],
+            [
+              1138,
+              1141
+            ],
+            [
+              1162,
+              1220
+            ],
+            [
+              1222,
+              1279
+            ],
+            [
+              10,
+              10
+            ]
+          ],
+          "lineHeight": 30,
+          "baseline": 5,
+          "characterSets": [
+            "latin-basic",
+            "cyrillic"
+          ]
+        }
+      ]
+    }
+  }
+}

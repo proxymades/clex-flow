@@ -858,11 +858,17 @@ mod tests {
                 .args(["-D", "IDF_TARGET=esp32s3", "build"])
                 .envs(&environment.variables)
                 .current_dir(&project);
+            if std::env::var("CLEX_TEST_GRAPHICS_RUNTIME").ok().as_deref() == Some("lvgl-9.2.2") {
+                command.env("IDF_COMPONENT_MANAGER", "1").env(
+                    "IDF_COMPONENT_CACHE_PATH",
+                    Path::new(&project).join("component-cache"),
+                );
+            }
             assert!(idf::execute_process(&inner, "build", command, &cancel, emit).unwrap());
             assert!(Path::new(&project)
                 .join("build/clex_flow_firmware.bin")
                 .is_file());
-            println!("Real SDK Manager environment built the Blink firmware successfully");
+            println!("Real SDK Manager environment built the test firmware successfully");
             idf::release(&inner, id);
         }
     }

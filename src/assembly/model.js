@@ -9,7 +9,7 @@ export function moduleProblem(component, catalog, board = null) {
   if (!module) return 'Модуль не установлен в библиотеке.';
   if (module.version !== component.moduleVersion) return `Требуется модуль ${component.moduleId} версии ${component.moduleVersion}; установлен ${module.version}.`;
   if (board && module.compatibility.espIdf !== board.espIdfVersion) return 'Модуль несовместим с целевой версией ESP-IDF платы.';
-  if (module.kind !== 'hardware' || module.compatibility.projectFormat !== 3 || !module.compatibility.targets.includes('esp32s3')) return 'Модуль несовместим с этим редактором монтажа.';
+  if (module.kind !== 'hardware' || module.compatibility.projectFormat !== 3 || !module.compatibility.targets.includes(board?.target || 'esp32s3')) return 'Модуль несовместим с этим редактором монтажа.';
   return null;
 }
 
@@ -34,6 +34,7 @@ export function connectionProblem(project, catalog, componentId, terminalId, pin
   const pin = lookup(board.pins, pinId);
   if (!terminal) return 'Контакт компонента не найден.';
   if (!pin) return 'Контакт платы не найден.';
+  if (terminal.kind === 'power') return pin.kind === 'power' && pin.voltage === terminal.voltage ? null : 'Питание компонента подключается к контакту платы с указанным напряжением.';
   if (terminal.kind === 'ground') return pin.kind === 'ground' ? null : 'Общий контакт / катод должен быть подключён к GND. Питание и GPIO здесь недопустимы.';
   if (pin.kind !== 'gpio') return 'Сигнальный контакт подключается к GPIO, а не к питанию, GND или управлению.';
   const restriction = pinProblem(project, pin, board);
@@ -80,18 +81,23 @@ export function removeWire(project, catalog, id) {
   return withConnections(project, project.assembly.connections.filter(wire => wire.id !== id), catalog);
 }
 
-export function addHardware(project, module) {
+export function addHardware(project, module, catalog = null) {
   if (project.components.length >= 100) throw new Error('В одном проекте поддерживается до 100 компонентов.');
   if (project.moduleVersions[module.id] && project.moduleVersions[module.id] !== module.version) throw new Error('Проект использует другую версию этого модуля.');
   const id = crypto.randomUUID();
   let number = 1;
   while (project.components.some(component => component.name === `${module.name} ${number}`)) number++;
   const name = `${module.name} ${number}`;
+  const occupied = project.components.map(component => {
+    const visual = catalog?.modules.find(item => item.id === component.moduleId)?.visual;
+    return { ...project.assembly.positions[component.id], width: visual?.width || 230, height: visual?.height || 185 };
+  });
+  const width = module.visual?.width || 230, height = module.visual?.height || 185;
   let slot = 0, position;
   do {
     position = { x: 670 + (Math.floor(slot / 3) % 12) * 270, y: 100 + (Math.floor(slot / 36) * 3 + slot % 3) * 215 };
     slot++;
-  } while (Object.values(project.assembly.positions).some(value => value.x === position.x && value.y === position.y));
+  } while (occupied.some(value => position.x < value.x + value.width + 20 && position.x + width + 20 > value.x && position.y < value.y + value.height + 20 && position.y + height + 20 > value.y));
   return {
     ...project,
     components: [...project.components, { id, moduleId: module.id, moduleVersion: module.version, name, parameters: Object.fromEntries(Object.entries(module.parameters).map(([key, parameter]) => [key, parameter.default])) }],
@@ -104,7 +110,7 @@ export function removeHardware(project, catalog, id) {
   const components = project.components.filter(component => component.id !== id);
   const positions = Object.fromEntries(Object.entries(project.assembly.positions).filter(([key]) => key !== id));
   const moduleVersions = Object.fromEntries(Object.entries(project.moduleVersions).filter(([key]) => [...components, ...project.logic.nodes].some(component => component.moduleId === key)));
-  return withConnections({ ...project, components, moduleVersions, assembly: { ...project.assembly, positions, ...(project.assembly.portSides ? { portSides: Object.fromEntries(Object.entries(project.assembly.portSides).filter(([key]) => key !== id)) } : {}) } }, project.assembly.connections.filter(wire => wire.componentId !== id), catalog);
+  return withConnections({ ...project, components, moduleVersions, ...(project.screens ? { screens: Object.fromEntries(Object.entries(project.screens).filter(([key]) => key !== id)) } : {}), assembly: { ...project.assembly, positions, ...(project.assembly.portSides ? { portSides: Object.fromEntries(Object.entries(project.assembly.portSides).filter(([key]) => key !== id)) } : {}) } }, project.assembly.connections.filter(wire => wire.componentId !== id), catalog);
 }
 
 export function selectBoard(project, board) {

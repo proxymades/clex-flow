@@ -1,0 +1,40 @@
+{
+  "id": "clex.logic.display",
+  "version": "1.0.0",
+  "kind": "logic",
+  "name": "Экран дисплея",
+  "description": "Статический интерфейс подключённого дисплея. Двойное нажатие открывает редактор экрана.",
+  "category": "interfaces",
+  "categoryName": "Интерфейсы",
+  "icon": "Monitor",
+  "color": "#38bdf8",
+  "inputs": [],
+  "outputs": [],
+  "parameters": {
+    "componentId": {
+      "label": "Дисплей монтажа",
+      "type": "component",
+      "default": ""
+    }
+  },
+  "constraints": {
+    "hardware": {
+      "kind": "display"
+    }
+  },
+  "editor": "screen",
+  "compatibility": {
+    "projectFormat": 3,
+    "targets": [
+      "esp32s3"
+    ],
+    "espIdf": "5.4.4"
+  },
+  "firmware": {
+    "status": "implemented",
+    "generatorKey": "display-view",
+    "dependencies": [
+      "lvgl__lvgl"
+    ]
+  }
+}

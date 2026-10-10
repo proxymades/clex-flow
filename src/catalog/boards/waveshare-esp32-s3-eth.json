@@ -699,5 +699,15 @@
       "capabilities": [],
       "voltage": 5
     }
-  ]
+  ],
+  "target": "esp32s3",
+  "platform": "esp-idf",
+  "interfaces": {
+    "spi": {
+      "hosts": [
+        2,
+        3
+      ]
+    }
+  }
 }
