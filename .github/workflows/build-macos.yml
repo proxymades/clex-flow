@@ -29,11 +29,6 @@ jobs:
             config: src-tauri/tauri.release.conf.json
             bundles: app,dmg
             architecture: arm64
-          - runner: macos-15-intel
-            target: x86_64-apple-darwin
-            config: src-tauri/tauri.release.conf.json
-            bundles: app,dmg
-            architecture: x64
           - runner: windows-latest
             target: x86_64-pc-windows-msvc
             config: src-tauri/tauri.windows.release.conf.json
@@ -96,6 +91,24 @@ jobs:
             shasum -a 256 "$image"
           done > SHA256SUMS.txt
 
+      - name: Validate macOS app version and architecture
+        if: runner.os == 'macOS'
+        env:
+          CLEX_EXPECTED_TARGET: ${{ matrix.target }}
+        run: |
+          node --input-type=module - <<'JS'
+          import { readFileSync } from 'node:fs';
+          import { execFileSync } from 'node:child_process';
+          import assert from 'node:assert/strict';
+          const version = JSON.parse(readFileSync('package.json', 'utf8')).version;
+          const app = `src-tauri/target/${process.env.CLEX_EXPECTED_TARGET}/release/bundle/macos/CLEX Flow.app`;
+          const read = key => execFileSync('/usr/libexec/PlistBuddy', ['-c', `Print :${key}`, `${app}/Contents/Info.plist`], {encoding: 'utf8'}).trim();
+          assert.equal(read('CFBundleShortVersionString'), version);
+          assert.equal(execFileSync('lipo', ['-archs', `${app}/Contents/MacOS/${read('CFBundleExecutable')}`], {encoding:'utf8'}).trim(), 'arm64');
+          execFileSync('codesign', ['--verify', '--deep', '--strict', app], {stdio:'inherit'});
+          for (const resource of ['LICENSE', 'THIRD_PARTY_NOTICES.md']) assert.ok(readFileSync(`${app}/Contents/Resources/${resource}`).length);
+          JS
+
       - name: Record Windows installer checksum
         if: runner.os == 'Windows'
         shell: pwsh
@@ -103,6 +116,9 @@ jobs:
           $installers = Get-ChildItem 'src-tauri/target/${{ matrix.target }}/release/bundle/nsis/*.exe'
           if (-not $installers) { throw 'Installer missing' }
           $installers | Get-FileHash -Algorithm SHA256 | Format-Table -AutoSize | Out-String | Set-Content -Encoding utf8 'src-tauri/target/${{ matrix.target }}/release/bundle/nsis/SHA256SUMS.txt'
+          foreach ($installer in $installers) {
+            if ((Get-AuthenticodeSignature $installer.FullName).Status -ne 'NotSigned') { throw 'Expected an unsigned installer' }
+          }
 
       - name: Store installers for manual testing
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4

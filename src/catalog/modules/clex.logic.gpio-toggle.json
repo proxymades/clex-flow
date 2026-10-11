@@ -2,40 +2,47 @@
   "id": "clex.logic.gpio-toggle",
   "version": "1.0.0",
   "kind": "logic",
-  "name": "Переключение GPIO",
-  "description": "Изменить уровень внешнего светодиода на противоположный.",
+  "name": "Переключить выход",
+  "description": "Меняет состояние выбранного выходного контакта на противоположное.",
   "category": "gpio",
-  "categoryName": "GPIO",
+  "categoryName": "Контакты",
   "icon": "Repeat2",
   "color": "#A78BFA",
   "inputs": [
     {
       "id": "trigger",
-      "name": "Выполнить",
+      "name": "Переключить",
       "type": "event",
-      "required": true
+      "required": true,
+      "description": "Меняет состояние выбранного выходного контакта на противоположное.",
+      "additional": false
     }
   ],
   "outputs": [
     {
       "id": "done",
-      "name": "Готово",
+      "name": "Переключено",
       "type": "event",
-      "required": false
+      "required": false,
+      "description": "Отправляет сигнал после переключения состояния контакта.",
+      "additional": true
     },
     {
       "id": "state",
-      "name": "Новый уровень",
+      "name": "Высокий уровень?",
       "type": "boolean",
       "required": false,
-      "readyOn": "done"
+      "readyOn": "done",
+      "description": "Передает новое заданное состояние контакта: Да или Нет.",
+      "additional": true
     }
   ],
   "parameters": {
     "componentId": {
-      "label": "Компонент монтажа",
+      "label": "Выходной компонент",
       "type": "component",
-      "default": ""
+      "default": "",
+      "description": "Выберите компонент для переключения из монтажа."
     }
   },
   "constraints": {
@@ -60,5 +67,8 @@
     "dependencies": [
       "esp_driver_gpio"
     ]
-  }
+  },
+  "legacyNames": [
+    "Переключение GPIO"
+  ]
 }

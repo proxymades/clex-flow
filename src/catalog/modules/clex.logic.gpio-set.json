@@ -2,44 +2,52 @@
   "id": "clex.logic.gpio-set",
   "version": "1.0.0",
   "kind": "logic",
-  "name": "Установка GPIO",
-  "description": "Установить уровень внешнего светодиода по событию.",
+  "name": "Управлять выходом",
+  "description": "Устанавливает состояние выбранного выходного контакта по сигналу.",
   "category": "gpio",
-  "categoryName": "GPIO",
+  "categoryName": "Контакты",
   "icon": "ArrowUpRight",
   "color": "#8B5CF6",
   "inputs": [
     {
       "id": "trigger",
-      "name": "Выполнить",
+      "name": "Применить состояние",
       "type": "event",
-      "required": true
+      "required": true,
+      "description": "Устанавливает полученное состояние выбранного выходного контакта.",
+      "additional": false
     },
     {
       "id": "value",
-      "name": "Уровень",
+      "name": "Высокий уровень?",
       "type": "boolean",
-      "required": false
+      "required": false,
+      "description": "Да задает высокий уровень, Нет – низкий. Без связи используется настройка блока.",
+      "additional": true
     }
   ],
   "outputs": [
     {
       "id": "done",
-      "name": "Готово",
+      "name": "Состояние установлено",
       "type": "event",
-      "required": false
+      "required": false,
+      "description": "Отправляет сигнал после установки состояния контакта.",
+      "additional": true
     }
   ],
   "parameters": {
     "componentId": {
-      "label": "Компонент монтажа",
+      "label": "Выходной компонент",
       "type": "component",
-      "default": ""
+      "default": "",
+      "description": "Выберите компонент для управления из монтажа."
     },
     "defaultValue": {
-      "label": "Уровень без входного значения",
+      "label": "Состояние без входной связи",
       "type": "boolean",
-      "default": true
+      "default": true,
+      "description": "Используется, если состояние не поступает от другого блока."
     }
   },
   "constraints": {
@@ -64,5 +72,8 @@
     "dependencies": [
       "esp_driver_gpio"
     ]
-  }
+  },
+  "legacyNames": [
+    "Установка GPIO"
+  ]
 }

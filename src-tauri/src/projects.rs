@@ -54,7 +54,7 @@ fn validate_contents(contents: &str, id: Option<&str>) -> Result<(), String> {
         return Err("JSON проекта превышает 2 МБ".into());
     }
     let value: serde_json::Value =
-        serde_json::from_str(contents).map_err(|e| format!("Повреждённый JSON: {e}"))?;
+        serde_json::from_str(contents).map_err(|e| format!("Поврежденный JSON: {e}"))?;
     let stored_id = value
         .get("id")
         .and_then(|v| v.as_str())

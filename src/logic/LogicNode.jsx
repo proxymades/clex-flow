@@ -1,34 +1,37 @@
-import { memo, useEffect } from 'react';
-import { Handle, Position, useUpdateNodeInternals } from '@xyflow/react';
-import { Timer, ScanLine, ArrowUpRight, Repeat2, Terminal, Box, TriangleAlert, Monitor } from 'lucide-react';
+import {memo,useEffect,useState} from 'react';
+import {Handle,Position,useUpdateNodeInternals} from '@xyflow/react';
+import {Timer,ScanLine,ArrowUpRight,Repeat2,Terminal,Box,TriangleAlert,Monitor,Hash,Network,Globe,Link2} from 'lucide-react';
 import ScreenPreview from '../displays/ScreenPreview.jsx';
-import { TYPE_COLORS, TYPE_NAMES } from './model.js';
-const icons = { Timer, ScanLine, ArrowUpRight, Repeat2, Terminal, Monitor };
-
-function LogicNode({ id, data, selected }) {
-  const { definition, node, binding, issueCount, onPort, pending, display, screen } = data;
-  const updateNodeInternals = useUpdateNodeInternals();
-  useEffect(() => {
-    // WebKit требует повторного измерения портов после загрузки карточки.
-    updateNodeInternals(id);
-  }, [id, definition, updateNodeInternals]);
-  const Icon = icons[definition?.icon] || Box;
-  const inputs = definition?.inputs || [], outputs = definition?.outputs || [];
-  const rows = Math.max(inputs.length, outputs.length);
-  const summary = definition?.editor === 'screen' ? (binding?.component?.name || 'Выберите дисплей монтажа') : definition?.id === 'clex.logic.timer' ? `${node.parameters.intervalMs} мс` : definition?.constraints.hardware ? binding?.component ? `${binding.component.name} · ${binding.gpio === null ? 'GPIO не назначен' : `GPIO${binding.gpio}`}` : 'Выберите компонент монтажа' : node.parameters.message || 'Пустое сообщение';
-  function portView(port, direction) {
-    const active = pending?.nodeId === id && pending.portId === port.id && pending.direction === direction;
-    return <div className={`logic-port ${direction} ${active ? 'pending-port' : ''}`} key={`${direction}-${port.id}`} style={{ '--port-color': TYPE_COLORS[port.type] }}>
-      <Handle type={direction === 'output' ? 'source' : 'target'} position={direction === 'output' ? Position.Right : Position.Left} id={port.id} aria-label={`${direction === 'output' ? 'Выход' : 'Вход'} ${port.name}: ${node.name}`} title={`${port.name} · ${TYPE_NAMES[port.type]}`} onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); event.stopPropagation(); onPort({ nodeId: id, portId: port.id, direction }); } }} tabIndex={0} />
-      <button className="logic-port-name nodrag" aria-label={`${direction === 'output' ? 'Выход' : 'Вход'}: ${node.name} / ${port.name}`} title={TYPE_NAMES[port.type]} onClick={event => { event.stopPropagation(); onPort({ nodeId: id, portId: port.id, direction }); }}><span className="port-type-dot" />{port.name}</button>
-    </div>;
-  }
-  return <article className={`logic-node ${selected ? 'node-selected' : ''} ${issueCount ? 'node-invalid' : ''}`} style={{ '--node-color': definition?.color || '#fb7185' }}>
-    <header className="logic-drag-handle"><span className="logic-node-icon"><Icon size={19} /></span><div><strong>{node.name}</strong><small>{definition?.categoryName || 'Модуль не установлен'} · v{node.moduleVersion}</small></div>{issueCount > 0 && <span className="node-issue-count" title={`${issueCount} ошибок`}><TriangleAlert size={12} />{issueCount}</span>}</header>
-    <div className="logic-node-summary" title={summary}>{summary}</div>
-    {definition?.editor === 'screen' && display && <div className="logic-display-preview nodrag" title="Двойное нажатие открывает редактор экрана"><ScreenPreview display={display} screen={screen || { background: '#000000', elements: [] }} /></div>}
-    {!definition && <p className="logic-missing">Точная версия модуля отсутствует в библиотеке.</p>}
-    <div className="logic-ports">{Array.from({ length: rows }, (_, index) => <div className="logic-port-row" key={index}>{inputs[index] ? portView(inputs[index], 'input') : <span />}{outputs[index] ? portView(outputs[index], 'output') : <span />}</div>)}</div>
-  </article>;
+import {TYPE_COLORS,TYPE_NAMES} from './model.js';
+import {visiblePorts,nodeDisplayName} from './presentation.js';
+const icons={Timer,ScanLine,ArrowUpRight,Repeat2,Terminal,Monitor,Hash,Network,Globe};
+function LogicNode({id,data,selected}){
+ const {definition,node,binding,issueCount,onPort,pending,display,screen,project,catalog,connection,onBindData}=data;
+ const [expanded,setExpanded]=useState(false);
+ const ports=visiblePorts(node,project,catalog,{expanded,connection});
+ const inputs=ports.inputs.filter(port=>!port.hidden),outputs=ports.outputs.filter(port=>!port.hidden),rows=Math.max(inputs.length,outputs.length);
+ const layout=JSON.stringify([inputs,outputs].map(items=>items.map(port=>[port.id,port.name])));
+ const updateNodeInternals=useUpdateNodeInternals();useEffect(()=>{updateNodeInternals(id);},[id,layout,updateNodeInternals]);
+ const Icon=icons[definition?.icon]||Box;
+ const summary=definition?.editor==='screen'?(binding?.component?.name||'Выберите дисплей'):definition?.id==='clex.logic.timer'?`Каждые ${node.parameters.intervalMs} мс`:definition?.id==='clex.logic.counter'?`Начало: ${node.parameters.initialValue} · изменение: ${node.parameters.step}`:definition?.id==='clex.logic.internet-check'?(node.parameters.url||'Укажите адрес проверки'):definition?.constraints.hardware?(binding?.component?.name||'Выберите компонент'):node.parameters.message||'Пустое сообщение';
+ const title=nodeDisplayName(node,project,catalog);
+ function portView(port,direction){
+  const active=pending?.nodeId===id&&pending.portId===port.id&&pending.direction===direction,tip=id+'-'+direction+'-'+encodeURIComponent(port.id);
+  return <div key={direction+'-'+port.id} data-port-id={port.id} data-port-type={port.type} className={`logic-port ${direction} ${active?'pending-port':''} ${port.compatible?'compatible-port':''} ${port.incompatible?'incompatible-port':''}`} style={{'--port-color':TYPE_COLORS[port.type]}}>
+   <Handle type={direction==='output'?'source':'target'} position={direction==='output'?Position.Right:Position.Left} id={port.id} aria-label={`${direction==='output'?'Выход':'Вход'} ${port.name}: ${title}`} aria-describedby={tip} title={port.description} tabIndex={0} onKeyDown={event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();event.stopPropagation();onPort({nodeId:id,portId:port.id,direction});}}}/>
+   <button className="logic-port-name nodrag" aria-describedby={tip} aria-label={`${direction==='output'?'Выход':'Вход'}: ${title} / ${port.name}`} onClick={event=>{event.stopPropagation();onPort({nodeId:id,portId:port.id,direction});}}><span className="port-type-dot"/><span className="port-label-copy">{port.name}</span></button>
+   <span className="port-tooltip" id={tip} role="tooltip"><strong>{port.name} · {TYPE_NAMES[port.type]}</strong>{port.description}{port.reason&&<em>{port.reason}</em>}</span>
+  </div>;
+ }
+ const additional=[...ports.inputs,...ports.outputs].filter(port=>port.additional);
+ return <article className={`logic-node ${selected?'node-selected':''} ${issueCount?'node-invalid':''}`} style={{'--node-color':definition?.color||'#fb7185'}}>
+  <header className="logic-drag-handle"><span className="logic-node-icon"><Icon size={19}/></span><div><strong title={title}>{title}</strong><small>{definition?.categoryName||'Модуль не установлен'} · v{node.moduleVersion}</small></div>{issueCount>0&&<span className="node-issue-count" title={`${issueCount} ошибок`}><TriangleAlert size={12}/>{issueCount}</span>}</header>
+  <div className="logic-node-summary" title={summary}>{summary}</div>
+  {definition?.editor==='screen'&&display&&<><div className="logic-display-preview nodrag" title="Двойное нажатие открывает редактор экрана"><ScreenPreview display={display} screen={screen||{background:'#000000',elements:[]}}/></div>{screen?.elements.some(element=>element.mode==='dynamic'||element.captionDynamic)&&<button className="node-bind-button nodrag" disabled={data.busy} onClick={()=>onBindData(node)}><Link2 size={13}/>Подключить данные</button>}</>}
+  {!definition&&<p className="logic-missing">Точная версия модуля отсутствует в библиотеке.</p>}
+  <div className="logic-ports">{Array.from({length:rows},(_,index)=><div className={'logic-port-row'+(!inputs[index]||!outputs[index]?' single-port-row':'')} key={index}>{inputs[index]&&portView(inputs[index],'input')}{outputs[index]&&portView(outputs[index],'output')}</div>)}</div>
+  {['inputs','outputs'].flatMap(direction=>ports[direction].filter(port=>port.hidden).map(port=><Handle key={'hidden-'+direction+'-'+port.id} type={direction==='outputs'?'source':'target'} position={direction==='outputs'?Position.Right:Position.Left} id={port.id} isConnectable={false} tabIndex={-1} aria-hidden="true" style={{visibility:'hidden',pointerEvents:'none'}}/>))}
+  {additional.length>0&&<button className="node-additional-button nodrag" aria-expanded={expanded} onClick={()=>setExpanded(value=>!value)}>{expanded?'Свернуть дополнительные контакты':'Дополнительные контакты'} · {additional.length}</button>}
+ </article>;
 }
 export default memo(LogicNode);

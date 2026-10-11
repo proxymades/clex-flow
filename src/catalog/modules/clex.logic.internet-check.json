@@ -1,0 +1,193 @@
+{
+  "id": "clex.logic.internet-check",
+  "version": "1.0.0",
+  "kind": "logic",
+  "name": "Проверка интернета",
+  "description": "Проверяет указанный HTTP/HTTPS-ресурс в фоновой задаче. Состояние: 0 – ожидание, 1 – проверка, 2 – доступен, 3 – недоступен.",
+  "category": "network",
+  "categoryName": "Сеть",
+  "icon": "Globe",
+  "color": "#a78bfa",
+  "inputs": [],
+  "outputs": [
+    {
+      "id": "changed",
+      "name": "Данные проверки обновлены",
+      "type": "event",
+      "required": false,
+      "description": "Отправляет сигнал при ожидании, начале и результате проверки.",
+      "additional": true
+    },
+    {
+      "id": "done",
+      "name": "Проверка завершена",
+      "type": "event",
+      "required": false,
+      "description": "Сигнал после успешной или неудачной попытки проверки.",
+      "additional": false
+    },
+    {
+      "id": "available",
+      "name": "Ресурс доступен?",
+      "type": "boolean",
+      "required": false,
+      "readyOn": "changed",
+      "description": "Да при успешном ответе. Во время ожидания и новой проверки – Нет.",
+      "additional": false,
+      "displayUpdateEvents": [
+        {
+          "id": "done",
+          "label": "После завершения проверки",
+          "resetNetwork": true
+        },
+        {
+          "id": "changed",
+          "label": "Показывать ход проверки"
+        }
+      ]
+    },
+    {
+      "id": "state",
+      "name": "Этап проверки",
+      "type": "number",
+      "required": false,
+      "readyOn": "changed",
+      "description": "Передает этап: ожидание, проверка, доступен или недоступен.",
+      "additional": false,
+      "displayUpdateEvents": [
+        {
+          "id": "done",
+          "label": "После завершения проверки",
+          "resetNetwork": true
+        },
+        {
+          "id": "changed",
+          "label": "Показывать ход проверки"
+        }
+      ]
+    },
+    {
+      "id": "responseMs",
+      "name": "Время проверки, мс",
+      "type": "number",
+      "required": false,
+      "readyOn": "changed",
+      "description": "Время всей попытки. Значение −1 означает отсутствие измерения.",
+      "additional": true,
+      "displayUpdateEvents": [
+        {
+          "id": "done",
+          "label": "После завершения проверки",
+          "resetNetwork": true
+        },
+        {
+          "id": "changed",
+          "label": "Показывать ход проверки"
+        }
+      ]
+    },
+    {
+      "id": "statusCode",
+      "name": "Код ответа сервера",
+      "type": "number",
+      "required": false,
+      "readyOn": "changed",
+      "description": "Код HTTP-ответа. Ноль означает, что ответ не получен.",
+      "additional": true,
+      "displayUpdateEvents": [
+        {
+          "id": "done",
+          "label": "После завершения проверки",
+          "resetNetwork": true
+        },
+        {
+          "id": "changed",
+          "label": "Показывать ход проверки"
+        }
+      ]
+    },
+    {
+      "id": "error",
+      "name": "Причина ошибки",
+      "type": "text",
+      "required": false,
+      "readyOn": "changed",
+      "description": "Показывает причину неудачной попытки: DNS, соединение, TLS или таймаут.",
+      "additional": true,
+      "displayUpdateEvents": [
+        {
+          "id": "done",
+          "label": "После завершения проверки",
+          "resetNetwork": true
+        },
+        {
+          "id": "changed",
+          "label": "Показывать ход проверки"
+        }
+      ]
+    }
+  ],
+  "parameters": {
+    "url": {
+      "label": "Адрес сайта или сервиса",
+      "type": "text",
+      "default": "",
+      "maxLength": 2048,
+      "description": "Полная ссылка, начинающаяся с http:// или https://."
+    },
+    "method": {
+      "label": "Способ запроса",
+      "type": "select",
+      "default": "HEAD",
+      "options": [
+        {
+          "value": "HEAD",
+          "label": "HEAD – только заголовки"
+        },
+        {
+          "value": "GET",
+          "label": "GET – запрос ресурса"
+        }
+      ],
+      "description": "HEAD проверяет заголовки, GET делает обычный запрос; проверка завершается после получения заголовков."
+    },
+    "intervalMs": {
+      "label": "Проверять каждые, мс",
+      "type": "integer",
+      "default": 10000,
+      "min": 1000,
+      "max": 86400000,
+      "step": 1000,
+      "description": "Минимальный период между началами фоновых проверок."
+    },
+    "timeoutMs": {
+      "label": "Максимальное время проверки, мс",
+      "type": "integer",
+      "default": 5000,
+      "min": 100,
+      "max": 60000,
+      "step": 100,
+      "description": "Общее время на DNS, соединение и получение ответа."
+    }
+  },
+  "constraints": {
+    "network": true
+  },
+  "compatibility": {
+    "projectFormat": 3,
+    "targets": [
+      "esp32s3"
+    ],
+    "espIdf": "5.4.4"
+  },
+  "firmware": {
+    "status": "implemented",
+    "generatorKey": "internet-check",
+    "eventSource": true,
+    "dependencies": [
+      "esp_http_client",
+      "mbedtls",
+      "lwip"
+    ]
+  }
+}

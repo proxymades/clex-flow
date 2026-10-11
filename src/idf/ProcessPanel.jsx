@@ -47,7 +47,7 @@ export default function ProcessPanel({ idf, onPreview, issues, onIssue }) {
   }
   const errors = issues.filter(issue => issue.severity === 'error');
   const events = idf.events.filter(event => tab === 'monitor' ? event.operation === 'monitor' : event.operation !== 'monitor');
-  const labels = { running: 'Выполняется', connected: 'Подключён', stopping: 'Останавливаем…', success: 'Готово', failed: 'Ошибка', cancelled: 'Остановлено' };
+  const labels = { running: 'Выполняется', connected: 'Подключен', stopping: 'Останавливаем…', success: 'Готово', failed: 'Ошибка', cancelled: 'Остановлено' };
   return <section className="process-panel">
     <header><div>
       <button className={tab === 'build' ? 'selected' : ''} onClick={() => changeTab('build')}><Hammer size={14} />Сборка и прошивка</button>
@@ -60,10 +60,10 @@ export default function ProcessPanel({ idf, onPreview, issues, onIssue }) {
       <button className="icon-button" onClick={onPreview} disabled={!idf.preview} aria-label="Посмотреть исходники прошивки"><FileCode2 size={15} /></button>
     </header>
     <div className="process-log" ref={log} onScroll={onScroll} onWheel={onWheel} role="log" aria-label={tab === 'monitor' ? 'Последовательный монитор' : 'Журнал компилятора'}>
-      {tab === 'check' ? <div><p className="generation-state">{idf.generationError || 'Исходники готовы к сборке.'}</p>{issues.map((issue, index) => <button className="validation-row" key={`${issue.code}-${index}`} onClick={() => onIssue(issue)}><span className={`log-level ${issue.severity === 'error' ? 'error-level' : 'warning'}`}>{issue.severity === 'error' ? 'ОШ' : 'ВНИМ'}</span><span>{issue.message}</span></button>)}</div>
+      {tab === 'check' ? <div><p className="generation-state">{idf.generationError || 'Исходники готовы к сборке.'}</p>{issues.map((issue, index) => <button className="validation-row" key={`${issue.code}-${index}`} onClick={() => onIssue(issue)}><span className={`log-level ${issue.severity === 'error' ? 'error-level' : 'warning'}`}>{issue.severity === 'error' ? 'Ошибка' : 'Предупреждение'}</span><span>{issue.message}</span></button>)}</div>
         : !events.length ? <div className="process-empty"><Terminal size={18} /><p>{tab === 'monitor' ? 'Выберите порт и откройте монитор.' : 'Нажмите «Собрать», чтобы открыть журнал компиляции.'}</p></div>
           : tab === 'monitor' ? <pre className="serial-output">{strip(events.map(event => event.stream === 'stdout' ? event.text : `\n[${event.status}] ${event.text}\n`).join(''))}</pre>
-            : events.map(event => <div key={event.sequence} className={`process-line ${event.status === 'failed' ? 'failed' : ''}`}><span className="process-stream">{event.status === 'success' ? <CheckCircle2 size={11} /> : event.status === 'failed' ? <TriangleAlert size={11} /> : event.stream === 'stderr' ? 'ОШ' : event.stream === 'system' ? 'СИСТ' : 'ВЫВ'}</span><pre>{strip(event.text)}</pre></div>)}
+            : events.map(event => <div key={event.sequence} className={`process-line ${event.status === 'failed' ? 'failed' : ''}`}><span className="process-stream">{event.status === 'success' ? <><CheckCircle2 size={11} />Готово</> : event.status === 'failed' ? <><TriangleAlert size={11} />Ошибка</> : event.stream === 'stderr' ? 'Диагностика' : event.stream === 'system' ? 'Система' : 'Вывод'}</span><pre>{strip(event.text)}</pre></div>)}
     </div>
     {idf.build && <footer><span>{idf.fresh ? 'Прошивка соответствует текущей схеме' : 'Схема/среда изменена – нужна новая сборка'}</span><code title={idf.build.binary}>{idf.build.binary}</code></footer>}
   </section>;

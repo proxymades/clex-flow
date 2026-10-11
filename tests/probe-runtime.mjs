@@ -1,0 +1,13 @@
+import {mkdirSync,readFileSync,writeFileSync} from 'node:fs';
+import {resolve,join} from 'node:path';
+import {URL} from 'node:url';
+import {spawnSync} from 'node:child_process';
+import process from 'node:process';
+import {PROBE_RUNTIME} from '../src/firmware/drivers/esp-idf/probe-runtime.js';
+const directory=resolve('.artifacts/probe-runtime');mkdirSync(directory,{recursive:true});
+const helpers=PROBE_RUNTIME.slice(PROBE_RUNTIME.indexOf('static int clex_request_timeout_ms('),PROBE_RUNTIME.indexOf('static bool clex_dns_resolve('));
+const run=PROBE_RUNTIME.slice(PROBE_RUNTIME.indexOf('static void clex_probe_run('),PROBE_RUNTIME.indexOf('static void clex_probe_task('));
+const template=readFileSync(new URL('./fixtures/probe-runtime.c.in',import.meta.url),'utf8');
+const file=join(directory,'probe.c'),binary=join(directory,'probe');writeFileSync(file,template.replace('/* CLEX_GENERATED_PROBE */',helpers+run));
+const build=spawnSync('clang',['-std=c11','-fsanitize=undefined','-fno-sanitize-recover=undefined',file,'-o',binary],{encoding:'utf8'});if(build.status!==0)throw new Error(build.stderr);
+const result=spawnSync(binary,[],{encoding:'utf8'});process.stdout.write(result.stdout);if(result.status!==0)throw new Error(result.stderr);

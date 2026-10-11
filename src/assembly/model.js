@@ -1,3 +1,4 @@
+import { networkProvider, networkIssues, spiOptions, spiUsage } from '../network/model.js';
 export const DEFAULT_BOARD_POSITION = { x: 100, y: 40 };
 export const DEFAULT_VIEWPORT = { x: 0, y: 0, zoom: 1 };
 const lookup = (items, id) => items.find(item => item.id === id);
@@ -9,6 +10,7 @@ export function moduleProblem(component, catalog, board = null) {
   if (!module) return 'Модуль не установлен в библиотеке.';
   if (module.version !== component.moduleVersion) return `Требуется модуль ${component.moduleId} версии ${component.moduleVersion}; установлен ${module.version}.`;
   if (board && module.compatibility.espIdf !== board.espIdfVersion) return 'Модуль несовместим с целевой версией ESP-IDF платы.';
+  if (module.network && board && !board.networkInterfaces?.some(provider=>provider.family===module.network.family)) return 'Для выбранной платы нет описанного сетевого интерфейса этого типа.';
   if (module.kind !== 'hardware' || module.compatibility.projectFormat !== 3 || !module.compatibility.targets.includes(board?.target || 'esp32s3')) return 'Модуль несовместим с этим редактором монтажа.';
   return null;
 }
@@ -35,7 +37,7 @@ export function connectionProblem(project, catalog, componentId, terminalId, pin
   if (!terminal) return 'Контакт компонента не найден.';
   if (!pin) return 'Контакт платы не найден.';
   if (terminal.kind === 'power') return pin.kind === 'power' && pin.voltage === terminal.voltage ? null : 'Питание компонента подключается к контакту платы с указанным напряжением.';
-  if (terminal.kind === 'ground') return pin.kind === 'ground' ? null : 'Общий контакт / катод должен быть подключён к GND. Питание и GPIO здесь недопустимы.';
+  if (terminal.kind === 'ground') return pin.kind === 'ground' ? null : 'Общий контакт / катод должен быть подключен к GND. Питание и GPIO здесь недопустимы.';
   if (pin.kind !== 'gpio') return 'Сигнальный контакт подключается к GPIO, а не к питанию, GND или управлению.';
   const restriction = pinProblem(project, pin, board);
   if (restriction) return restriction;
@@ -89,6 +91,10 @@ export function addHardware(project, module, catalog = null) {
   const instanceName = number => module.display ? `${module.name} · №${number}` : `${module.name} ${number}`;
   while (project.components.some(component => component.name === instanceName(number) || component.name === `${module.name} ${number}`)) number++;
   const name = instanceName(number);
+  const parameters=Object.fromEntries(Object.entries(module.parameters).map(([key,parameter])=>[key,parameter.default]));
+  if(module.network&&catalog){const board=boardFor(project,catalog),provider=board.networkInterfaces?.find(provider=>provider.family===module.network.family);if(!provider)throw new Error('На этой плате нет описанного сетевого интерфейса.');if(project.components.some(component=>networkProvider(component,board,module)?.id===provider.id))throw new Error('Этот встроенный интерфейс уже добавлен.');parameters.providerId=provider.id;}
+  if(module.parameters.spiHost&&catalog){const options=spiOptions(project,catalog,id).filter(option=>!option.busy.length);parameters.spiHost=options.find(option=>option.value===String(parameters.spiHost))?.value||options[0]?.value||'';}
+
   const occupied = project.components.map(component => {
     const visual = catalog?.modules.find(item => item.id === component.moduleId)?.visual;
     return { ...project.assembly.positions[component.id], width: visual?.width || 230, height: visual?.height || 185 };
@@ -101,7 +107,7 @@ export function addHardware(project, module, catalog = null) {
   } while (occupied.some(value => position.x < value.x + value.width + 20 && position.x + width + 20 > value.x && position.y < value.y + value.height + 20 && position.y + height + 20 > value.y));
   return {
     ...project,
-    components: [...project.components, { id, moduleId: module.id, moduleVersion: module.version, name, parameters: Object.fromEntries(Object.entries(module.parameters).map(([key, parameter]) => [key, parameter.default])) }],
+    components: [...project.components, { id, moduleId: module.id, moduleVersion: module.version, name, parameters }],
     moduleVersions: { ...project.moduleVersions, [module.id]: module.version },
     assembly: { ...project.assembly, positions: { ...project.assembly.positions, [id]: position } },
   };
@@ -128,7 +134,7 @@ export function validateAssembly(project, catalog) {
   for (const [key, option] of Object.entries(board.options || {})) {
     const value = project.boardSettings?.[key] || option.default;
     if (!option.values.some(item => item.value === value)) issue('error', 'board-option', `Неизвестное значение настройки «${option.label}».`);
-    else if (value === 'unknown') issue('warning', 'shared-pins', 'Наличие камеры не проверено. Её общие контакты заблокированы.');
+    else if (value === 'unknown') issue('warning', 'shared-pins', 'Наличие камеры не проверено. Ее общие контакты заблокированы.');
   }
   for (const component of project.components) {
     const fields = { componentId: component.id };
@@ -141,15 +147,18 @@ export function validateAssembly(project, catalog) {
       if (parameter.type === 'number' && (!Number.isFinite(value) || value < parameter.min || value > parameter.max)) issue('error', 'parameter-range', `${component.name}: «${parameter.label}» должен быть в диапазоне ${parameter.min}-${parameter.max}.`, fields);
       if (parameter.type === 'select' && !parameter.options.some(option => option.value === value)) issue('error', 'parameter-option', `${component.name}: неверный параметр «${parameter.label}».`, fields);
     }
+    if(module.network)for(const message of networkIssues(component,board,module))issue('error','network-config',component.name+': '+message,fields);
+    if(module.parameters.spiHost&&!board.interfaces?.spi?.hosts.includes(Number(component.parameters.spiHost)))issue('error','spi-host',component.name+': выберите доступный SPI.',fields);
     if (module.constraints.requiresSeriesResistor) {
       const { resistorOhms, forwardVoltage } = component.parameters;
       const currentMa = (module.constraints.signalVoltage - forwardVoltage) / resistorOhms * 1000;
-      if (Number.isFinite(currentMa) && currentMa > module.constraints.maxCurrentMa) issue('error', 'led-current', `${component.name}: расчётный ток ${currentMa.toFixed(1)} мА превышает предел модуля ${module.constraints.maxCurrentMa} мА. Увеличьте резистор.`, fields);
+      if (Number.isFinite(currentMa) && currentMa > module.constraints.maxCurrentMa) issue('error', 'led-current', `${component.name}: расчетный ток ${currentMa.toFixed(1)} мА превышает предел модуля ${module.constraints.maxCurrentMa} мА. Увеличьте резистор.`, fields);
     }
     for (const terminal of module.terminals) {
       if (!project.assembly.connections.some(wire => wire.componentId === component.id && wire.terminalId === terminal.id)) issue('error', 'terminal-unconnected', `${component.name}: подключите «${terminal.label}».`, fields);
     }
   }
+  for(const claim of spiUsage(project,catalog))if(spiUsage(project,catalog).some(other=>other.componentId!==claim.componentId&&other.host===claim.host))issue('error','spi-conflict',`SPI${claim.host} занят несколькими компонентами; выберите свободный SPI.`,{componentId:claim.componentId});
   for (const wire of project.assembly.connections) {
     const problem = connectionProblem(project, catalog, wire.componentId, wire.terminalId, wire.boardPinId);
     if (problem) issue('error', 'connection-invalid', problem, { componentId: wire.componentId, wireId: wire.id, pinId: wire.boardPinId });

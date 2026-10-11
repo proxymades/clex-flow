@@ -1,0 +1,152 @@
+{
+  "id": "clex.logic.ethernet",
+  "version": "1.0.0",
+  "kind": "logic",
+  "name": "Ethernet",
+  "description": "Реальные Link, IPv4 и параметры сети. Состояние: 0 – нет Link, 1 – ожидание IP, 2 – IP получен, 3 – ошибка драйвера.",
+  "category": "network",
+  "categoryName": "Сеть",
+  "icon": "Network",
+  "color": "#38bdf8",
+  "inputs": [],
+  "outputs": [
+    {
+      "id": "changed",
+      "name": "Данные сети обновлены",
+      "type": "event",
+      "required": false,
+      "description": "Сообщает, что доступны актуальные состояние и адреса сети.",
+      "additional": false
+    },
+    {
+      "id": "connected",
+      "name": "Соединение установлено",
+      "type": "event",
+      "required": false,
+      "description": "Сигнал при установлении физического Ethernet-соединения.",
+      "additional": true
+    },
+    {
+      "id": "disconnected",
+      "name": "Соединение потеряно",
+      "type": "event",
+      "required": false,
+      "description": "Сигнал при потере ранее установленного соединения.",
+      "additional": true
+    },
+    {
+      "id": "ipChanged",
+      "name": "IP-адрес обновлен",
+      "type": "event",
+      "required": false,
+      "description": "Сигнал при получении или потере IP-адреса и обновлении IP-данных.",
+      "additional": true
+    },
+    {
+      "id": "link",
+      "name": "Есть соединение?",
+      "type": "boolean",
+      "required": false,
+      "readyOn": "changed",
+      "description": "Да, если физическое Ethernet-соединение установлено.",
+      "additional": true
+    },
+    {
+      "id": "hasIp",
+      "name": "Есть IP-адрес?",
+      "type": "boolean",
+      "required": false,
+      "readyOn": "changed",
+      "description": "Да, если у платы есть действительный IP-адрес.",
+      "additional": true
+    },
+    {
+      "id": "state",
+      "name": "Состояние подключения",
+      "type": "number",
+      "required": false,
+      "readyOn": "changed",
+      "description": "Передает состояние: нет соединения, ожидание IP, IP получен или ошибка запуска.",
+      "additional": false
+    },
+    {
+      "id": "ip",
+      "name": "IP-адрес устройства",
+      "type": "text",
+      "required": false,
+      "readyOn": "changed",
+      "description": "Передает действительный адрес устройства; после потери адреса строка очищается.",
+      "additional": false
+    },
+    {
+      "id": "netmask",
+      "name": "Маска подсети",
+      "type": "text",
+      "required": false,
+      "readyOn": "changed",
+      "description": "Передает действительную маску локальной подсети.",
+      "additional": true
+    },
+    {
+      "id": "gateway",
+      "name": "Адрес шлюза",
+      "type": "text",
+      "required": false,
+      "readyOn": "changed",
+      "description": "Передает адрес устройства, через которое доступны другие сети.",
+      "additional": true
+    },
+    {
+      "id": "dns",
+      "name": "Адрес DNS-сервера",
+      "type": "text",
+      "required": false,
+      "readyOn": "changed",
+      "description": "Передает адрес сервера поиска сетевых адресов по именам сайтов.",
+      "additional": true
+    },
+    {
+      "id": "error",
+      "name": "Ошибка запуска сети",
+      "type": "text",
+      "required": false,
+      "readyOn": "changed",
+      "description": "Показывает причину, если сетевой интерфейс не удалось запустить.",
+      "additional": true
+    }
+  ],
+  "parameters": {
+    "componentId": {
+      "label": "Сетевой интерфейс",
+      "type": "component",
+      "default": "",
+      "description": "Выберите сетевой интерфейс из монтажа."
+    }
+  },
+  "constraints": {
+    "hardware": {
+      "kind": "network",
+      "modules": [
+        "clex.hardware.ethernet"
+      ]
+    }
+  },
+  "compatibility": {
+    "projectFormat": 3,
+    "targets": [
+      "esp32s3"
+    ],
+    "espIdf": "5.4.4"
+  },
+  "firmware": {
+    "status": "implemented",
+    "generatorKey": "ethernet",
+    "eventSource": true,
+    "dependencies": [
+      "esp_eth",
+      "esp_netif",
+      "esp_event"
+    ]
+  },
+  "displayResetEvent": "ipChanged"
+}

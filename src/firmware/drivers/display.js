@@ -1,6 +1,7 @@
+import { indicatorFirmware } from './indicator.js';
 import fonts from '../../displays/fonts/lvgl-fonts.json' with { type: 'json' };
 import { st7789Spi } from './esp-idf/st7789-spi.js';
-import { displayDescription, screenFor, screenIssues } from '../../displays/model.js';
+import { displayDescription, screenFor, screenIssues, isDynamicText, elementPreviewText } from '../../displays/model.js';
 
 export const GRAPHICS_RUNTIME = 'lvgl-9.2.2';
 export const GRAPHICS_CONFIG = 'CONFIG_LV_COLOR_DEPTH_16=y\nCONFIG_LV_FONT_MONTSERRAT_14=y\nCONFIG_LV_FONT_MONTSERRAT_20=y\nCONFIG_LV_FONT_MONTSERRAT_28=y\n';
@@ -23,9 +24,30 @@ export function displayFirmware(project, catalog, cString) {
   const screen = screenFor(project, component.id), errors = screenIssues(screen, display);
   if (errors.length) throw new Error(errors.join('\n'));
   const { width, height } = display.resolution;
+  const dynamic = screen.elements.filter(element=>element.type==='text'&&isDynamicText(element));
+  const indicators=indicatorFirmware(component,screen,cString,fontSymbols);
+  const setters = dynamic.length ? [
+    '/* Objects are initialized before the worker starts. All text updates run in flow_worker. */',
+    'static struct { const char *component_id; const char *id; lv_obj_t *object; const char *prefix; const char *suffix; } clex_text_elements[] = {',
+    ...dynamic.map(element => '  { ' + cString(component.id) + ', ' + cString(element.id) + ', NULL, ' + cString(element.prefix) + ', ' + cString(element.suffix) + ' },'),
+    '};',
+    'static void clex_graphics_set_text(const char *component_id, const char *element_id, const char *value) {',
+    '  for (size_t i = 0; i < sizeof(clex_text_elements) / sizeof(clex_text_elements[0]); i++) {',
+    '    if (strcmp(clex_text_elements[i].component_id, component_id) != 0 || strcmp(clex_text_elements[i].id, element_id) != 0) continue;',
+    '    const char *prefix = clex_text_elements[i].prefix, *suffix = clex_text_elements[i].suffix;',
+    '    const char *previous = lv_label_get_text(clex_text_elements[i].object);',
+    '    size_t p = strlen(prefix), v = strlen(value), s = strlen(suffix);',
+    '    if (strlen(previous) == p + v + s && strncmp(previous, prefix, p) == 0 && strncmp(previous + p, value, v) == 0 && strcmp(previous + p + v, suffix) == 0) return;',
+    '    lv_label_set_text_fmt(clex_text_elements[i].object, "%s%s%s", prefix, value, suffix);',
+    '    return;',
+    '  }',
+    '}',
+  ] : [];
   const source = [
     driverRegistry[platform][display.driverKey](project, catalog, component, display),
     ...Object.values(fonts).map(font => 'LV_FONT_DECLARE(' + font.symbol + '); /* asset ' + font.sha256 + ' */'),
+    ...indicators.source,
+    ...setters,
     'static uint32_t clex_graphics_tick(void) { return (uint32_t)(esp_timer_get_time() / 1000LL); }',
     'static bool clex_graphics_done(esp_lcd_panel_io_handle_t io, esp_lcd_panel_io_event_data_t *event, void *context) { (void)io; (void)event; lv_display_flush_ready((lv_display_t *)context); return false; }',
     'static void clex_graphics_flush(lv_display_t *display, const lv_area_t *area, uint8_t *pixels) {',
@@ -51,13 +73,17 @@ export function displayFirmware(project, catalog, cString) {
     '  lv_obj_set_style_pad_all(screen, 0, LV_PART_MAIN);',
     '  lv_obj_remove_flag(screen, LV_OBJ_FLAG_SCROLLABLE);',
     ...screen.elements.flatMap((element,i) => {
+      if(element.type==='indicator')return indicators.initialize(element,i);
       const symbol = fontSymbols[element.fontId];
       if (!symbol) throw new Error('Нет реализации выбранного шрифта.');
+      const dynamicIndex = dynamic.findIndex(item => item.id === element.id);
       return [
         '  lv_obj_t *text_' + i + ' = lv_label_create(screen);',
-        '  lv_label_set_text(text_' + i + ', ' + cString(element.text) + ');',
+        ...(dynamicIndex >= 0 ? ['  clex_text_elements[' + dynamicIndex + '].object = text_' + i + ';'] : []),
+        '  lv_label_set_text(text_' + i + ', ' + cString(elementPreviewText(element)) + ');',
         '  lv_label_set_long_mode(text_' + i + ', LV_LABEL_LONG_CLIP);',
         '  lv_obj_set_size(text_' + i + ', ' + (width - element.x) + ', ' + (height - element.y) + ');',
+        ...(dynamicIndex >= 0 ? ['  lv_obj_set_height(text_' + i + ', LV_SIZE_CONTENT);'] : []),
         '  lv_obj_set_style_text_font(text_' + i + ', &' + symbol + ', LV_PART_MAIN);',
         '  lv_obj_set_style_text_color(text_' + i + ', lv_color_hex(' + color(element.color) + '), LV_PART_MAIN);',
         '  lv_obj_set_style_text_line_space(text_' + i + ', 0, LV_PART_MAIN);',

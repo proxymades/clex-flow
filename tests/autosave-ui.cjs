@@ -41,7 +41,7 @@ const { chromium } = require('playwright');
     await page.clock.resume();
     await page.getByRole('button', { name: 'Монтаж', exact: true }).click();
     await page.locator('.assembly-flow-region[data-ready="true"]').waitFor();
-    await page.clock.pauseAt(await page.evaluate(() => Date.now() + 1));
+    await page.clock.pauseAt(await page.evaluate(() => Date.now() + 1000));
     await page.clock.fastForward(1001); await saved();
     assert.equal(await writes(), initialWrites + 1); assert.equal((await stored()).description, 'Latest metadata edit');
 
@@ -67,7 +67,7 @@ const { chromium } = require('playwright');
     assert.equal(await page.getByRole('textbox', { name: 'Описание', exact: true }).inputValue(), 'Keep this draft in Settings');
     await page.getByText('Ручное сохранение', { exact: true }).waitFor();
     await page.clock.fastForward(60_000); assert.equal(await writes(), beforeDisable, 'Disabling cancels the pending save');
-    await page.keyboard.press('Meta+s'); await page.getByText('Проект сохранён', { exact: true }).waitFor();
+    await page.keyboard.press('Meta+s'); await page.getByText('Проект сохранен', { exact: true }).waitFor();
     assert.equal((await stored()).description, 'Keep this draft in Settings');
     const manualWrites = await writes(); await page.clock.fastForward(60_000); assert.equal(await writes(), manualWrites, 'Manual save leaves no duplicate scheduled write');
 

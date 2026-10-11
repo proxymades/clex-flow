@@ -1,3 +1,5 @@
+import { indicatorIssues } from '../displays/indicator.js';
+import { dynamicTextValid, screenPorts } from '../displays/model.js';
 import { DEFAULT_BOARD_POSITION, DEFAULT_VIEWPORT } from '../assembly/model.js';
 
 export const FORMAT_VERSION = 3;
@@ -5,6 +7,7 @@ export const MAX_PROJECT_BYTES = 2 * 1024 * 1024;
 const ID_PATTERN = /^[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12}$/i;
 const KEY_PATTERN = /^[a-zA-Z0-9][a-zA-Z0-9._-]{0,99}$/;
 const validKey = value => typeof value === 'string' && KEY_PATTERN.test(value) && !['constructor', 'prototype', '__proto__'].includes(value);
+const validPortKey = value => typeof value === 'string' && /^[a-zA-Z0-9][a-zA-Z0-9._-]{0,199}$/.test(value) && !['constructor', 'prototype', '__proto__'].includes(value);
 const semver = value => typeof value === 'string' && /^\d+\.\d+\.\d+$/.test(value);
 const isObject = value => value !== null && typeof value === 'object' && !Array.isArray(value);
 const point = value => isObject(value) && ['x', 'y'].every(key => Number.isFinite(value[key]) && Math.abs(value[key]) <= 5000);
@@ -30,11 +33,11 @@ export function createProject(name, description = '', boardId = 'waveshare-esp32
 export function migrateProject(project) {
   if (!isObject(project)) throw new Error('Ожидался объект проекта JSON.');
   if (project.formatVersion === 1) {
-    if (project.boardId !== 'esp32-s3-generic' || !Array.isArray(project.components) || project.components.length || !Array.isArray(project.gpioAssignments) || project.gpioAssignments.length || !isObject(project.assembly) || !isObject(project.assembly.positions) || Object.keys(project.assembly.positions).length || !Array.isArray(project.assembly.connections) || project.assembly.connections.length || !isObject(project.moduleVersions) || Object.keys(project.moduleVersions).length) throw new Error('Неподдерживаемая схема в проекте формата 1. Исходный файл не изменён.');
+    if (project.boardId !== 'esp32-s3-generic' || !Array.isArray(project.components) || project.components.length || !Array.isArray(project.gpioAssignments) || project.gpioAssignments.length || !isObject(project.assembly) || !isObject(project.assembly.positions) || Object.keys(project.assembly.positions).length || !Array.isArray(project.assembly.connections) || project.assembly.connections.length || !isObject(project.moduleVersions) || Object.keys(project.moduleVersions).length) throw new Error('Неподдерживаемая схема в проекте формата 1. Исходный файл не изменен.');
     project = { ...project, formatVersion: 2, boardSettings: {}, assembly: { ...project.assembly, positions: { board: { ...DEFAULT_BOARD_POSITION } }, viewport: { ...DEFAULT_VIEWPORT } } };
   }
   if (project.formatVersion === 2) {
-    if (!isObject(project.logic) || !Array.isArray(project.logic.nodes) || !Array.isArray(project.logic.edges) || project.logic.nodes.length || project.logic.edges.length) throw new Error('Проект формата 2 содержит неподдерживаемый граф. Исходный файл не изменён.');
+    if (!isObject(project.logic) || !Array.isArray(project.logic.nodes) || !Array.isArray(project.logic.edges) || project.logic.nodes.length || project.logic.edges.length) throw new Error('Проект формата 2 содержит неподдерживаемый граф. Исходный файл не изменен.');
     return { ...project, formatVersion: 3 };
   }
   return project;
@@ -66,7 +69,7 @@ export function validateProject(project) {
   }
   for (const edge of project.logic.edges) {
     const input = `${edge?.target}/${edge?.targetHandle}`;
-    if (!isObject(edge) || !validKey(edge.id) || edgeIds.has(edge.id) || !nodeIds.has(edge.source) || !nodeIds.has(edge.target) || !validKey(edge.sourceHandle) || !validKey(edge.targetHandle) || !['event','boolean','number','text'].includes(edge.dataType) || inputs.has(input)) throw new Error('Некорректная, повторяющаяся или осиротевшая связь логики.');
+    if (!isObject(edge) || !validKey(edge.id) || edgeIds.has(edge.id) || !nodeIds.has(edge.source) || !nodeIds.has(edge.target) || !validPortKey(edge.sourceHandle) || !validPortKey(edge.targetHandle) || !['event','boolean','number','text'].includes(edge.dataType) || inputs.has(input)) throw new Error('Некорректная, повторяющаяся или осиротевшая связь логики.');
     edgeIds.add(edge.id); inputs.add(input);
   }
   if (project.screens !== undefined) {
@@ -74,9 +77,13 @@ export function validateProject(project) {
     for (const screen of Object.values(project.screens)) {
       const elementIds = new Set();
       for (const element of screen.elements) {
-        if (!isObject(element) || !validKey(element.id) || elementIds.has(element.id) || element.type !== 'text' || !Number.isInteger(element.x) || !Number.isInteger(element.y) || element.x < 0 || element.y < 0 || element.x > 4096 || element.y > 4096 || !validKey(element.fontId) || typeof element.text !== 'string' || element.text.length > 500 || !/^#[0-9a-f]{6}$/i.test(element.color)) throw new Error('Некорректный элемент интерфейса экрана.');
+        if (!isObject(element) || !validKey(element.id) || elementIds.has(element.id) || !['text','indicator'].includes(element.type) || !Number.isInteger(element.x) || !Number.isInteger(element.y) || element.x < 0 || element.y < 0 || element.x > 4096 || element.y > 4096 || !validKey(element.fontId) || typeof element.text !== 'string' || element.text.length > 500 || !/^#[0-9a-f]{6}$/i.test(element.color)) throw new Error('Некорректный элемент интерфейса экрана.');
+        if (element.mode !== undefined && !['static', 'dynamic'].includes(element.mode) || element.name !== undefined && (typeof element.name !== 'string' || element.name.length > 80) || element.mode === 'dynamic' && !dynamicTextValid(element)) throw new Error('Некорректная настройка динамического текста.');
+        if (element.type === 'indicator' && indicatorIssues(element).length) throw new Error('Некорректный индикатор состояния.');
         elementIds.add(element.id);
       }
+      const ports = screenPorts(screen);
+      if (new Set(ports.map(port => port.id)).size !== ports.length) throw new Error('Повторяющиеся порты интерфейса экрана.');
     }
   }
   const assembly = project.assembly;

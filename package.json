@@ -1,7 +1,7 @@
 {
   "name": "clex-flow",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
@@ -25,7 +25,15 @@
     "test:display-ui": "node tests/display-ui.cjs",
     "test:interface-ui": "node tests/interface-ui.cjs",
     "test:process-log-ui": "node tests/process-log-ui.cjs",
-    "test:wire-routing-ui": "node tests/wire-routing-ui.cjs"
+    "test:wire-routing-ui": "node tests/wire-routing-ui.cjs",
+    "test:dynamic-display-ui": "node tests/dynamic-display-ui.cjs",
+    "test:dynamic-runtime": "node tests/dynamic-lvgl-runtime.mjs",
+    "test:network-ui": "node tests/network-ui.cjs",
+    "test:indicator-runtime": "node tests/indicator-lvgl-runtime.mjs",
+    "test:network-runtime": "node tests/probe-runtime.mjs",
+    "test:logic-usability-ui": "node tests/logic-usability-ui.cjs",
+    "test:style-ui": "node tests/style-polish-ui.cjs",
+    "test:ports-ui": "node tests/ports-ui.cjs"
   },
   "dependencies": {
     "@tauri-apps/api": "2.10.1",

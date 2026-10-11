@@ -17,7 +17,7 @@ const { chromium } = require('playwright');
   });
   const stored = () => page.evaluate(() => JSON.parse(Object.values(JSON.parse(localStorage.getItem('clex-flow:projects:v1')))[0]));
   const counters = () => page.evaluate(() => ({ serializations: window.__projectSerializations, writes: window.__writes }));
-  const save = async () => { await page.getByRole('button', { name: 'Сохранить', exact: true }).first().click(); await page.getByText('Проект сохранён', { exact: true }).waitFor(); };
+  const save = async () => { await page.getByRole('button', { name: 'Сохранить', exact: true }).first().click(); await page.getByText('Проект сохранен', { exact: true }).waitFor(); };
   try {
     await page.goto(process.env.CLEX_PREVIEW_URL || 'http://127.0.0.1:1420');
     const chooser = page.waitForEvent('filechooser'); await page.getByRole('button', { name: 'Открыть JSON', exact: true }).click();

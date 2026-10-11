@@ -104,7 +104,7 @@ pub fn sdk_version(root: &Path) -> Result<String, String> {
 pub fn home() -> Result<PathBuf, String> {
     env::var_os(if cfg!(windows) { "USERPROFILE" } else { "HOME" })
         .map(PathBuf::from)
-        .ok_or("Не определён домашний каталог".into())
+        .ok_or("Не определен домашний каталог".into())
 }
 pub fn executable(venv: &Path) -> PathBuf {
     venv.join(if cfg!(windows) {

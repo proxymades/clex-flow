@@ -5,14 +5,18 @@ import { Undo2, Redo2, Copy, ClipboardPaste, Files, Trash2, Layers, Unplug } fro
 import CanvasControls from '../components/CanvasControls.jsx';
 import useCanvasKeys from '../components/useCanvasKeys.js';
 import LogicNode from './LogicNode.jsx';
-import { graphModule, hardwareBinding, connectionProblem, TYPE_COLORS } from './model.js';
+import {friendlyConnectionProblem, nodeDisplayName, presentPort} from './presentation.js';
+import {logicEdgeColors} from './edgeColors.js';
+import { graphModule, nodePorts, hardwareBinding, connectionProblem, TYPE_COLORS } from './model.js';
 
 const nodeTypes = { logic: LogicNode };
 const emptyMeasurements = {};
 const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
-export default function LogicCanvas({ project, catalog, history, selection, setSelection, pending, onPort, onConnect, error, setError, busy, clipboard, onCopy, onPaste, onDuplicate, onRemove, issues, onInteraction, onOpenScreen }) {
+export default function LogicCanvas({ project, catalog, history, selection, setSelection, pending, onPort, onConnect, error, setError, busy, clipboard, onCopy, onPaste, onDuplicate, onRemove, issues, onInteraction, onOpenScreen, onBindData }) {
   const [instance, setInstance] = useState(null), [measurements, setMeasurements] = useState({});
+  const [dragConnection,setDragConnection]=useState(null);
+  const connection=pending||dragConnection;
   const fitView = () => instance?.fitView({ padding: 0.22, maxZoom: 1.1, duration: 0 });
   const { spaceHeld } = useCanvasKeys({ onFit: fitView, onEscape: () => onPort(null), busy });
   const [positions, setPositions] = useState({});
@@ -39,16 +43,27 @@ export default function LogicCanvas({ project, catalog, history, selection, setS
   const modelNodes = useMemo(() => {
     const selected = new Set(selection.nodes), errors = new Map();
     for (const issue of issues) if (issue.severity === 'error' && issue.nodeId) errors.set(issue.nodeId, (errors.get(issue.nodeId) || 0) + 1);
-    return project.logic.nodes.map(node => ({ id: node.id, type: 'logic', position: node.position, measured: measurements[node.id] || emptyMeasurements, selected: selected.has(node.id), ariaLabel: `Блок: ${node.name}`, data: { node, definition: graphModule(node, catalog), binding: hardwareBinding(node, project, catalog), issueCount: errors.get(node.id) || 0, onPort, pending, display: catalog.modules.find(module => module.id === project.components.find(component => component.id === node.parameters.componentId)?.moduleId)?.display, screen: project.screens?.[node.parameters.componentId] } }));
-  }, [project, catalog, measurements, selection.nodes, issues, onPort, pending]);
+    return project.logic.nodes.map(node => ({ id: node.id, type: 'logic', position: node.position, measured: measurements[node.id] || emptyMeasurements, selected: selected.has(node.id), ariaLabel: `Блок: ${nodeDisplayName(node, project, catalog)}`, data: { node, definition: graphModule(node, catalog), project, catalog, connection, onBindData, busy, ports: nodePorts(node, catalog, project), binding: hardwareBinding(node, project, catalog), issueCount: errors.get(node.id) || 0, onPort, pending, display: catalog.modules.find(module => module.id === project.components.find(component => component.id === node.parameters.componentId)?.moduleId)?.display, screen: project.screens?.[node.parameters.componentId] } }));
+  }, [project, catalog, measurements, selection.nodes, issues, onPort, pending, connection, onBindData, busy]);
   // Moving a node updates only its canvas position. Card data, validation,
   // firmware generation and project serialization stay outside the frame loop.
   const nodes = useMemo(() => modelNodes.map(node => positions[node.id] ? { ...node, ...positions[node.id] } : node), [modelNodes, positions]);
   const edges = useMemo(() => {
     const selected = new Set(selection.edges), errors = new Set(issues.filter(issue => issue.severity === 'error').map(issue => issue.edgeId));
-    const names = new Map(project.logic.nodes.map(node => [node.id, node.name]));
-    return project.logic.edges.map(edge => ({ ...edge, type: 'default', selected: selected.has(edge.id), ariaLabel: `Связь: ${names.get(edge.source)} → ${names.get(edge.target)}`, style: { stroke: errors.has(edge.id) ? '#fb7185' : TYPE_COLORS[edge.dataType], strokeWidth: selected.has(edge.id) ? 3 : 2 }, markerEnd: { type: MarkerType.ArrowClosed, color: TYPE_COLORS[edge.dataType], width: 16, height: 16 } }));
-  }, [project.logic.edges, project.logic.nodes, selection.edges, issues]);
+    const colors = logicEdgeColors(project.logic.edges), selectedNodes = new Set(selection.nodes);
+    const hasFocus = selected.size > 0 || selectedNodes.size > 0;
+    const portLabel = (nodeId, handleId, direction) => {
+      const node = project.logic.nodes.find(item => item.id === nodeId);
+      if (!node) return handleId;
+      const port = nodePorts(node, catalog, project)[direction].find(item => item.id === handleId);
+      return `${nodeDisplayName(node, project, catalog)}: ${port ? presentPort(port, node, project, catalog).name : handleId}`;
+    };
+    return project.logic.edges.map(edge => {
+      const focused = selected.has(edge.id) || selectedNodes.has(edge.source) || selectedNodes.has(edge.target);
+      const color = errors.has(edge.id) ? '#fb7185' : colors[edge.id];
+      return { ...edge, type: 'default', selected: selected.has(edge.id), ariaLabel: `Связь: ${portLabel(edge.source, edge.sourceHandle, 'outputs')} → ${portLabel(edge.target, edge.targetHandle, 'inputs')}`, style: { stroke: color, strokeWidth: focused ? 3 : 2, strokeDasharray: edge.dataType === 'event' ? '7 4' : undefined, opacity: hasFocus && !focused ? 0.25 : 1 }, markerEnd: { type: MarkerType.ArrowClosed, color, width: 16, height: 16 } };
+    });
+  }, [project, catalog, selection.edges, selection.nodes, issues]);
   const commitPositions = useCallback(updates => {
     history.change(graph => ({ ...graph, nodes: graph.nodes.map(node => {
       const position = updates[node.id]?.position;
@@ -102,17 +117,18 @@ export default function LogicCanvas({ project, catalog, history, selection, setS
     interaction('viewport', false);
   }, [busy, history, interaction]);
   function endConnection(_event, state) {
+    setDragConnection(null); interaction('connect',false);
     if (state.isValid || !state.fromNode || !state.toNode || !state.fromHandle || !state.toHandle) return;
     const sourceFirst = state.fromHandle.type === 'source';
     const connection = { source: sourceFirst ? state.fromNode.id : state.toNode.id, sourceHandle: sourceFirst ? state.fromHandle.id : state.toHandle.id, target: sourceFirst ? state.toNode.id : state.fromNode.id, targetHandle: sourceFirst ? state.toHandle.id : state.fromHandle.id };
-    const problem = connectionProblem(project.logic, catalog, connection);
+    const problem = friendlyConnectionProblem(project,catalog,connection);
     if (problem) setError(problem);
   }
   return <main className={`logic-canvas ${spaceHeld ? 'canvas-space-pan' : ''}`}>
     <div className="logic-toolbar"><div><button className="icon-button" title="Отменить · ⌘/Ctrl Z" aria-label="Отменить изменение графа" disabled={busy || !history.canUndo} onClick={history.undo}><Undo2 size={16} /></button><button className="icon-button" title="Повторить · ⌘/Ctrl Shift Z" aria-label="Повторить изменение графа" disabled={busy || !history.canRedo} onClick={history.redo}><Redo2 size={16} /></button><span className="toolbar-divider" /><button className="icon-button" title="Копировать · ⌘/Ctrl C" aria-label="Копировать выделенные блоки" disabled={busy || !selection.nodes.length} onClick={onCopy}><Copy size={16} /></button><button className="icon-button" title="Вставить · ⌘/Ctrl V" aria-label="Вставить блоки" disabled={busy || !clipboard?.nodes.length} onClick={onPaste}><ClipboardPaste size={16} /></button><button className="icon-button" title="Дублировать · ⌘/Ctrl D" aria-label="Дублировать выделенные блоки" disabled={busy || !selection.nodes.length} onClick={onDuplicate}><Files size={16} /></button><button className="icon-button danger-hover" title="Удалить · Delete" aria-label="Удалить выделение графа" disabled={busy || (!selection.nodes.length && !selection.edges.length)} onClick={onRemove}><Trash2 size={16} /></button></div></div>
-    <div className="reactflow-region"><ReactFlow nodes={nodes} edges={edges} nodeTypes={nodeTypes} defaultViewport={project.logic.viewport} onNodesChange={changeNodes} onEdgesChange={changeEdges} onNodeDragStart={beginDrag} onNodeDragStop={finishDrag} onSelectionDragStart={beginDrag} onSelectionDragStop={finishDrag} onInit={setInstance} onNodeDoubleClick={(_event, node) => { const saved = project.logic.nodes.find(item => item.id === node.id); if (graphModule(saved, catalog)?.editor === 'screen' && !busy) onOpenScreen(saved); }} onMoveStart={moveStart} onMoveEnd={moveEnd} onConnect={onConnect} onConnectEnd={endConnection} isValidConnection={connection => !connectionProblem(project.logic, catalog, connection)} onPaneClick={() => setSelection({ nodes: [], edges: [] })} nodeExtent={[[-5000, -5000], [5000, 5000]]} minZoom={0.2} maxZoom={3} nodesDraggable={!busy && !spaceHeld} nodesConnectable={!busy && !spaceHeld} edgesReconnectable={false} selectionMode={SelectionMode.Partial} selectionKeyCode="Shift" multiSelectionKeyCode={['Meta', 'Control']} deleteKeyCode={null} colorMode="dark" ariaLabelConfig={{ 'node.a11yDescription.default': 'Выделите блок. Стрелки перемещают, Delete удаляет.', 'edge.a11yDescription.default': 'Выделите связь. Delete удаляет.' }} onError={(_code, message) => setError(message)}>
+    <div className="logic-inline-legend" aria-label="Типы контактов">{Object.entries(TYPE_COLORS).map(([type,color])=><span key={type}><i style={{background:color}}/>{({event:'Сигнал',number:'Число',boolean:'Да/Нет',text:'Текст'})[type]}</span>)}<span className="logic-route-legend">Линии: пунктир – сигнал, сплошная – данные</span></div><div className="reactflow-region"><ReactFlow nodes={nodes} edges={edges} nodeTypes={nodeTypes} defaultViewport={project.logic.viewport} onNodesChange={changeNodes} onEdgesChange={changeEdges} onNodeDragStart={beginDrag} onNodeDragStop={finishDrag} onSelectionDragStart={beginDrag} onSelectionDragStop={finishDrag} onInit={setInstance} onNodeDoubleClick={(event, node) => { if(event.target.closest('button,input,select,textarea,.react-flow__handle'))return; const saved = project.logic.nodes.find(item => item.id === node.id); if (graphModule(saved, catalog)?.editor === 'screen' && !busy) onOpenScreen(saved); }} onMoveStart={moveStart} onMoveEnd={moveEnd} onConnect={onConnect} onConnectStart={(_event,start)=>{setDragConnection({nodeId:start.nodeId,portId:start.handleId,direction:start.handleType==='source'?'output':'input'});interaction('connect',true);}} onConnectEnd={endConnection} isValidConnection={connection => !connectionProblem(project.logic, catalog, connection, null, project)} onPaneClick={() => setSelection({ nodes: [], edges: [] })} nodeExtent={[[-5000, -5000], [5000, 5000]]} minZoom={0.2} maxZoom={3} nodesDraggable={!busy && !spaceHeld} nodesConnectable={!busy && !spaceHeld} edgesReconnectable={false} selectionMode={SelectionMode.Partial} selectionKeyCode="Shift" multiSelectionKeyCode={['Meta', 'Control']} deleteKeyCode={null} colorMode="dark" ariaLabelConfig={{ 'node.a11yDescription.default': 'Выделите блок. Стрелки перемещают, Delete удаляет.', 'edge.a11yDescription.default': 'Выделите связь. Delete удаляет.' }} onError={(_code, message) => setError(message)}>
       <Background variant={BackgroundVariant.Dots} gap={24} size={1} color="#34405b" />
-    </ReactFlow>{!nodes.length && <div className="logic-empty"><Layers size={43} strokeWidth={1.2} /><h2>Соберите логику эксперимента</h2><p>Добавьте таймер и переключение GPIO.<br />Соедините «Такт» с входом «Выполнить».</p><span>Начните с библиотеки слева</span></div>}
+    </ReactFlow>{!nodes.length && <div className="logic-empty"><Layers size={43} strokeWidth={1.2} /><h2>Соберите логику эксперимента</h2><p>Добавьте таймер и блок управления выходом.<br />Соедините «Сработал» с входом действия.</p><span>Начните с библиотеки слева</span></div>}
     {pending && <div className="logic-connection-prompt"><span className="dot green-dot" />{pending.direction === 'output' ? 'Выберите совместимый вход блока' : 'Выберите совместимый выход блока'}<button className="icon-button" aria-label="Отменить связь логики" onClick={() => onPort(null)}><Unplug size={15} /></button></div>}
     {error && <div className="wiring-error logic-connect-error" role="alert"><span>{error}</span><button className="text-button" onClick={() => setError('')}>Закрыть</button></div>}
     </div>

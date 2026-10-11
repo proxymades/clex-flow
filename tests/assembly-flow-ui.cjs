@@ -15,7 +15,7 @@ const { chromium } = require('playwright');
   });
   const source = await fs.readFile('tests/fixtures/blink-mount-v2.clex.json', 'utf8');
   const stored = () => page.evaluate(() => JSON.parse(Object.values(JSON.parse(localStorage.getItem('clex-flow:projects:v1')))[0]));
-  const save = async () => { await page.getByRole('button', { name: 'Сохранить', exact: true }).first().click(); await page.getByText('Проект сохранён', { exact: true }).waitFor(); };
+  const save = async () => { await page.getByRole('button', { name: 'Сохранить', exact: true }).first().click(); await page.getByText('Проект сохранен', { exact: true }).waitFor(); };
   const boardPort = id => page.locator('.react-flow__node-physicalBoard .assembly-handle[data-handleid="' + id + '"]');
   const componentPort = (id, terminal) => page.locator('.react-flow__node[data-id="' + id + '"] .assembly-handle[data-handleid="' + terminal + '"]');
   const drag = async (from, to) => {

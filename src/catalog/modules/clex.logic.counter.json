@@ -1,0 +1,85 @@
+{
+  "id": "clex.logic.counter",
+  "version": "1.0.0",
+  "kind": "logic",
+  "name": "Счетчик",
+  "description": "Увеличивает значение на заданный шаг по событию. Сброс возвращает начальное значение.",
+  "category": "values",
+  "categoryName": "Данные",
+  "icon": "Hash",
+  "color": "#fbbf24",
+  "inputs": [
+    {
+      "id": "increment",
+      "name": "Изменить число",
+      "type": "event",
+      "required": true,
+      "description": "Изменяет число на настроенный шаг при получении сигнала.",
+      "additional": false
+    },
+    {
+      "id": "reset",
+      "name": "Вернуть начальное число",
+      "type": "event",
+      "required": false,
+      "description": "Возвращает счетчик к числу из настройки «Начальное число».",
+      "additional": true
+    }
+  ],
+  "outputs": [
+    {
+      "id": "done",
+      "name": "Счетчик обновлен",
+      "type": "event",
+      "required": false,
+      "description": "Сигнал после шага или сброса. Число может остаться прежним.",
+      "additional": false
+    },
+    {
+      "id": "value",
+      "name": "Текущее число",
+      "type": "number",
+      "readyOn": "done",
+      "required": false,
+      "description": "Передает текущее число счетчика другому блоку.",
+      "additional": false,
+      "bindingLabel": "Показывать значение счетчика"
+    }
+  ],
+  "parameters": {
+    "initialValue": {
+      "label": "Начальное число",
+      "type": "integer",
+      "default": 0,
+      "min": -2147483648,
+      "max": 2147483647,
+      "step": 1,
+      "description": "Число при запуске и после сброса."
+    },
+    "step": {
+      "label": "Изменение за сигнал",
+      "type": "integer",
+      "default": 1,
+      "min": -2147483648,
+      "max": 2147483647,
+      "step": 1,
+      "description": "1 прибавляет единицу, −1 вычитает, 0 сохраняет число."
+    }
+  },
+  "constraints": {},
+  "compatibility": {
+    "projectFormat": 3,
+    "targets": [
+      "esp32s3"
+    ],
+    "espIdf": "5.4.4"
+  },
+  "firmware": {
+    "status": "implemented",
+    "generatorKey": "counter",
+    "dependencies": []
+  },
+  "legacyNames": [
+    "Счётчик"
+  ]
+}

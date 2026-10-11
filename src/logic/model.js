@@ -1,10 +1,21 @@
-import { displayDescription, screenFor, screenIssues } from '../displays/model.js';
+import { networkProvider, probeUrl } from '../network/model.js';
+import { displayDescription, screenFor, screenIssues, screenPorts, screenBindings, elementUpdatePort } from '../displays/model.js';
 import { connectionProblem as physicalConnectionProblem, boardFor } from '../assembly/model.js';
 
 export const PORT_TYPES = ['event', 'boolean', 'number', 'text'];
-export const TYPE_NAMES = { event: 'Событие', boolean: 'Логическое', number: 'Число', text: 'Текст' };
+export const TYPE_NAMES = { event: 'Сигнал', boolean: 'Да/Нет', number: 'Число', text: 'Текст' };
 export const TYPE_COLORS = { event: '#34d399', boolean: '#38bdf8', number: '#fbbf24', text: '#a78bfa' };
 export const graphModule = (node, catalog) => catalog.modules.find(module => module.id === node.moduleId && module.kind === 'logic');
+export function nodePorts(node, catalog, project) {
+  const module = graphModule(node, catalog);
+  let inputs = module?.inputs || [];
+  if (module?.editor === 'screen' && project) {
+    const screen = screenFor(project, node.parameters.componentId);
+    const single = screenBindings(screen).length === 1;
+    inputs = screenPorts(screen).map(port => ({ ...port, hidden: single && port.type === 'event' && port.id.startsWith('update.') && !project.logic.edges.some(edge => edge.target === node.id && edge.targetHandle === port.id) }));
+  }
+  return { inputs, outputs: module?.outputs || [] };
+}
 export const logicData = graph => ({ nodes: graph.nodes, edges: graph.edges });
 
 export function withLogic(project, logic) {
@@ -16,16 +27,26 @@ export function withLogic(project, logic) {
   return { ...project, logic, moduleVersions: versions };
 }
 
-export function addNode(graph, module, components = []) {
+export function addNode(graph, module, components = [], project = null, catalog = null) {
   if (graph.nodes.length >= 100) throw new Error('В одном графе поддерживается до 100 блоков.');
   if (graph.nodes.some(node => node.moduleId === module.id && node.moduleVersion !== module.version)) throw new Error('Проект использует другую версию этого модуля.');
   const parameters = Object.fromEntries(Object.entries(module.parameters).map(([key, parameter]) => [key, parameter.default]));
   if (module.constraints.hardware) parameters.componentId = components.find(component => module.constraints.hardware.modules?.includes(component.moduleId))?.id || '';
   let number = 1;
-  while (graph.nodes.some(node => node.name === `${module.name} ${number}`)) number++;
+  while (graph.nodes.some(node => [module.name,...(module.legacyNames||[])].some(name=>node.name === `${name} ${number}`))) number++;
+  const height = node => {
+    const definition = node && catalog ? graphModule(node, catalog) : node ? null : module;
+    const ports = node && catalog ? nodePorts(node, catalog, project) : definition || { inputs: [], outputs: [] };
+    const count = direction => ports[direction].filter(port => {
+      const extra = definition?.editor === 'screen' ? port.id === 'trigger' : port.additional;
+      return !extra || node && graph.edges.some(edge => direction === 'inputs' ? edge.target === node.id && edge.targetHandle === port.id : edge.source === node.id && edge.sourceHandle === port.id);
+    }).length;
+    return (definition?.editor === 'screen' ? 360 : 160) + Math.max(count('inputs'), count('outputs')) * 44;
+  };
+  const newHeight = height(null), width = 246, gap = 32;
   let slot = 0, position;
   do { position = { x: 60 + (slot % 2) * 330 + Math.floor(slot / 20) * 660, y: 100 + (Math.floor(slot / 2) % 10) * 310 }; slot++; }
-  while (graph.nodes.some(node => node.position.x === position.x && node.position.y === position.y));
+  while (graph.nodes.some(node => node.position.x < position.x + width + gap && position.x < node.position.x + width + gap && node.position.y < position.y + newHeight + gap && position.y < node.position.y + height(node) + gap));
   return { ...graph, nodes: [...graph.nodes, { id: crypto.randomUUID(), moduleId: module.id, moduleVersion: module.version, name: `${module.name} ${number}`, position, parameters }] };
 }
 
@@ -64,13 +85,13 @@ export function hasPath(edges, start, end, onlyEvents = false) {
   return false;
 }
 
-export function connectionProblem(graph, catalog, connection, ignoreId = null) {
+export function connectionProblem(graph, catalog, connection, ignoreId = null, project = null) {
   const source = graph.nodes.find(node => node.id === connection.source), target = graph.nodes.find(node => node.id === connection.target);
   if (!source || !target) return 'Оба блока соединения должны существовать.';
   if (source.id === target.id) return 'Нельзя соединить блок с самим собой.';
   const sourceModule = graphModule(source, catalog), targetModule = graphModule(target, catalog);
   if (!sourceModule || !targetModule || sourceModule.version !== source.moduleVersion || targetModule.version !== target.moduleVersion) return 'Соединение требует установленных совместимых версий модулей.';
-  const output = sourceModule.outputs.find(port => port.id === connection.sourceHandle), input = targetModule.inputs.find(port => port.id === connection.targetHandle);
+  const output = nodePorts(source, catalog, project).outputs.find(port => port.id === connection.sourceHandle), input = nodePorts(target, catalog, project).inputs.find(port => port.id === connection.targetHandle);
   if (!output || !input) return 'Соединяйте выход блока со входом; выбранный порт отсутствует.';
   if (output.type !== input.type) return `Несовместимые типы: ${TYPE_NAMES[output.type]} → ${TYPE_NAMES[input.type]}.`;
   const remaining = graph.edges.filter(edge => edge.id !== ignoreId);
@@ -80,8 +101,8 @@ export function connectionProblem(graph, catalog, connection, ignoreId = null) {
   return null;
 }
 
-export function connectNodes(graph, catalog, connection) {
-  const problem = connectionProblem(graph, catalog, connection);
+export function connectNodes(graph, catalog, connection, project = null) {
+  const problem = connectionProblem(graph, catalog, connection, null, project);
   if (problem) throw new Error(problem);
   if (graph.edges.length >= 300) throw new Error('В графе поддерживается до 300 связей.');
   const node = graph.nodes.find(node => node.id === connection.source);
@@ -91,6 +112,10 @@ export function connectNodes(graph, catalog, connection) {
 
 export function hardwareBinding(node, project, catalog) {
   const module = graphModule(node, catalog), requirement = module?.constraints.hardware;
+  if (requirement?.kind === 'network') {
+    const component=project.components.find(component=>component.id===node.parameters.componentId),definition=catalog.modules.find(module=>module.id===component?.moduleId);
+    return {component,gpio:null,error:component&&requirement.modules.includes(component.moduleId)&&networkProvider(component,boardFor(project,catalog),definition)?null:'Выберите сетевой интерфейс из монтажа.'};
+  }
   if (requirement?.kind === 'display') {
     const component = project.components.find(component => component.id === node.parameters.componentId);
     return { component, gpio: null, error: displayDescription(component, catalog) ? null : 'Выберите дисплей из монтажа.' };
@@ -123,25 +148,33 @@ export function validateGraph(project, catalog) {
       const value = node.parameters[key];
       if (parameter.type === 'integer' && (!Number.isInteger(value) || value < parameter.min || value > parameter.max)) add('error', 'logic-parameter', `${node.name}: «${parameter.label}» должен быть целым числом ${parameter.min}-${parameter.max}.`, fields);
       if (parameter.type === 'boolean' && typeof value !== 'boolean') add('error', 'logic-parameter', `${node.name}: неверное логическое значение.`, fields);
+      if (parameter.type === 'select' && !parameter.options.some(option=>option.value===value)) add('error','logic-parameter',node.name+': выберите допустимый вариант «'+parameter.label+'».',fields);
       if (parameter.type === 'text' && (typeof value !== 'string' || value.length > parameter.maxLength)) add('error', 'logic-parameter', `${node.name}: текст не должен превышать ${parameter.maxLength} символов.`, fields);
     }
+    if(module.constraints.network){if(!project.components.some(component=>catalog.modules.find(module=>module.id===component.moduleId)?.network))add('error','probe-network',node.name+': добавьте сетевой интерфейс в монтаж.',fields);if(!probeUrl(node.parameters.url))add('error','probe-url',node.name+': укажите HTTP/HTTPS-адрес без логина, пароля и фрагмента.',fields);}
     const binding = hardwareBinding(node, project, catalog);
     if (module.editor === 'screen' && binding.component) {
       if (!project.screens?.[binding.component.id]) add('error', 'display-interface', node.name + ': создайте и сохраните интерфейс экрана.', fields);
-      else for (const message of screenIssues(screenFor(project, binding.component.id), displayDescription(binding.component, catalog))) add('error', 'display-interface', node.name + ': ' + message, fields);
+      else {
+        const screen = screenFor(project, binding.component.id);
+        for (const message of screenIssues(screen, displayDescription(binding.component, catalog))) add('error', 'display-interface', node.name + ': ' + message, fields);
+        const dynamic = screenBindings(screen);
+        for (const element of dynamic) if (!graph.edges.some(edge => edge.target === node.id && edge.dataType === 'event' && ['trigger', elementUpdatePort(element.id)].includes(edge.targetHandle))) add('error', 'logic-input', node.name + ': подключите событие обновления элемента «' + (element.name || 'Текст') + '».', fields);
+      }
     }
     if (binding.error) add('error', 'logic-hardware', `${node.name}: ${binding.error}`, fields);
-    for (const port of module.inputs.filter(port => port.required)) if (!graph.edges.some(edge => edge.target === node.id && edge.targetHandle === port.id)) add('error', 'logic-input', `${node.name}: подключите вход «${port.name}».`, fields);
-    if (module.id === 'clex.logic.timer' && !graph.edges.some(edge => edge.source === node.id && edge.dataType === 'event')) add('warning', 'timer-unused', `${node.name}: такт пока не подключён к действию.`, fields);
+    for (const port of nodePorts(node, catalog, project).inputs.filter(port => port.required)) if (!graph.edges.some(edge => edge.target === node.id && edge.targetHandle === port.id)) add('error', 'logic-input', `${node.name}: подключите вход «${port.name}».`, fields);
+    if (module.id === 'clex.logic.timer' && !graph.edges.some(edge => edge.source === node.id && edge.dataType === 'event')) add('warning', 'timer-unused', `${node.name}: такт пока не подключен к действию.`, fields);
   }
   for (const edge of graph.edges) {
-    const problem = connectionProblem(graph, catalog, edge, edge.id);
+    const problem = connectionProblem(graph, catalog, edge, edge.id, project);
     if (problem) { add('error', 'logic-connection', problem, { edgeId: edge.id, nodeId: edge.target }); continue; }
     const source = graph.nodes.find(node => node.id === edge.source), port = graphModule(source, catalog).outputs.find(port => port.id === edge.sourceHandle);
-    if (edge.dataType !== port.type) add('error', 'logic-type', 'Сохранённый тип связи не совпадает с типом портов.', { edgeId: edge.id });
-    if (port.readyOn && !hasPath(graph.edges, source.id, edge.target, true)) add('error', 'logic-order', 'Значение должно передаваться после события «Готово» его источника. Соедините также события.', { edgeId: edge.id, nodeId: edge.target });
+    if (edge.dataType !== port.type) add('error', 'logic-type', 'Сохраненный тип связи не совпадает с типом портов.', { edgeId: edge.id });
+    const orderedEdges = graphModule(graph.nodes.find(node => node.id === edge.target), catalog)?.editor === 'screen' ? graph.edges.filter(item => item.target !== edge.target || item.dataType !== 'event' || ['trigger', elementUpdatePort(edge.targetHandle)].includes(item.targetHandle)) : graph.edges;
+    if (port.readyOn && !hasPath(orderedEdges, source.id, edge.target, true)) add('error', 'logic-order', 'Значение должно передаваться после события «Готово» его источника. Соедините также события.', { edgeId: edge.id, nodeId: edge.target });
   }
-  const roots = graph.nodes.filter(node => node.moduleId === 'clex.logic.timer').map(node => node.id);
-  for (const node of graph.nodes.filter(node => node.moduleId !== 'clex.logic.timer' && !graphModule(node, catalog)?.editor)) if (!roots.some(root => hasPath(graph.edges, root, node.id, true))) add('warning', 'logic-unreachable', `${node.name}: нет событийного пути от таймера.`, { nodeId: node.id });
+  const roots = graph.nodes.filter(node => (node.moduleId === 'clex.logic.timer' || graphModule(node,catalog)?.firmware.eventSource)).map(node => node.id);
+  for (const node of graph.nodes.filter(node => node.moduleId !== 'clex.logic.timer' && !graphModule(node,catalog)?.firmware.eventSource && !graphModule(node, catalog)?.editor)) if (!roots.some(root => hasPath(graph.edges, root, node.id, true))) add('warning', 'logic-unreachable', `${node.name}: нет событийного пути от таймера.`, { nodeId: node.id });
   return issues;
 }

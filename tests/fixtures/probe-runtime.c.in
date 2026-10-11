@@ -1,0 +1,57 @@
+#include <assert.h>
+#include <stdatomic.h>
+#include <stdbool.h>
+#include <stdint.h>
+#include <stddef.h>
+#include <stdio.h>
+#include <string.h>
+#include <errno.h>
+#define ESP_OK 0
+#define ESP_FAIL -1
+#define ESP_ERR_HTTP_EAGAIN 0x7007
+#define ESP_ERR_HTTP_FETCH_HEADER 0x7003
+#define HTTP_TRANSPORT_OVER_SSL 2
+#define HTTP_TRANSPORT_OVER_TCP 1
+#define HTTP_METHOD_HEAD 1
+#define HTTP_METHOD_GET 0
+#define pdMS_TO_TICKS(x) (x)
+typedef int esp_err_t;
+typedef void *esp_http_client_handle_t;
+typedef struct { int unused; } ip_addr_t;
+typedef struct { bool available; int state,status_code; int32_t response_ms; char error[128]; } clex_probe_snapshot_t;
+typedef struct { unsigned node; const char *host,*host_header,*path; uint16_t port; bool secure,head; uint32_t interval_ms,timeout_ms; int64_t due; } clex_probe_config_t;
+typedef struct { const char *host,*path,*common_name; int port,transport_type,timeout_ms,method,buffer_size,buffer_size_tx; bool is_async,disable_auto_redirect; void *crt_bundle_attach; } esp_http_client_config_t;
+static int certificate_bundle; static void *esp_crt_bundle_attach=&certificate_bundle;
+static atomic_bool clex_network_stopping; static atomic_uint clex_network_generation;
+static int64_t now; static int scenario,closed,cleaned,header_timeout; static bool lost_descriptors;
+static esp_http_client_config_t settings; static clex_probe_snapshot_t last;
+static int64_t esp_timer_get_time(void){return now;}
+static void vTaskDelay(unsigned ms){now+=(int64_t)ms*1000;}
+static bool clex_route_ready(void){return true;}
+static bool clex_dns_resolve(const char *host,uint32_t generation,int64_t deadline,ip_addr_t *address,char *error,size_t size){(void)host;(void)generation;(void)deadline;(void)address;(void)error;(void)size;now+=100000;return true;}
+#define ip_2_ip4(address) (address)
+static void ip4addr_ntoa_r(const ip_addr_t *address,char *out,size_t size){(void)address;snprintf(out,size,"203.0.113.10");}
+static void clex_probe_publish(unsigned node,const clex_probe_snapshot_t *snapshot,uint32_t generation,bool complete){(void)node;(void)generation;(void)complete;last=*snapshot;}
+static esp_http_client_handle_t esp_http_client_init(const esp_http_client_config_t *config){settings=*config;assert(!strcmp(config->common_name,"test.invalid"));assert(config->crt_bundle_attach);return &settings;}
+static int esp_http_client_set_header(esp_http_client_handle_t client,const char *name,const char *value){(void)client;assert(!strcmp(name,"Host"));assert(!strcmp(value,"test.invalid"));return ESP_OK;}
+static int esp_http_client_open(esp_http_client_handle_t client,int body){(void)client;assert(body==0);if(scenario==1||lost_descriptors){now+=50000;return ESP_ERR_HTTP_EAGAIN;}
+/* Reproduce a TCP select timeout consuming the connection descriptors. */
+if(settings.timeout_ms<180){now+=(int64_t)settings.timeout_ms*1000;lost_descriptors=true;return ESP_ERR_HTTP_EAGAIN;}now+=180000;return ESP_OK;}
+static int esp_http_client_set_timeout_ms(esp_http_client_handle_t client,int ms){(void)client;header_timeout=ms;return ESP_OK;}
+static int64_t esp_http_client_fetch_headers(esp_http_client_handle_t client){(void)client;if(scenario==2){now+=50000;return -ESP_ERR_HTTP_EAGAIN;}if(scenario==3){atomic_fetch_add(&clex_network_generation,1);now+=50000;return -ESP_ERR_HTTP_EAGAIN;}now+=120000;return 0;}
+static int esp_http_client_get_status_code(esp_http_client_handle_t client){(void)client;return 200;}
+static int esp_http_client_get_errno(esp_http_client_handle_t client){(void)client;return 0;}
+static int esp_http_client_get_and_clear_last_tls_error(esp_http_client_handle_t client,int *code,int *flags){(void)client;*code=0;*flags=0;return ESP_OK;}
+static const char *esp_err_to_name(int result){(void)result;return "ESP_FAIL";}
+static void esp_http_client_close(esp_http_client_handle_t client){(void)client;closed++;}
+static void esp_http_client_cleanup(esp_http_client_handle_t client){(void)client;cleaned++;}
+/* CLEX_GENERATED_PROBE */
+
+int main(void){clex_probe_config_t config={.node=1,.host="test.invalid",.host_header="test.invalid",.path="/",.port=443,.secure=true,.head=true,.interval_ms=10000,.timeout_ms=5000};
+for(scenario=0;scenario<=3;scenario++){now=0;closed=cleaned=header_timeout=0;lost_descriptors=false;atomic_store(&clex_network_generation,0);clex_probe_run(&config);
+if(scenario==0){assert(last.available&&last.state==2&&last.status_code==200);assert(last.response_ms==400);assert(settings.timeout_ms==4900);assert(header_timeout==50);}
+if(scenario==1){assert(last.state==3&&!last.available);assert(strstr(last.error,"HTTPS connect:\ntimeout"));assert(now>=5000000&&now<5100000);}
+if(scenario==2){assert(last.state==3&&!last.available);assert(strstr(last.error,"HTTP headers:\ntimeout"));}
+if(scenario==3){assert(last.state==0&&!last.available&&last.response_ms==-1);}
+assert(closed==1&&cleaned==1);}
+printf("PASS: delayed HTTPS connection, remaining budget after DNS, separate connection/header timeout, route cancellation and cleanup.\n");}

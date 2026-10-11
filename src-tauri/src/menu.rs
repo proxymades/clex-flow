@@ -4,7 +4,7 @@ use tauri::{
 };
 
 // Нативный пункт Quit macOS завершает процесс напрямую. Пользовательский
-// пункт направляет ⌘Q через проверку несохранённых изменений в frontend.
+// пункт направляет ⌘Q через проверку несохраненных изменений в frontend.
 pub fn build(app: &AppHandle<Wry>) -> tauri::Result<Menu<Wry>> {
     let quit = MenuItem::with_id(
         app,
@@ -43,7 +43,7 @@ pub fn build(app: &AppHandle<Wry>) -> tauri::Result<Menu<Wry>> {
             &PredefinedMenuItem::cut(app, Some("Вырезать"))?,
             &PredefinedMenuItem::copy(app, Some("Скопировать"))?,
             &PredefinedMenuItem::paste(app, Some("Вставить"))?,
-            &PredefinedMenuItem::select_all(app, Some("Выделить всё"))?,
+            &PredefinedMenuItem::select_all(app, Some("Выделить все"))?,
         ],
     )?;
     let window = Submenu::with_items(

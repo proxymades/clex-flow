@@ -9,14 +9,14 @@ const {chromium}=require('playwright');
  const page=await browser.newPage({viewport:{width:1440,height:1000}}),errors=[];
  page.on('pageerror',error=>errors.push(error.message));
  const saved=()=>page.evaluate(()=>JSON.parse(Object.values(JSON.parse(localStorage.getItem('clex-flow:projects:v1')))[0]));
- const save=async()=>{await page.getByRole('button',{name:'Сохранить',exact:true}).first().click();await page.getByText('Проект сохранён',{exact:true}).waitFor();};
+ const save=async()=>{await page.getByRole('button',{name:'Сохранить',exact:true}).first().click();await page.getByText('Проект сохранен',{exact:true}).waitFor();};
  try{
   await page.goto(process.env.CLEX_PREVIEW_URL||'http://127.0.0.1:1420');
   await page.getByRole('button',{name:'Новый проект',exact:true}).first().click();
   await page.getByRole('textbox',{name:'Название проекта'}).fill('Display test');
   await page.getByRole('button',{name:'Создать проект',exact:true}).click();
   await page.getByRole('button',{name:'Монтаж',exact:true}).click();await page.locator('.assembly-flow-region[data-ready="true"]').waitFor();
-  await page.getByRole('combobox',{name:'Камера на разъёме',exact:true}).selectOption('disconnected');
+  await page.getByRole('combobox',{name:'Камера на разъеме',exact:true}).selectOption('disconnected');
   await page.getByRole('button',{name:'Добавить: '+displayModule.name,exact:true}).click();
   const pins={gnd:'P28',vcc:eth.pins.find(p=>p.kind==='power'&&p.voltage===3.3).id};
   for(const [terminal,gpio] of [['sclk',16],['mosi',17],['cs',18],['dc',15],['reset',38]])pins[terminal]=eth.pins.find(p=>p.gpio===gpio).id;

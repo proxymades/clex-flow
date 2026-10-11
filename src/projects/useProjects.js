@@ -60,7 +60,7 @@ export function useProjects() {
       autoInFlight.current++; setAutoSaving(true); setAutoState('saving');
       try {
         await persist(snapshot);
-        if (live.current && ticket === generation.current && activeRef.current?.id === id) { setAutoState('saved'); setNotice('Проект сохранён автоматически'); setError(''); }
+        if (live.current && ticket === generation.current && activeRef.current?.id === id) { setAutoState('saved'); setNotice('Проект сохранен автоматически'); setError(''); }
       } catch (error) {
         if (live.current && ticket === generation.current) { setAutoState('error'); setError(`Автосохранение не выполнено: ${String(error.message || error)}. Правки остаются в редакторе.`); }
       } finally { autoInFlight.current--; if (live.current) setAutoSaving(autoInFlight.current > 0); }
@@ -99,7 +99,7 @@ export function useProjects() {
     autoEnabled.current = Boolean(value);
     setAutoSaveEnabledState(autoEnabled.current);
     try { localStorage.setItem(AUTOSAVE_PREFERENCE_KEY, String(autoEnabled.current)); }
-    catch { setError('Режим сохранения изменён для текущего сеанса, но настройку не удалось записать.'); }
+    catch { setError('Режим сохранения изменен для текущего сеанса, но настройку не удалось записать.'); }
     armAuto(activeRef.current);
   }, [armAuto]);
 
@@ -113,13 +113,13 @@ export function useProjects() {
 
   const create = (name, description, boardId) => run(async () => {
     const project = await persist(createProject(name, description, boardId));
-    setActive(project); setNotice('Проект создан и сохранён'); return true;
+    setActive(project); setNotice('Проект создан и сохранен'); return true;
   });
   const save = useCallback(() => run(async () => {
     const snapshot = activeRef.current;
     if (!snapshot) return false;
     cancelAuto();
-    await persist(snapshot); setAutoState(autoEnabled.current ? 'saved' : 'disabled'); setNotice('Проект сохранён'); return true;
+    await persist(snapshot); setAutoState(autoEnabled.current ? 'saved' : 'disabled'); setNotice('Проект сохранен'); return true;
   }), [cancelAuto, persist, run]);
   const rename = (project, name) => run(async () => {
     const updated = await persist({ ...project, name: validateName(name) });
@@ -131,7 +131,7 @@ export function useProjects() {
     await storage.deleteProject(project.id);
     projectsRef.current = projectsRef.current.filter(item => item.id !== project.id); setProjects(projectsRef.current);
     if (activeRef.current?.id === project.id) setActive(null);
-    setNotice('Проект удалён'); return true;
+    setNotice('Проект удален'); return true;
   });
   const openFile = () => run(async () => {
     let project = await storage.importProject();

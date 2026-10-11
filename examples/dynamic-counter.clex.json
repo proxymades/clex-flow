@@ -1,0 +1,234 @@
+{
+  "id": "cd22e89c-4eda-45b3-bb62-1ce5fbd271d6",
+  "name": "Динамический счётчик",
+  "description": "Таймер 1000 мс → счётчик → текст дисплея. Подключение TFT SPI 240×320 на ST7789 к Waveshare ESP32-S3-ETH.",
+  "formatVersion": 3,
+  "createdAt": "2026-10-10T17:35:21.988Z",
+  "updatedAt": "2026-10-10T17:35:24.904Z",
+  "boardId": "waveshare-esp32-s3-eth",
+  "boardSettings": {
+    "camera": "disconnected"
+  },
+  "components": [
+    {
+      "id": "53357e0b-9a9d-4b54-b8ea-9948ebad24f6",
+      "moduleId": "clex.display.spi-240x320",
+      "moduleVersion": "1.0.0",
+      "name": "TFT 240×320 · SPI · №1",
+      "parameters": {
+        "spiHost": "3"
+      }
+    }
+  ],
+  "gpioAssignments": [
+    {
+      "componentId": "53357e0b-9a9d-4b54-b8ea-9948ebad24f6",
+      "terminalId": "sclk",
+      "pinId": "P32",
+      "gpio": 16,
+      "mode": "output"
+    },
+    {
+      "componentId": "53357e0b-9a9d-4b54-b8ea-9948ebad24f6",
+      "terminalId": "mosi",
+      "pinId": "P34",
+      "gpio": 17,
+      "mode": "output"
+    },
+    {
+      "componentId": "53357e0b-9a9d-4b54-b8ea-9948ebad24f6",
+      "terminalId": "reset",
+      "pinId": "P14",
+      "gpio": 38,
+      "mode": "output"
+    },
+    {
+      "componentId": "53357e0b-9a9d-4b54-b8ea-9948ebad24f6",
+      "terminalId": "dc",
+      "pinId": "P29",
+      "gpio": 15,
+      "mode": "output"
+    },
+    {
+      "componentId": "53357e0b-9a9d-4b54-b8ea-9948ebad24f6",
+      "terminalId": "cs",
+      "pinId": "P31",
+      "gpio": 18,
+      "mode": "output"
+    }
+  ],
+  "logic": {
+    "nodes": [
+      {
+        "id": "b5d67a76-4fb4-468c-b29d-3fd7ca030d35",
+        "moduleId": "clex.logic.display",
+        "moduleVersion": "1.0.0",
+        "name": "Экран дисплея 1",
+        "position": {
+          "x": 60,
+          "y": 100
+        },
+        "parameters": {
+          "componentId": "53357e0b-9a9d-4b54-b8ea-9948ebad24f6"
+        }
+      },
+      {
+        "id": "dae96c8c-3d75-40a5-873b-f644400b9fef",
+        "moduleId": "clex.logic.timer",
+        "moduleVersion": "1.0.0",
+        "name": "Таймер 1",
+        "position": {
+          "x": 390,
+          "y": 100
+        },
+        "parameters": {
+          "intervalMs": 1000
+        }
+      },
+      {
+        "id": "9a76335f-ff93-4980-bb3a-67b6dacb9a87",
+        "moduleId": "clex.logic.counter",
+        "moduleVersion": "1.0.0",
+        "name": "Счётчик 1",
+        "position": {
+          "x": 390,
+          "y": 410
+        },
+        "parameters": {
+          "initialValue": 0,
+          "step": 1
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "dabddcb8-381c-4084-80c0-e2ac3472c9be",
+        "source": "dae96c8c-3d75-40a5-873b-f644400b9fef",
+        "target": "9a76335f-ff93-4980-bb3a-67b6dacb9a87",
+        "sourceHandle": "tick",
+        "targetHandle": "increment",
+        "dataType": "event"
+      },
+      {
+        "id": "0321ff80-f135-4cc9-a4f5-5373bfab30c6",
+        "source": "9a76335f-ff93-4980-bb3a-67b6dacb9a87",
+        "target": "b5d67a76-4fb4-468c-b29d-3fd7ca030d35",
+        "sourceHandle": "done",
+        "targetHandle": "trigger",
+        "dataType": "event"
+      },
+      {
+        "id": "56b26875-74e6-4de6-b57f-c723537fc57f",
+        "source": "9a76335f-ff93-4980-bb3a-67b6dacb9a87",
+        "target": "b5d67a76-4fb4-468c-b29d-3fd7ca030d35",
+        "sourceHandle": "value",
+        "targetHandle": "1dabc1d3-71d2-47a6-a5d5-75b6e21549e9",
+        "dataType": "number"
+      }
+    ],
+    "viewport": {
+      "x": 3,
+      "y": -42.5,
+      "zoom": 1
+    }
+  },
+  "assembly": {
+    "positions": {
+      "board": {
+        "x": 100,
+        "y": 40
+      },
+      "53357e0b-9a9d-4b54-b8ea-9948ebad24f6": {
+        "x": 670,
+        "y": 100
+      }
+    },
+    "connections": [
+      {
+        "id": "2f388e70-aa89-4511-b4d8-b8641a97c32a",
+        "componentId": "53357e0b-9a9d-4b54-b8ea-9948ebad24f6",
+        "terminalId": "gnd",
+        "boardPinId": "P28"
+      },
+      {
+        "id": "87e220be-6536-42e8-98e3-60bb3a83144c",
+        "componentId": "53357e0b-9a9d-4b54-b8ea-9948ebad24f6",
+        "terminalId": "vcc",
+        "boardPinId": "P36"
+      },
+      {
+        "id": "23881146-d21b-481c-9378-c3155c957e22",
+        "componentId": "53357e0b-9a9d-4b54-b8ea-9948ebad24f6",
+        "terminalId": "sclk",
+        "boardPinId": "P32"
+      },
+      {
+        "id": "49ec502f-826f-48d1-8b9e-7e493266b09d",
+        "componentId": "53357e0b-9a9d-4b54-b8ea-9948ebad24f6",
+        "terminalId": "mosi",
+        "boardPinId": "P34"
+      },
+      {
+        "id": "a157bdc7-ad55-4c31-a7f2-2c46d742c24d",
+        "componentId": "53357e0b-9a9d-4b54-b8ea-9948ebad24f6",
+        "terminalId": "reset",
+        "boardPinId": "P14"
+      },
+      {
+        "id": "84ace705-5d46-499b-9c1b-f977c85c0dcc",
+        "componentId": "53357e0b-9a9d-4b54-b8ea-9948ebad24f6",
+        "terminalId": "dc",
+        "boardPinId": "P29"
+      },
+      {
+        "id": "41d4f0fb-0b75-4467-9e33-e843f0f1eced",
+        "componentId": "53357e0b-9a9d-4b54-b8ea-9948ebad24f6",
+        "terminalId": "cs",
+        "boardPinId": "P31"
+      }
+    ],
+    "viewport": {
+      "x": 0,
+      "y": 0,
+      "zoom": 1
+    }
+  },
+  "moduleVersions": {
+    "clex.display.spi-240x320": "1.0.0",
+    "clex.logic.display": "1.0.0",
+    "clex.logic.timer": "1.0.0",
+    "clex.logic.counter": "1.0.0"
+  },
+  "screens": {
+    "53357e0b-9a9d-4b54-b8ea-9948ebad24f6": {
+      "formatVersion": 1,
+      "background": "#071521",
+      "elements": [
+        {
+          "id": "a7714324-2602-4aed-b371-d0c2b82a7319",
+          "type": "text",
+          "text": "Привет, мир! CLEX Flow",
+          "x": 8,
+          "y": 20,
+          "fontId": "montserrat_14",
+          "color": "#ffffff"
+        },
+        {
+          "id": "1dabc1d3-71d2-47a6-a5d5-75b6e21549e9",
+          "type": "text",
+          "text": "Привет, мир! CLEX Flow",
+          "x": 8,
+          "y": 90,
+          "fontId": "montserrat_20",
+          "color": "#ffe08a",
+          "name": "Счётчик",
+          "mode": "dynamic",
+          "valueType": "number",
+          "initialValue": 0,
+          "prefix": "Счётчик: ",
+          "suffix": ""
+        }
+      ]
+    }
+  }
+}

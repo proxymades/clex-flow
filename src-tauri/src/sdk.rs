@@ -102,7 +102,7 @@ impl Paths {
         match fs::read(&self.registry) {
             Ok(bytes) => {
                 let registry: Registry = serde_json::from_slice(&bytes).map_err(|e| {
-                    format!("Настройки SDK повреждены; исходный файл сохранён: {e}")
+                    format!("Настройки SDK повреждены; исходный файл сохранен: {e}")
                 })?;
                 if registry.format != 1 {
                     return Err("Неизвестный формат настроек SDK".into());
@@ -295,7 +295,7 @@ pub fn detect(registry: &mut Registry, paths: &Paths, legacy: Option<&Path>) -> 
         if !Path::new(&sdk.root).is_dir() {
             sdk.state = "missing".into();
             sdk.environment = None;
-            sdk.diagnostic = "SDK удалён, перемещён или установка ещё не завершена".into();
+            sdk.diagnostic = "SDK удален, перемещен или установка еще не завершена".into();
         } else if let Ok(version) = idf_environment::sdk_version(Path::new(&sdk.root)) {
             if version != sdk.version {
                 sdk.state = "invalid".into();
@@ -305,7 +305,7 @@ pub fn detect(registry: &mut Registry, paths: &Paths, legacy: Option<&Path>) -> 
         } else {
             sdk.state = "invalid".into();
             sdk.environment = None;
-            sdk.diagnostic = "Неполная или повреждённая установка".into();
+            sdk.diagnostic = "Неполная или поврежденная установка".into();
         }
     }
     Ok(())
@@ -436,7 +436,7 @@ pub fn auto_environment(
             python.filter(|v| !v.trim().is_empty()),
             None,
         )
-        .ok_or("Указанный SDK недоступен или повреждён")?;
+        .ok_or("Указанный SDK недоступен или поврежден")?;
         let id = upsert(&mut registry, sdk);
         registry.active.insert(PLATFORM.into(), id);
     } else if !registry.active.contains_key(PLATFORM) {
@@ -810,7 +810,7 @@ pub fn sdk_install(
                 &inner,
                 &sdk.id,
                 "interrupted",
-                "Установка остановлена. Повторите её для продолжения.",
+                "Установка остановлена. Повторите ее для продолжения.",
             );
         } else if let Err(error) = &result {
             let _ = installation_state(&paths, &inner, &sdk.id, "failed", error);

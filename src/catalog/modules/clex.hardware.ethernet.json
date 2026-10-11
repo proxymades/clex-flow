@@ -1,0 +1,106 @@
+{
+  "id": "clex.hardware.ethernet",
+  "version": "1.0.0",
+  "kind": "hardware",
+  "name": "Ethernet",
+  "description": "Сетевой интерфейс из описания платы. Link и IP определяются драйвером ESP-IDF.",
+  "category": "network",
+  "categoryName": "Сеть",
+  "icon": "Network",
+  "color": "#38bdf8",
+  "visual": {
+    "svg": "ethernet.svg",
+    "width": 230,
+    "height": 185
+  },
+  "terminals": [],
+  "inputs": [],
+  "outputs": [],
+  "parameters": {
+    "providerId": {
+      "label": "Сетевой интерфейс",
+      "type": "provider",
+      "default": ""
+    },
+    "spiHost": {
+      "label": "Аппаратный SPI",
+      "type": "spi-host",
+      "default": ""
+    },
+    "addressMode": {
+      "label": "Настройка IPv4",
+      "type": "select",
+      "default": "dhcp",
+      "options": [
+        {
+          "value": "dhcp",
+          "label": "DHCP"
+        },
+        {
+          "value": "static",
+          "label": "Статический IP"
+        }
+      ]
+    },
+    "staticIp": {
+      "label": "IP-адрес",
+      "type": "text",
+      "default": "",
+      "maxLength": 15,
+      "when": {
+        "field": "addressMode",
+        "value": "static"
+      }
+    },
+    "netmask": {
+      "label": "Маска подсети",
+      "type": "text",
+      "default": "",
+      "maxLength": 15,
+      "when": {
+        "field": "addressMode",
+        "value": "static"
+      }
+    },
+    "gateway": {
+      "label": "Шлюз",
+      "type": "text",
+      "default": "",
+      "maxLength": 15,
+      "when": {
+        "field": "addressMode",
+        "value": "static"
+      }
+    },
+    "dns": {
+      "label": "DNS (необязательно)",
+      "type": "text",
+      "default": "",
+      "maxLength": 15,
+      "when": {
+        "field": "addressMode",
+        "value": "static"
+      }
+    }
+  },
+  "constraints": {},
+  "network": {
+    "family": "ethernet"
+  },
+  "compatibility": {
+    "projectFormat": 3,
+    "targets": [
+      "esp32s3"
+    ],
+    "espIdf": "5.4.4"
+  },
+  "firmware": {
+    "status": "implemented",
+    "generatorKey": "ethernet-interface",
+    "dependencies": [
+      "esp_eth",
+      "esp_netif",
+      "esp_event"
+    ]
+  }
+}

@@ -12,7 +12,7 @@
   "svg": "esp32-s3-eth.svg",
   "width": 380,
   "height": 700,
-  "orientation": "Вид сверху: USB сверху, RJ45 снизу. Контакт 1 справа вверху, 40 слева вверху.",
+  "orientation": "Вид сверху: USB сверху, TF / microSD снизу. RJ45 на обратной стороне. Контакт 1 справа вверху, 40 слева вверху.",
   "sources": [
     {
       "title": "Waveshare: плата и распиновка",
@@ -33,7 +33,7 @@
   ],
   "options": {
     "camera": {
-      "label": "Камера на разъёме",
+      "label": "Камера на разъеме",
       "default": "unknown",
       "values": [
         {
@@ -172,7 +172,7 @@
       "capabilities": [
         "digital-input"
       ],
-      "reservedReason": "Загрузочный strapping-контакт; запрещён политикой MVP",
+      "reservedReason": "Загрузочный strapping-контакт; запрещен политикой MVP",
       "sharedWith": "camera"
     },
     {
@@ -191,7 +191,7 @@
         "digital-input",
         "digital-output"
       ],
-      "reservedReason": "Загрузочный strapping-контакт; запрещён политикой MVP",
+      "reservedReason": "Загрузочный strapping-контакт; запрещен политикой MVP",
       "sharedWith": "camera"
     },
     {
@@ -458,7 +458,7 @@
         "digital-input",
         "digital-output"
       ],
-      "reservedReason": "Загрузочный strapping-контакт; запрещён политикой MVP"
+      "reservedReason": "Загрузочный strapping-контакт; запрещен политикой MVP"
     },
     {
       "id": "P25",
@@ -512,7 +512,7 @@
         "digital-input",
         "digital-output"
       ],
-      "reservedReason": "Загрузочный strapping-контакт; запрещён политикой MVP",
+      "reservedReason": "Загрузочный strapping-контакт; запрещен политикой MVP",
       "sharedWith": "camera"
     },
     {
@@ -709,5 +709,26 @@
         3
       ]
     }
-  }
+  },
+  "networkInterfaces": [
+    {
+      "id": "onboard-ethernet",
+      "name": "Встроенный Ethernet",
+      "family": "ethernet",
+      "controller": "W5500",
+      "interface": "spi",
+      "driverKey": "w5500-spi",
+      "defaultSpiHost": 2,
+      "clockHz": 20000000,
+      "signals": {
+        "sclk": 13,
+        "mosi": 11,
+        "miso": 12,
+        "cs": 14,
+        "interrupt": 10,
+        "reset": 9
+      },
+      "phyAddress": 1
+    }
+  ]
 }

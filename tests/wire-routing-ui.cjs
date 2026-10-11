@@ -13,7 +13,7 @@ const {chromium}=require('playwright');
  const page=await browser.newPage({viewport:{width:1440,height:1000}}),errors=[];
  page.on('pageerror',error=>errors.push(error.message));
  const saved=()=>page.evaluate(()=>JSON.parse(Object.values(JSON.parse(localStorage.getItem('clex-flow:projects:v1')))[0]));
- const save=async()=>{await page.getByRole('button',{name:'Сохранить',exact:true}).click();await page.getByText('Проект сохранён',{exact:true}).waitFor();};
+ const save=async()=>{await page.getByRole('button',{name:'Сохранить',exact:true}).click();await page.getByText('Проект сохранен',{exact:true}).waitFor();};
  const corners=async terminal=>{
   const wire=project.assembly.connections.find(w=>w.terminalId===terminal);
   return page.locator('.physical-wire[data-wire="'+wire.id+'"] .visible-wire').evaluate(element=>[...element.getAttribute('d').matchAll(/Q\s*([-+\d.e]+)[ ,]+([-+\d.e]+)[ ,]+/gi)].map(match=>[Number(match[1]),Number(match[2])]));

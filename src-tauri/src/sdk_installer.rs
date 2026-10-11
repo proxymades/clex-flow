@@ -187,7 +187,7 @@ pub fn plan(version: &str) -> Result<InstallPlan, String> {
         ))
         .send()
         .and_then(|r| r.error_for_status())
-        .map_err(|e| format!("Не удалось получить объём загрузки: {e}"))?;
+        .map_err(|e| format!("Не удалось получить объем загрузки: {e}"))?;
     let mut bytes = Vec::new();
     response
         .take(2 * 1024 * 1024)
@@ -237,7 +237,7 @@ pub fn copy_verified(
         return Err("Загрузка неполная".into());
     }
     if format!("{:x}", sha.finalize()) != digest {
-        return Err("Контрольная сумма установщика не совпадает; запуск запрещён".into());
+        return Err("Контрольная сумма установщика не совпадает; запуск запрещен".into());
     }
     Ok(downloaded)
 }
@@ -465,7 +465,7 @@ fn refresh_eim_paths(slot: &Path, sdk: &mut Sdk) -> Result<(), String> {
     if let Some(path) = record["path"].as_str() {
         let canonical = Path::new(path).canonicalize().map_err(|e| e.to_string())?;
         if !canonical.starts_with(slot.canonicalize().map_err(|e| e.to_string())?) {
-            return Err("EIM создал SDK вне разрешённого каталога".into());
+            return Err("EIM создал SDK вне разрешенного каталога".into());
         }
         sdk.root = canonical.to_string_lossy().into();
     }

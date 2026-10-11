@@ -2,40 +2,47 @@
   "id": "clex.logic.gpio-read",
   "version": "1.0.0",
   "kind": "logic",
-  "name": "Чтение GPIO",
-  "description": "Считать уровень кнопки по событию.",
+  "name": "Считать вход",
+  "description": "Считывает состояние выбранного входного контакта по сигналу.",
   "category": "gpio",
-  "categoryName": "GPIO",
+  "categoryName": "Контакты",
   "icon": "ScanLine",
   "color": "#38BDF8",
   "inputs": [
     {
       "id": "trigger",
-      "name": "Выполнить",
+      "name": "Считать состояние",
       "type": "event",
-      "required": true
+      "required": true,
+      "description": "Считывает состояние выбранного входного контакта.",
+      "additional": false
     }
   ],
   "outputs": [
     {
       "id": "done",
-      "name": "Готово",
+      "name": "Состояние считано",
       "type": "event",
-      "required": false
+      "required": false,
+      "description": "Отправляет сигнал после считывания состояния контакта.",
+      "additional": false
     },
     {
       "id": "level",
-      "name": "Уровень",
+      "name": "Высокий уровень?",
       "type": "boolean",
       "required": false,
-      "readyOn": "done"
+      "readyOn": "done",
+      "description": "Передает Да для высокого уровня контакта и Нет для низкого.",
+      "additional": false
     }
   ],
   "parameters": {
     "componentId": {
-      "label": "Компонент монтажа",
+      "label": "Входной компонент",
       "type": "component",
-      "default": ""
+      "default": "",
+      "description": "Выберите подключенный входной компонент из монтажа."
     }
   },
   "constraints": {
@@ -60,5 +67,8 @@
     "dependencies": [
       "esp_driver_gpio"
     ]
-  }
+  },
+  "legacyNames": [
+    "Чтение GPIO"
+  ]
 }

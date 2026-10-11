@@ -11,44 +11,55 @@
   "inputs": [
     {
       "id": "trigger",
-      "name": "Выполнить",
+      "name": "Вывести сообщение",
       "type": "event",
-      "required": true
+      "required": true,
+      "description": "Выводит подготовленное сообщение в монитор порта.",
+      "additional": false
     },
     {
       "id": "text",
-      "name": "Текст",
+      "name": "Текст сообщения",
       "type": "text",
-      "required": false
+      "required": false,
+      "description": "Принимает текст вместо текста из настроек.",
+      "additional": true
     },
     {
       "id": "number",
-      "name": "Число",
+      "name": "Число в сообщении",
       "type": "number",
-      "required": false
+      "required": false,
+      "description": "Добавляет число к сообщению через пробел.",
+      "additional": true
     }
   ],
   "outputs": [
     {
       "id": "done",
-      "name": "Готово",
+      "name": "Сообщение выведено",
       "type": "event",
-      "required": false
+      "required": false,
+      "description": "Отправляет сигнал после вывода сообщения.",
+      "additional": true
     },
     {
       "id": "text",
       "name": "Выведенный текст",
       "type": "text",
       "required": false,
-      "readyOn": "done"
+      "readyOn": "done",
+      "description": "Передает полный сформированный текст сообщения.",
+      "additional": true
     }
   ],
   "parameters": {
     "message": {
-      "label": "Текст сообщения",
+      "label": "Текст без входной связи",
       "type": "text",
       "default": "Сообщение CLEX Flow",
-      "maxLength": 2000
+      "maxLength": 2000,
+      "description": "Используется, если текст не поступает от другого блока."
     }
   },
   "constraints": {},

@@ -64,6 +64,7 @@ pub struct Specification {
     pub main_c: String,
     pub fingerprint: String,
     pub graphics_runtime: Option<String>,
+    pub network_runtime: Option<String>,
 }
 fn hash(bytes: &[u8]) -> String {
     format!("{:x}", Sha256::digest(bytes))
@@ -154,12 +155,30 @@ fn verify_specification(spec: &Specification) -> Result<(), String> {
     {
         return Err("Неизвестная графическая библиотека".into());
     }
-    let bytes = if let Some(runtime) = &spec.graphics_runtime {
-        serde_json::to_vec(&(&spec.board_id, &spec.console_mode, &spec.main_c, runtime))
-    } else {
-        serde_json::to_vec(&(&spec.board_id, &spec.console_mode, &spec.main_c))
+    if spec
+        .network_runtime
+        .as_deref()
+        .is_some_and(|runtime| runtime != "esp-idf-network-1")
+    {
+        return Err("Неизвестная сетевая библиотека".into());
     }
-    .map_err(|e| e.to_string())?;
+    let bytes =
+        if let (Some(graphics), Some(network)) = (&spec.graphics_runtime, &spec.network_runtime) {
+            serde_json::to_vec(&(
+                &spec.board_id,
+                &spec.console_mode,
+                &spec.main_c,
+                graphics,
+                network,
+            ))
+        } else if let Some(network) = &spec.network_runtime {
+            serde_json::to_vec(&(&spec.board_id, &spec.console_mode, &spec.main_c, network))
+        } else if let Some(runtime) = &spec.graphics_runtime {
+            serde_json::to_vec(&(&spec.board_id, &spec.console_mode, &spec.main_c, runtime))
+        } else {
+            serde_json::to_vec(&(&spec.board_id, &spec.console_mode, &spec.main_c))
+        }
+        .map_err(|e| e.to_string())?;
     if hash(&bytes) != spec.fingerprint {
         return Err("Контрольная сумма исходников не совпадает".into());
     }
@@ -169,8 +188,14 @@ fn write_project(dir: &PathBuf, spec: &Specification) -> Result<(), String> {
     verify_specification(spec)?;
     fs::create_dir_all(dir.join("main")).map_err(|e| e.to_string())?;
     write_source(&dir.join("CMakeLists.txt"),"cmake_minimum_required(VERSION 3.16)\nset(COMPONENTS main)\ninclude($ENV{IDF_PATH}/tools/cmake/project.cmake)\nproject(clex_flow_firmware)\n")?;
-    let dependencies = if spec.graphics_runtime.is_some() {
-        "esp_lcd esp_driver_spi esp_driver_gpio esp_timer freertos log lvgl__lvgl"
+    let dependencies = if spec.network_runtime.is_some() {
+        if spec.graphics_runtime.is_some() {
+            "esp_driver_gpio esp_timer freertos log esp_lcd esp_driver_spi lvgl__lvgl esp_eth esp_netif esp_event esp_http_client mbedtls lwip esp_hw_support"
+        } else {
+            "esp_driver_gpio esp_timer freertos log esp_driver_spi esp_eth esp_netif esp_event esp_http_client mbedtls lwip esp_hw_support"
+        }
+    } else if spec.graphics_runtime.is_some() {
+        "esp_driver_gpio esp_timer freertos log esp_lcd esp_driver_spi lvgl__lvgl"
     } else {
         "esp_driver_gpio esp_timer freertos log"
     };
@@ -219,6 +244,13 @@ fn write_project(dir: &PathBuf, spec: &Specification) -> Result<(), String> {
         let mut contents = fs::read_to_string(&path).map_err(|e| e.to_string())?;
         contents.push_str("CONFIG_LV_COLOR_DEPTH_16=y\nCONFIG_LV_FONT_MONTSERRAT_14=y\nCONFIG_LV_FONT_MONTSERRAT_20=y\nCONFIG_LV_FONT_MONTSERRAT_28=y\n");
         write_source(&path, &contents)?;
+    }
+    if spec.network_runtime.is_some() {
+        let path = dir.join("sdkconfig.defaults");
+        let mut contents = fs::read_to_string(&path).map_err(|e| e.to_string())?;
+        contents.push_str("CONFIG_ETH_USE_SPI_ETHERNET=y\nCONFIG_ETH_SPI_ETHERNET_W5500=y\nCONFIG_MBEDTLS_CERTIFICATE_BUNDLE=y\nCONFIG_MBEDTLS_CERTIFICATE_BUNDLE_DEFAULT_FULL=y\nCONFIG_ESP_NETIF_IP_LOST_TIMER_INTERVAL=1\nCONFIG_PARTITION_TABLE_CUSTOM=y\nCONFIG_PARTITION_TABLE_CUSTOM_FILENAME=\"partitions.csv\"\n");
+        write_source(&path, &contents)?;
+        write_source(&dir.join("partitions.csv"), "nvs,data,nvs,0x9000,0x6000\nphy_init,data,phy,0xf000,0x1000\nfactory,app,factory,0x10000,0x300000\n")?;
     }
     Ok(())
 }
@@ -772,6 +804,7 @@ mod tests {
             main_c: "source".into(),
             fingerprint: String::new(),
             graphics_runtime: None,
+            network_runtime: None,
         };
         spec.fingerprint =
             hash(&serde_json::to_vec(&(&spec.board_id, &spec.console_mode, &spec.main_c)).unwrap());
@@ -798,6 +831,49 @@ mod tests {
             .contains("CONFIG_LV_FONT_MONTSERRAT_28=y"));
         spec.graphics_runtime = Some("arbitrary/download".into());
         assert!(verify_specification(&spec).is_err());
+    }
+    #[test]
+    fn network_runtime_is_allowlisted_and_keeps_graphics_optional() {
+        for graphics in [None, Some("lvgl-9.2.2".to_string())] {
+            let mut spec = Specification {
+                board_id: "waveshare-esp32-s3-eth".into(),
+                console_mode: "usb".into(),
+                main_c: "source".into(),
+                fingerprint: String::new(),
+                graphics_runtime: graphics,
+                network_runtime: Some("esp-idf-network-1".into()),
+            };
+            let mut identity = vec![
+                spec.board_id.clone(),
+                spec.console_mode.clone(),
+                spec.main_c.clone(),
+            ];
+            if let Some(runtime) = &spec.graphics_runtime {
+                identity.push(runtime.clone());
+            }
+            identity.push(spec.network_runtime.clone().unwrap());
+            spec.fingerprint = hash(&serde_json::to_vec(&identity).unwrap());
+            let dir = tempfile::tempdir().unwrap();
+            write_project(&dir.path().to_path_buf(), &spec).unwrap();
+            let cmake = fs::read_to_string(dir.path().join("main/CMakeLists.txt")).unwrap();
+            assert!(cmake.contains(
+                "esp_eth esp_netif esp_event esp_http_client mbedtls lwip esp_hw_support"
+            ));
+            assert_eq!(
+                cmake.contains("lvgl__lvgl"),
+                spec.graphics_runtime.is_some()
+            );
+            assert!(fs::read_to_string(dir.path().join("partitions.csv"))
+                .unwrap()
+                .contains("0x300000"));
+            spec.network_runtime = None;
+            assert!(verify_specification(&spec).is_err());
+            spec.network_runtime = Some("arbitrary/download".into());
+            identity.pop();
+            identity.push("arbitrary/download".into());
+            spec.fingerprint = hash(&serde_json::to_vec(&identity).unwrap());
+            assert!(verify_specification(&spec).is_err());
+        }
     }
     #[test]
     fn reservation_is_exclusive_and_uuid_is_strict() {

@@ -12,26 +12,31 @@
   "outputs": [
     {
       "id": "tick",
-      "name": "Такт",
+      "name": "Сработал",
       "type": "event",
-      "required": false
+      "required": false,
+      "description": "Отправляет сигнал через каждый заданный интервал.",
+      "additional": false
     },
     {
       "id": "interval",
-      "name": "Интервал, мс",
+      "name": "Период таймера, мс",
       "type": "number",
       "required": false,
-      "static": true
+      "static": true,
+      "description": "Передает заданный период таймера в миллисекундах.",
+      "additional": true
     }
   ],
   "parameters": {
     "intervalMs": {
-      "label": "Интервал, мс",
+      "label": "Срабатывать каждые, мс",
       "type": "integer",
       "default": 500,
       "min": 10,
       "max": 3600000,
-      "step": 10
+      "step": 10,
+      "description": "1000 мс – одна секунда между сигналами."
     }
   },
   "constraints": {},

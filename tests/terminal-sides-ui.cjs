@@ -8,7 +8,7 @@ const { chromium } = require('playwright');
  const page = await browser.newPage({ viewport:{width:1440,height:1000} }), errors=[];
  page.on('pageerror',error=>errors.push(error.message));
  const saved=()=>page.evaluate(()=>JSON.parse(Object.values(JSON.parse(localStorage.getItem('clex-flow:projects:v1')))[0]));
- const save=async()=>{await page.getByRole('button',{name:'Сохранить',exact:true}).first().click();await page.getByText('Проект сохранён',{exact:true}).waitFor();};
+ const save=async()=>{await page.getByRole('button',{name:'Сохранить',exact:true}).first().click();await page.getByText('Проект сохранен',{exact:true}).waitFor();};
  try {
   await page.goto('http://127.0.0.1:1420');
   const chooser=page.waitForEvent('filechooser');await page.getByRole('button',{name:'Открыть JSON',exact:true}).click();

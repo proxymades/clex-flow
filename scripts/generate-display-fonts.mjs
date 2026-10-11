@@ -21,7 +21,7 @@ try{
   const conversion=spawnSync(process.execPath,[converter,'--font',fontPath,'--range',range,'--size',String(size),'--bpp','4','--format','lvgl','--no-compress','--lv-include','lvgl.h','--lv-font-name',symbol,'-o',path],{encoding:'utf8'});
   if(conversion.status!==0)throw new Error(conversion.stderr||'Font conversion failed');
   let source=await readFile(path,'utf8');
-  source=source.replace(/^ \* Opts:.*$/m,' * Generated with lv_font_conv 1.5.3; Basic Latin and Cyrillic subsets. Source: Montserrat-Medium.ttf (LVGL v9.2.2).');
+  source=source.replace(/^ \* Opts:.*$/m,' * Generated with lv_font_conv 1.5.3; Basic Latin, Cyrillic and measurement symbol subsets. Source: Montserrat-Medium.ttf (LVGL v9.2.2).');
   const lineHeight=Number(source.match(/\.line_height = (\d+)/)[1]),baseline=Number(source.match(/\.base_line = (\d+)/)[1]);
   result['montserrat_'+size]={symbol,size,lineHeight,baseline,ranges:[...ranges,[10,10]],characterSets:Object.keys(sets),sha256:createHash('sha256').update(source).digest('hex'),source};
  }

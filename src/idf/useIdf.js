@@ -5,6 +5,7 @@ import { desktop } from '../projects/storage.js';
 import { generateFirmware, firmwareFingerprint } from '../firmware/generator.js';
 import { sdkRequirement } from './sdkRequirements.js';
 import { catalog, getBoard } from '../catalog/index.js';
+import { choosePort } from './ports.js';
 
 const terminal = ['success','failed','cancelled'];
 export default function useIdf(project) {
@@ -17,19 +18,36 @@ export default function useIdf(project) {
   const [computed,setComputed]=useState({key:'',value:null,error:''});
   const generated=useMemo(()=>{if(!project)return {bundle:null,error:''};try{return {bundle:generateFirmware(project,catalog,consoleMode),error:''};}catch(error){return {bundle:null,error:error.message};}},[project,consoleMode]);
   const preview=generated.bundle;
-  const signature=preview?JSON.stringify([preview.boardId,preview.consoleMode,preview.mainC,preview.graphicsRuntime]):'';
+  const signature=preview?JSON.stringify([preview.boardId,preview.consoleMode,preview.mainC,preview.graphicsRuntime,preview.networkRuntime]):'';
   const fingerprint=computed.key===signature?computed.value:null;
   const generationError=generated.error||(computed.key===signature?computed.error:'');
   const current=useRef(null), received=useRef({sequences:new Set(),max:-1}), flight=useRef(false), probing=useRef(false), mounted=useRef(true);
   const [ready,setReady]=useState(false);
+  const portRefresh=useRef(null);
+  const refreshPorts=useCallback(async({silent=false}={})=>{
+    if(!desktop)return;
+    if(portRefresh.current)return portRefresh.current;
+    const request=(async()=>{
+      try{
+        const items=await invoke('idf_ports');
+        if(mounted.current&&!flight.current){
+          setPorts(previous=>JSON.stringify(previous)===JSON.stringify(items)?previous:items);
+          setPort(selected=>choosePort(items,selected));
+        }
+        return items;
+      }catch(error){if(mounted.current&&!silent)setError(String(error));}
+    })();
+    portRefresh.current=request;
+    try{return await request;}finally{if(portRefresh.current===request)portRefresh.current=null;}
+  },[]);
   const refreshSdk=useCallback(async()=>{
     if(!desktop)return null;
     const snapshot=await invoke('sdk_list');
     if(mounted.current){setSdks(snapshot);setEnvironment(snapshot.environment);}
-    if(snapshot.environment){try{const items=await invoke('idf_ports');if(mounted.current){setPorts(items);setPort(selected=>items.some(p=>p.path===selected)?selected:'');}}catch(error){setError(String(error));}}
-    else {setPorts([]);setPort('');}
+    if(snapshot.environment)await refreshPorts();
+    else if(mounted.current){setPorts([]);setPort('');}
     return snapshot;
-  },[]);
+  },[refreshPorts]);
   const ingest=useCallback(event=>{
     if(event.jobId!==current.current?.id||received.current.sequences.has(event.sequence) || event.sequence < received.current.max - 3000||!mounted.current)return;
     received.current.sequences.add(event.sequence);
@@ -51,10 +69,19 @@ export default function useIdf(project) {
     if(preview) firmwareFingerprint(preview).then(value=>{if(live)setComputed({key:signature,value,error:''});}).catch(error=>{if(live)setComputed({key:signature,value:null,error:error.message});});
     return()=>{live=false;};
   },[preview,signature]);
-  const refreshPorts=useCallback(async()=>{
-    if(!desktop)return;
-    try{const items=await invoke('idf_ports');setPorts(items);setPort(selected=>items.some(item=>item.path===selected)?selected:'');}catch(error){setError(String(error));}
-  },[]);
+  useEffect(()=>{
+    if(!desktop||!environment)return;
+    // Enumeration never opens a serial port. Pause while a job owns the device.
+    let closed=false,timer;
+    const scan=async()=>{
+      if(!document.hidden&&!flight.current&&!probing.current&&!sdkLoading)await refreshPorts({silent:true});
+      if(!closed)timer=setTimeout(scan,2000);
+    };
+    const foreground=()=>{if(!document.hidden&&!flight.current&&!probing.current&&!sdkLoading)refreshPorts({silent:true});};
+    timer=setTimeout(scan,2000);
+    window.addEventListener('focus',foreground);document.addEventListener('visibilitychange',foreground);
+    return()=>{closed=true;clearTimeout(timer);window.removeEventListener('focus',foreground);document.removeEventListener('visibilitychange',foreground);};
+  },[environment,refreshPorts,sdkLoading]);
   const check=useCallback(async(root=null,python=null)=>{
     if(!desktop){setError('ESP-IDF доступна в десктопном приложении Tauri.');return false;}
     if(flight.current || probing.current)return false;
@@ -72,8 +99,8 @@ export default function useIdf(project) {
     try{await invoke(operation.startsWith('sdk_')?operation:`idf_${operation}`,{id,...args});const backlog=await invoke('idf_events',{id});for(const event of backlog)ingest(event);return true;}
     catch(error){flight.current=false;setJob({id,operation,status:'failed'});setError(String(error));return false;}
   };
-  const startBuild=()=>preview&&fingerprint&&compatible?start('build',{spec:{boardId:preview.boardId,consoleMode,mainC:preview.mainC,graphicsRuntime:preview.graphicsRuntime,fingerprint}}):Promise.resolve(false);
-  const startFlash=()=>build&&fingerprint&&port?start('flash',{buildId:build.id,fingerprint,port}):Promise.resolve(false);
+  const startBuild=()=>preview&&fingerprint&&compatible?start('build',{spec:{boardId:preview.boardId,consoleMode,mainC:preview.mainC,graphicsRuntime:preview.graphicsRuntime,networkRuntime:preview.networkRuntime,fingerprint}}):Promise.resolve(false);
+  const startFlash=(confirmedPort=port)=>build&&fingerprint&&port&&confirmedPort===port?start('flash',{buildId:build.id,fingerprint,port}):Promise.resolve(false);
   const startMonitor=()=>port?start('monitor',{port}):Promise.resolve(false);
   const cancel=async()=>{if(!current.current)return;try{await invoke('idf_cancel',{id:current.current.id});setJob(value=>value && !terminal.includes(value.status)?{...value,status:'stopping'}:value);}catch(error){setError(String(error));}};
   const setConsole=value=>{if(!['usb','uart'].includes(value))return;localStorage.setItem('clex-flow:console',value);setConsoleMode(value);};

@@ -8,7 +8,7 @@
   "pinoutVerified": true,
   "documentationVerified": true,
   "verificationNote": "Документированный профиль v1.1 N8R8. Сверьте маркировку своей платы; другие ревизии имеют отличия.",
-  "description": "Два разъёма J1/J3. Octal PSRAM: GPIO35-37 заняты; RGB: GPIO38.",
+  "description": "Два разъема J1/J3. Octal PSRAM: GPIO35-37 заняты; RGB: GPIO38.",
   "svg": "esp32-s3-devkitc-1.svg",
   "width": 380,
   "height": 750,
@@ -238,7 +238,7 @@
         "digital-input",
         "digital-output"
       ],
-      "reservedReason": "Загрузочный strapping-контакт; запрещён политикой MVP",
+      "reservedReason": "Загрузочный strapping-контакт; запрещен политикой MVP",
       "header": "J1"
     },
     {
@@ -254,7 +254,7 @@
       "capabilities": [
         "digital-input"
       ],
-      "reservedReason": "Загрузочный strapping-контакт; запрещён политикой MVP",
+      "reservedReason": "Загрузочный strapping-контакт; запрещен политикой MVP",
       "header": "J1"
     },
     {
@@ -605,7 +605,7 @@
         "digital-input",
         "digital-output"
       ],
-      "reservedReason": "Загрузочный strapping-контакт; запрещён политикой MVP",
+      "reservedReason": "Загрузочный strapping-контакт; запрещен политикой MVP",
       "header": "J3"
     },
     {
@@ -622,7 +622,7 @@
         "digital-input",
         "digital-output"
       ],
-      "reservedReason": "Загрузочный strapping-контакт; запрещён политикой MVP",
+      "reservedReason": "Загрузочный strapping-контакт; запрещен политикой MVP",
       "header": "J3"
     },
     {

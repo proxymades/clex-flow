@@ -1,0 +1,412 @@
+{
+  "id": "3271cdc8-8855-4e9b-9b69-2a2e1ebf5141",
+  "name": "Сетевые индикаторы",
+  "description": "Ethernet, настоящий IP и проверка HTTP/HTTPS-ресурса",
+  "formatVersion": 3,
+  "createdAt": "2026-10-11T07:20:03.239Z",
+  "updatedAt": "2026-10-11T07:20:03.239Z",
+  "boardId": "waveshare-esp32-s3-eth",
+  "boardSettings": {
+    "camera": "disconnected"
+  },
+  "components": [
+    {
+      "id": "112fd69a-7dfe-44c3-82c6-8ffa447b4e22",
+      "moduleId": "clex.display.spi-240x320",
+      "moduleVersion": "1.0.0",
+      "name": "TFT 240×320 · SPI · №1",
+      "parameters": {
+        "spiHost": "3"
+      }
+    },
+    {
+      "id": "8a2757ca-526e-48f7-a775-3653629d1582",
+      "moduleId": "clex.hardware.ethernet",
+      "moduleVersion": "1.0.0",
+      "name": "Ethernet 1",
+      "parameters": {
+        "providerId": "onboard-ethernet",
+        "spiHost": "2",
+        "addressMode": "dhcp",
+        "staticIp": "",
+        "netmask": "",
+        "gateway": "",
+        "dns": ""
+      }
+    }
+  ],
+  "gpioAssignments": [
+    {
+      "componentId": "112fd69a-7dfe-44c3-82c6-8ffa447b4e22",
+      "terminalId": "sclk",
+      "pinId": "P32",
+      "gpio": 16,
+      "mode": "output"
+    },
+    {
+      "componentId": "112fd69a-7dfe-44c3-82c6-8ffa447b4e22",
+      "terminalId": "mosi",
+      "pinId": "P34",
+      "gpio": 17,
+      "mode": "output"
+    },
+    {
+      "componentId": "112fd69a-7dfe-44c3-82c6-8ffa447b4e22",
+      "terminalId": "cs",
+      "pinId": "P31",
+      "gpio": 18,
+      "mode": "output"
+    },
+    {
+      "componentId": "112fd69a-7dfe-44c3-82c6-8ffa447b4e22",
+      "terminalId": "dc",
+      "pinId": "P29",
+      "gpio": 15,
+      "mode": "output"
+    },
+    {
+      "componentId": "112fd69a-7dfe-44c3-82c6-8ffa447b4e22",
+      "terminalId": "reset",
+      "pinId": "P14",
+      "gpio": 38,
+      "mode": "output"
+    }
+  ],
+  "logic": {
+    "nodes": [
+      {
+        "id": "f8cc952d-f924-438c-9796-67a8e09e8a08",
+        "moduleId": "clex.logic.display",
+        "moduleVersion": "1.0.0",
+        "name": "Экран дисплея 1",
+        "position": {
+          "x": 60,
+          "y": 100
+        },
+        "parameters": {
+          "componentId": "112fd69a-7dfe-44c3-82c6-8ffa447b4e22"
+        }
+      },
+      {
+        "id": "78ce58a7-ce2b-4324-b5a3-260f619a5325",
+        "moduleId": "clex.logic.ethernet",
+        "moduleVersion": "1.0.0",
+        "name": "Ethernet 1",
+        "position": {
+          "x": 390,
+          "y": 100
+        },
+        "parameters": {
+          "componentId": "8a2757ca-526e-48f7-a775-3653629d1582"
+        }
+      },
+      {
+        "id": "ace70852-abd7-49bf-8e97-f43901431808",
+        "moduleId": "clex.logic.internet-check",
+        "moduleVersion": "1.0.0",
+        "name": "Проверка интернета 1",
+        "position": {
+          "x": 60,
+          "y": 720
+        },
+        "parameters": {
+          "url": "https://example.com/",
+          "method": "HEAD",
+          "intervalMs": 10000,
+          "timeoutMs": 5000
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "939d9d1a-9866-4b85-ad5e-f7b88065c94a",
+        "source": "78ce58a7-ce2b-4324-b5a3-260f619a5325",
+        "target": "f8cc952d-f924-438c-9796-67a8e09e8a08",
+        "sourceHandle": "state",
+        "targetHandle": "633e709e-aa17-4fe6-8b59-468c1bd8d000",
+        "dataType": "number"
+      },
+      {
+        "id": "57797f2c-d8c9-4acb-8011-4671b20106a8",
+        "source": "78ce58a7-ce2b-4324-b5a3-260f619a5325",
+        "target": "f8cc952d-f924-438c-9796-67a8e09e8a08",
+        "sourceHandle": "changed",
+        "targetHandle": "update.633e709e-aa17-4fe6-8b59-468c1bd8d000",
+        "dataType": "event"
+      },
+      {
+        "id": "8579b75d-3dff-4431-b07e-ab6bb7f53819",
+        "source": "78ce58a7-ce2b-4324-b5a3-260f619a5325",
+        "target": "f8cc952d-f924-438c-9796-67a8e09e8a08",
+        "sourceHandle": "ip",
+        "targetHandle": "678e0cc7-9a4a-4684-865b-a6e4690f60e3",
+        "dataType": "text"
+      },
+      {
+        "id": "0a467865-473a-4df1-b0b2-3043636901e5",
+        "source": "78ce58a7-ce2b-4324-b5a3-260f619a5325",
+        "target": "f8cc952d-f924-438c-9796-67a8e09e8a08",
+        "sourceHandle": "changed",
+        "targetHandle": "update.678e0cc7-9a4a-4684-865b-a6e4690f60e3",
+        "dataType": "event"
+      },
+      {
+        "id": "38898722-aa81-4cdd-82c8-72af579a1c49",
+        "source": "ace70852-abd7-49bf-8e97-f43901431808",
+        "target": "f8cc952d-f924-438c-9796-67a8e09e8a08",
+        "sourceHandle": "state",
+        "targetHandle": "3e316cc1-0268-4558-baaa-6f3dc644d07c",
+        "dataType": "number"
+      },
+      {
+        "id": "626e1a94-62ba-4962-bc41-d38e7980970b",
+        "source": "ace70852-abd7-49bf-8e97-f43901431808",
+        "target": "f8cc952d-f924-438c-9796-67a8e09e8a08",
+        "sourceHandle": "changed",
+        "targetHandle": "update.3e316cc1-0268-4558-baaa-6f3dc644d07c",
+        "dataType": "event"
+      }
+    ],
+    "viewport": {
+      "x": 0,
+      "y": 0,
+      "zoom": 1
+    }
+  },
+  "assembly": {
+    "positions": {
+      "board": {
+        "x": 100,
+        "y": 40
+      },
+      "112fd69a-7dfe-44c3-82c6-8ffa447b4e22": {
+        "x": 670,
+        "y": 100
+      },
+      "8a2757ca-526e-48f7-a775-3653629d1582": {
+        "x": 670,
+        "y": 530
+      }
+    },
+    "connections": [
+      {
+        "id": "da9673aa-22ca-4f01-a5fd-b9454923d7a0",
+        "componentId": "112fd69a-7dfe-44c3-82c6-8ffa447b4e22",
+        "terminalId": "sclk",
+        "boardPinId": "P32"
+      },
+      {
+        "id": "d313a14c-7226-4a6a-a1a8-cbe0243ca3d9",
+        "componentId": "112fd69a-7dfe-44c3-82c6-8ffa447b4e22",
+        "terminalId": "mosi",
+        "boardPinId": "P34"
+      },
+      {
+        "id": "fa045388-a9a3-42b2-88a3-bff83494a454",
+        "componentId": "112fd69a-7dfe-44c3-82c6-8ffa447b4e22",
+        "terminalId": "cs",
+        "boardPinId": "P31"
+      },
+      {
+        "id": "5cd8a620-abb0-46d8-ac38-f003579396fb",
+        "componentId": "112fd69a-7dfe-44c3-82c6-8ffa447b4e22",
+        "terminalId": "dc",
+        "boardPinId": "P29"
+      },
+      {
+        "id": "175e7c3a-f5d8-477b-b47f-81701a3c4cfc",
+        "componentId": "112fd69a-7dfe-44c3-82c6-8ffa447b4e22",
+        "terminalId": "reset",
+        "boardPinId": "P14"
+      },
+      {
+        "id": "98549cab-014a-4161-9187-d337e37a8842",
+        "componentId": "112fd69a-7dfe-44c3-82c6-8ffa447b4e22",
+        "terminalId": "gnd",
+        "boardPinId": "P28"
+      },
+      {
+        "id": "7caf1e95-d96f-4135-9c4d-78beaeaae972",
+        "componentId": "112fd69a-7dfe-44c3-82c6-8ffa447b4e22",
+        "terminalId": "vcc",
+        "boardPinId": "P36"
+      }
+    ],
+    "viewport": {
+      "x": 0,
+      "y": 0,
+      "zoom": 1
+    }
+  },
+  "moduleVersions": {
+    "clex.display.spi-240x320": "1.0.0",
+    "clex.hardware.ethernet": "1.0.0",
+    "clex.logic.display": "1.0.0",
+    "clex.logic.ethernet": "1.0.0",
+    "clex.logic.internet-check": "1.0.0"
+  },
+  "screens": {
+    "112fd69a-7dfe-44c3-82c6-8ffa447b4e22": {
+      "formatVersion": 1,
+      "background": "#071521",
+      "elements": [
+        {
+          "id": "9eb5c96e-daa1-4376-a24f-32aeb828e978",
+          "type": "text",
+          "text": "ESP32-S3 ETH",
+          "x": 12,
+          "y": 12,
+          "fontId": "montserrat_20",
+          "color": "#ffffff"
+        },
+        {
+          "id": "633e709e-aa17-4fe6-8b59-468c1bd8d000",
+          "name": "Ethernet",
+          "type": "indicator",
+          "text": "",
+          "color": "#ffffff",
+          "fontId": "montserrat_14",
+          "x": 10,
+          "y": 55,
+          "width": 220,
+          "height": 46,
+          "radius": 12,
+          "padding": 8,
+          "gap": 8,
+          "dotVisible": true,
+          "dotSize": 8,
+          "dotPosition": "left",
+          "align": "left",
+          "mode": "dynamic",
+          "valueType": "number",
+          "initialValue": 0,
+          "prefix": "",
+          "suffix": "",
+          "captionDynamic": false,
+          "initialCaption": "Состояние 1",
+          "states": [
+            {
+              "id": "8b08002a-da8f-42ba-be0d-3c1edfd421c2",
+              "name": "Ethernet: Нет Link",
+              "value": 0,
+              "text": "Ethernet: Нет Link",
+              "background": "#172536",
+              "color": "#ffffff",
+              "dotColor": "#ef6666"
+            },
+            {
+              "id": "be7913b5-e554-466b-bf41-04a4c7c04290",
+              "name": "Ethernet: Ожидание IP",
+              "value": 1,
+              "text": "Ethernet: Ожидание IP",
+              "background": "#172536",
+              "color": "#ffffff",
+              "dotColor": "#fbbf24"
+            },
+            {
+              "id": "6e29fcbe-aa0c-48ba-94ed-8f4b2d42424a",
+              "name": "Ethernet: Подключено",
+              "value": 2,
+              "text": "Ethernet: Подключено",
+              "background": "#172536",
+              "color": "#ffffff",
+              "dotColor": "#34d399"
+            },
+            {
+              "id": "946ec35c-d372-498c-8898-b695b345a29e",
+              "name": "Ethernet: Ошибка",
+              "value": 3,
+              "text": "Ethernet: Ошибка",
+              "background": "#172536",
+              "color": "#ffffff",
+              "dotColor": "#ef6666"
+            }
+          ],
+          "staticStateId": "8b08002a-da8f-42ba-be0d-3c1edfd421c2",
+          "fallbackStateId": "946ec35c-d372-498c-8898-b695b345a29e"
+        },
+        {
+          "id": "678e0cc7-9a4a-4684-865b-a6e4690f60e3",
+          "name": "IP-адрес",
+          "type": "text",
+          "text": "",
+          "mode": "dynamic",
+          "valueType": "text",
+          "initialValue": "",
+          "prefix": "IP: ",
+          "suffix": "",
+          "x": 12,
+          "y": 116,
+          "fontId": "montserrat_14",
+          "color": "#dfe9f5"
+        },
+        {
+          "id": "3e316cc1-0268-4558-baaa-6f3dc644d07c",
+          "name": "Интернет",
+          "type": "indicator",
+          "text": "",
+          "color": "#ffffff",
+          "fontId": "montserrat_14",
+          "x": 10,
+          "y": 157,
+          "width": 220,
+          "height": 46,
+          "radius": 12,
+          "padding": 8,
+          "gap": 8,
+          "dotVisible": true,
+          "dotSize": 8,
+          "dotPosition": "left",
+          "align": "left",
+          "mode": "dynamic",
+          "valueType": "number",
+          "initialValue": 0,
+          "prefix": "",
+          "suffix": "",
+          "captionDynamic": false,
+          "initialCaption": "Состояние 1",
+          "states": [
+            {
+              "id": "de45e644-1914-4dfa-ae69-ad73810726ba",
+              "name": "Интернет: Ожидание",
+              "value": 0,
+              "text": "Интернет: Ожидание",
+              "background": "#172536",
+              "color": "#ffffff",
+              "dotColor": "#97a6bd"
+            },
+            {
+              "id": "0ab9d956-87ef-43ae-b901-79be1261bea1",
+              "name": "Интернет: Проверка",
+              "value": 1,
+              "text": "Интернет: Проверка",
+              "background": "#172536",
+              "color": "#ffffff",
+              "dotColor": "#fbbf24"
+            },
+            {
+              "id": "28525eef-b85d-414e-b1fe-2f9307dfefe2",
+              "name": "Интернет: Доступен",
+              "value": 2,
+              "text": "Интернет: Доступен",
+              "background": "#172536",
+              "color": "#ffffff",
+              "dotColor": "#34d399"
+            },
+            {
+              "id": "a94948c2-16ab-45df-a0f7-131e39a18b85",
+              "name": "Интернет: Недоступен",
+              "value": 3,
+              "text": "Интернет: Недоступен",
+              "background": "#172536",
+              "color": "#ffffff",
+              "dotColor": "#ef6666"
+            }
+          ],
+          "staticStateId": "de45e644-1914-4dfa-ae69-ad73810726ba",
+          "fallbackStateId": "a94948c2-16ab-45df-a0f7-131e39a18b85"
+        }
+      ]
+    }
+  }
+}

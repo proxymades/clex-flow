@@ -55,7 +55,7 @@ function HardwareNode({ id, data }) {
           <circle cx={terminal.x} cy={terminal.y} r="6" fill={connected ? color : '#151c2a'} stroke={color} strokeWidth={active ? 3 : 1.7} />
           <text x={vertical ? terminal.x : 16} y={labelY} textAnchor={vertical ? 'middle' : 'start'} fill="#a8b8cb" fontSize={vertical ? 9 : 10}>{label}</text>
           <text x={vertical ? terminal.x : width - 16} y={vertical ? pinY : terminal.y + 3} textAnchor={vertical ? 'middle' : 'end'} fill={pin ? color : '#5b6c86'} fontSize="9" fontFamily="monospace">{pin?.label || '–'}</text>
-          <title>{terminal.label + ' · ' + (pin?.label || 'Не подключён')}</title>
+          <title>{terminal.label + ' · ' + (pin?.label || 'Не подключен')}</title>
         </g>;
       })}
     </svg>
