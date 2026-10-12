@@ -66,8 +66,34 @@
       "type": "number",
       "required": false,
       "readyOn": "changed",
-      "description": "Передает состояние: нет соединения, ожидание IP, IP получен или ошибка запуска.",
-      "additional": false
+      "description": "Передает числовой код состояния. Расшифровка кодов приведена ниже.",
+      "additional": false,
+      "valueStates": {
+        "initialValue": 0,
+        "fallbackValue": 3,
+        "options": [
+          {
+            "value": 0,
+            "label": "Нет соединения",
+            "dotColor": "#97a6bd"
+          },
+          {
+            "value": 1,
+            "label": "Ожидание IP",
+            "dotColor": "#fbbf24"
+          },
+          {
+            "value": 2,
+            "label": "IP получен",
+            "dotColor": "#34d399"
+          },
+          {
+            "value": 3,
+            "label": "Ошибка запуска сети",
+            "dotColor": "#ef6666"
+          }
+        ]
+      }
     },
     {
       "id": "ip",

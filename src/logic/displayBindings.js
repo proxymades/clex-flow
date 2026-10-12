@@ -15,6 +15,27 @@ export function displaySources(project,catalog,displayNodeId,bindingId){
   });
  });
 }
+
+// Connecting display data also connects its producer's update event. Existing
+// valid manual timing remains intact; both new edges share one Undo step.
+export function connectDisplayData(project,catalog,connection){
+ const graph=connectNodes(project.logic,catalog,connection,project);
+ const target=graph.nodes.find(node=>node.id===connection.target);
+ if(graphModule(target,catalog)?.editor!=='screen')return graph;
+ const binding=screenBindings(screenFor(project,target.parameters.componentId)).find(item=>item.id===connection.targetHandle);
+ if(!binding)return graph; // Event connections and other ordinary inputs.
+ const context={...project,logic:graph},data=graph.edges.at(-1);
+ const eventInputs=['trigger',elementUpdatePort(binding.id)];
+ const existing=graph.edges.filter(edge=>edge.target===target.id&&edge.dataType==='event'&&eventInputs.includes(edge.targetHandle));
+ const orderError=validateGraph(context,catalog).some(issue=>issue.code==='logic-order'&&issue.edgeId===data.id);
+ if(existing.length&&!orderError)return graph;
+ if(existing.some(edge=>edge.targetHandle===elementUpdatePort(binding.id)))throw new Error('Обновление этого элемента настроено вручную от другого источника. Измените его через «Подключить данные».');
+ const source=displaySources(context,catalog,target.id,binding.id).find(item=>item.node.id===connection.source&&item.port.id===connection.sourceHandle);
+ if(!source)throw new Error('У источника нет сигнала обновления. Настройте его вручную через контакт «Обновить».');
+ const event=source.events.find(item=>item.id===source.port.readyOn)||source.events[0];
+ return planDisplayBinding(context,catalog,{displayNodeId:target.id,bindingId:binding.id,sourceNodeId:source.node.id,sourcePortId:source.port.id,eventId:event.id}).graph;
+}
+
 export function planDisplayBinding(project,catalog,choice){
  const {displayNodeId,bindingId,sourceNodeId,sourcePortId,eventId}=choice;
  const source=displaySources(project,catalog,displayNodeId,bindingId).find(item=>item.node.id===sourceNodeId&&item.port.id===sourcePortId);
@@ -24,11 +45,11 @@ export function planDisplayBinding(project,catalog,choice){
  function connect(connection,replace=false){
   const previous=graph.edges.find(edge=>edge.target===connection.target&&edge.targetHandle===connection.targetHandle);
   if(previous&&previous.source===connection.source&&previous.sourceHandle===connection.sourceHandle)return;
-  if(previous){if(!replace)throw new Error('Общий вход показа уже подключен. Для этого режима освободите его или выберите «Показывать ход проверки».');graph={...graph,edges:graph.edges.filter(edge=>edge.id!==previous.id)};replaced.push(previous);}
+  if(previous){if(!replace)throw new Error('Общий вход обновления уже подключен. Для этого режима освободите его или выберите «Показывать ход проверки».');graph={...graph,edges:graph.edges.filter(edge=>edge.id!==previous.id)};replaced.push(previous);}
   graph=connectNodes(graph,catalog,connection,{...project,logic:graph});added.push(graph.edges.at(-1));
  }
  const common=graph.edges.find(edge=>edge.target===displayNodeId&&edge.targetHandle==='trigger');
- if(event.resetNetwork&&common?.source===sourceNodeId&&common.sourceHandle!==eventId)throw new Error('Общий вход показа получает ход проверки. Для обновления только результата измените эту общую связь или выберите «Показывать ход проверки».');
+ if(event.resetNetwork&&common?.source===sourceNodeId&&common.sourceHandle!==eventId)throw new Error('Общий вход обновления получает ход проверки. Для обновления только результата измените эту общую связь или выберите «Показывать ход проверки».');
  connect({source:sourceNodeId,sourceHandle:sourcePortId,target:displayNodeId,targetHandle:bindingId},true);
  if(!(common?.source===sourceNodeId&&common.sourceHandle===eventId))connect({source:sourceNodeId,sourceHandle:eventId,target:displayNodeId,targetHandle:elementUpdatePort(bindingId)},true);
  const addedNodes=[];
@@ -37,7 +58,7 @@ export function planDisplayBinding(project,catalog,choice){
   if(!reset){
    const module=catalog.modules.find(module=>module.displayResetEvent&&project.components.some(component=>module.constraints.hardware.modules?.includes(component.moduleId)));
    if(!module)throw new Error('Для сброса при потере сети добавьте блок состояния подключенного сетевого интерфейса.');
-   if(common)throw new Error('Общий вход показа занят. Освободите его для сброса при потере сети или выберите «Показывать ход проверки».');
+   if(common)throw new Error('Общий вход обновления занят. Освободите его для сброса при потере сети или выберите «Показывать ход проверки».');
    graph=addNode(graph,module,project.components,{...project,logic:graph},catalog);reset=graph.nodes.at(-1);addedNodes.push(reset);
   }
   connect({source:reset.id,sourceHandle:graphModule(reset,catalog).displayResetEvent,target:displayNodeId,targetHandle:'trigger'});

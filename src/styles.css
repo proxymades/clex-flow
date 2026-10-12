@@ -53,3 +53,10 @@ input:is([type=checkbox],[type=radio],[type=color],[type=range],[type=button],[t
 .logic-inline-legend{flex-wrap:wrap;row-gap:5px}.logic-inline-legend .logic-route-legend{color:#91a3bd;font-size:9px}.logic-canvas .react-flow__edge-path{transition:opacity .12s,stroke-width .12s}
 
 .screen-element-list button{display:flex;align-items:center;gap:9px;width:100%}.screen-element-list svg{flex-shrink:0;color:#94a9c5}.screen-element-list [data-element-type="indicator"] svg{color:#38bdf8}.screen-element-label{min-width:0;overflow-wrap:anywhere;line-height:1.6}
+
+.port-value-states{margin:9px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:6px;width:100%;font-size:11px;line-height:1.6}.port-value-states li{display:flex;align-items:flex-start;gap:8px}.port-value-states li>i{width:6px;height:6px;border-radius:50%;flex-shrink:0;margin-top:6px}.port-value-states li>span,.inspector-ports .port-value-states li>span{display:block;flex:1;min-width:0;padding:0;margin:0;color:#b3c4da;font-size:11px;line-height:1.6}.inspector-ports>span{flex-wrap:wrap}.inspector-ports .port-value-states{flex-basis:100%;margin:6px 0 12px}
+.source-state-preset{border:1px solid #34465f;border-radius:8px;padding:12px;margin:12px 0 16px;background:#122030}.source-state-preset .checkbox-field{align-items:flex-start;line-height:1.6}.source-state-preset .panel-note{margin:9px 0}.source-state-preset .button{width:100%;margin-top:10px;white-space:normal;line-height:1.6}
+
+.inspector-ports .port-value-states{padding-left:20px;gap:5px;margin:4px 0 10px}.inspector-ports .port-value-states li>span{font-size:9px;line-height:1.65}.inspector-ports .port-value-states li>i{width:4px;height:4px;margin-top:5px}
+
+.state-value-settings{margin:0 0 14px;font-size:11px;color:#91a8c5}.state-value-settings summary{cursor:pointer;line-height:1.6}.state-value-settings .field{margin-top:10px}.screen-editor-properties .source-state-preset .field{margin-bottom:9px}

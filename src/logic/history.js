@@ -1,8 +1,8 @@
-const snapshot = graph => structuredClone({ nodes: graph.nodes, edges: graph.edges });
 const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
-// История только узлов/связей. Панорама сохраняется, но не расходует Undo.
-export function createHistory(initial, limit = 80) {
+// Узлы, связи и выбранные дополнительные снимки. Панорама не расходует Undo.
+export function createHistory(initial, limit = 80, extraFields = []) {
+  const snapshot = graph => structuredClone({ nodes: graph.nodes, edges: graph.edges, ...Object.fromEntries(extraFields.map(key=>[key,graph[key]])) });
   let current = structuredClone(initial), past = [], future = [], transaction = null, group = null;
   const push = before => { past = [...past.slice(-limit + 1), before]; future = []; };
   return {

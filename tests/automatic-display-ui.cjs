@@ -1,0 +1,24 @@
+const assert=require('node:assert/strict');
+const {chromium}=require('playwright');
+(async()=>{
+ const {networkProject}=await import('./network-fixture.js'),{dynamicDisplayProject}=await import('./dynamic-display-fixture.js');
+ const browser=await chromium.launch({headless:true,executablePath:process.env.CLEX_BROWSER_EXECUTABLE||process.argv[2]}),errors=[];
+ async function open(project){const page=await browser.newPage({viewport:{width:1440,height:1000}});page.on('pageerror',e=>errors.push(e.message));await page.addInitScript(p=>{if(!localStorage.getItem('clex-flow:projects:v1'))localStorage.setItem('clex-flow:projects:v1',JSON.stringify({[p.id]:JSON.stringify(p)}));},project);await page.goto(process.env.CLEX_PREVIEW_URL||'http://127.0.0.1:1430');await page.locator('.project-open').click();await page.getByRole('button',{name:'Логика',exact:true}).click();await page.locator('.logic-node').first().waitFor();await page.getByRole('button',{name:'Показать весь граф',exact:true}).click();await page.waitForTimeout(150);return page;}
+ const card=(page,node)=>page.locator('.react-flow__node[data-id="'+node.id+'"]');
+ const saved=page=>page.evaluate(()=>JSON.parse(Object.values(JSON.parse(localStorage.getItem('clex-flow:projects:v1')))[0]));
+ async function save(page){await page.getByRole('button',{name:'Сохранить',exact:true}).first().click();await page.getByText('Проект сохранен',{exact:true}).waitFor();return saved(page);}
+ try{
+  const p=networkProject(),display=p.logic.nodes.find(n=>n.moduleId==='clex.logic.display'),eth=p.logic.nodes.find(n=>n.moduleId==='clex.logic.ethernet'),screen=p.screens[display.parameters.componentId],ip=screen.elements.find(e=>e.name==='IP-адрес');
+  screen.elements=screen.elements.filter(e=>e.type==='text');p.logic.edges=[];eth.position={x:60,y:80};display.position={x:430,y:80};p.logic.nodes.find(n=>n.moduleId==='clex.logic.internet-check').position={x:60,y:480};
+  const page=await open(p),source=await card(page,eth).locator('.react-flow__handle.source[data-handleid="ip"]').boundingBox(),target=await card(page,display).locator('.react-flow__handle.target[data-handleid="'+ip.id+'"]').boundingBox();
+  await page.mouse.move(source.x+source.width/2,source.y+source.height/2);await page.mouse.down();await page.mouse.move(target.x+target.width/2,target.y+target.height/2,{steps:15});await page.mouse.up();await page.locator('.react-flow__edge').nth(1).waitFor();
+  let ready=await save(page);assert.equal(ready.logic.edges.length,2);assert.ok(ready.logic.edges.some(e=>e.sourceHandle==='changed'&&e.targetHandle==='update.'+ip.id));await card(page,display).getByRole('button',{name:/Обновить: IP-адрес/}).waitFor();assert.equal(await page.locator('.workspace-log .error-level').count(),0);
+  await page.getByRole('button',{name:'Отменить изменение графа',exact:true}).click();await save(page);assert.equal((await saved(page)).logic.edges.length,0);
+  await page.getByRole('button',{name:'Повторить изменение графа',exact:true}).click();ready=await save(page);assert.equal(ready.logic.edges.length,2);
+  await page.screenshot({path:'.artifacts/automatic-ip-binding.png'});await page.reload();await page.locator('.project-open').click();await page.getByRole('button',{name:'Логика',exact:true}).click();await page.locator('.react-flow__edge').nth(1).waitFor();assert.deepEqual((await saved(page)).logic.edges,ready.logic.edges);
+  await page.getByRole('button',{name:'Посмотреть исходники прошивки',exact:true}).click();await page.getByRole('button',{name:'main/main.c',exact:true}).click();assert.match(await page.locator('.firmware-source').innerText(),/esp_eth_mac_new_w5500/);await page.close();
+  const c=dynamicDisplayProject(),view=c.logic.nodes.find(n=>n.moduleId==='clex.logic.display'),counter=c.logic.nodes.find(n=>n.moduleId==='clex.logic.counter'),text=c.screens[view.parameters.componentId].elements[1];c.logic.edges=c.logic.edges.filter(e=>e.target!==view.id);view.position={x:430,y:60};counter.position={x:60,y:60};c.logic.nodes.find(n=>n.moduleId==='clex.logic.timer').position={x:60,y:410};
+  const counterPage=await open(c);await card(counterPage,counter).locator('[data-port-id="value"] button').click();await card(counterPage,view).locator('[data-port-id="'+text.id+'"] button').click();await counterPage.locator('.react-flow__edge').nth(2).waitFor();const combined=await save(counterPage);assert.equal(combined.logic.edges.length,3);assert.ok(combined.logic.edges.some(e=>e.sourceHandle==='done'&&e.targetHandle==='update.'+text.id));assert.equal(await counterPage.locator('.workspace-log .error-level').count(),0);await counterPage.close();
+  assert.deepEqual(errors,[]);console.log('PASS: one real IP handle drag adds data and update; no second manual connection; one-step Undo/Redo, save/reload, firmware preview, and counter label-click auto-update.');
+ }finally{await browser.close();}
+})().catch(e=>{console.error(e);process.exitCode=1;});

@@ -52,7 +52,7 @@
       "type": "number",
       "required": false,
       "readyOn": "changed",
-      "description": "Передает этап: ожидание, проверка, доступен или недоступен.",
+      "description": "Передает числовой код состояния. Расшифровка кодов приведена ниже.",
       "additional": false,
       "displayUpdateEvents": [
         {
@@ -64,7 +64,33 @@
           "id": "changed",
           "label": "Показывать ход проверки"
         }
-      ]
+      ],
+      "valueStates": {
+        "initialValue": 0,
+        "fallbackValue": 3,
+        "options": [
+          {
+            "value": 0,
+            "label": "Ожидание сети",
+            "dotColor": "#97a6bd"
+          },
+          {
+            "value": 1,
+            "label": "Проверка",
+            "dotColor": "#fbbf24"
+          },
+          {
+            "value": 2,
+            "label": "Ресурс доступен",
+            "dotColor": "#34d399"
+          },
+          {
+            "value": 3,
+            "label": "Ресурс недоступен",
+            "dotColor": "#ef6666"
+          }
+        ]
+      }
     },
     {
       "id": "responseMs",

@@ -33,7 +33,9 @@
     "test:network-runtime": "node tests/probe-runtime.mjs",
     "test:logic-usability-ui": "node tests/logic-usability-ui.cjs",
     "test:style-ui": "node tests/style-polish-ui.cjs",
-    "test:ports-ui": "node tests/ports-ui.cjs"
+    "test:ports-ui": "node tests/ports-ui.cjs",
+    "test:automatic-display-ui": "node tests/automatic-display-ui.cjs",
+    "test:value-states-ui": "node tests/value-states-ui.cjs"
   },
   "dependencies": {
     "@tauri-apps/api": "2.10.1",

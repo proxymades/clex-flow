@@ -8,7 +8,7 @@ import { spawnSync } from 'node:child_process';
 import { dynamicDisplayProject } from './dynamic-display-fixture.js';
 import { catalog, timer } from './catalog-fixture.js';
 import { addNode, connectNodes, withLogic } from '../src/logic/model.js';
-import { elementUpdatePort } from '../src/displays/model.js';
+import { connectDisplayData } from '../src/logic/displayBindings.js';
 import { generateFirmware, cString } from '../src/firmware/generator.js';
 const lvgl = resolve(process.env.CLEX_TEST_LVGL_PATH || '.artifacts/display-real-build/managed_components/lvgl__lvgl');
 const host = resolve(process.env.CLEX_TEST_LVGL_HOST || '.artifacts/lvgl-host');
@@ -19,20 +19,21 @@ for (const { step, multi } of [{step:1,multi:false}, {step:-1,multi:false}, {ste
   let project = dynamicDisplayProject();
   const originalTimerId = project.logic.nodes.find(node => node.moduleId === timer.id).id;
   const counter = project.logic.nodes.find(node => node.moduleId === 'clex.logic.counter'); counter.parameters.step = step;
+  const displayNode=project.logic.nodes.find(node=>node.moduleId==='clex.logic.display'),firstBinding=project.screens[project.components[0].id].elements[1];
+  project.logic.edges=project.logic.edges.filter(edge=>edge.target!==displayNode.id);
+  project=withLogic(project,connectDisplayData(project,catalog,{source:counter.id,sourceHandle:'value',target:displayNode.id,targetHandle:firstBinding.id}));
   let secondTimerId = null;
   if (multi) {
     const screen = project.screens[project.components[0].id], first = screen.elements[1];
     const second = {...first, id: randomUUID(), name:'Второй счётчик', prefix:'Второй: ', y:140}; screen.elements.push(second);
     let graph = project.logic;
-    graph.edges = graph.edges.map(edge => edge.targetHandle === 'trigger' ? {...edge, targetHandle: elementUpdatePort(first.id)} : edge);
     graph = addNode(graph, timer); const secondTimer = graph.nodes.at(-1); secondTimer.parameters.intervalMs = 2000; secondTimerId = secondTimer.id;
     graph = addNode(graph, catalog.modules.find(module => module.id === 'clex.logic.counter')); const secondCounter = graph.nodes.at(-1); secondCounter.parameters.step = 10;
     const view = graph.nodes.find(node => node.moduleId === 'clex.logic.display');
     for (const connection of [
       {source:secondTimer.id,sourceHandle:'tick',target:secondCounter.id,targetHandle:'increment'},
-      {source:secondCounter.id,sourceHandle:'done',target:view.id,targetHandle:elementUpdatePort(second.id)},
-      {source:secondCounter.id,sourceHandle:'value',target:view.id,targetHandle:second.id},
     ]) graph = connectNodes(graph, catalog, connection, project);
+    graph=connectDisplayData({...project,logic:graph},catalog,{source:secondCounter.id,sourceHandle:'value',target:view.id,targetHandle:second.id});
     project = withLogic(project, graph);
   }
   const sorted = [...project.logic.nodes].sort((a, b) => a.id < b.id ? -1 : 1);

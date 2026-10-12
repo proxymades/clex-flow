@@ -16,11 +16,11 @@ export function presentPort(port,node,project,catalog){
  if(module?.editor==='screen'){
   const bindings=screenBindings(screenFor(project,node.parameters.componentId));
   const binding=bindings.find(item=>item.id===port.id||'update.'+item.id===port.id);
-  if(port.id==='trigger'){name='Показать все значения';description='Обновляет все динамические элементы из связанных источников.';}
+  if(port.id==='trigger'){name='Обновить все значения';description='Обновляет все динамические элементы из связанных источников.';}
   else if(binding){
    const action=port.type==='event',caption=binding.channel==='caption',state=binding.channel==='state';
-   name=(action?caption?'Показать надпись: ':state?'Показать состояние: ':'Показать: ':caption?'Надпись: ':state?'Состояние: ':({number:'Число: ',boolean:'Да/Нет: ',text:'Текст: '}[binding.type]))+(binding.element.name||binding.name);
-   description=action?'Показывает текущие данные только в этом элементе.':caption?'Принимает надпись индикатора; оформление зависит от состояния.':state?'Выбирает настроенное оформление индикатора по полученному значению.':'Принимает данные для элемента. Показывает их после сигнала обновления.';
+   name=(action?caption?'Обновить надпись: ':state?'Обновить состояние: ':'Обновить: ':caption?'Надпись: ':state?'Состояние: ':({number:'Число: ',boolean:'Да/Нет: ',text:'Текст: '}[binding.type]))+(binding.element.name||binding.name);
+   description=action?'Обновляет этот элемент текущими данными источника.':caption?'Принимает надпись индикатора; оформление зависит от состояния.':state?'Выбирает настроенное оформление индикатора по полученному значению.':'Принимает данные для элемента. Сигнал обновления подключается автоматически; его также можно настроить вручную.';
   }
  }
  return {...port,name,description:description||'Передает данные или сигнал между блоками.'};

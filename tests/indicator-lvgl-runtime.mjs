@@ -5,11 +5,13 @@ import process from 'node:process';
 import {displayProject} from './display-fixture.js';
 import {catalog} from './catalog-fixture.js';
 import {newIndicator} from '../src/displays/indicator.js';
+import {applyValueStates} from '../src/logic/valueStates.js';
 import {generateFirmware,cString} from '../src/firmware/generator.js';
 const project=displayProject(),component=project.components[0],screen=project.screens[component.id],display=catalog.modules.find(module=>module.display).display;
 const first=newIndicator(display);first.y=80;first.states[0].text='Ожидание';first.states[1].text='Готово';first.states[1].background='#005544';first.states[1].dotColor='#11ff22';
 const second=newIndicator(display);second.y=170;second.dotVisible=false;second.dotPosition='bottom';second.align='right';second.states[1].text='Другой';
-screen.elements.push(first,second);
+const sourcePort=catalog.modules.find(m=>m.id==='clex.logic.ethernet').outputs.find(p=>p.id==='state');
+const sourceIndicator=applyValueStates(newIndicator(display),sourcePort);sourceIndicator.mode='static';sourceIndicator.y=240;screen.elements.push(first,second,sourceIndicator);
 const bundle=generateFirmware(project,catalog),source=bundle.mainC,output=resolve('.artifacts/indicator-runtime');mkdirSync(output,{recursive:true});
 const declarations=source.slice(source.indexOf('/* CLEX indicators'),source.indexOf('static uint32_t clex_graphics_tick'));
 const fonts=[...source.matchAll(/^LV_FONT_DECLARE\([^\n]+$/gm)].map(match=>match[0]).join('\n');
@@ -34,7 +36,8 @@ assert(strcmp(lv_label_get_text(clex_indicators[0].label),${cString('Готов�
 rendered=0;clex_graphics_set_indicator_state(${cString(component.id)},${cString(first.id)},"1");refresh();assert(rendered==0);
 clex_graphics_set_indicator_caption(${cString(component.id)},${cString(first.id)},${cString('Своя надпись')});clex_graphics_set_indicator_state(${cString(component.id)},${cString(first.id)},"0");refresh();assert(strcmp(lv_label_get_text(clex_indicators[0].label),${cString('Своя надпись')})==0);assert(original==clex_indicators[0].object);
 clex_graphics_set_indicator_state(${cString(component.id)},${cString(second.id)},"1");refresh();assert(!clex_indicators[1].dot);assert(strcmp(lv_label_get_text(clex_indicators[1].label),${cString('Другой')})==0);assert(strcmp(lv_label_get_text(clex_indicators[0].label),${cString('Своя надпись')})==0);
-assert(strcmp(lv_label_get_text(text_0),${cString('Привет, мир! CLEX Flow')})==0);lv_display_delete(display);lv_deinit();puts("PASS: real LVGL indicator text/background/dot updates, independent objects, Cyrillic captions, hidden dot, caption override, partial drawing and unchanged-state suppression.");}
+${sourceIndicator.states.map(state=>`clex_graphics_set_indicator_state(${cString(component.id)},${cString(sourceIndicator.id)},${cString(String(state.value))});refresh();assert(strcmp(lv_label_get_text(clex_indicators[2].label),${cString(state.text)})==0);assert(lv_color_eq(lv_obj_get_style_bg_color(clex_indicators[2].dot,LV_PART_MAIN),lv_color_hex(0x${state.dotColor.slice(1)})));`).join('\n')}
+assert(strcmp(lv_label_get_text(text_0),${cString('Привет, мир! CLEX Flow')})==0);lv_display_delete(display);lv_deinit();puts("PASS: real LVGL indicator text/background/dot updates, independent objects, Cyrillic captions, hidden dot, caption override, partial drawing, unchanged-state suppression and all four source-preset states.");}
 `;
 const path=join(output,'indicator.c'),binary=join(output,'indicator');writeFileSync(path,c);
 const root=resolve(process.env.CLEX_TEST_LVGL_PATH||'.artifacts/display-real-build/managed_components/lvgl__lvgl'),host=resolve('.artifacts/lvgl-host');

@@ -2,6 +2,7 @@ import {memo,useEffect,useState} from 'react';
 import {Handle,Position,useUpdateNodeInternals} from '@xyflow/react';
 import {Timer,ScanLine,ArrowUpRight,Repeat2,Terminal,Box,TriangleAlert,Monitor,Hash,Network,Globe,Link2} from 'lucide-react';
 import ScreenPreview from '../displays/ScreenPreview.jsx';
+import PortValueStates from './PortValueStates.jsx';
 import {TYPE_COLORS,TYPE_NAMES} from './model.js';
 import {visiblePorts,nodeDisplayName} from './presentation.js';
 const icons={Timer,ScanLine,ArrowUpRight,Repeat2,Terminal,Monitor,Hash,Network,Globe};
@@ -20,7 +21,7 @@ function LogicNode({id,data,selected}){
   return <div key={direction+'-'+port.id} data-port-id={port.id} data-port-type={port.type} className={`logic-port ${direction} ${active?'pending-port':''} ${port.compatible?'compatible-port':''} ${port.incompatible?'incompatible-port':''}`} style={{'--port-color':TYPE_COLORS[port.type]}}>
    <Handle type={direction==='output'?'source':'target'} position={direction==='output'?Position.Right:Position.Left} id={port.id} aria-label={`${direction==='output'?'Выход':'Вход'} ${port.name}: ${title}`} aria-describedby={tip} title={port.description} tabIndex={0} onKeyDown={event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();event.stopPropagation();onPort({nodeId:id,portId:port.id,direction});}}}/>
    <button className="logic-port-name nodrag" aria-describedby={tip} aria-label={`${direction==='output'?'Выход':'Вход'}: ${title} / ${port.name}`} onClick={event=>{event.stopPropagation();onPort({nodeId:id,portId:port.id,direction});}}><span className="port-type-dot"/><span className="port-label-copy">{port.name}</span></button>
-   <span className="port-tooltip" id={tip} role="tooltip"><strong>{port.name} · {TYPE_NAMES[port.type]}</strong>{port.description}{port.reason&&<em>{port.reason}</em>}</span>
+   <div className="port-tooltip" id={tip} role="tooltip"><strong>{port.name} · {TYPE_NAMES[port.type]}</strong>{port.description}<PortValueStates port={port}/>{port.reason&&<em>{port.reason}</em>}</div>
   </div>;
  }
  const additional=[...ports.inputs,...ports.outputs].filter(port=>port.additional);

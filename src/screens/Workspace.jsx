@@ -9,13 +9,14 @@ import LogicLibrary from '../logic/LogicLibrary.jsx';
 const LogicCanvas = lazy(() => import('../logic/LogicCanvas.jsx'));
 import LogicInspector from '../logic/LogicInspector.jsx';
 import {friendlyConnectionProblem,friendlyIssue} from '../logic/presentation.js';
+import {connectDisplayData} from '../logic/displayBindings.js';
 const DisplayBindingDialog=lazy(()=>import('../logic/DisplayBindingDialog.jsx'));
 import ProcessPanel from '../idf/ProcessPanel.jsx';
 import useLogicHistory from '../logic/useLogicHistory.js';
 const ScreenEditor = lazy(() => import('../displays/ScreenEditor.jsx'));
 import { saveScreen, displayDescription } from '../displays/model.js';
 import { AUTOSAVE_STATUS } from '../projects/autosave.js';
-import { addNode, updateNode, connectNodes, removeElements, selectionSnapshot, pasteNodes, validateGraph } from '../logic/model.js';
+import { addNode, updateNode, withLogic, removeElements, selectionSnapshot, pasteNodes, validateGraph } from '../logic/model.js';
 import { catalog, boards, hardwareModules, logicModules, getBoard } from '../catalog/index.js';
 import { addHardware, connectTerminal, disconnectTerminal, removeWire, removeHardware, selectBoard, validateAssembly } from '../assembly/model.js';
 
@@ -28,7 +29,8 @@ export default function Workspace({ project, setProject, dirty, busy, onExport, 
   const [left, setLeft] = useState(220), [right, setRight] = useState(280), [bottom, setBottom] = useState(155);
   const [selection, setSelection] = useState({ type: 'board', id: 'board' });
   const [pending, setPending] = useState(null), [error, setError] = useState(''), [newBoard, setNewBoard] = useState(null);
-  const history = useLogicHistory(project.logic, onLogicChange);
+  const publishLogic=useCallback((logic,screens)=>{if(screens===undefined)onLogicChange(logic);else setProject(current=>({...withLogic(current,logic),screens}));},[onLogicChange,setProject]);
+  const history = useLogicHistory(project.logic, publishLogic, project.screens);
   const [logicSelection, setLogicSelection] = useState({ nodes: [], edges: [] });
   const [logicPending, setLogicPending] = useState(null), [logicError, setLogicError] = useState(''), [clipboard, setClipboard] = useState(null);
   const board = getBoard(project.boardId);
@@ -52,7 +54,7 @@ export default function Workspace({ project, setProject, dirty, busy, onExport, 
   }
   function connectLogic(connection) {
     if (busy) return;
-    try { const problem=friendlyConnectionProblem(project,catalog,connection);if(problem)throw new Error(problem); const next = connectNodes(project.logic, catalog, connection, project); history.change(next); setLogicSelection({ nodes: [], edges: [next.edges.at(-1).id] }); setLogicPending(null); setLogicError(''); }
+    try { const problem=friendlyConnectionProblem(project,catalog,connection);if(problem)throw new Error(problem); const next = connectDisplayData(project, catalog, connection); history.change(next); const data=next.edges.find(edge=>edge.source===connection.source&&edge.sourceHandle===connection.sourceHandle&&edge.target===connection.target&&edge.targetHandle===connection.targetHandle); setLogicSelection({ nodes: [], edges: [data.id] }); setLogicPending(null); setLogicError(''); }
     catch (error) { setLogicError(error.message); }
   }
   function logicPort(port) {
@@ -126,7 +128,7 @@ export default function Workspace({ project, setProject, dirty, busy, onExport, 
       <div className="bottom-resize"><ResizeHandle axis="y" label="Высота журнала" onResize={delta => setBottom(v => Math.max(110, Math.min(280, v - delta)))} /></div>
       {idf?.job ? <ProcessPanel key={idf.job.id} idf={idf} onPreview={onPreview} issues={issues} onIssue={inspectIssue} /> : <section className="workspace-log"><header><Terminal size={15} /><strong>Проверка проекта</strong><span className={`badge ${errors.length ? 'red' : 'green'}`}>{errors.length ? `${errors.length} ошибок` : 'Ошибок проекта нет'}</span></header><div className="log-row"><span className={`log-level ${dirty ? 'warning' : 'success'}`}>{dirty ? 'Изменения' : 'Готово'}</span><span>{dirty ? (autoSaveEnabled ? 'Есть правки. Автосохранение через 10 секунд без изменений; «Сохранить» или ⌘/Ctrl + S сохраняет сразу.' : 'Правки еще не сохранены. Нажмите «Сохранить» или ⌘/Ctrl + S.') : 'Текущая версия проекта сохранена.'}</span></div>{issues.map((issue, index) => <button key={`${issue.code}-${index}`} className="validation-row" onClick={() => inspectIssue(issue)}><span className={`log-level ${issue.severity === 'error' ? 'error-level' : 'warning'}`}>{issue.severity === 'error' ? 'Ошибка' : 'Предупреждение'}</span><span>{issue.message}</span></button>)}{idf?.generationError && <div className="log-row"><span className="log-level warning">Сборка</span><span>{idf.generationError}</span></div>}{!errors.length && <div className="log-row"><span className="log-level success">Готово</span><span>Проверка монтажа и графа пройдена.</span></div>}</section>}
     </div>
-    {bindingNodeId&&project.logic.nodes.some(node=>node.id===bindingNodeId)&&<Suspense fallback={null}><DisplayBindingDialog node={project.logic.nodes.find(node=>node.id===bindingNodeId)} project={project} catalog={catalog} busy={busy} onClose={()=>setBindingNodeId(null)} onApply={graph=>{history.change(graph);setBindingNodeId(null);setLogicPending(null);setLogicSelection({nodes:[bindingNodeId],edges:[]});setLogicError('');}}/></Suspense>}
+    {bindingNodeId&&project.logic.nodes.some(node=>node.id===bindingNodeId)&&<Suspense fallback={null}><DisplayBindingDialog node={project.logic.nodes.find(node=>node.id===bindingNodeId)} project={project} catalog={catalog} busy={busy} onClose={()=>setBindingNodeId(null)} onApply={(graph,screens)=>{history.change(graph,screens?{screens}:{});setBindingNodeId(null);setLogicPending(null);setLogicSelection({nodes:[bindingNodeId],edges:[]});setLogicError('');}}/></Suspense>}
     {editingScreen && project.components.some(component => component.id === editingScreen) && <Suspense fallback={null}><ScreenEditor project={project} component={project.components.find(component => component.id === editingScreen)} catalog={catalog} busy={busy} onClose={closeScreen} onSave={(id, screen) => setProject(current => saveScreen(current, id, screen))} /></Suspense>}
     {newBoard && <Modal title="Сменить плату?" onClose={() => setNewBoard(null)} busy={busy}><p className="modal-intro">Соединения и назначения GPIO будут очищены: у новой платы другая распиновка. Компоненты и их параметры останутся в проекте.</p><footer><button className="button secondary" onClick={() => setNewBoard(null)}>Отмена</button><button className="button primary" onClick={() => applyBoard(newBoard)}>Сменить плату</button></footer></Modal>}
   </div>;

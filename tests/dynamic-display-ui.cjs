@@ -49,7 +49,7 @@ const { chromium } = require('playwright');
     await page.getByRole('button', { name: 'Добавить блок: Счетчик', exact: true }).click();
     await page.getByRole('button', { name: 'Показать весь граф', exact: true }).click();
     await connect('Выход: Таймер 1 / Сработал', 'Вход: Счетчик 1 / Прибавить 1');
-    await connect('Выход: Счетчик 1 / Счетчик обновлен', 'Вход: Экран дисплея 1 / Показать: Счётчик');
+    await connect('Выход: Счетчик 1 / Счетчик обновлен', 'Вход: Экран дисплея 1 / Обновить: Счётчик');
     // Exercise a real React Flow handle drag for the informational connection.
     const from = await page.locator('.react-flow__node').filter({ hasText: 'Счетчик 1' }).locator('.react-flow__handle.source[data-handleid="value"]').boundingBox();
     const to = await page.locator('.react-flow__node').filter({ hasText: 'Экран дисплея 1' }).locator('.logic-port[data-port-type="number"] .react-flow__handle.target').boundingBox();
