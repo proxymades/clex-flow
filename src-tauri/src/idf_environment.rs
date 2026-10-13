@@ -13,6 +13,8 @@ use std::{
 #[derive(Clone, Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct Environment {
+    #[serde(default = "crate::boards::default_target")]
+    pub target: String,
     pub root: String,
     pub python: String,
     pub tools_path: String,
@@ -143,7 +145,7 @@ pub fn export_root(tools: &Path) -> PathBuf {
         tools.parent().unwrap_or(tools).to_path_buf()
     }
 }
-fn filtered_tools(root: &Path, cache: &Path) -> Result<PathBuf, String> {
+fn filtered_tools(root: &Path, cache: &Path, target: &str) -> Result<PathBuf, String> {
     let mut value: serde_json::Value = serde_json::from_slice(
         &fs::read(root.join("tools/tools.json")).map_err(|e| e.to_string())?,
     )
@@ -157,13 +159,13 @@ fn filtered_tools(root: &Path, cache: &Path) -> Result<PathBuf, String> {
             .map(|targets| {
                 targets
                     .iter()
-                    .any(|target| target == "esp32s3" || target == "all")
+                    .any(|value| value == target || value == "all")
             })
             .unwrap_or(false)
     });
     fs::create_dir_all(cache).map_err(|e| e.to_string())?;
     let key = format!("{:x}", Sha256::digest(root.to_string_lossy().as_bytes()));
-    let path = cache.join(format!("{key}-tools.json"));
+    let path = cache.join(format!("{key}-{target}-tools.json"));
     fs::write(
         &path,
         serde_json::to_vec(&value).map_err(|e| e.to_string())?,
@@ -172,13 +174,15 @@ fn filtered_tools(root: &Path, cache: &Path) -> Result<PathBuf, String> {
     Ok(path)
 }
 
-pub fn inspect(
+pub fn inspect_target(
+    target: &str,
     root: &Path,
     python: Option<&Path>,
     tools: Option<&Path>,
     git: Option<&Path>,
     cache: &Path,
 ) -> Result<Environment, String> {
+    let compiler = crate::boards::compiler(target)?;
     let root = root
         .canonicalize()
         .map_err(|e| format!("SDK недоступен: {e}"))?;
@@ -272,9 +276,9 @@ pub fn inspect(
     path_parts.push(base_path());
     let child_base_path = path_parts.join(separator);
     variables.insert("PATH".into(), child_base_path.clone());
-    let spec = filtered_tools(&root, cache)?;
+    let spec = filtered_tools(&root, cache, target)?;
     let deactivate = cache.join(format!(
-        "{:x}-deactivate.json",
+        "{:x}-{target}-deactivate.json",
         Sha256::digest(root.to_string_lossy().as_bytes())
     ));
     variables.insert(
@@ -333,17 +337,25 @@ pub fn inspect(
             .unwrap_or_default()
             .into())
     }
-    let compiler_version = tool("xtensa-esp32s3-elf-gcc", &variables)?;
+    let compiler_version = tool(compiler, &variables)?;
     let cmake_version = tool("cmake", &variables)?;
     let ninja_version = tool("ninja", &variables)?;
     let identity = format!(
         "{:x}",
         Sha256::digest(
-            serde_json::to_vec(&(&root, &python, &tools, &sdk_version, &compiler_version))
-                .map_err(|e| e.to_string())?
+            serde_json::to_vec(&(
+                &root,
+                &python,
+                &tools,
+                &sdk_version,
+                &compiler_version,
+                target
+            ))
+            .map_err(|e| e.to_string())?
         )
     );
     Ok(Environment {
+        target: target.into(),
         root: root.to_string_lossy().into(),
         python: python.to_string_lossy().into(),
         tools_path: tools.to_string_lossy().into(),

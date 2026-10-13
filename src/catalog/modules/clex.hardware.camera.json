@@ -1,0 +1,42 @@
+{
+  "id": "clex.hardware.camera",
+  "version": "1.0.0",
+  "kind": "hardware",
+  "name": "RPi Camera (B) · OV5647",
+  "description": "Подключение через встроенный интерфейс из описания платы.",
+  "category": "camera",
+  "categoryName": "Камеры",
+  "icon": "Camera",
+  "color": "#60a5fa",
+  "visual": {
+    "svg": "camera.svg",
+    "width": 250,
+    "height": 185
+  },
+  "terminals": [],
+  "inputs": [],
+  "outputs": [],
+  "parameters": {
+    "interfaceId": {
+      "label": "Разъем камеры",
+      "type": "hardware-interface",
+      "default": ""
+    }
+  },
+  "constraints": {},
+  "hardwareInterface": {
+    "family": "camera",
+    "interface": "csi"
+  },
+  "compatibility": {
+    "projectFormat": 3,
+    "targets": [
+      "esp32p4"
+    ],
+    "espIdf": "5.4.4"
+  },
+  "firmware": {
+    "status": "implemented",
+    "generatorKey": "camera-interface"
+  }
+}

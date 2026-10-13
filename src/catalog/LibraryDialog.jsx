@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { Cpu, Search, Lightbulb, MousePointer2, Monitor, Timer, ScanLine, ArrowUpRight, Repeat2, Terminal, Hash, Box , Network, Globe } from 'lucide-react';
+import { Cpu, Search, Lightbulb, MousePointer2, Monitor, Timer, ScanLine, ArrowUpRight, Repeat2, Terminal, Hash, Box , Network, Globe , Camera, Volume2 } from 'lucide-react';
 import Modal from '../components/Modal.jsx';
-const icons = { Lightbulb, MousePointer2, Monitor, Timer, ScanLine, ArrowUpRight, Repeat2, Terminal, Hash, Network, Globe };
+const icons = { Lightbulb, MousePointer2, Monitor, Timer, ScanLine, ArrowUpRight, Repeat2, Terminal, Hash, Network, Globe, Camera, Volume2 };
 const kinds = { hardware: 'Аппаратные компоненты', logic: 'Блоки логики', board: 'Платы' };
 export default function LibraryDialog({ catalog, onClose }) {
   const [kind, setKind] = useState('hardware'), [query, setQuery] = useState('');

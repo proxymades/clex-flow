@@ -1,0 +1,20 @@
+{
+  "jd9365-dsi": {
+    "target": "esp32p4",
+    "dependencies": {"espressif/esp_lcd_jd9365": "1.0.2", "espressif/esp_lcd_touch_gt911": "1.1.3"},
+    "requires": ["esp_lcd_jd9365", "esp_lcd_touch_gt911", "esp_driver_i2c", "esp_psram", "esp_hw_support"],
+    "config": "CONFIG_SPIRAM=y\nCONFIG_SPIRAM_SPEED_200M=y\nCONFIG_IDF_EXPERIMENTAL_FEATURES=y\nCONFIG_ESP_LCD_TOUCH_MAX_POINTS=10\n"
+  },
+  "audio-es8311": {
+    "target": "esp32p4",
+    "dependencies": {"espressif/esp_codec_dev": "1.5.7"},
+    "requires": ["esp_codec_dev", "esp_driver_i2s", "esp_driver_i2c"],
+    "config": "CONFIG_CODEC_ES8311_SUPPORT=y\n"
+  },
+  "camera-ov5647": {
+    "target": "esp32p4",
+    "dependencies": {"espressif/esp_video": "2.2.0", "espressif/esp_cam_sensor": "2.2.0"},
+    "requires": ["esp_video", "esp_cam_sensor", "esp_driver_i2c", "esp_psram", "esp_hw_support", "lwip"],
+    "config": "CONFIG_SPIRAM=y\nCONFIG_SPIRAM_SPEED_200M=y\nCONFIG_IDF_EXPERIMENTAL_FEATURES=y\nCONFIG_CAMERA_OV5647=y\nCONFIG_CAMERA_OV5647_MIPI_RAW8_800X1280_50FPS=y\nCONFIG_CAMERA_OV5647_MIPI_DEFAULT_FMT_RAW8_800X1280_50FPS=y\nCONFIG_CAMERA_OV5647_AUTO_DETECT_MIPI_INTERFACE_SENSOR=y\nCONFIG_ESP_VIDEO_ENABLE_MIPI_CSI_VIDEO_DEVICE=y\nCONFIG_ESP_VIDEO_ENABLE_DVP_VIDEO_DEVICE=n\nCONFIG_ESP_VIDEO_ENABLE_ISP_VIDEO_DEVICE=y\nCONFIG_ESP_VIDEO_ENABLE_ISP_PIPELINE_CONTROLLER=y\nCONFIG_ESP_VIDEO_ENABLE_HW_H264_VIDEO_DEVICE=n\nCONFIG_ESP_VIDEO_ENABLE_HW_JPEG_VIDEO_DEVICE=n\nCONFIG_ESP_VIDEO_ENABLE_USB_UVC_VIDEO_DEVICE=n\n"
+  }
+}

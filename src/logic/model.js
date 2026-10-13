@@ -1,3 +1,4 @@
+import { hardwareProvider } from '../hardware/resources.js';
 import { networkProvider, probeUrl } from '../network/model.js';
 import { displayDescription, screenFor, screenIssues, screenPorts, screenBindings, elementUpdatePort } from '../displays/model.js';
 import { connectionProblem as physicalConnectionProblem, boardFor } from '../assembly/model.js';
@@ -31,7 +32,7 @@ export function addNode(graph, module, components = [], project = null, catalog 
   if (graph.nodes.length >= 100) throw new Error('В одном графе поддерживается до 100 блоков.');
   if (graph.nodes.some(node => node.moduleId === module.id && node.moduleVersion !== module.version)) throw new Error('Проект использует другую версию этого модуля.');
   const parameters = Object.fromEntries(Object.entries(module.parameters).map(([key, parameter]) => [key, parameter.default]));
-  if (module.constraints.hardware) parameters.componentId = components.find(component => module.constraints.hardware.modules?.includes(component.moduleId))?.id || '';
+  if (module.constraints.hardware) parameters.componentId = components.find(component => module.constraints.hardware.kind === 'display' ? catalog?.modules.some(definition=>definition.id===component.moduleId && definition.display) : module.constraints.hardware.modules?.includes(component.moduleId))?.id || '';
   let number = 1;
   while (graph.nodes.some(node => [module.name,...(module.legacyNames||[])].some(name=>node.name === `${name} ${number}`))) number++;
   const height = node => {
@@ -112,6 +113,10 @@ export function connectNodes(graph, catalog, connection, project = null) {
 
 export function hardwareBinding(node, project, catalog) {
   const module = graphModule(node, catalog), requirement = module?.constraints.hardware;
+  if (requirement?.kind === 'peripheral') {
+    const component=project.components.find(component=>component.id===node.parameters.componentId),definition=catalog.modules.find(module=>module.id===component?.moduleId);
+    return {component,gpio:null,error:component && requirement.modules.includes(component.moduleId) && hardwareProvider(component,definition,boardFor(project,catalog)) ? null : 'Выберите аппаратный компонент и его интерфейс в монтаже.'};
+  }
   if (requirement?.kind === 'network') {
     const component=project.components.find(component=>component.id===node.parameters.componentId),definition=catalog.modules.find(module=>module.id===component?.moduleId);
     return {component,gpio:null,error:component&&requirement.modules.includes(component.moduleId)&&networkProvider(component,boardFor(project,catalog),definition)?null:'Выберите сетевой интерфейс из монтажа.'};
@@ -175,6 +180,6 @@ export function validateGraph(project, catalog) {
     if (port.readyOn && !hasPath(orderedEdges, source.id, edge.target, true)) add('error', 'logic-order', 'Значение должно передаваться после события «Готово» его источника. Соедините также события.', { edgeId: edge.id, nodeId: edge.target });
   }
   const roots = graph.nodes.filter(node => (node.moduleId === 'clex.logic.timer' || graphModule(node,catalog)?.firmware.eventSource)).map(node => node.id);
-  for (const node of graph.nodes.filter(node => node.moduleId !== 'clex.logic.timer' && !graphModule(node,catalog)?.firmware.eventSource && !graphModule(node, catalog)?.editor)) if (!roots.some(root => hasPath(graph.edges, root, node.id, true))) add('warning', 'logic-unreachable', `${node.name}: нет событийного пути от таймера.`, { nodeId: node.id });
+  for (const node of graph.nodes.filter(node => node.moduleId !== 'clex.logic.timer' && !graphModule(node,catalog)?.firmware.eventSource && !graphModule(node, catalog)?.editor)) if (!roots.some(root => hasPath(graph.edges, root, node.id, true))) add('warning', 'logic-unreachable', `${node.name}: нет событийного пути от источника событий.`, { nodeId: node.id });
   return issues;
 }

@@ -1,0 +1,104 @@
+{
+  "id": "clex.logic.tone",
+  "version": "1.0.0",
+  "kind": "logic",
+  "name": "Звуковой сигнал",
+  "description": "Воспроизводит сигнал заданной частоты и длительности в отдельной задаче.",
+  "category": "audio",
+  "categoryName": "Аудио",
+  "icon": "Volume2",
+  "color": "#f59e0b",
+  "inputs": [
+    {
+      "id": "trigger",
+      "name": "Воспроизвести",
+      "type": "event",
+      "required": true,
+      "description": "Запускает действие при получении сигнала."
+    }
+  ],
+  "outputs": [
+    {
+      "id": "changed",
+      "name": "Результат обновлен",
+      "type": "event",
+      "description": "Передает сигнал после завершения действия или ошибки."
+    },
+    {
+      "id": "done",
+      "name": "Звук завершен",
+      "type": "event",
+      "additional": true,
+      "description": "Срабатывает после успешного выполнения."
+    },
+    {
+      "id": "failed",
+      "name": "Ошибка",
+      "type": "event",
+      "additional": true,
+      "description": "Срабатывает, если действие выполнить не удалось."
+    },
+    {
+      "id": "success",
+      "name": "Успешно?",
+      "type": "boolean",
+      "readyOn": "changed",
+      "description": "Да, если действие выполнено успешно."
+    },
+    {
+      "id": "error",
+      "name": "Описание ошибки",
+      "type": "text",
+      "readyOn": "changed",
+      "additional": true,
+      "description": "Сообщение об ошибке подключения или выполнения."
+    }
+  ],
+  "parameters": {
+    "componentId": {
+      "label": "Динамик",
+      "type": "component",
+      "default": ""
+    },
+    "frequencyHz": {
+      "label": "Частота, Гц",
+      "type": "integer",
+      "min": 100,
+      "max": 4000,
+      "default": 880
+    },
+    "durationMs": {
+      "label": "Длительность, мс",
+      "type": "integer",
+      "min": 20,
+      "max": 10000,
+      "default": 200
+    },
+    "volume": {
+      "label": "Громкость, %",
+      "type": "integer",
+      "min": 0,
+      "max": 100,
+      "default": 25
+    }
+  },
+  "constraints": {
+    "hardware": {
+      "kind": "peripheral",
+      "modules": [
+        "clex.hardware.audio"
+      ]
+    }
+  },
+  "compatibility": {
+    "projectFormat": 3,
+    "targets": [
+      "esp32p4"
+    ],
+    "espIdf": "5.4.4"
+  },
+  "firmware": {
+    "status": "implemented",
+    "generatorKey": "tone"
+  }
+}

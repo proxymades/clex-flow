@@ -1,5 +1,6 @@
+const compilers = { esp32s3: 'Xtensa ESP32-S3 GCC', esp32p4: 'RISC-V ESP32 GCC' };
 export function sdkRequirement(board) {
-  return board?.mcu?.startsWith('ESP32-S3') || board?.id==='esp32-s3-generic'
-    ? {family:'esp-idf',version:board?.espIdfVersion || '5.4.4',target:'esp32s3',compiler:'Xtensa ESP32-S3 GCC',name:'ESP-IDF'} : null;
+  const target = board?.target || (board?.id === 'esp32-s3-generic' ? 'esp32s3' : null);
+  return compilers[target] ? { family: 'esp-idf', version: board.espIdfVersion || '5.4.4', target, compiler: board.firmware?.compiler || compilers[target], name: 'ESP-IDF' } : null;
 }
 export const SDK_STATES={detected:'Обнаружен',ready:'Проверен',missing:'Недоступен',invalid:'Требует проверки / восстановления',installing:'Устанавливается',interrupted:'Установка прервана',failed:'Ошибка установки'};

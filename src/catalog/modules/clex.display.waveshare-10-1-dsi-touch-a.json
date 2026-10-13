@@ -1,0 +1,1701 @@
+{
+  "id": "clex.display.waveshare-10-1-dsi-touch-a",
+  "version": "1.0.0",
+  "kind": "hardware",
+  "name": "10.1″ DSI Touch (A) · 800×1280",
+  "manufacturer": "Waveshare",
+  "category": "displays",
+  "categoryName": "Дисплеи",
+  "description": "IPS-дисплей JD9365, MIPI-DSI 2 линии, сенсор GT9271. Питание 5 В отдельным кабелем; подключение к разъему DSI выбранной платы.",
+  "icon": "Monitor",
+  "color": "#38bdf8",
+  "visual": {
+    "svg": "display.svg",
+    "width": 250,
+    "height": 215
+  },
+  "terminals": [
+    {
+      "id": "vcc",
+      "label": "Питание · 5 В",
+      "kind": "power",
+      "voltage": 5,
+      "x": 0,
+      "y": 125
+    },
+    {
+      "id": "gnd",
+      "label": "GND",
+      "kind": "ground",
+      "x": 0,
+      "y": 160
+    }
+  ],
+  "parameters": {
+    "interfaceId": {
+      "label": "Разъем дисплея",
+      "type": "hardware-interface",
+      "default": ""
+    },
+    "brightness": {
+      "label": "Яркость подсветки, %",
+      "type": "number",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "default": 70
+    }
+  },
+  "constraints": {},
+  "inputs": [],
+  "outputs": [],
+  "compatibility": {
+    "projectFormat": 3,
+    "targets": [
+      "esp32p4"
+    ],
+    "espIdf": "5.4.4"
+  },
+  "firmware": {
+    "status": "implemented",
+    "generatorKey": "display",
+    "dependencies": [
+      "esp_lcd",
+      "esp_driver_spi",
+      "lvgl__lvgl"
+    ]
+  },
+  "display": {
+    "model": {
+      "name": "Waveshare 10.1-DSI-TOUCH-A",
+      "manufacturer": "Waveshare",
+      "diagonalInches": 10.1,
+      "backlight": "i2c",
+      "panel": "IPS",
+      "dimensionsMm": {
+        "width": 147,
+        "height": 239
+      }
+    },
+    "controllerId": "jadard.jd9365",
+    "interface": "dsi",
+    "resolution": {
+      "width": 800,
+      "height": 1280
+    },
+    "colorFormats": [
+      "RGB565"
+    ],
+    "initialization": {
+      "laneCount": 2,
+      "laneBitRateMbps": 1200,
+      "dpiClockMHz": 80,
+      "horizontalSync": {
+        "pulse": 20,
+        "backPorch": 20,
+        "frontPorch": 40
+      },
+      "verticalSync": {
+        "pulse": 4,
+        "backPorch": 10,
+        "frontPorch": 30
+      },
+      "rgbOrder": "RGB",
+      "commands": [
+        {
+          "command": 224,
+          "data": [
+            0
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 225,
+          "data": [
+            147
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 226,
+          "data": [
+            101
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 227,
+          "data": [
+            248
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 128,
+          "data": [
+            1
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 224,
+          "data": [
+            1
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 0,
+          "data": [
+            0
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 1,
+          "data": [
+            56
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 3,
+          "data": [
+            16
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 4,
+          "data": [
+            56
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 12,
+          "data": [
+            116
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 23,
+          "data": [
+            0
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 24,
+          "data": [
+            175
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 25,
+          "data": [
+            0
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 26,
+          "data": [
+            0
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 27,
+          "data": [
+            175
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 28,
+          "data": [
+            0
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 53,
+          "data": [
+            38
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 55,
+          "data": [
+            9
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 56,
+          "data": [
+            4
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 57,
+          "data": [
+            0
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 58,
+          "data": [
+            1
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 60,
+          "data": [
+            120
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 61,
+          "data": [
+            255
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 62,
+          "data": [
+            255
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 63,
+          "data": [
+            127
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 64,
+          "data": [
+            6
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 65,
+          "data": [
+            160
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 66,
+          "data": [
+            129
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 67,
+          "data": [
+            30
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 68,
+          "data": [
+            13
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 69,
+          "data": [
+            40
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 74,
+          "data": [
+            53
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 85,
+          "data": [
+            2
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 87,
+          "data": [
+            105
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 89,
+          "data": [
+            10
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 90,
+          "data": [
+            42
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 91,
+          "data": [
+            23
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 93,
+          "data": [
+            127
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 94,
+          "data": [
+            106
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 95,
+          "data": [
+            91
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 96,
+          "data": [
+            79
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 97,
+          "data": [
+            74
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 98,
+          "data": [
+            61
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 99,
+          "data": [
+            65
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 100,
+          "data": [
+            42
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 101,
+          "data": [
+            68
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 102,
+          "data": [
+            67
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 103,
+          "data": [
+            68
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 104,
+          "data": [
+            98
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 105,
+          "data": [
+            82
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 106,
+          "data": [
+            89
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 107,
+          "data": [
+            76
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 108,
+          "data": [
+            72
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 109,
+          "data": [
+            58
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 110,
+          "data": [
+            38
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 111,
+          "data": [
+            0
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 112,
+          "data": [
+            127
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 113,
+          "data": [
+            106
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 114,
+          "data": [
+            91
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 115,
+          "data": [
+            79
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 116,
+          "data": [
+            74
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 117,
+          "data": [
+            61
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 118,
+          "data": [
+            65
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 119,
+          "data": [
+            42
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 120,
+          "data": [
+            68
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 121,
+          "data": [
+            67
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 122,
+          "data": [
+            68
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 123,
+          "data": [
+            98
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 124,
+          "data": [
+            82
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 125,
+          "data": [
+            89
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 126,
+          "data": [
+            76
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 127,
+          "data": [
+            72
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 128,
+          "data": [
+            58
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 129,
+          "data": [
+            38
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 130,
+          "data": [
+            0
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 224,
+          "data": [
+            2
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 0,
+          "data": [
+            66
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 1,
+          "data": [
+            66
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 2,
+          "data": [
+            64
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 3,
+          "data": [
+            64
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 4,
+          "data": [
+            94
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 5,
+          "data": [
+            94
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 6,
+          "data": [
+            95
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 7,
+          "data": [
+            95
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 8,
+          "data": [
+            95
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 9,
+          "data": [
+            87
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 10,
+          "data": [
+            87
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 11,
+          "data": [
+            119
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 12,
+          "data": [
+            119
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 13,
+          "data": [
+            71
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 14,
+          "data": [
+            71
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 15,
+          "data": [
+            69
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 16,
+          "data": [
+            69
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 17,
+          "data": [
+            75
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 18,
+          "data": [
+            75
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 19,
+          "data": [
+            73
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 20,
+          "data": [
+            73
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 21,
+          "data": [
+            95
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 22,
+          "data": [
+            65
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 23,
+          "data": [
+            65
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 24,
+          "data": [
+            64
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 25,
+          "data": [
+            64
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 26,
+          "data": [
+            94
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 27,
+          "data": [
+            94
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 28,
+          "data": [
+            95
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 29,
+          "data": [
+            95
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 30,
+          "data": [
+            95
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 31,
+          "data": [
+            87
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 32,
+          "data": [
+            87
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 33,
+          "data": [
+            119
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 34,
+          "data": [
+            119
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 35,
+          "data": [
+            70
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 36,
+          "data": [
+            70
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 37,
+          "data": [
+            68
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 38,
+          "data": [
+            68
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 39,
+          "data": [
+            74
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 40,
+          "data": [
+            74
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 41,
+          "data": [
+            72
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 42,
+          "data": [
+            72
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 43,
+          "data": [
+            95
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 44,
+          "data": [
+            1
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 45,
+          "data": [
+            1
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 46,
+          "data": [
+            0
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 47,
+          "data": [
+            0
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 48,
+          "data": [
+            31
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 49,
+          "data": [
+            31
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 50,
+          "data": [
+            30
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 51,
+          "data": [
+            30
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 52,
+          "data": [
+            31
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 53,
+          "data": [
+            23
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 54,
+          "data": [
+            23
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 55,
+          "data": [
+            55
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 56,
+          "data": [
+            55
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 57,
+          "data": [
+            8
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 58,
+          "data": [
+            8
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 59,
+          "data": [
+            10
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 60,
+          "data": [
+            10
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 61,
+          "data": [
+            4
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 62,
+          "data": [
+            4
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 63,
+          "data": [
+            6
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 64,
+          "data": [
+            6
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 65,
+          "data": [
+            31
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 66,
+          "data": [
+            2
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 67,
+          "data": [
+            2
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 68,
+          "data": [
+            0
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 69,
+          "data": [
+            0
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 70,
+          "data": [
+            31
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 71,
+          "data": [
+            31
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 72,
+          "data": [
+            30
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 73,
+          "data": [
+            30
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 74,
+          "data": [
+            31
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 75,
+          "data": [
+            23
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 76,
+          "data": [
+            23
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 77,
+          "data": [
+            55
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 78,
+          "data": [
+            55
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 79,
+          "data": [
+            9
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 80,
+          "data": [
+            9
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 81,
+          "data": [
+            11
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 82,
+          "data": [
+            11
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 83,
+          "data": [
+            5
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 84,
+          "data": [
+            5
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 85,
+          "data": [
+            7
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 86,
+          "data": [
+            7
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 87,
+          "data": [
+            31
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 88,
+          "data": [
+            64
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 91,
+          "data": [
+            48
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 92,
+          "data": [
+            0
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 93,
+          "data": [
+            52
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 94,
+          "data": [
+            5
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 95,
+          "data": [
+            2
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 99,
+          "data": [
+            0
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 100,
+          "data": [
+            106
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 103,
+          "data": [
+            115
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 104,
+          "data": [
+            7
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 105,
+          "data": [
+            8
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 106,
+          "data": [
+            106
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 107,
+          "data": [
+            8
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 108,
+          "data": [
+            0
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 109,
+          "data": [
+            0
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 110,
+          "data": [
+            0
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 111,
+          "data": [
+            136
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 117,
+          "data": [
+            255
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 119,
+          "data": [
+            221
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 120,
+          "data": [
+            44
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 121,
+          "data": [
+            21
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 122,
+          "data": [
+            23
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 125,
+          "data": [
+            20
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 126,
+          "data": [
+            130
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 224,
+          "data": [
+            4
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 0,
+          "data": [
+            14
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 2,
+          "data": [
+            179
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 9,
+          "data": [
+            97
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 14,
+          "data": [
+            72
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 55,
+          "data": [
+            88
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 43,
+          "data": [
+            15
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 224,
+          "data": [
+            0
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 230,
+          "data": [
+            2
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 231,
+          "data": [
+            12
+          ],
+          "delayMs": 0
+        },
+        {
+          "command": 17,
+          "data": [
+            0
+          ],
+          "delayMs": 120
+        },
+        {
+          "command": 41,
+          "data": [
+            0
+          ],
+          "delayMs": 20
+        }
+      ]
+    },
+    "supportedPlatforms": [
+      "esp-idf"
+    ],
+    "driverKey": "jd9365-dsi",
+    "graphics": {
+      "features": [
+        "background",
+        "text",
+        "indicator"
+      ],
+      "maxElements": 32,
+      "fonts": [
+        {
+          "id": "montserrat_14",
+          "name": "Montserrat · латиница / кириллица",
+          "family": "ClexMontserrat",
+          "size": 14,
+          "ranges": [
+            [
+              32,
+              126
+            ],
+            [
+              176,
+              176
+            ],
+            [
+              1024,
+              1119
+            ],
+            [
+              1122,
+              1123
+            ],
+            [
+              1130,
+              1131
+            ],
+            [
+              1138,
+              1141
+            ],
+            [
+              1162,
+              1220
+            ],
+            [
+              1222,
+              1279
+            ],
+            [
+              10,
+              10
+            ]
+          ],
+          "lineHeight": 17,
+          "baseline": 3,
+          "characterSets": [
+            "latin-basic",
+            "cyrillic",
+            "measurement-symbols"
+          ]
+        },
+        {
+          "id": "montserrat_20",
+          "name": "Montserrat · латиница / кириллица",
+          "family": "ClexMontserrat",
+          "size": 20,
+          "ranges": [
+            [
+              32,
+              126
+            ],
+            [
+              176,
+              176
+            ],
+            [
+              1024,
+              1119
+            ],
+            [
+              1122,
+              1123
+            ],
+            [
+              1130,
+              1131
+            ],
+            [
+              1138,
+              1141
+            ],
+            [
+              1162,
+              1220
+            ],
+            [
+              1222,
+              1279
+            ],
+            [
+              10,
+              10
+            ]
+          ],
+          "lineHeight": 23,
+          "baseline": 4,
+          "characterSets": [
+            "latin-basic",
+            "cyrillic",
+            "measurement-symbols"
+          ]
+        },
+        {
+          "id": "montserrat_28",
+          "name": "Montserrat · латиница / кириллица",
+          "family": "ClexMontserrat",
+          "size": 28,
+          "ranges": [
+            [
+              32,
+              126
+            ],
+            [
+              176,
+              176
+            ],
+            [
+              1024,
+              1119
+            ],
+            [
+              1122,
+              1123
+            ],
+            [
+              1130,
+              1131
+            ],
+            [
+              1138,
+              1141
+            ],
+            [
+              1162,
+              1220
+            ],
+            [
+              1222,
+              1279
+            ],
+            [
+              10,
+              10
+            ]
+          ],
+          "lineHeight": 30,
+          "baseline": 5,
+          "characterSets": [
+            "latin-basic",
+            "cyrillic",
+            "measurement-symbols"
+          ]
+        }
+      ]
+    },
+    "touch": {
+      "controller": "GT9271",
+      "interface": "i2c",
+      "points": 10
+    }
+  },
+  "hardwareInterface": {
+    "family": "display",
+    "interface": "dsi"
+  },
+  "sources": [
+    {
+      "title": "JD9365 configuration from Waveshare BSP, Apache-2.0",
+      "url": "https://github.com/waveshareteam/Waveshare-ESP32-components/tree/80402cdb12d5170f0a0b1d8bc58f64d0ce175d3e/display/lcd/esp_lcd_jd9365"
+    },
+    {
+      "title": "10.1-DSI-TOUCH-A",
+      "url": "https://www.waveshare.com/wiki/10.1-DSI-TOUCH-A"
+    }
+  ]
+}

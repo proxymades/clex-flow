@@ -10,15 +10,19 @@ import { choosePort } from './ports.js';
 const terminal = ['success','failed','cancelled'];
 export default function useIdf(project) {
   const [environment,setEnvironment]=useState(null), [checking,setChecking]=useState(false), [ports,setPorts]=useState([]), [port,setPort]=useState('');
-  const [consoleMode,setConsoleMode]=useState(()=>localStorage.getItem('clex-flow:console')||'usb');
+  const [selectedConsoleMode,setConsoleMode]=useState(()=>localStorage.getItem('clex-flow:console')||'usb');
   const [job,setJob]=useState(null), [events,setEvents]=useState([]), [build,setBuild]=useState(null), [error,setError]=useState('');
   const [sdks,setSdks]=useState(null), [sdkLoading,setSdkLoading]=useState(false);
-  const requirement=sdkRequirement(getBoard(project?.boardId || 'waveshare-esp32-s3-eth'));
-  const compatible=Boolean(environment && environment.sdkVersion===requirement?.version);
+  const board = getBoard(project?.boardId || 'waveshare-esp32-s3-eth');
+  const requirement=sdkRequirement(board);
+  const target = requirement?.target || 'esp32s3';
+  const consoleModes = board?.firmware?.consoleModes || ['usb','uart'];
+  const consoleMode = consoleModes.includes(selectedConsoleMode) ? selectedConsoleMode : consoleModes[0];
+  const compatible=Boolean(environment && environment.sdkVersion===requirement?.version && (environment.target || 'esp32s3')===target);
   const [computed,setComputed]=useState({key:'',value:null,error:''});
   const generated=useMemo(()=>{if(!project)return {bundle:null,error:''};try{return {bundle:generateFirmware(project,catalog,consoleMode),error:''};}catch(error){return {bundle:null,error:error.message};}},[project,consoleMode]);
   const preview=generated.bundle;
-  const signature=preview?JSON.stringify([preview.boardId,preview.consoleMode,preview.mainC,preview.graphicsRuntime,preview.networkRuntime]):'';
+  const signature=preview?JSON.stringify([preview.boardId,preview.consoleMode,preview.mainC,preview.graphicsRuntime,preview.networkRuntime,preview.boardRevision,preview.featureRuntimes]):'';
   const fingerprint=computed.key===signature?computed.value:null;
   const generationError=generated.error||(computed.key===signature?computed.error:'');
   const current=useRef(null), received=useRef({sequences:new Set(),max:-1}), flight=useRef(false), probing=useRef(false), mounted=useRef(true);
@@ -42,12 +46,12 @@ export default function useIdf(project) {
   },[]);
   const refreshSdk=useCallback(async()=>{
     if(!desktop)return null;
-    const snapshot=await invoke('sdk_list');
+    const snapshot=await invoke('sdk_list',{target});
     if(mounted.current){setSdks(snapshot);setEnvironment(snapshot.environment);}
     if(snapshot.environment)await refreshPorts();
     else if(mounted.current){setPorts([]);setPort('');}
     return snapshot;
-  },[refreshPorts]);
+  },[refreshPorts,target]);
   const ingest=useCallback(event=>{
     if(event.jobId!==current.current?.id||received.current.sequences.has(event.sequence) || event.sequence < received.current.max - 3000||!mounted.current)return;
     received.current.sequences.add(event.sequence);
@@ -87,10 +91,10 @@ export default function useIdf(project) {
     if(flight.current || probing.current)return false;
     probing.current=true;
     setChecking(true);setError('');
-    try{const environment=await invoke('idf_environment',{root,python});setEnvironment(environment);await refreshPorts();await refreshSdk();return environment;}
+    try{const environment=await invoke('idf_environment',{root,python,target});setEnvironment(environment);await refreshPorts();await refreshSdk();return environment;}
     catch(error){setEnvironment(null);setError(String(error));try{await refreshSdk();}catch{ /* Keep the actionable probe error. */ }return false;}
     finally{probing.current=false;if(mounted.current)setChecking(false);}
-  },[refreshPorts,refreshSdk]);
+  },[refreshPorts,refreshSdk,target]);
   useEffect(()=>{if(!desktop)return;const timer=setTimeout(()=>check(),0);return()=>clearTimeout(timer);},[check]);
   const start=async(operation,args)=>{
     if(!desktop||!ready){setError('Операции доступны после запуска десктопного приложения.');return false;}
@@ -99,7 +103,7 @@ export default function useIdf(project) {
     try{await invoke(operation.startsWith('sdk_')?operation:`idf_${operation}`,{id,...args});const backlog=await invoke('idf_events',{id});for(const event of backlog)ingest(event);return true;}
     catch(error){flight.current=false;setJob({id,operation,status:'failed'});setError(String(error));return false;}
   };
-  const startBuild=()=>preview&&fingerprint&&compatible?start('build',{spec:{boardId:preview.boardId,consoleMode,mainC:preview.mainC,graphicsRuntime:preview.graphicsRuntime,networkRuntime:preview.networkRuntime,fingerprint}}):Promise.resolve(false);
+  const startBuild=()=>preview&&fingerprint&&compatible?start('build',{spec:{boardId:preview.boardId,boardRevision:preview.boardRevision,featureRuntimes:preview.featureRuntimes,consoleMode:preview.consoleMode,mainC:preview.mainC,graphicsRuntime:preview.graphicsRuntime,networkRuntime:preview.networkRuntime,fingerprint}}):Promise.resolve(false);
   const startFlash=(confirmedPort=port)=>build&&fingerprint&&port&&confirmedPort===port?start('flash',{buildId:build.id,fingerprint,port}):Promise.resolve(false);
   const startMonitor=()=>port?start('monitor',{port}):Promise.resolve(false);
   const cancel=async()=>{if(!current.current)return;try{await invoke('idf_cancel',{id:current.current.id});setJob(value=>value && !terminal.includes(value.status)?{...value,status:'stopping'}:value);}catch(error){setError(String(error));}};
@@ -111,9 +115,9 @@ export default function useIdf(project) {
     try{await invoke(command,args);await refreshSdk();return true;}catch(error){setError(String(error));return false;}finally{setSdkLoading(false);}
   };
   return {sdks,sdkLoading,refreshSdk,requirement,compatible,
-    installPlan:version=>invoke('sdk_install_plan',{version}),
+    installPlan:version=>invoke('sdk_install_plan',{version,target}),
     refreshCatalog:()=>sdkAction('sdk_refresh_versions'),registerSdk:(root,python)=>sdkAction('sdk_register',{root,python:python||null}),
-    selectSdk:sdkId=>start('sdk_select',{sdkId}),installSdk:(version,allowPrerequisites)=>start('sdk_install',{version,allowPrerequisites}),removeSdk:sdkId=>start('sdk_remove',{sdkId}),
-    desktop,environment,checking,check,ports,port,setPort,refreshPorts,consoleMode,setConsole,job,events,build,error,setError,preview,fingerprint,generationError,ready,
+    selectSdk:sdkId=>start('sdk_select',{sdkId,target}),installSdk:(version,allowPrerequisites)=>start('sdk_install',{version,allowPrerequisites,target}),removeSdk:sdkId=>start('sdk_remove',{sdkId}),
+    desktop,environment,checking,check,ports,port,setPort,refreshPorts,consoleModes,consoleMode,setConsole,job,events,build,error,setError,preview,fingerprint,generationError,ready,
     busy:Boolean(checking||running||sdkLoading),monitoring:Boolean(running&&job.operation==='monitor'),fresh:Boolean(compatible&&build&&fingerprint&&build.fingerprint===fingerprint&&environment?.identity===build.environmentIdentity),startBuild,startFlash,startMonitor,cancel};
 }

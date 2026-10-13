@@ -1,3 +1,4 @@
+import { getBoard } from '../catalog/index.js';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { createProject, sortedProjects, validateName } from './model.js';
 import { withLogic } from '../logic/model.js';
@@ -112,7 +113,7 @@ export function useProjects() {
   }, []);
 
   const create = (name, description, boardId) => run(async () => {
-    const project = await persist(createProject(name, description, boardId));
+    const project = await persist(createProject(name, description, boardId, Object.fromEntries(Object.entries(getBoard(boardId)?.options || {}).map(([key, option]) => [key, option.default]))));
     setActive(project); setNotice('Проект создан и сохранен'); return true;
   });
   const save = useCallback(() => run(async () => {

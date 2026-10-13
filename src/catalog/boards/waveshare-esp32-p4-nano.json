@@ -1,0 +1,1459 @@
+{
+  "id": "waveshare-esp32-p4-nano",
+  "name": "ESP32-P4-NANO",
+  "manufacturer": "Waveshare",
+  "mcu": "ESP32-P4NRW32",
+  "revision": "",
+  "espIdfVersion": "5.4.4",
+  "width": 1040,
+  "height": 768,
+  "svg": "esp32-p4-nano.svg",
+  "pinoutVerified": true,
+  "verificationNote": "Профиль по схеме Waveshare ESP32-P4-NANO. 16 МБ Flash, 32 МБ PSRAM; USB-C подключен через мост USB-UART.",
+  "orientation": "Вид со стороны компонентов, USB-C сверху. P1 слева, P2 справа; нумерация каждого разъема 1-26.",
+  "sources": [
+    {
+      "title": "Waveshare: ESP32-P4-NANO",
+      "url": "https://docs.waveshare.com/ESP32-P4-NANO"
+    },
+    {
+      "title": "Схема ESP32-P4-NANO",
+      "url": "https://files.waveshare.com/wiki/ESP32-P4-NANO/ESP32-P4-NANO-schematic.pdf"
+    },
+    {
+      "title": "ESP-IDF 5.4.4: ESP32-P4",
+      "url": "https://docs.espressif.com/projects/esp-idf/en/v5.4.4/esp32p4/index.html"
+    }
+  ],
+  "options": {
+    "chipRevision": {
+      "label": "Ревизия ESP32-P4",
+      "default": "pre-v3",
+      "values": [
+        {
+          "value": "pre-v3",
+          "label": "v0.1-v1.x"
+        },
+        {
+          "value": "v3",
+          "label": "v3.x"
+        }
+      ]
+    },
+    "audio": {
+      "label": "Динамик / аудио",
+      "default": "unknown",
+      "values": [
+        {
+          "value": "unknown",
+          "label": "Подключение не подтверждено"
+        },
+        {
+          "value": "connected",
+          "label": "Подключено"
+        },
+        {
+          "value": "disconnected",
+          "label": "Отключено"
+        }
+      ]
+    },
+    "mipiDisplay": {
+      "label": "MIPI-дисплей",
+      "default": "unknown",
+      "values": [
+        {
+          "value": "unknown",
+          "label": "Подключение не подтверждено"
+        },
+        {
+          "value": "connected",
+          "label": "Подключено"
+        },
+        {
+          "value": "disconnected",
+          "label": "Отключено"
+        }
+      ]
+    },
+    "mipiCamera": {
+      "label": "MIPI-камера",
+      "default": "unknown",
+      "values": [
+        {
+          "value": "unknown",
+          "label": "Подключение не подтверждено"
+        },
+        {
+          "value": "connected",
+          "label": "Подключено"
+        },
+        {
+          "value": "disconnected",
+          "label": "Отключено"
+        }
+      ]
+    }
+  },
+  "reservedGpios": {
+    "6": "Подключен к загрузочному контакту GPIO2 ESP32-C6",
+    "7": "Общая линия I2C: аудиокодек, камера, дисплей",
+    "8": "Общая линия I2C: аудиокодек, камера, дисплей",
+    "35": "Встроенный Ethernet RMII/IP101GRI",
+    "37": "UART0 TX: мост USB-UART для прошивки и монитора",
+    "38": "UART0 RX: мост USB-UART для прошивки и монитора",
+    "45": "Питание TF-карты",
+    "53": "Управление усилителем аудио",
+    "54": "Управление ESP32-C6",
+    "28": "Встроенный Ethernet RMII/IP101GRI",
+    "29": "Встроенный Ethernet RMII/IP101GRI",
+    "30": "Встроенный Ethernet RMII/IP101GRI",
+    "31": "Встроенный Ethernet RMII/IP101GRI",
+    "34": "Встроенный Ethernet RMII/IP101GRI",
+    "49": "Встроенный Ethernet RMII/IP101GRI",
+    "50": "Встроенный Ethernet RMII/IP101GRI",
+    "51": "Встроенный Ethernet RMII/IP101GRI",
+    "52": "Встроенный Ethernet RMII/IP101GRI",
+    "14": "SDIO связи с ESP32-C6",
+    "15": "SDIO связи с ESP32-C6",
+    "16": "SDIO связи с ESP32-C6",
+    "17": "SDIO связи с ESP32-C6",
+    "18": "SDIO связи с ESP32-C6",
+    "19": "SDIO связи с ESP32-C6",
+    "0": "Кварц RTC 32,768 кГц",
+    "1": "Кварц RTC 32,768 кГц",
+    "24": "USB OTG, выбор пары сигналов через резисторы",
+    "25": "USB OTG, выбор пары сигналов через резисторы",
+    "26": "USB OTG, выбор пары сигналов через резисторы",
+    "27": "USB OTG, выбор пары сигналов через резисторы",
+    "33": "USB OTG, управление питанием"
+  },
+  "pins": [
+    {
+      "id": "P1-1",
+      "label": "3V3",
+      "physicalNumber": "P1.1",
+      "side": "left",
+      "kind": "power",
+      "gpio": null,
+      "x": 208,
+      "y": 146,
+      "functions": [],
+      "capabilities": [],
+      "voltage": 3.3,
+      "displayNumber": "1",
+      "labelX": 78,
+      "labelWidth": 90,
+      "labelFontSize": 9
+    },
+    {
+      "id": "P1-3",
+      "label": "GPIO7",
+      "physicalNumber": "P1.3",
+      "side": "left",
+      "kind": "gpio",
+      "gpio": 7,
+      "x": 208,
+      "y": 180,
+      "functions": [
+        "I2C SDA",
+        "TOUCH CHANNEL5"
+      ],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "reservedReason": "Общая линия I2C: аудиокодек, камера, дисплей",
+      "displayNumber": "3",
+      "labelX": 78,
+      "labelWidth": 90,
+      "labelFontSize": 9
+    },
+    {
+      "id": "P1-5",
+      "label": "GPIO8",
+      "physicalNumber": "P1.5",
+      "side": "left",
+      "kind": "gpio",
+      "gpio": 8,
+      "x": 208,
+      "y": 214,
+      "functions": [
+        "I2C SCL",
+        "TOUCH CHANNEL6"
+      ],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "reservedReason": "Общая линия I2C: аудиокодек, камера, дисплей",
+      "displayNumber": "5",
+      "labelX": 78,
+      "labelWidth": 90,
+      "labelFontSize": 9
+    },
+    {
+      "id": "P1-7",
+      "label": "GPIO23",
+      "physicalNumber": "P1.7",
+      "side": "left",
+      "kind": "gpio",
+      "gpio": 23,
+      "x": 208,
+      "y": 248,
+      "functions": [
+        "ADC1 CHANNEL7"
+      ],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "displayNumber": "7",
+      "labelX": 78,
+      "labelWidth": 90,
+      "labelFontSize": 9
+    },
+    {
+      "id": "P1-9",
+      "label": "GND",
+      "physicalNumber": "P1.9",
+      "side": "left",
+      "kind": "ground",
+      "gpio": null,
+      "x": 208,
+      "y": 282,
+      "functions": [],
+      "capabilities": [],
+      "displayNumber": "9",
+      "labelX": 78,
+      "labelWidth": 90,
+      "labelFontSize": 9
+    },
+    {
+      "id": "P1-11",
+      "label": "GPIO5",
+      "physicalNumber": "P1.11",
+      "side": "left",
+      "kind": "gpio",
+      "gpio": 5,
+      "x": 208,
+      "y": 316,
+      "functions": [
+        "TOUCH CHANNEL3"
+      ],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "displayNumber": "11",
+      "labelX": 78,
+      "labelWidth": 90,
+      "labelFontSize": 9
+    },
+    {
+      "id": "P1-13",
+      "label": "GPIO20",
+      "physicalNumber": "P1.13",
+      "side": "left",
+      "kind": "gpio",
+      "gpio": 20,
+      "x": 208,
+      "y": 350,
+      "functions": [
+        "ADC1 CHANNEL4"
+      ],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "displayNumber": "13",
+      "labelX": 78,
+      "labelWidth": 90,
+      "labelFontSize": 9
+    },
+    {
+      "id": "P1-15",
+      "label": "GPIO21",
+      "physicalNumber": "P1.15",
+      "side": "left",
+      "kind": "gpio",
+      "gpio": 21,
+      "x": 208,
+      "y": 384,
+      "functions": [
+        "ADC1 CHANNEL5"
+      ],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "displayNumber": "15",
+      "labelX": 78,
+      "labelWidth": 90,
+      "labelFontSize": 9
+    },
+    {
+      "id": "P1-17",
+      "label": "3V3",
+      "physicalNumber": "P1.17",
+      "side": "left",
+      "kind": "power",
+      "gpio": null,
+      "x": 208,
+      "y": 418,
+      "functions": [],
+      "capabilities": [],
+      "voltage": 3.3,
+      "displayNumber": "17",
+      "labelX": 78,
+      "labelWidth": 90,
+      "labelFontSize": 9
+    },
+    {
+      "id": "P1-19",
+      "label": "GPIO25",
+      "physicalNumber": "P1.19",
+      "side": "left",
+      "kind": "gpio",
+      "gpio": 25,
+      "x": 208,
+      "y": 452,
+      "functions": [
+        "USB1P1_P0"
+      ],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "reservedReason": "USB OTG, выбор пары сигналов через резисторы",
+      "displayNumber": "19",
+      "labelX": 78,
+      "labelWidth": 90,
+      "labelFontSize": 9
+    },
+    {
+      "id": "P1-21",
+      "label": "GPIO26",
+      "physicalNumber": "P1.21",
+      "side": "left",
+      "kind": "gpio",
+      "gpio": 26,
+      "x": 208,
+      "y": 486,
+      "functions": [
+        "USB1P1_N1"
+      ],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "reservedReason": "USB OTG, выбор пары сигналов через резисторы",
+      "displayNumber": "21",
+      "labelX": 78,
+      "labelWidth": 90,
+      "labelFontSize": 9
+    },
+    {
+      "id": "P1-23",
+      "label": "GPIO32",
+      "physicalNumber": "P1.23",
+      "side": "left",
+      "kind": "gpio",
+      "gpio": 32,
+      "x": 208,
+      "y": 520,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "displayNumber": "23",
+      "labelX": 78,
+      "labelWidth": 90,
+      "labelFontSize": 9
+    },
+    {
+      "id": "P1-25",
+      "label": "GND",
+      "physicalNumber": "P1.25",
+      "side": "left",
+      "kind": "ground",
+      "gpio": null,
+      "x": 208,
+      "y": 554,
+      "functions": [],
+      "capabilities": [],
+      "displayNumber": "25",
+      "labelX": 78,
+      "labelWidth": 90,
+      "labelFontSize": 9
+    },
+    {
+      "id": "P1-2",
+      "label": "5V",
+      "physicalNumber": "P1.2",
+      "side": "left",
+      "kind": "power",
+      "gpio": null,
+      "x": 232,
+      "y": 146,
+      "functions": [],
+      "capabilities": [],
+      "voltage": 5,
+      "displayNumber": "2",
+      "labelX": 172,
+      "labelWidth": 90,
+      "labelFontSize": 9
+    },
+    {
+      "id": "P1-4",
+      "label": "5V",
+      "physicalNumber": "P1.4",
+      "side": "left",
+      "kind": "power",
+      "gpio": null,
+      "x": 232,
+      "y": 180,
+      "functions": [],
+      "capabilities": [],
+      "voltage": 5,
+      "displayNumber": "4",
+      "labelX": 172,
+      "labelWidth": 90,
+      "labelFontSize": 9
+    },
+    {
+      "id": "P1-6",
+      "label": "GND",
+      "physicalNumber": "P1.6",
+      "side": "left",
+      "kind": "ground",
+      "gpio": null,
+      "x": 232,
+      "y": 214,
+      "functions": [],
+      "capabilities": [],
+      "displayNumber": "6",
+      "labelX": 172,
+      "labelWidth": 90,
+      "labelFontSize": 9
+    },
+    {
+      "id": "P1-8",
+      "label": "GPIO37",
+      "physicalNumber": "P1.8",
+      "side": "left",
+      "kind": "gpio",
+      "gpio": 37,
+      "x": 232,
+      "y": 248,
+      "functions": [
+        "UART0 TX"
+      ],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "reservedReason": "UART0 TX: мост USB-UART для прошивки и монитора",
+      "displayNumber": "8",
+      "labelX": 172,
+      "labelWidth": 90,
+      "labelFontSize": 9
+    },
+    {
+      "id": "P1-10",
+      "label": "GPIO38",
+      "physicalNumber": "P1.10",
+      "side": "left",
+      "kind": "gpio",
+      "gpio": 38,
+      "x": 232,
+      "y": 282,
+      "functions": [
+        "UART0 RX"
+      ],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "reservedReason": "UART0 RX: мост USB-UART для прошивки и монитора",
+      "displayNumber": "10",
+      "labelX": 172,
+      "labelWidth": 90,
+      "labelFontSize": 9
+    },
+    {
+      "id": "P1-12",
+      "label": "GPIO4",
+      "physicalNumber": "P1.12",
+      "side": "left",
+      "kind": "gpio",
+      "gpio": 4,
+      "x": 232,
+      "y": 316,
+      "functions": [
+        "TOUCH CHANNEL2"
+      ],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "displayNumber": "12",
+      "labelX": 172,
+      "labelWidth": 90,
+      "labelFontSize": 9
+    },
+    {
+      "id": "P1-14",
+      "label": "GND",
+      "physicalNumber": "P1.14",
+      "side": "left",
+      "kind": "ground",
+      "gpio": null,
+      "x": 232,
+      "y": 350,
+      "functions": [],
+      "capabilities": [],
+      "displayNumber": "14",
+      "labelX": 172,
+      "labelWidth": 90,
+      "labelFontSize": 9
+    },
+    {
+      "id": "P1-16",
+      "label": "GPIO22",
+      "physicalNumber": "P1.16",
+      "side": "left",
+      "kind": "gpio",
+      "gpio": 22,
+      "x": 232,
+      "y": 384,
+      "functions": [
+        "ADC1 CHANNEL6"
+      ],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "displayNumber": "16",
+      "labelX": 172,
+      "labelWidth": 90,
+      "labelFontSize": 9
+    },
+    {
+      "id": "P1-18",
+      "label": "GPIO24",
+      "physicalNumber": "P1.18",
+      "side": "left",
+      "kind": "gpio",
+      "gpio": 24,
+      "x": 232,
+      "y": 418,
+      "functions": [
+        "USB1P1_N0"
+      ],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "reservedReason": "USB OTG, выбор пары сигналов через резисторы",
+      "displayNumber": "18",
+      "labelX": 172,
+      "labelWidth": 90,
+      "labelFontSize": 9
+    },
+    {
+      "id": "P1-20",
+      "label": "GND",
+      "physicalNumber": "P1.20",
+      "side": "left",
+      "kind": "ground",
+      "gpio": null,
+      "x": 232,
+      "y": 452,
+      "functions": [],
+      "capabilities": [],
+      "displayNumber": "20",
+      "labelX": 172,
+      "labelWidth": 90,
+      "labelFontSize": 9
+    },
+    {
+      "id": "P1-22",
+      "label": "GPIO27",
+      "physicalNumber": "P1.22",
+      "side": "left",
+      "kind": "gpio",
+      "gpio": 27,
+      "x": 232,
+      "y": 486,
+      "functions": [
+        "USB1P1_P1"
+      ],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "reservedReason": "USB OTG, выбор пары сигналов через резисторы",
+      "displayNumber": "22",
+      "labelX": 172,
+      "labelWidth": 90,
+      "labelFontSize": 9
+    },
+    {
+      "id": "P1-24",
+      "label": "GPIO33",
+      "physicalNumber": "P1.24",
+      "side": "left",
+      "kind": "gpio",
+      "gpio": 33,
+      "x": 232,
+      "y": 520,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "reservedReason": "USB OTG, управление питанием",
+      "displayNumber": "24",
+      "labelX": 172,
+      "labelWidth": 90,
+      "labelFontSize": 9
+    },
+    {
+      "id": "P1-26",
+      "label": "GPIO36",
+      "physicalNumber": "P1.26",
+      "side": "left",
+      "kind": "gpio",
+      "gpio": 36,
+      "x": 232,
+      "y": 554,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "displayNumber": "26",
+      "labelX": 172,
+      "labelWidth": 90,
+      "labelFontSize": 9
+    },
+    {
+      "id": "P2-1",
+      "label": "5V",
+      "physicalNumber": "P2.1",
+      "side": "right",
+      "kind": "power",
+      "gpio": null,
+      "x": 784,
+      "y": 146,
+      "functions": [],
+      "capabilities": [],
+      "voltage": 5,
+      "displayNumber": "1",
+      "labelX": 852,
+      "labelWidth": 90,
+      "labelFontSize": 9
+    },
+    {
+      "id": "P2-3",
+      "label": "GND",
+      "physicalNumber": "P2.3",
+      "side": "right",
+      "kind": "ground",
+      "gpio": null,
+      "x": 784,
+      "y": 180,
+      "functions": [],
+      "capabilities": [],
+      "displayNumber": "3",
+      "labelX": 852,
+      "labelWidth": 90,
+      "labelFontSize": 9
+    },
+    {
+      "id": "P2-5",
+      "label": "3V3",
+      "physicalNumber": "P2.5",
+      "side": "right",
+      "kind": "power",
+      "gpio": null,
+      "x": 784,
+      "y": 214,
+      "functions": [],
+      "capabilities": [],
+      "voltage": 3.3,
+      "displayNumber": "5",
+      "labelX": 852,
+      "labelWidth": 90,
+      "labelFontSize": 9
+    },
+    {
+      "id": "P2-7",
+      "label": "GND",
+      "physicalNumber": "P2.7",
+      "side": "right",
+      "kind": "ground",
+      "gpio": null,
+      "x": 784,
+      "y": 248,
+      "functions": [],
+      "capabilities": [],
+      "displayNumber": "7",
+      "labelX": 852,
+      "labelWidth": 90,
+      "labelFontSize": 9
+    },
+    {
+      "id": "P2-9",
+      "label": "GPIO3",
+      "physicalNumber": "P2.9",
+      "side": "right",
+      "kind": "gpio",
+      "gpio": 3,
+      "x": 784,
+      "y": 282,
+      "functions": [
+        "TOUCH CHANNEL1"
+      ],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "displayNumber": "9",
+      "labelX": 852,
+      "labelWidth": 90,
+      "labelFontSize": 9
+    },
+    {
+      "id": "P2-11",
+      "label": "GPIO2",
+      "physicalNumber": "P2.11",
+      "side": "right",
+      "kind": "gpio",
+      "gpio": 2,
+      "x": 784,
+      "y": 316,
+      "functions": [
+        "TOUCH CHANNEL0"
+      ],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "displayNumber": "11",
+      "labelX": 852,
+      "labelWidth": 90,
+      "labelFontSize": 9
+    },
+    {
+      "id": "P2-13",
+      "label": "GPIO54",
+      "physicalNumber": "P2.13",
+      "side": "right",
+      "kind": "gpio",
+      "gpio": 54,
+      "x": 784,
+      "y": 350,
+      "functions": [
+        "ADC2 CHANNEL7"
+      ],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "reservedReason": "Управление ESP32-C6",
+      "displayNumber": "13",
+      "labelX": 852,
+      "labelWidth": 90,
+      "labelFontSize": 9
+    },
+    {
+      "id": "P2-15",
+      "label": "GPIO47",
+      "physicalNumber": "P2.15",
+      "side": "right",
+      "kind": "gpio",
+      "gpio": 47,
+      "x": 784,
+      "y": 384,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "displayNumber": "15",
+      "labelX": 852,
+      "labelWidth": 90,
+      "labelFontSize": 9
+    },
+    {
+      "id": "P2-17",
+      "label": "GPIO46",
+      "physicalNumber": "P2.17",
+      "side": "right",
+      "kind": "gpio",
+      "gpio": 46,
+      "x": 784,
+      "y": 418,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "displayNumber": "17",
+      "labelX": 852,
+      "labelWidth": 90,
+      "labelFontSize": 9
+    },
+    {
+      "id": "P2-19",
+      "label": "GPIO45",
+      "physicalNumber": "P2.19",
+      "side": "right",
+      "kind": "gpio",
+      "gpio": 45,
+      "x": 784,
+      "y": 452,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "reservedReason": "Питание TF-карты",
+      "displayNumber": "19",
+      "labelX": 852,
+      "labelWidth": 90,
+      "labelFontSize": 9
+    },
+    {
+      "id": "P2-21",
+      "label": "C6_IO12",
+      "physicalNumber": "P2.21",
+      "side": "right",
+      "kind": "control",
+      "gpio": null,
+      "x": 784,
+      "y": 486,
+      "functions": [],
+      "capabilities": [],
+      "reservedReason": "Контакт отдельного ESP32-C6; не GPIO основного ESP32-P4",
+      "displayNumber": "21",
+      "labelX": 852,
+      "labelWidth": 90,
+      "labelFontSize": 9
+    },
+    {
+      "id": "P2-23",
+      "label": "C6_IO13",
+      "physicalNumber": "P2.23",
+      "side": "right",
+      "kind": "control",
+      "gpio": null,
+      "x": 784,
+      "y": 520,
+      "functions": [],
+      "capabilities": [],
+      "reservedReason": "Контакт отдельного ESP32-C6; не GPIO основного ESP32-P4",
+      "displayNumber": "23",
+      "labelX": 852,
+      "labelWidth": 90,
+      "labelFontSize": 9
+    },
+    {
+      "id": "P2-25",
+      "label": "GND",
+      "physicalNumber": "P2.25",
+      "side": "right",
+      "kind": "ground",
+      "gpio": null,
+      "x": 784,
+      "y": 554,
+      "functions": [],
+      "capabilities": [],
+      "displayNumber": "25",
+      "labelX": 852,
+      "labelWidth": 90,
+      "labelFontSize": 9
+    },
+    {
+      "id": "P2-2",
+      "label": "ESP_LDO_VO4",
+      "physicalNumber": "P2.2",
+      "side": "right",
+      "kind": "control",
+      "gpio": null,
+      "x": 808,
+      "y": 146,
+      "functions": [],
+      "capabilities": [],
+      "reservedReason": "Выход внутреннего LDO для TF-карты; напряжение определяется конфигурацией",
+      "displayNumber": "2",
+      "labelX": 946,
+      "labelWidth": 94,
+      "labelFontSize": 9
+    },
+    {
+      "id": "P2-4",
+      "label": "GND",
+      "physicalNumber": "P2.4",
+      "side": "right",
+      "kind": "ground",
+      "gpio": null,
+      "x": 808,
+      "y": 180,
+      "functions": [],
+      "capabilities": [],
+      "displayNumber": "4",
+      "labelX": 946,
+      "labelWidth": 90,
+      "labelFontSize": 9
+    },
+    {
+      "id": "P2-6",
+      "label": "GPIO0",
+      "physicalNumber": "P2.6",
+      "side": "right",
+      "kind": "gpio",
+      "gpio": 0,
+      "x": 808,
+      "y": 214,
+      "functions": [
+        "XTAL_32K_N"
+      ],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "reservedReason": "Кварц RTC 32,768 кГц",
+      "displayNumber": "6",
+      "labelX": 946,
+      "labelWidth": 90,
+      "labelFontSize": 9
+    },
+    {
+      "id": "P2-8",
+      "label": "GPIO1",
+      "physicalNumber": "P2.8",
+      "side": "right",
+      "kind": "gpio",
+      "gpio": 1,
+      "x": 808,
+      "y": 248,
+      "functions": [
+        "XTAL_32K_P"
+      ],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "reservedReason": "Кварц RTC 32,768 кГц",
+      "displayNumber": "8",
+      "labelX": 946,
+      "labelWidth": 90,
+      "labelFontSize": 9
+    },
+    {
+      "id": "P2-10",
+      "label": "GND",
+      "physicalNumber": "P2.10",
+      "side": "right",
+      "kind": "ground",
+      "gpio": null,
+      "x": 808,
+      "y": 282,
+      "functions": [],
+      "capabilities": [],
+      "displayNumber": "10",
+      "labelX": 946,
+      "labelWidth": 90,
+      "labelFontSize": 9
+    },
+    {
+      "id": "P2-12",
+      "label": "GPIO6",
+      "physicalNumber": "P2.12",
+      "side": "right",
+      "kind": "gpio",
+      "gpio": 6,
+      "x": 808,
+      "y": 316,
+      "functions": [
+        "TOUCH CHANNEL4"
+      ],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "reservedReason": "Подключен к загрузочному контакту GPIO2 ESP32-C6",
+      "displayNumber": "12",
+      "labelX": 946,
+      "labelWidth": 90,
+      "labelFontSize": 9
+    },
+    {
+      "id": "P2-14",
+      "label": "GPIO53",
+      "physicalNumber": "P2.14",
+      "side": "right",
+      "kind": "gpio",
+      "gpio": 53,
+      "x": 808,
+      "y": 350,
+      "functions": [
+        "ADC2 CHANNEL6"
+      ],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "reservedReason": "Управление усилителем аудио",
+      "displayNumber": "14",
+      "labelX": 946,
+      "labelWidth": 90,
+      "labelFontSize": 9
+    },
+    {
+      "id": "P2-16",
+      "label": "GPIO48",
+      "physicalNumber": "P2.16",
+      "side": "right",
+      "kind": "gpio",
+      "gpio": 48,
+      "x": 808,
+      "y": 384,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "displayNumber": "16",
+      "labelX": 946,
+      "labelWidth": 90,
+      "labelFontSize": 9
+    },
+    {
+      "id": "P2-18",
+      "label": "GND",
+      "physicalNumber": "P2.18",
+      "side": "right",
+      "kind": "ground",
+      "gpio": null,
+      "x": 808,
+      "y": 418,
+      "functions": [],
+      "capabilities": [],
+      "displayNumber": "18",
+      "labelX": 946,
+      "labelWidth": 90,
+      "labelFontSize": 9
+    },
+    {
+      "id": "P2-20",
+      "label": "C6_RXD",
+      "physicalNumber": "P2.20",
+      "side": "right",
+      "kind": "control",
+      "gpio": null,
+      "x": 808,
+      "y": 452,
+      "functions": [],
+      "capabilities": [],
+      "reservedReason": "Контакт отдельного ESP32-C6; не GPIO основного ESP32-P4",
+      "displayNumber": "20",
+      "labelX": 946,
+      "labelWidth": 90,
+      "labelFontSize": 9
+    },
+    {
+      "id": "P2-22",
+      "label": "C6_TXD",
+      "physicalNumber": "P2.22",
+      "side": "right",
+      "kind": "control",
+      "gpio": null,
+      "x": 808,
+      "y": 486,
+      "functions": [],
+      "capabilities": [],
+      "reservedReason": "Контакт отдельного ESP32-C6; не GPIO основного ESP32-P4",
+      "displayNumber": "22",
+      "labelX": 946,
+      "labelWidth": 90,
+      "labelFontSize": 9
+    },
+    {
+      "id": "P2-24",
+      "label": "C6_IO9",
+      "physicalNumber": "P2.24",
+      "side": "right",
+      "kind": "control",
+      "gpio": null,
+      "x": 808,
+      "y": 520,
+      "functions": [],
+      "capabilities": [],
+      "reservedReason": "Контакт отдельного ESP32-C6; не GPIO основного ESP32-P4",
+      "displayNumber": "24",
+      "labelX": 946,
+      "labelWidth": 90,
+      "labelFontSize": 9
+    },
+    {
+      "id": "P2-26",
+      "label": "GND",
+      "physicalNumber": "P2.26",
+      "side": "right",
+      "kind": "ground",
+      "gpio": null,
+      "x": 808,
+      "y": 554,
+      "functions": [],
+      "capabilities": [],
+      "displayNumber": "26",
+      "labelX": 946,
+      "labelWidth": 90,
+      "labelFontSize": 9
+    }
+  ],
+  "target": "esp32p4",
+  "platform": "esp-idf",
+  "interfaces": {
+    "spi": {
+      "hosts": [
+        2,
+        3
+      ]
+    }
+  },
+  "firmware": {
+    "flashSizeMb": 16,
+    "consoleModes": [
+      "uart"
+    ],
+    "compiler": "RISC-V ESP32 GCC",
+    "revisionConfigs": {
+      "pre-v3": "CONFIG_ESP32P4_SELECTS_REV_LESS_V3=y\nCONFIG_ESP32P4_REV_MIN_1=y\n",
+      "v3": "CONFIG_ESP32P4_SELECTS_REV_LESS_V3=n\nCONFIG_ESP32P4_REV_MIN_300=y\n"
+    }
+  },
+  "networkInterfaces": [
+    {
+      "id": "onboard-ethernet",
+      "name": "Встроенный Ethernet",
+      "family": "ethernet",
+      "controller": "IP101GRI",
+      "interface": "rmii",
+      "driverKey": "ip101-rmii",
+      "phyAddress": 1,
+      "signals": {
+        "mdc": 31,
+        "mdio": 52,
+        "reset": 51,
+        "clock": 50,
+        "txEn": 49,
+        "txd0": 34,
+        "txd1": 35,
+        "crsDv": 28,
+        "rxd0": 29,
+        "rxd1": 30
+      }
+    }
+  ],
+  "peripherals": [
+    {
+      "id": "audio",
+      "name": "Аудио",
+      "interface": "i2s",
+      "controller": "ES8311",
+      "amplifier": "NS4150B",
+      "speaker": {
+        "connector": "MX1.25 2P",
+        "impedanceOhms": 8,
+        "powerWatts": 2
+      },
+      "signals": {
+        "sda": 7,
+        "scl": 8,
+        "mclk": 13,
+        "bclk": 12,
+        "ws": 10,
+        "dout": 9,
+        "din": 11,
+        "amplifierEnable": 53
+      },
+      "description": "Кодек ES8311, усилитель NS4150B; динамик 8 Ом, 2 Вт через MX1.25 2P.",
+      "family": "audio",
+      "driverKey": "es8311-i2s",
+      "i2c": {
+        "port": 0,
+        "sda": 7,
+        "scl": 8
+      },
+      "resources": [
+        {
+          "key": "i2c:0",
+          "label": "I2C0, SDA7/SCL8",
+          "gpios": [
+            7,
+            8
+          ],
+          "share": "bus",
+          "configuration": {
+            "port": 0,
+            "sda": 7,
+            "scl": 8
+          }
+        },
+        {
+          "key": "i2s:0",
+          "label": "I2S0",
+          "gpios": [
+            9,
+            10,
+            11,
+            12,
+            13,
+            53
+          ]
+        },
+        {
+          "key": "i2c-address:0:24",
+          "label": "ES8311, I2C 0x18"
+        }
+      ],
+      "i2sPort": 0,
+      "i2cAddress": 24,
+      "occupancySetting": "audio"
+    },
+    {
+      "id": "mipi-display",
+      "name": "MIPI-дисплей",
+      "interface": "dsi",
+      "lanes": 2,
+      "connector": "15-pin FPC",
+      "description": "Двухлинейный MIPI-DSI, разъем 15-pin FPC; параметры задаются моделью дисплея.",
+      "family": "display",
+      "driverKey": "jd9365-dsi",
+      "i2c": {
+        "port": 0,
+        "sda": 7,
+        "scl": 8
+      },
+      "resources": [
+        {
+          "key": "i2c:0",
+          "label": "I2C0, SDA7/SCL8",
+          "gpios": [
+            7,
+            8
+          ],
+          "share": "bus",
+          "configuration": {
+            "port": 0,
+            "sda": 7,
+            "scl": 8
+          }
+        },
+        {
+          "key": "ldo:3",
+          "label": "LDO3 питания MIPI PHY",
+          "share": "voltage",
+          "configuration": {
+            "voltageMv": 2500
+          }
+        },
+        {
+          "key": "dsi:0",
+          "label": "MIPI-DSI, 2 линии"
+        },
+        {
+          "key": "i2c-address:0:69",
+          "label": "Подсветка, I2C 0x45"
+        },
+        {
+          "key": "i2c-address:0:93",
+          "label": "GT9271, I2C 0x5D"
+        },
+        {
+          "key": "i2c-address:0:20",
+          "label": "GT9271, I2C 0x14"
+        }
+      ],
+      "ldo": {
+        "channel": 3,
+        "voltageMv": 2500
+      },
+      "displayControllers": [
+        "jadard.jd9365"
+      ],
+      "backlightAddress": 69,
+      "backlightRegister": 150,
+      "touchAddresses": [
+        93,
+        20
+      ],
+      "resetGpio": -1,
+      "occupancySetting": "mipiDisplay"
+    },
+    {
+      "id": "mipi-camera",
+      "name": "MIPI-камера",
+      "interface": "csi",
+      "lanes": 2,
+      "connector": "15-pin FPC",
+      "controlSignals": {
+        "sda": 7,
+        "scl": 8
+      },
+      "description": "Двухлинейный MIPI-CSI; камера RPi Camera (B) входит в комплект KIT-C.",
+      "family": "camera",
+      "driverKey": "ov5647-csi",
+      "i2c": {
+        "port": 0,
+        "sda": 7,
+        "scl": 8
+      },
+      "resources": [
+        {
+          "key": "i2c:0",
+          "label": "I2C0, SDA7/SCL8",
+          "gpios": [
+            7,
+            8
+          ],
+          "share": "bus",
+          "configuration": {
+            "port": 0,
+            "sda": 7,
+            "scl": 8
+          }
+        },
+        {
+          "key": "ldo:3",
+          "label": "LDO3 питания MIPI PHY",
+          "share": "voltage",
+          "configuration": {
+            "voltageMv": 2500
+          }
+        },
+        {
+          "key": "csi:0",
+          "label": "MIPI-CSI, 2 линии"
+        },
+        {
+          "key": "isp:0",
+          "label": "ISP камеры"
+        },
+        {
+          "key": "i2c-address:0:54",
+          "label": "OV5647, I2C 0x36"
+        }
+      ],
+      "ldo": {
+        "channel": 3,
+        "voltageMv": 2500
+      },
+      "sensorIds": [
+        "ovti.ov5647"
+      ],
+      "resetGpio": -1,
+      "powerdownGpio": -1,
+      "occupancySetting": "mipiCamera"
+    }
+  ],
+  "accessoryKits": [
+    {
+      "id": "kit-c",
+      "name": "ESP32-P4-NANO-KIT-C",
+      "accessories": [
+        "PoE-модуль",
+        "RPi Camera (B)",
+        "Динамик 8 Ом, 2 Вт"
+      ]
+    }
+  ],
+  "routing": {
+    "keepOutAreas": [
+      {
+        "x": 285,
+        "y": 67,
+        "width": 53,
+        "height": 306
+      },
+      {
+        "x": 380,
+        "y": 67,
+        "width": 53,
+        "height": 306
+      },
+      {
+        "x": 451,
+        "y": 43,
+        "width": 111,
+        "height": 120
+      },
+      {
+        "x": 486,
+        "y": 255,
+        "width": 133,
+        "height": 136
+      },
+      {
+        "x": 259,
+        "y": 443,
+        "width": 219,
+        "height": 274
+      },
+      {
+        "x": 486,
+        "y": 480,
+        "width": 95,
+        "height": 250
+      },
+      {
+        "x": 591,
+        "y": 490,
+        "width": 166,
+        "height": 207
+      },
+      {
+        "x": 638,
+        "y": 57,
+        "width": 126,
+        "height": 66
+      },
+      {
+        "x": 725,
+        "y": 133,
+        "width": 31,
+        "height": 60
+      },
+      {
+        "x": 489,
+        "y": 418,
+        "width": 133,
+        "height": 41
+      },
+      {
+        "x": 659,
+        "y": 408,
+        "width": 95,
+        "height": 53
+      },
+      {
+        "x": 201,
+        "y": 579,
+        "width": 43,
+        "height": 65
+      },
+      {
+        "x": 774,
+        "y": 583,
+        "width": 43,
+        "height": 58
+      }
+    ]
+  }
+}

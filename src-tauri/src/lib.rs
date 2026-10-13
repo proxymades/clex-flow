@@ -1,3 +1,4 @@
+mod boards;
 mod idf;
 mod idf_environment;
 mod menu;

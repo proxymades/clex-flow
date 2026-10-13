@@ -743,5 +743,41 @@
         3
       ]
     }
+  },
+  "firmware": {
+    "flashSizeMb": 8,
+    "consoleModes": [
+      "usb",
+      "uart"
+    ],
+    "compiler": "Xtensa ESP32-S3 GCC"
+  },
+  "routing": {
+    "keepOutAreas": [
+      {
+        "x": 126,
+        "y": 105,
+        "width": 128,
+        "height": 165
+      },
+      {
+        "x": 146,
+        "y": 390,
+        "width": 86,
+        "height": 71
+      },
+      {
+        "x": 117,
+        "y": 639,
+        "width": 60,
+        "height": 81
+      },
+      {
+        "x": 203,
+        "y": 639,
+        "width": 60,
+        "height": 81
+      }
+    ]
   }
 }

@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { Search, Plus, Timer, ScanLine, ArrowUpRight, Repeat2, Terminal, Box, Layers, Monitor, Hash , Network, Globe } from 'lucide-react';
+import { Search, Plus, Timer, ScanLine, ArrowUpRight, Repeat2, Terminal, Box, Layers, Monitor, Hash , Network, Globe , Camera, Volume2 } from 'lucide-react';
 import { TYPE_COLORS, TYPE_NAMES } from './model.js';
-const icons = { Timer, ScanLine, ArrowUpRight, Repeat2, Terminal, Monitor, Hash, Network, Globe };
+const icons = { Timer, ScanLine, ArrowUpRight, Repeat2, Terminal, Monitor, Hash, Network, Globe, Camera, Volume2 };
 export default function LogicLibrary({ modules, busy, onAdd }) {
   const [search, setSearch] = useState(''), [category, setCategory] = useState('all');
   const categories = [...new Map(modules.map(module => [module.category, module.categoryName])).entries()];

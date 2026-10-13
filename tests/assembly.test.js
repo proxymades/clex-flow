@@ -111,3 +111,18 @@ test('неизвестная плата, отсутствующий модуль
   assert.ok(validateAssembly(future,catalog).some(issue=>issue.code==='module-compatibility')); serializeProject(future);
   assert.ok(validateAssembly({...project,gpioAssignments:[]},catalog).some(issue=>issue.code==='gpio-cache'));
 });
+
+test('adding hardware follows a moved board and fills nearby free spaces without sending components to fixed canvas coordinates', () => {
+ const board=catalog.boards.find(board=>board.id==='waveshare-esp32-p4-nano');
+ let project=createProject('Moved P4','',board.id);
+ project.assembly.positions.board={x:-1800,y:-1200};
+ const anchor={...project.assembly.positions.board};
+ for(let i=0;i<6;i++){
+  const next=addHardware(project,led,catalog),added=next.components.at(-1),position=next.assembly.positions[added.id];
+  if(!i)assert.deepEqual(position,{x:anchor.x+board.width+48,y:anchor.y+80});
+  assert.ok(Math.abs(position.y-(anchor.y+80))<600,'new hardware stays near the board');
+  const rectangles=[{...anchor,width:board.width,height:board.height},...project.components.map(c=>({...project.assembly.positions[c.id],...catalog.modules.find(m=>m.id===c.moduleId).visual}))];
+  assert.ok(rectangles.every(r=>position.x+led.visual.width+20<=r.x || position.x>=r.x+r.width+20 || position.y+led.visual.height+20<=r.y || position.y>=r.y+r.height+20),'no overlap with board or existing components');
+  serializeProject(next);project=next;
+ }
+});

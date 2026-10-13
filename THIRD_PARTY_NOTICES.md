@@ -20714,3 +20714,11 @@ SOFTWARE.
 The application bundles Montserrat Medium from LVGL v9.2.2 for previews and its LVGL bitmap subsets for generated firmware. Its embedded copyright is Copyright 2011 The Montserrat Project Authors. The original font is SIL Open Font License 1.1: [full notice](src/displays/fonts/Montserrat-OFL.txt). Its source SHA-256 is `421f26b23e2be6b98373d32acd3cb2897b154d4bf0a77d26534ce476e4cbed53`.
 
 Generated display firmware resolves LVGL 9.2.2 from the official ESP-IDF Component Registry. LVGL is MIT-licensed: [full notice](src/displays/fonts/LVGL-MIT.txt). It is a firmware dependency, not a bundled ESP-IDF SDK. Font subsets are produced by the official MIT-licensed [lv_font_conv](https://github.com/lvgl/lv_font_conv), pinned to 1.5.3 for regeneration; the converter is not bundled in the desktop app.
+
+## Waveshare JD9365 panel initialization
+
+The 10.1-DSI-TOUCH-A module uses the initialization data from Waveshare-ESP32-components (commit 80402cdb12d5170f0a0b1d8bc58f64d0ce175d3e), display/lcd/esp_lcd_jd9365/esp_lcd_jd9365.c.
+SPDX-FileCopyrightText: 2024 Espressif Systems (Shanghai) CO LTD. Licensed under Apache-2.0.
+Source: https://github.com/waveshareteam/Waveshare-ESP32-components/tree/80402cdb12d5170f0a0b1d8bc58f64d0ce175d3e/display/lcd/esp_lcd_jd9365
+
+Generated firmware uses Espressif esp_lcd_jd9365, esp_lcd_touch_gt911, esp_codec_dev and esp_video under their upstream licenses; source archives and license files are managed by ESP-IDF Component Manager.

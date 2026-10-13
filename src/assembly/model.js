@@ -1,3 +1,6 @@
+import { terminalLayout } from './terminalLayout.js';
+import { reanchorManualRoute } from './wireRouting.js';
+import { hardwareProvider, resourceIssues, claimedGpio, sharedPinProblem } from '../hardware/resources.js';
 import { networkProvider, networkIssues, spiOptions, spiUsage } from '../network/model.js';
 export const DEFAULT_BOARD_POSITION = { x: 100, y: 40 };
 export const DEFAULT_VIEWPORT = { x: 0, y: 0, zoom: 1 };
@@ -5,9 +8,28 @@ const lookup = (items, id) => items.find(item => item.id === id);
 export const boardFor = (project, catalog) => lookup(catalog.boards, project.boardId);
 export const moduleFor = (component, catalog) => lookup(catalog.modules, component.moduleId);
 
+export function transformAssembly(project,catalog,transform){
+ const previous=project.assembly.positions,positions={...previous,...transform.positions},board=boardFor(project,catalog);
+ const connections=project.assembly.connections.map(wire=>{
+  if(!wire.route?.length)return wire;
+  const oldSource=previous.board,newSource=positions.board,oldTarget=previous[wire.componentId],newTarget=positions[wire.componentId];
+  if(!oldSource || !newSource || !oldTarget || !newTarget || oldSource.x===newSource.x && oldSource.y===newSource.y && oldTarget.x===newTarget.x && oldTarget.y===newTarget.y)return wire;
+  const pin=board?.pins.find(pin=>pin.id===wire.boardPinId),component=project.components.find(component=>component.id===wire.componentId);
+  const terminal=component && terminalLayout(moduleFor(component,catalog),project.assembly.portSides?.[component.id]).terminals.find(terminal=>terminal.id===wire.terminalId);
+  if(!pin || !terminal)return wire;
+  const anchor=(position,contact)=>[position.x+contact.x,position.y+contact.y];
+  const points=reanchorManualRoute(anchor(oldSource,pin),anchor(oldTarget,terminal),wire.route,anchor(newSource,pin),anchor(newTarget,terminal));
+  const updated={...wire},route=points.slice(1,-1).map(([x,y])=>({x,y}));
+  updated.route=route.length?route:[{x:(points[0][0]+points.at(-1)[0])/2,y:(points[0][1]+points.at(-1)[1])/2}];
+  return updated;
+ });
+ return {...project,assembly:{...project.assembly,positions,connections,viewport:transform.viewport || project.assembly.viewport}};
+}
+
 export function moduleProblem(component, catalog, board = null) {
   const module = moduleFor(component, catalog);
   if (!module) return 'Модуль не установлен в библиотеке.';
+  if (board && module.hardwareInterface && !hardwareProvider(component,module,board)) return 'Выберите совместимый аппаратный интерфейс платы.';
   if (module.version !== component.moduleVersion) return `Требуется модуль ${component.moduleId} версии ${component.moduleVersion}; установлен ${module.version}.`;
   if (board && module.compatibility.espIdf !== board.espIdfVersion) return 'Модуль несовместим с целевой версией ESP-IDF платы.';
   if (module.network && board && !board.networkInterfaces?.some(provider=>provider.family===module.network.family)) return 'Для выбранной платы нет описанного сетевого интерфейса этого типа.';
@@ -20,7 +42,8 @@ export function pinProblem(project, pin, board) {
   if (pin.kind !== 'gpio') return pin.kind === 'ground' ? null : 'Питание и управляющие контакты нельзя использовать как GPIO.';
   if (pin.reservedReason) return pin.reservedReason;
   if (board.reservedGpios?.[pin.gpio]) return board.reservedGpios[pin.gpio];
-  if (pin.sharedWith && project.boardSettings?.[pin.sharedWith] !== 'disconnected') return 'Контакт разделяется с камерой. Сначала проверьте и укажите, что камера отключена.';
+  const shared = sharedPinProblem(project,pin,board);
+  if (shared) return shared;
   return null;
 }
 
@@ -39,6 +62,8 @@ export function connectionProblem(project, catalog, componentId, terminalId, pin
   if (terminal.kind === 'power') return pin.kind === 'power' && pin.voltage === terminal.voltage ? null : 'Питание компонента подключается к контакту платы с указанным напряжением.';
   if (terminal.kind === 'ground') return pin.kind === 'ground' ? null : 'Общий контакт / катод должен быть подключен к GND. Питание и GPIO здесь недопустимы.';
   if (pin.kind !== 'gpio') return 'Сигнальный контакт подключается к GPIO, а не к питанию, GND или управлению.';
+  const claim = claimedGpio(project,catalog,pin.gpio);
+  if (claim) return `GPIO${pin.gpio} используется компонентом «${claim.name}» (${claim.label || claim.key}).`;
   const restriction = pinProblem(project, pin, board);
   if (restriction) return restriction;
   const capability = terminal.kind === 'gpio-output' ? 'digital-output' : terminal.kind === 'gpio-input' ? 'digital-input' : null;
@@ -92,19 +117,29 @@ export function addHardware(project, module, catalog = null) {
   while (project.components.some(component => component.name === instanceName(number) || component.name === `${module.name} ${number}`)) number++;
   const name = instanceName(number);
   const parameters=Object.fromEntries(Object.entries(module.parameters).map(([key,parameter])=>[key,parameter.default]));
+  if(module.hardwareInterface&&catalog){const provider=boardFor(project,catalog)?.peripherals?.find(provider=>provider.family===module.hardwareInterface.family && provider.interface===module.hardwareInterface.interface);parameters.interfaceId=provider?.id || '';}
   if(module.network&&catalog){const board=boardFor(project,catalog),provider=board.networkInterfaces?.find(provider=>provider.family===module.network.family);if(!provider)throw new Error('На этой плате нет описанного сетевого интерфейса.');if(project.components.some(component=>networkProvider(component,board,module)?.id===provider.id))throw new Error('Этот встроенный интерфейс уже добавлен.');parameters.providerId=provider.id;}
-  if(module.parameters.spiHost&&catalog){const options=spiOptions(project,catalog,id).filter(option=>!option.busy.length);parameters.spiHost=options.find(option=>option.value===String(parameters.spiHost))?.value||options[0]?.value||'';}
+  if(module.parameters.spiHost&&catalog&&(!module.network||networkProvider({parameters},boardFor(project,catalog),module)?.interface==='spi')){const options=spiOptions(project,catalog,id).filter(option=>!option.busy.length);parameters.spiHost=options.find(option=>option.value===String(parameters.spiHost))?.value||options[0]?.value||'';}
 
   const occupied = project.components.map(component => {
-    const visual = catalog?.modules.find(item => item.id === component.moduleId)?.visual;
-    return { ...project.assembly.positions[component.id], width: visual?.width || 230, height: visual?.height || 185 };
+    const layout = terminalLayout(catalog?.modules.find(item => item.id === component.moduleId), project.assembly.portSides?.[component.id]);
+    return { ...project.assembly.positions[component.id], width: layout.width, height: layout.height };
   });
-  const width = module.visual?.width || 230, height = module.visual?.height || 185;
-  let slot = 0, position;
-  do {
-    position = { x: 670 + (Math.floor(slot / 3) % 12) * 270, y: 100 + (Math.floor(slot / 36) * 3 + slot % 3) * 215 };
-    slot++;
-  } while (occupied.some(value => position.x < value.x + value.width + 20 && position.x + width + 20 > value.x && position.y < value.y + value.height + 20 && position.y + height + 20 > value.y));
+  const board = catalog && boardFor(project, catalog), boardPosition = project.assembly.positions.board;
+  if (board) occupied.push({ ...boardPosition, width: board.width, height: board.height });
+  const { width, height } = terminalLayout(module);
+  const origin = board ? { x: boardPosition.x + board.width + 48, y: boardPosition.y + 80 } : { x: 670, y: 100 };
+  const xs = new Set([origin.x]), ys = new Set([origin.y]);
+  for (const rectangle of occupied) {
+    xs.add(rectangle.x + rectangle.width + 24); xs.add(rectangle.x - width - 24);
+    ys.add(rectangle.y); ys.add(rectangle.y + rectangle.height + 24); ys.add(rectangle.y - height - 24);
+  }
+  const candidates = [...xs].flatMap(x => [...ys].map(y => ({ x, y }))).filter(point => Math.abs(point.x) <= 5000 && Math.abs(point.y) <= 5000);
+  const distance = point => (point.x - origin.x) ** 2 + (point.y - origin.y) ** 2;
+  candidates.sort((a, b) => distance(a) - distance(b) || Number(a.y < origin.y) - Number(b.y < origin.y) || a.y - b.y || a.x - b.x);
+  const free = point => !occupied.some(value => point.x < value.x + value.width + 20 && point.x + width + 20 > value.x && point.y < value.y + value.height + 20 && point.y + height + 20 > value.y);
+  const position = candidates.find(point => point.y >= boardPosition.y && free(point)) || candidates.find(free);
+  if (!position) throw new Error('Не удалось найти свободное место для компонента. Переместите плату или один из компонентов.');
   return {
     ...project,
     components: [...project.components, { id, moduleId: module.id, moduleVersion: module.version, name, parameters }],
@@ -128,13 +163,14 @@ export function validateAssembly(project, catalog) {
   const issues = [];
   const issue = (severity, code, message, fields = {}) => issues.push({ severity, code, message, ...fields });
   const board = boardFor(project, catalog);
+  issues.push(...resourceIssues(project,catalog));
   if (!board) { issue('error', 'board-missing', 'Плата отсутствует в каталоге.'); return issues; }
   if (!board.pins.length) issue('error', 'board-generic', 'Выберите конкретную плату. Общая ESP32-S3 не имеет распиновки.');
   else if (!board.pinoutVerified) issue('warning', 'revision-unconfirmed', 'Ревизия ESP32-S3-ETH не подтверждена. Сверьте физическую плату с документацией профиля.');
   for (const [key, option] of Object.entries(board.options || {})) {
     const value = project.boardSettings?.[key] || option.default;
     if (!option.values.some(item => item.value === value)) issue('error', 'board-option', `Неизвестное значение настройки «${option.label}».`);
-    else if (value === 'unknown') issue('warning', 'shared-pins', 'Наличие камеры не проверено. Ее общие контакты заблокированы.');
+    else if (value === 'unknown' && board.pins.some(pin=>Array.isArray(pin.sharedWith)?pin.sharedWith.includes(key):pin.sharedWith===key)) issue('warning', 'shared-pins', `«${option.label}»: подключение не подтверждено. Общие контакты ограничены.`);
   }
   for (const component of project.components) {
     const fields = { componentId: component.id };
@@ -148,7 +184,7 @@ export function validateAssembly(project, catalog) {
       if (parameter.type === 'select' && !parameter.options.some(option => option.value === value)) issue('error', 'parameter-option', `${component.name}: неверный параметр «${parameter.label}».`, fields);
     }
     if(module.network)for(const message of networkIssues(component,board,module))issue('error','network-config',component.name+': '+message,fields);
-    if(module.parameters.spiHost&&!board.interfaces?.spi?.hosts.includes(Number(component.parameters.spiHost)))issue('error','spi-host',component.name+': выберите доступный SPI.',fields);
+    if(module.parameters.spiHost&&(!module.network||networkProvider(component,board,module)?.interface==='spi')&&!board.interfaces?.spi?.hosts.includes(Number(component.parameters.spiHost)))issue('error','spi-host',component.name+': выберите доступный SPI.',fields);
     if (module.constraints.requiresSeriesResistor) {
       const { resistorOhms, forwardVoltage } = component.parameters;
       const currentMa = (module.constraints.signalVoltage - forwardVoltage) / resistorOhms * 1000;

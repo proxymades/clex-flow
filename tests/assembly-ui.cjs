@@ -32,7 +32,7 @@ const { chromium } = require('playwright');
  await pin('P34').click();
  await page.getByRole('alert').filter({hasText:'уже назначен'}).waitFor();
  await pin('P32').click();
- await page.getByRole('alert').filter({hasText:'разделяется с камерой'}).waitFor();
+ await page.getByRole('alert').filter({hasText:'Контакт используется интерфейсом'}).waitFor();
  await page.getByRole('button',{name:'Отменить соединение',exact:true}).click();
  await page.locator('.board-drawing').click();
  await page.getByRole('combobox',{name:'Камера на разъеме',exact:true}).selectOption('disconnected');

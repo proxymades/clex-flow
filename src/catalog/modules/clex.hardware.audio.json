@@ -1,0 +1,42 @@
+{
+  "id": "clex.hardware.audio",
+  "version": "1.0.0",
+  "kind": "hardware",
+  "name": "Динамик",
+  "description": "Подключение через встроенный интерфейс из описания платы.",
+  "category": "audio",
+  "categoryName": "Аудио",
+  "icon": "Volume2",
+  "color": "#f59e0b",
+  "visual": {
+    "svg": "audio.svg",
+    "width": 250,
+    "height": 185
+  },
+  "terminals": [],
+  "inputs": [],
+  "outputs": [],
+  "parameters": {
+    "interfaceId": {
+      "label": "Аудиоинтерфейс",
+      "type": "hardware-interface",
+      "default": ""
+    }
+  },
+  "constraints": {},
+  "hardwareInterface": {
+    "family": "audio",
+    "interface": "i2s"
+  },
+  "compatibility": {
+    "projectFormat": 3,
+    "targets": [
+      "esp32p4"
+    ],
+    "espIdf": "5.4.4"
+  },
+  "firmware": {
+    "status": "implemented",
+    "generatorKey": "audio-interface"
+  }
+}

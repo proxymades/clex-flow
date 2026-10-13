@@ -1,11 +1,11 @@
 import {memo,useEffect,useState} from 'react';
 import {Handle,Position,useUpdateNodeInternals} from '@xyflow/react';
-import {Timer,ScanLine,ArrowUpRight,Repeat2,Terminal,Box,TriangleAlert,Monitor,Hash,Network,Globe,Link2} from 'lucide-react';
+import {Timer,ScanLine,ArrowUpRight,Repeat2,Terminal,Box,TriangleAlert,Monitor,Hash,Network,Globe,Link2, Camera, Volume2 } from 'lucide-react';
 import ScreenPreview from '../displays/ScreenPreview.jsx';
 import PortValueStates from './PortValueStates.jsx';
 import {TYPE_COLORS,TYPE_NAMES} from './model.js';
 import {visiblePorts,nodeDisplayName} from './presentation.js';
-const icons={Timer,ScanLine,ArrowUpRight,Repeat2,Terminal,Monitor,Hash,Network,Globe};
+const icons={Timer,ScanLine,ArrowUpRight,Repeat2,Terminal,Monitor,Hash,Network,Globe,Camera,Volume2};
 function LogicNode({id,data,selected}){
  const {definition,node,binding,issueCount,onPort,pending,display,screen,project,catalog,connection,onBindData}=data;
  const [expanded,setExpanded]=useState(false);
@@ -14,7 +14,7 @@ function LogicNode({id,data,selected}){
  const layout=JSON.stringify([inputs,outputs].map(items=>items.map(port=>[port.id,port.name])));
  const updateNodeInternals=useUpdateNodeInternals();useEffect(()=>{updateNodeInternals(id);},[id,layout,updateNodeInternals]);
  const Icon=icons[definition?.icon]||Box;
- const summary=definition?.editor==='screen'?(binding?.component?.name||'Выберите дисплей'):definition?.id==='clex.logic.timer'?`Каждые ${node.parameters.intervalMs} мс`:definition?.id==='clex.logic.counter'?`Начало: ${node.parameters.initialValue} · изменение: ${node.parameters.step}`:definition?.id==='clex.logic.internet-check'?(node.parameters.url||'Укажите адрес проверки'):definition?.constraints.hardware?(binding?.component?.name||'Выберите компонент'):node.parameters.message||'Пустое сообщение';
+ const summary=definition?.editor==='screen'?(binding?.component?.name||'Выберите дисплей'):definition?.id==='clex.logic.timer'?`Каждые ${node.parameters.intervalMs} мс`:definition?.id==='clex.logic.stopwatch'?`00:00:00 · ${node.parameters.autoStart?'автозапуск':'запуск по сигналу'}`:definition?.id==='clex.logic.counter'?`Начало: ${node.parameters.initialValue} · изменение: ${node.parameters.step}`:definition?.id==='clex.logic.internet-check'?(node.parameters.url||'Укажите адрес проверки'):definition?.constraints.hardware?(binding?.component?.name||'Выберите компонент'):node.parameters.message||'Пустое сообщение';
  const title=nodeDisplayName(node,project,catalog);
  function portView(port,direction){
   const active=pending?.nodeId===id&&pending.portId===port.id&&pending.direction===direction,tip=id+'-'+direction+'-'+encodeURIComponent(port.id);

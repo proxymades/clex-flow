@@ -1,0 +1,111 @@
+{
+  "id": "clex.logic.camera-capture",
+  "version": "1.0.0",
+  "kind": "logic",
+  "name": "Сделать кадр",
+  "description": "Получает кадр с камеры и передает его размеры и номер. Захват выполняется в отдельной задаче.",
+  "category": "camera",
+  "categoryName": "Камеры",
+  "icon": "Camera",
+  "color": "#60a5fa",
+  "inputs": [
+    {
+      "id": "trigger",
+      "name": "Сделать кадр",
+      "type": "event",
+      "required": true,
+      "description": "Запускает действие при получении сигнала."
+    }
+  ],
+  "outputs": [
+    {
+      "id": "changed",
+      "name": "Результат обновлен",
+      "type": "event",
+      "description": "Передает сигнал после завершения действия или ошибки."
+    },
+    {
+      "id": "done",
+      "name": "Кадр получен",
+      "type": "event",
+      "additional": true,
+      "description": "Срабатывает после успешного выполнения."
+    },
+    {
+      "id": "failed",
+      "name": "Ошибка",
+      "type": "event",
+      "additional": true,
+      "description": "Срабатывает, если действие выполнить не удалось."
+    },
+    {
+      "id": "success",
+      "name": "Успешно?",
+      "type": "boolean",
+      "readyOn": "changed",
+      "description": "Да, если действие выполнено успешно."
+    },
+    {
+      "id": "error",
+      "name": "Описание ошибки",
+      "type": "text",
+      "readyOn": "changed",
+      "additional": true,
+      "description": "Сообщение об ошибке подключения или выполнения."
+    },
+    {
+      "id": "frames",
+      "name": "Получено кадров",
+      "type": "number",
+      "readyOn": "changed",
+      "description": "Передает измеренное значение после получения кадра."
+    },
+    {
+      "id": "width",
+      "name": "Ширина кадра",
+      "type": "number",
+      "readyOn": "changed",
+      "description": "Передает измеренное значение после получения кадра."
+    },
+    {
+      "id": "height",
+      "name": "Высота кадра",
+      "type": "number",
+      "readyOn": "changed",
+      "description": "Передает измеренное значение после получения кадра."
+    },
+    {
+      "id": "bytes",
+      "name": "Размер кадра, байт",
+      "type": "number",
+      "readyOn": "changed",
+      "description": "Передает измеренное значение после получения кадра."
+    }
+  ],
+  "parameters": {
+    "componentId": {
+      "label": "Камера",
+      "type": "component",
+      "default": ""
+    }
+  },
+  "constraints": {
+    "hardware": {
+      "kind": "peripheral",
+      "modules": [
+        "clex.hardware.camera"
+      ]
+    }
+  },
+  "compatibility": {
+    "projectFormat": 3,
+    "targets": [
+      "esp32p4"
+    ],
+    "espIdf": "5.4.4"
+  },
+  "firmware": {
+    "status": "implemented",
+    "generatorKey": "camera-capture"
+  }
+}

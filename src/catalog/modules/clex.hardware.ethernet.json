@@ -90,7 +90,8 @@
   "compatibility": {
     "projectFormat": 3,
     "targets": [
-      "esp32s3"
+      "esp32s3",
+      "esp32p4"
     ],
     "espIdf": "5.4.4"
   },

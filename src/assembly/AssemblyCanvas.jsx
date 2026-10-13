@@ -6,8 +6,9 @@ import CanvasControls from '../components/CanvasControls.jsx';
 import useCanvasKeys from '../components/useCanvasKeys.js';
 import { moduleFor, pinProblem, connectionProblem } from './model.js';
 import { physicalConnection, physicalEdges } from './flow.js';
-import { allocateWireLanes, wireFitPadding } from './wireRouting.js';
+import { allocateWireLanes, routeAssemblyEdges, wireFitPadding } from './wireRouting.js';
 import { wireColors, GROUND_COLOR } from './wireColors.js';
+import { claimedGpio } from '../hardware/resources.js';
 import { terminalLayout } from './terminalLayout.js';
 import { AssemblyBoardNode, AssemblyHardwareNode } from './AssemblyNodes.jsx';
 import AssemblyWire from './AssemblyWire.jsx';
@@ -20,11 +21,13 @@ const viewportData = viewport => ({
   x: clamp(viewport.x, -50000, 50000), y: clamp(viewport.y, -50000, 50000), zoom: clamp(viewport.zoom, 0.2, 3),
 });
 
-export default function AssemblyCanvas({ project, board, catalog, selection, setSelection, pending, setPending, onTerminal, onPin, onConnect, onError, onTransform, onInteraction, busy }) {
+export default function AssemblyCanvas({ project, board, catalog, selection, setSelection, pending, setPending, onTerminal, onPin, onConnect, onError, onTransform, onInteraction, onRouteChange, focusComponentId, onFocusDone, busy }) {
   const root = useRef(null);
   const [instance, setInstance] = useState(null), [measurements, setMeasurements] = useState({}), [ready, setReady] = useState(false);
   const [positions, setPositions] = useState({}), [zoom, setZoom] = useState(project.assembly.viewport.zoom);
   const [size, setSize] = useState({ width: 0, height: 0 });
+  const [connectionOrigin, setConnectionOrigin] = useState(null);
+  const connectionSource = connectionOrigin || pending;
   const draftPositions = useRef({}), dragging = useRef(false), interactions = useRef(new Set());
   const initial = useRef(true), silentFits = useRef(0), connectionStart = useRef(null);
   const autoFit = useRef(same(project.assembly.viewport, { x: 0, y: 0, zoom: 1 }));
@@ -87,7 +90,8 @@ export default function AssemblyCanvas({ project, board, catalog, selection, set
       onConnect(componentId, terminalId, pinId);
     } catch (error) { onError(error.message); }
   }, [busy, spaceHeld, onConnect, onError]);
-  const connectStart = useCallback(event => {
+  const connectStart = useCallback((event, { nodeId, handleId } = {}) => {
+    if (nodeId && handleId) setConnectionOrigin(nodeId === 'board' ? { boardPinId: handleId } : { componentId: nodeId, terminalId: handleId });
     connectionStart.current = { x: event.clientX, y: event.clientY };
     interaction('connection', true);
   }, [interaction]);
@@ -99,17 +103,18 @@ export default function AssemblyCanvas({ project, board, catalog, selection, set
       if (problem) onError(problem);
     }
     connectionStart.current = null;
+    setConnectionOrigin(null);
     interaction('connection', false);
   }, [problemFor, onError, interaction]);
 
   const colors = useMemo(() => wireColors(project, catalog), [project, catalog]);
   const modelNodes = useMemo(() => {
     const pins = board.pins.map(pin => {
-      const blocked = pinProblem(project, pin, board);
+      const blocked = pinProblem(project, pin, board) || (claimedGpio(project,catalog,pin.gpio) ? 'Контакт занят аппаратным интерфейсом' : null);
       const connectedWire = project.assembly.connections.find(wire => wire.boardPinId === pin.id);
-      return { pin, blocked, selected: selection?.type === 'pin' && selection.id === pin.id,
+      return { pin, blocked, selected: selection?.type === 'pin' && selection.id === pin.id || connectionSource?.boardPinId === pin.id,
         connected: project.assembly.connections.some(wire => wire.boardPinId === pin.id),
-        candidate: pending?.componentId && !connectionProblem(project, catalog, pending.componentId, pending.terminalId, pin.id),
+        candidate: connectionSource?.componentId && !connectionProblem(project, catalog, connectionSource.componentId, connectionSource.terminalId, pin.id),
         color: colors[connectedWire?.id] || (pin.kind === 'ground' ? GROUND_COLOR : pin.kind === 'power' ? '#fb7185' : pin.kind === 'control' ? '#e9b968' : blocked ? '#576179' : '#34d399') };
     });
     const nodes = [{
@@ -124,7 +129,8 @@ export default function AssemblyCanvas({ project, board, catalog, selection, set
       const terminals = layout.terminals.map(terminal => {
         const wire = project.assembly.connections.find(wire => wire.componentId === component.id && wire.terminalId === terminal.id);
         return { terminal, connected: Boolean(wire), pin: wire && board.pins.find(pin => pin.id === wire.boardPinId),
-          active: pending?.componentId === component.id && pending.terminalId === terminal.id,
+          active: connectionSource?.componentId === component.id && connectionSource.terminalId === terminal.id,
+          candidate: Boolean(connectionSource?.boardPinId && !connectionProblem(project, catalog, component.id, terminal.id, connectionSource.boardPinId)),
           color: colors[wire?.id] || (terminal.kind === 'ground' ? GROUND_COLOR : module.color) };
       });
       nodes.push({
@@ -135,19 +141,21 @@ export default function AssemblyCanvas({ project, board, catalog, selection, set
       });
     }
     return nodes;
-  }, [project, board, catalog, colors, selection, pending, measurements, pinClick, terminalClick, selectNode, busy, spaceHeld]);
+  }, [project, board, catalog, colors, selection, connectionSource, measurements, pinClick, terminalClick, selectNode, busy, spaceHeld]);
   const nodes = useMemo(() => modelNodes.map(node => positions[node.id] ? { ...node, ...positions[node.id] } : node), [modelNodes, positions]);
-  const edges = useMemo(() => allocateWireLanes(physicalEdges(project).map(edge => {
+  const routeInteraction=useCallback(active=>interaction('wire-route',active),[interaction]);
+  const projectedEdges = useMemo(() => allocateWireLanes(physicalEdges(project).map(edge => {
     const wire = project.assembly.connections.find(wire => wire.id === edge.id);
     const component = project.components.find(component => component.id === wire.componentId), module = component && moduleFor(component, catalog);
     const terminal = module?.terminals.find(terminal => terminal.id === wire.terminalId), targetLayout = terminalLayout(module, project.assembly.portSides?.[wire.componentId]), targetTerminal = targetLayout.terminals.find(item => item.id === wire.terminalId), pin = board.pins.find(pin => pin.id === wire.boardPinId);
     const diagnostic = connectionProblem(project, catalog, wire.componentId, wire.terminalId, wire.boardPinId);
     const selected = selection?.type === 'wire' && selection.id === wire.id;
     const label = 'Соединение ' + (component?.name || wire.componentId) + ': ' + (terminal?.label || wire.terminalId) + ' → ' + (pin?.label || wire.boardPinId);
-    return { ...edge, selected, ariaLabel: label, data: { label, diagnostic, selected, sourcePin: pin, targetTerminal, targetWidth: targetLayout.width, targetHeight: targetLayout.height, boardWidth: board.width, boardHeight: board.height, ground: terminal?.kind === 'ground',
+    return { ...edge, selected, ariaLabel: label, data: { label, diagnostic, selected, manualRoute: wire.route, manualSourceAnchor: pin && [project.assembly.positions.board.x+pin.x,project.assembly.positions.board.y+pin.y], manualTargetAnchor: targetTerminal && [project.assembly.positions[wire.componentId].x+targetTerminal.x,project.assembly.positions[wire.componentId].y+targetTerminal.y], editable: !busy && !spaceHeld, onRouteChange, onRouteInteraction: routeInteraction, sourcePin: pin, targetTerminal, targetWidth: targetLayout.width, targetHeight: targetLayout.height, boardWidth: board.width, boardHeight: board.height, ground: terminal?.kind === 'ground',
       color: diagnostic ? '#fb7185' : colors[wire.id],
       highlighted: selected || (selection?.type === 'component' && selection.id === wire.componentId), onSelect: selectWire } };
-  })), [project, board, catalog, colors, selection, selectWire]);
+  })), [project, board, catalog, colors, selection, selectWire, busy, spaceHeld, onRouteChange, routeInteraction]);
+  const edges=useMemo(()=>routeAssemblyEdges(projectedEdges,nodes,board),[projectedEdges,nodes,board]);
 
   const commitPositions = useCallback(updates => {
     const moved = Object.fromEntries(Object.entries(updates).map(([id, change]) => [id, change.position]));
@@ -202,11 +210,32 @@ export default function AssemblyCanvas({ project, board, catalog, selection, set
     return cameraAction(() => factor > 1 ? instance.zoomIn({ duration: 0 }) : instance.zoomOut({ duration: 0 }));
   };
 
+  const focusedComponent = useRef(null);
+  useEffect(() => {
+    if (!focusComponentId || !ready || !instance || busy || dragging.current || focusedComponent.current === focusComponentId) return;
+    const node = nodes.find(node => node.id === focusComponentId);
+    if (!node) return;
+    focusedComponent.current = focusComponentId;
+    autoFit.current = false;
+    const viewport = instance.getViewport(), margin = 28;
+    const next = { ...viewport, zoom: Math.max(0.2, Math.min(viewport.zoom, (size.width - margin * 2) / node.width, (size.height - margin * 2) / node.height)) };
+    const left = node.position.x * next.zoom + next.x, top = node.position.y * next.zoom + next.y;
+    const right = left + node.width * next.zoom, bottom = top + node.height * next.zoom;
+    if (left < margin) next.x += margin - left; else if (right > size.width - margin) next.x += size.width - margin - right;
+    if (top < margin) next.y += margin - top; else if (bottom > size.height - margin) next.y += size.height - margin - bottom;
+    if (same(next, viewport)) { onFocusDone(focusComponentId); return; }
+    interaction('viewport', true);
+    Promise.resolve(instance.setViewport(next, { duration: 0 })).then(() => {
+      setZoom(next.zoom);
+      onTransform({ viewport: viewportData(next) });
+    }).finally(() => { interaction('viewport', false); onFocusDone(focusComponentId); });
+  }, [focusComponentId, ready, instance, busy, nodes, size, interaction, onTransform, onFocusDone]);
+
   return <div className={['assembly-canvas', busy ? 'canvas-busy' : '', spaceHeld ? 'canvas-space-pan' : ''].join(' ')}>
     <div className="canvas-top"><span className="badge purple"><MousePointer2 size={12} />МОНТАЖ / {project.components.length} компонентов</span><span className="canvas-scale">{Math.round(zoom * 100)}%</span></div>
     {pending && <div className="connection-prompt"><span className="dot green-dot" />{pending.componentId ? 'Выберите контакт платы для соединения' : 'Выберите контакт компонента'}<button aria-label="Отменить соединение" className="icon-button" onClick={() => setPending(null)}><Unplug size={15} /></button></div>}
     <div ref={root} className="assembly-flow-region" data-ready={ready} aria-label="Холст монтажа">
-      <ReactFlow nodes={nodes} edges={edges} nodeTypes={nodeTypes} edgeTypes={edgeTypes} defaultViewport={project.assembly.viewport}
+      <ReactFlow elevateNodesOnSelect={false} nodes={nodes} edges={edges} nodeTypes={nodeTypes} edgeTypes={edgeTypes} defaultViewport={project.assembly.viewport}
         onInit={setInstance} onNodesChange={changeNodes} onNodeClick={(_event, node) => selectNode(node.id)}
         onNodeDragStart={beginDrag} onNodeDragStop={finishDrag}
         onMoveStart={moveStart} onMoveEnd={moveEnd} onConnect={connect} onConnectStart={connectStart} onConnectEnd={connectEnd}

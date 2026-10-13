@@ -41,6 +41,7 @@ pub struct Build {
     pub binary: String,
     pub environment_root: String,
     pub environment_identity: String,
+    pub target: String,
     hashes: Vec<(String, String)>,
 }
 #[derive(Clone, Serialize)]
@@ -60,6 +61,10 @@ pub struct Event {
 #[serde(rename_all = "camelCase")]
 pub struct Specification {
     pub board_id: String,
+    #[serde(default)]
+    pub board_revision: Option<String>,
+    #[serde(default)]
+    pub feature_runtimes: Vec<String>,
     pub console_mode: String,
     pub main_c: String,
     pub fingerprint: String,
@@ -129,8 +134,7 @@ fn prepare(
     environment: &Environment,
     spec: &Specification,
 ) -> Result<PathBuf, String> {
-    if !["waveshare-esp32-s3-eth", "espressif-devkitc-1-v1-1-n8r8"]
-        .contains(&spec.board_id.as_str())
+    if crate::boards::profile(&spec.board_id).is_err()
         || !["usb", "uart"].contains(&spec.console_mode.as_str())
         || spec.main_c.len() > 2 * 1024 * 1024
     {
@@ -162,23 +166,51 @@ fn verify_specification(spec: &Specification) -> Result<(), String> {
     {
         return Err("Неизвестная сетевая библиотека".into());
     }
-    let bytes =
-        if let (Some(graphics), Some(network)) = (&spec.graphics_runtime, &spec.network_runtime) {
-            serde_json::to_vec(&(
-                &spec.board_id,
-                &spec.console_mode,
-                &spec.main_c,
-                graphics,
-                network,
-            ))
-        } else if let Some(network) = &spec.network_runtime {
-            serde_json::to_vec(&(&spec.board_id, &spec.console_mode, &spec.main_c, network))
-        } else if let Some(runtime) = &spec.graphics_runtime {
-            serde_json::to_vec(&(&spec.board_id, &spec.console_mode, &spec.main_c, runtime))
-        } else {
-            serde_json::to_vec(&(&spec.board_id, &spec.console_mode, &spec.main_c))
+    let board = crate::boards::profile(&spec.board_id)?;
+    if !board["firmware"]["consoleModes"]
+        .as_array()
+        .is_some_and(|modes| modes.iter().any(|mode| mode == &spec.console_mode))
+    {
+        return Err("Режим консоли недоступен на этой плате".into());
+    }
+    if board["firmware"]["revisionConfigs"].is_object() {
+        if !spec
+            .board_revision
+            .as_deref()
+            .is_some_and(|revision| board["firmware"]["revisionConfigs"][revision].is_string())
+        {
+            return Err("Выберите ревизию микроконтроллера".into());
         }
-        .map_err(|e| e.to_string())?;
+    } else if spec.board_revision.is_some() {
+        return Err("Неизвестная настройка ревизии платы".into());
+    }
+    let profiles: serde_json::Value =
+        serde_json::from_str(include_str!("../../src/firmware/runtime-profiles.json"))
+            .map_err(|e| e.to_string())?;
+    let mut seen = std::collections::HashSet::new();
+    for feature in &spec.feature_runtimes {
+        if !seen.insert(feature) || profiles[feature]["target"] != board["target"] {
+            return Err("Неизвестный или несовместимый профиль драйвера".into());
+        }
+    }
+    let mut identity = vec![
+        serde_json::json!(spec.board_id),
+        serde_json::json!(spec.console_mode),
+        serde_json::json!(spec.main_c),
+    ];
+    if let Some(runtime) = &spec.graphics_runtime {
+        identity.push(serde_json::json!(runtime));
+    }
+    if let Some(runtime) = &spec.network_runtime {
+        identity.push(serde_json::json!(runtime));
+    }
+    if let Some(revision) = &spec.board_revision {
+        identity.push(serde_json::json!(revision));
+    }
+    if !spec.feature_runtimes.is_empty() {
+        identity.push(serde_json::json!(spec.feature_runtimes));
+    }
+    let bytes = serde_json::to_vec(&identity).map_err(|e| e.to_string())?;
     if hash(&bytes) != spec.fingerprint {
         return Err("Контрольная сумма исходников не совпадает".into());
     }
@@ -199,6 +231,25 @@ fn write_project(dir: &PathBuf, spec: &Specification) -> Result<(), String> {
     } else {
         "esp_driver_gpio esp_timer freertos log"
     };
+    let profiles: serde_json::Value =
+        serde_json::from_str(include_str!("../../src/firmware/runtime-profiles.json"))
+            .map_err(|e| e.to_string())?;
+    let mut requirements: Vec<String> = dependencies
+        .split_whitespace()
+        .map(str::to_string)
+        .collect();
+    for feature in &spec.feature_runtimes {
+        for item in profiles[feature]["requires"]
+            .as_array()
+            .ok_or("Нет зависимостей драйвера")?
+        {
+            let item = item.as_str().ok_or("Неизвестная зависимость")?.to_string();
+            if !requirements.contains(&item) {
+                requirements.push(item);
+            }
+        }
+    }
+    let dependencies = requirements.join(" ");
     let mut font_sources = String::new();
     if spec.graphics_runtime.is_some() {
         let fonts: serde_json::Value =
@@ -227,18 +278,47 @@ fn write_project(dir: &PathBuf, spec: &Specification) -> Result<(), String> {
             "dependencies:\n  lvgl/lvgl: \"=9.2.2\"\n",
         )?;
     }
+    if !spec.feature_runtimes.is_empty() {
+        let path = dir.join("main/idf_component.yml");
+        let mut manifest = fs::read_to_string(&path).unwrap_or_else(|_| "dependencies:\n".into());
+        let mut managed = std::collections::HashSet::new();
+        for feature in &spec.feature_runtimes {
+            for (name, version) in profiles[feature]["dependencies"]
+                .as_object()
+                .ok_or("Нет пакетов драйвера")?
+            {
+                if managed.insert(name) {
+                    manifest.push_str(&format!(
+                        "  {name}: \"={}\"\n",
+                        version.as_str().ok_or("Нет версии пакета")?
+                    ));
+                }
+            }
+        }
+        write_source(&path, &manifest)?;
+    }
     write_source(&dir.join("main/main.c"), &spec.main_c)?;
-    let size = if spec.board_id == "waveshare-esp32-s3-eth" {
-        16
-    } else {
-        8
-    };
+    let board = crate::boards::profile(&spec.board_id)?;
+    let size = board["firmware"]["flashSizeMb"]
+        .as_u64()
+        .ok_or("Нет размера Flash")?;
+    let target = board["target"].as_str().ok_or("Нет цели платы")?;
     let console = if spec.console_mode == "usb" {
         "USB_SERIAL_JTAG"
     } else {
         "UART_DEFAULT"
     };
-    write_source(&dir.join("sdkconfig.defaults"),&format!("CONFIG_IDF_TARGET=\"esp32s3\"\nCONFIG_ESPTOOLPY_FLASHSIZE_{size}MB=y\nCONFIG_ESPTOOLPY_FLASHMODE_DIO=y\nCONFIG_FREERTOS_HZ=1000\nCONFIG_LOG_COLORS=n\nCONFIG_ESP_CONSOLE_{console}=y\nCONFIG_ESP_CONSOLE_SECONDARY_NONE=y\n"))?;
+    write_source(&dir.join("sdkconfig.defaults"),&format!("CONFIG_IDF_TARGET=\"{target}\"\nCONFIG_ESPTOOLPY_FLASHSIZE_{size}MB=y\nCONFIG_ESPTOOLPY_FLASHMODE_DIO=y\nCONFIG_FREERTOS_HZ=1000\nCONFIG_LOG_COLORS=n\nCONFIG_ESP_CONSOLE_{console}=y\nCONFIG_ESP_CONSOLE_SECONDARY_NONE=y\n"))?;
+    if let Some(revision) = &spec.board_revision {
+        let path = dir.join("sdkconfig.defaults");
+        let mut contents = fs::read_to_string(&path).map_err(|e| e.to_string())?;
+        contents.push_str(
+            board["firmware"]["revisionConfigs"][revision]
+                .as_str()
+                .ok_or("Нет настроек ревизии")?,
+        );
+        write_source(&path, &contents)?;
+    }
     if spec.graphics_runtime.is_some() {
         let path = dir.join("sdkconfig.defaults");
         let mut contents = fs::read_to_string(&path).map_err(|e| e.to_string())?;
@@ -248,9 +328,42 @@ fn write_project(dir: &PathBuf, spec: &Specification) -> Result<(), String> {
     if spec.network_runtime.is_some() {
         let path = dir.join("sdkconfig.defaults");
         let mut contents = fs::read_to_string(&path).map_err(|e| e.to_string())?;
-        contents.push_str("CONFIG_ETH_USE_SPI_ETHERNET=y\nCONFIG_ETH_SPI_ETHERNET_W5500=y\nCONFIG_MBEDTLS_CERTIFICATE_BUNDLE=y\nCONFIG_MBEDTLS_CERTIFICATE_BUNDLE_DEFAULT_FULL=y\nCONFIG_ESP_NETIF_IP_LOST_TIMER_INTERVAL=1\nCONFIG_PARTITION_TABLE_CUSTOM=y\nCONFIG_PARTITION_TABLE_CUSTOM_FILENAME=\"partitions.csv\"\n");
+        contents.push_str(
+            if board["networkInterfaces"]
+                .as_array()
+                .is_some_and(|interfaces| {
+                    interfaces
+                        .iter()
+                        .any(|interface| interface["interface"] == "rmii")
+                })
+            {
+                "CONFIG_ETH_USE_ESP32_EMAC=y\n"
+            } else {
+                "CONFIG_ETH_USE_SPI_ETHERNET=y\nCONFIG_ETH_SPI_ETHERNET_W5500=y\n"
+            },
+        );
+        contents.push_str("CONFIG_MBEDTLS_CERTIFICATE_BUNDLE=y\nCONFIG_MBEDTLS_CERTIFICATE_BUNDLE_DEFAULT_FULL=y\nCONFIG_ESP_NETIF_IP_LOST_TIMER_INTERVAL=1\nCONFIG_PARTITION_TABLE_CUSTOM=y\nCONFIG_PARTITION_TABLE_CUSTOM_FILENAME=\"partitions.csv\"\n");
         write_source(&path, &contents)?;
         write_source(&dir.join("partitions.csv"), "nvs,data,nvs,0x9000,0x6000\nphy_init,data,phy,0xf000,0x1000\nfactory,app,factory,0x10000,0x300000\n")?;
+    }
+    if !spec.feature_runtimes.is_empty() {
+        let path = dir.join("sdkconfig.defaults");
+        let mut contents = fs::read_to_string(&path).map_err(|e| e.to_string())?;
+        let mut lines = Vec::new();
+        for feature in &spec.feature_runtimes {
+            for line in profiles[feature]["config"]
+                .as_str()
+                .ok_or("Нет настроек драйвера")?
+                .lines()
+            {
+                if !lines.contains(&line) {
+                    lines.push(line);
+                }
+            }
+        }
+        contents.push_str(&lines.join("\n"));
+        contents.push('\n');
+        write_source(&path, &contents)?;
     }
     Ok(())
 }
@@ -523,16 +636,18 @@ pub async fn idf_environment(
     state: tauri::State<'_, Service>,
     root: Option<String>,
     python: Option<String>,
+    target: Option<String>,
 ) -> Result<Environment, String> {
     let inner = state.0.clone();
     if inner.active.lock().map_err(|e| e.to_string())?.is_some() {
         return Err("Нельзя менять среду во время операции".into());
     }
+    let target = crate::boards::target(target)?;
     let lease = reserve(&inner, "00000000-0000-4000-8000-000000000001")?;
     let check_inner = inner.clone();
     let check_app = app.clone();
     let result = tauri::async_runtime::spawn_blocking(move || {
-        crate::sdk::auto_environment(&check_app, &check_inner, root, python)
+        crate::sdk::auto_environment(&check_app, &check_inner, root, python, &target)
     })
     .await
     .map_err(|e| e.to_string())
@@ -565,8 +680,15 @@ pub fn idf_build(
     spec: Specification,
 ) -> Result<(), String> {
     let environment = env_from(&state)?;
-    if environment.sdk_version != crate::sdk::REQUIRED_VERSION {
-        return Err("Текущий генератор ESP32-S3 требует ESP-IDF 5.4.4; выберите совместимую версию в инструментах".into());
+    let board = crate::boards::profile(&spec.board_id)?;
+    let target = board["target"]
+        .as_str()
+        .ok_or("Нет цели платы")?
+        .to_string();
+    if environment.sdk_version != board["espIdfVersion"].as_str().unwrap_or("")
+        || environment.target != target
+    {
+        return Err("Выберите и проверьте SDK и компилятор для выбранной платы".into());
     }
     let inner = state.0.clone();
     let cancel = reserve(&inner, &id)?;
@@ -584,12 +706,12 @@ pub fn idf_build(
         let result = (|| {
             let dir = prepare(&app, &environment, &spec)?;
             let mut cmd = sdk_command(&environment);
-            if spec.graphics_runtime.is_some() {
+            if spec.graphics_runtime.is_some() || !spec.feature_runtimes.is_empty() {
                 cmd.env("IDF_COMPONENT_MANAGER", "1")
                     .env("IDF_COMPONENT_CACHE_PATH", dir.join("component-cache"));
             }
             cmd.current_dir(&dir)
-                .args(["-D", "IDF_TARGET=esp32s3", "build"]);
+                .args(["-D", &format!("IDF_TARGET={target}"), "build"]);
             if !execute(&app, &inner, &id, "build", cmd, &cancel)? {
                 return Ok(None);
             }
@@ -615,6 +737,7 @@ pub fn idf_build(
                     .to_string(),
                 environment_root: environment.root.clone(),
                 environment_identity: environment.identity.clone(),
+                target: target.clone(),
                 hashes,
             };
             inner
@@ -694,7 +817,7 @@ pub fn idf_flash(
                 "-m",
                 "esptool",
                 "--chip",
-                "esp32s3",
+                &build.target,
                 "--port",
                 &port,
                 "--baud",
@@ -800,6 +923,8 @@ mod tests {
     fn graphics_runtime_is_allowlisted_and_part_of_source_identity() {
         let mut spec = Specification {
             board_id: "waveshare-esp32-s3-eth".into(),
+            board_revision: None,
+            feature_runtimes: vec![],
             console_mode: "usb".into(),
             main_c: "source".into(),
             fingerprint: String::new(),
@@ -837,6 +962,8 @@ mod tests {
         for graphics in [None, Some("lvgl-9.2.2".to_string())] {
             let mut spec = Specification {
                 board_id: "waveshare-esp32-s3-eth".into(),
+                board_revision: None,
+                feature_runtimes: vec![],
                 console_mode: "usb".into(),
                 main_c: "source".into(),
                 fingerprint: String::new(),
@@ -931,6 +1058,7 @@ mod tests {
             binary: "app.bin".into(),
             environment_root: "sdk".into(),
             environment_identity: "env".into(),
+            target: "esp32s3".into(),
             hashes: vec![("flash_args".into(), hash(b"verified flash args"))],
         };
         assert!(verify_build(&build, "abc", "sdk").is_ok());

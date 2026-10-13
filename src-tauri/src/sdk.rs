@@ -17,6 +17,8 @@ pub const PLATFORM: &str = "esp32s3";
 #[derive(Clone, Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct Sdk {
+    #[serde(default = "crate::boards::default_target")]
+    pub target: String,
     pub id: String,
     pub family: String,
     pub version: String,
@@ -127,6 +129,15 @@ impl Paths {
             .map_err(|e| e.to_string())?;
         Ok(())
     }
+    pub fn slot_for(&self, version: &str, target: &str) -> Result<PathBuf, String> {
+        crate::boards::compiler(target)?;
+        let slot = self.slot(version)?;
+        Ok(if target == PLATFORM {
+            slot
+        } else {
+            self.managed.join(format!("v{version}-{target}"))
+        })
+    }
     pub fn slot(&self, version: &str) -> Result<PathBuf, String> {
         if !valid_version(version) {
             return Err("Некорректная версия SDK".into());
@@ -153,6 +164,7 @@ fn new_external(root: &Path, python: Option<String>, tools: Option<String>) -> O
     let root = root.canonicalize().ok()?;
     let version = idf_environment::sdk_version(&root).ok()?;
     Some(Sdk {
+        target: PLATFORM.into(),
         id: identity(&root),
         family: "esp-idf".into(),
         version,
@@ -275,13 +287,15 @@ pub fn detect(registry: &mut Registry, paths: &Paths, legacy: Option<&Path>) -> 
             if let Ok(bytes) = fs::read(entry.path().join(".clex-sdk.json")) {
                 if let Ok(owner) = serde_json::from_slice::<Owner>(&bytes) {
                     if owner.family == "esp-idf" && valid_version(&owner.version) {
-                        let slot = paths.slot(&owner.version)?;
+                        let slot = paths.slot_for(&owner.version, &owner.target)?;
                         if slot == entry.path()
                             && !registry.installations.iter().any(|s| s.id == owner.id)
                         {
-                            registry
-                                .installations
-                                .push(managed_sdk(&slot, &owner.version));
+                            registry.installations.push(managed_sdk_for(
+                                &slot,
+                                &owner.version,
+                                &owner.target,
+                            ));
                         }
                     }
                 }
@@ -312,12 +326,19 @@ pub fn detect(registry: &mut Registry, paths: &Paths, legacy: Option<&Path>) -> 
 }
 #[derive(Serialize, Deserialize)]
 struct Owner {
+    #[serde(default = "crate::boards::default_target")]
+    target: String,
     id: String,
     family: String,
     version: String,
 }
+#[cfg(test)]
 pub fn managed_sdk(slot: &Path, version: &str) -> Sdk {
+    managed_sdk_for(slot, version, PLATFORM)
+}
+pub fn managed_sdk_for(slot: &Path, version: &str, target: &str) -> Sdk {
     Sdk {
+        target: target.into(),
         id: identity(slot),
         family: "esp-idf".into(),
         version: version.into(),
@@ -355,7 +376,7 @@ fn no_link(path: &Path) -> Result<(), String> {
     Ok(())
 }
 pub fn claim_slot(paths: &Paths, sdk: &Sdk) -> Result<PathBuf, String> {
-    let slot = paths.slot(&sdk.version)?;
+    let slot = paths.slot_for(&sdk.version, &sdk.target)?;
     fs::create_dir_all(&paths.managed).map_err(|e| e.to_string())?;
     no_link(&paths.managed)?;
     if slot.exists() {
@@ -365,6 +386,7 @@ pub fn claim_slot(paths: &Paths, sdk: &Sdk) -> Result<PathBuf, String> {
         fs::write(
             slot.join(".clex-sdk.json"),
             serde_json::to_vec(&Owner {
+                target: sdk.target.clone(),
                 id: sdk.id.clone(),
                 family: "esp-idf".into(),
                 version: sdk.version.clone(),
@@ -379,7 +401,7 @@ pub fn assert_owned(paths: &Paths, sdk: &Sdk) -> Result<PathBuf, String> {
     if !sdk.managed || sdk.family != "esp-idf" {
         return Err("Удаление и переустановка пользовательских SDK запрещены".into());
     }
-    let slot = paths.slot(&sdk.version)?;
+    let slot = paths.slot_for(&sdk.version, &sdk.target)?;
     if sdk.slot.as_deref() != Some(slot.to_string_lossy().as_ref()) {
         return Err("Путь SDK не соответствует управляемому каталогу".into());
     }
@@ -400,13 +422,21 @@ pub fn assert_owned(paths: &Paths, sdk: &Sdk) -> Result<PathBuf, String> {
     let owner: Owner =
         serde_json::from_slice(&fs::read(slot.join(".clex-sdk.json")).map_err(|e| e.to_string())?)
             .map_err(|e| e.to_string())?;
-    if owner.id != sdk.id || owner.version != sdk.version || owner.family != "esp-idf" {
+    if owner.id != sdk.id
+        || owner.version != sdk.version
+        || owner.family != "esp-idf"
+        || owner.target != sdk.target
+    {
         return Err("Маркер владельца SDK не совпадает".into());
     }
     Ok(slot)
 }
 pub fn validate(paths: &Paths, sdk: &Sdk) -> Result<Environment, String> {
-    idf_environment::inspect(
+    validate_target(paths, sdk, &sdk.target)
+}
+pub fn validate_target(paths: &Paths, sdk: &Sdk, target: &str) -> Result<Environment, String> {
+    idf_environment::inspect_target(
+        target,
         Path::new(&sdk.root),
         sdk.python.as_deref().map(Path::new),
         sdk.tools_path.as_deref().map(Path::new),
@@ -425,6 +455,7 @@ pub fn auto_environment(
     inner: &idf::Inner,
     root: Option<String>,
     python: Option<String>,
+    target: &str,
 ) -> Result<Environment, String> {
     let paths = Paths::for_app(app)?;
     let _guard = inner.sdk_gate.lock().map_err(|e| e.to_string())?;
@@ -438,42 +469,48 @@ pub fn auto_environment(
         )
         .ok_or("Указанный SDK недоступен или поврежден")?;
         let id = upsert(&mut registry, sdk);
-        registry.active.insert(PLATFORM.into(), id);
-    } else if !registry.active.contains_key(PLATFORM) {
+        registry.active.insert(target.into(), id);
+    } else if !registry.active.contains_key(target) {
         if let Some(sdk) = registry
             .installations
             .iter()
             .find(|sdk| sdk.version == REQUIRED_VERSION && Path::new(&sdk.root).is_dir())
         {
-            registry.active.insert(PLATFORM.into(), sdk.id.clone());
+            registry.active.insert(target.into(), sdk.id.clone());
         }
     }
-    let selected=registry.active.get(PLATFORM).cloned().ok_or_else(||{let _=paths.save(&registry);"Нужна ESP-IDF 5.4.4. Откройте «Инструменты разработки» и выберите существующий SDK или установку.".to_string()})?;
+    let selected=registry.active.get(target).cloned().ok_or_else(||{let _=paths.save(&registry);"Нужна ESP-IDF 5.4.4. Откройте «Инструменты разработки» и выберите существующий SDK или установку.".to_string()})?;
     let sdk = registry
         .installations
         .iter()
         .find(|sdk| sdk.id == selected)
         .cloned()
         .ok_or("Выбранный SDK не найден")?;
-    let result = validate(&paths, &sdk);
-    let target = registry
+    let result = validate_target(&paths, &sdk, target);
+    let selected_sdk = registry
         .installations
         .iter_mut()
         .find(|s| s.id == selected)
         .unwrap();
     match &result {
         Ok(env) => {
-            target.state = "ready".into();
-            target.diagnostic = env.version.clone();
-            target.python = Some(env.python.clone());
-            target.tools_path = Some(env.tools_path.clone());
-            target.checked_at = Some(now());
-            target.environment = Some(env.clone());
+            selected_sdk.state = "ready".into();
+            selected_sdk.diagnostic = env.version.clone();
+            selected_sdk.python = Some(env.python.clone());
+            selected_sdk.tools_path = Some(env.tools_path.clone());
+            selected_sdk.checked_at = Some(now());
+            selected_sdk.environment = Some(env.clone());
         }
         Err(error) => {
-            target.state = "invalid".into();
-            target.diagnostic = error.clone();
-            target.environment = None;
+            selected_sdk.diagnostic = error.clone();
+            if !selected_sdk
+                .environment
+                .as_ref()
+                .is_some_and(|env| env.target != target)
+            {
+                selected_sdk.state = "invalid".into();
+                selected_sdk.environment = None;
+            }
         }
     }
     paths.save(&registry)?;
@@ -483,7 +520,9 @@ pub fn auto_environment(
 pub fn sdk_list(
     app: tauri::AppHandle,
     state: tauri::State<'_, Service>,
+    target: Option<String>,
 ) -> Result<Snapshot, String> {
+    let target = crate::boards::target(target)?;
     let paths = Paths::for_app(&app)?;
     let _guard = state.0.sdk_gate.lock().map_err(|e| e.to_string())?;
     let mut registry = paths.load()?;
@@ -504,8 +543,9 @@ pub fn sdk_list(
         .map_err(|e| e.to_string())?
         .clone()
         .filter(|e| {
-            Path::new(&e.root).is_dir()
-                && registry.active.get(PLATFORM).is_some_and(|id| {
+            e.target == target
+                && Path::new(&e.root).is_dir()
+                && registry.active.get(&target).is_some_and(|id| {
                     registry
                         .installations
                         .iter()
@@ -558,6 +598,7 @@ fn store_result(
     id: &str,
     result: &Result<Environment, String>,
     activate: bool,
+    target: &str,
 ) -> Result<(), String> {
     let _guard = inner.sdk_gate.lock().map_err(|e| e.to_string())?;
     let mut registry = paths.load()?;
@@ -575,14 +616,20 @@ fn store_result(
             sdk.tools_path = Some(env.tools_path.clone());
             sdk.environment = Some(env.clone());
             if activate {
-                registry.active.insert(PLATFORM.into(), id.into());
+                registry.active.insert(env.target.clone(), id.into());
                 *inner.environment.lock().map_err(|e| e.to_string())? = Some(env.clone());
             }
         }
         Err(error) => {
-            sdk.state = "invalid".into();
             sdk.diagnostic = error.clone();
-            sdk.environment = None;
+            if !sdk
+                .environment
+                .as_ref()
+                .is_some_and(|env| env.target != target)
+            {
+                sdk.state = "invalid".into();
+                sdk.environment = None;
+            }
         }
     }
     paths.save(&registry)
@@ -593,7 +640,9 @@ pub fn sdk_select(
     state: tauri::State<'_, Service>,
     id: String,
     sdk_id: String,
+    target: Option<String>,
 ) -> Result<(), String> {
+    let target = crate::boards::target(target)?;
     let paths = Paths::for_app(&app)?;
     let inner = state.0.clone();
     let sdk = {
@@ -617,11 +666,12 @@ pub fn sdk_select(
             "Проверяем SDK и активируем окружение",
             None,
         );
-        let result = validate(&paths, &sdk);
+        let result = validate_target(&paths, &sdk, &target);
         let outcome = if cancel.load(Ordering::SeqCst) {
             Ok(None)
         } else {
-            store_result(&paths, &inner, &sdk_id, &result, true).and_then(|_| result.map(|_| None))
+            store_result(&paths, &inner, &sdk_id, &result, true, &target)
+                .and_then(|_| result.map(|_| None))
         };
         idf::finish(&app, &inner, &id, "sdk_select", outcome, &cancel);
     });
@@ -690,7 +740,12 @@ pub fn sdk_remove(
             let _guard = inner.sdk_gate.lock().map_err(|e| e.to_string())?;
             let mut registry = paths.load()?;
             registry.installations.retain(|s| s.id != sdk_id);
-            let selected = registry.active.get(PLATFORM) == Some(&sdk_id);
+            let selected = inner
+                .environment
+                .lock()
+                .map_err(|e| e.to_string())?
+                .as_ref()
+                .is_some_and(|env| env.root == sdk.root);
             registry.active.retain(|_, selected| selected != &sdk_id);
             if selected {
                 *inner.environment.lock().map_err(|e| e.to_string())? = None;
@@ -708,7 +763,9 @@ pub async fn sdk_install_plan(
     app: tauri::AppHandle,
     state: tauri::State<'_, Service>,
     version: String,
+    target: Option<String>,
 ) -> Result<crate::sdk_installer::InstallPlan, String> {
+    let target = crate::boards::target(target)?;
     let paths = Paths::for_app(&app)?;
     if !valid_version(&version) || !paths.load()?.available.iter().any(|v| v.version == version) {
         return Err("Версия отсутствует в каталоге".into());
@@ -716,7 +773,7 @@ pub async fn sdk_install_plan(
     if idf::busy(&state.0) {
         return Err("Дождитесь завершения операции".into());
     }
-    tauri::async_runtime::spawn_blocking(move || crate::sdk_installer::plan(&version))
+    tauri::async_runtime::spawn_blocking(move || crate::sdk_installer::plan_for(&version, &target))
         .await
         .map_err(|e| e.to_string())?
 }
@@ -744,7 +801,7 @@ pub fn completed_install(
     sdk_id: &str,
     env: &Environment,
 ) -> Result<(), String> {
-    store_result(paths, inner, sdk_id, &Ok(env.clone()), true)
+    store_result(paths, inner, sdk_id, &Ok(env.clone()), true, &env.target)
 }
 #[tauri::command]
 pub fn sdk_install(
@@ -752,8 +809,10 @@ pub fn sdk_install(
     state: tauri::State<'_, Service>,
     id: String,
     version: String,
+    target: Option<String>,
     allow_prerequisites: bool,
 ) -> Result<(), String> {
+    let target = crate::boards::target(target)?;
     let paths = Paths::for_app(&app)?;
     let inner = state.0.clone();
     crate::sdk_installer::host_asset()?;
@@ -763,13 +822,16 @@ pub fn sdk_install(
         if !registry.available.iter().any(|v| v.version == version) || !valid_version(&version) {
             return Err("Версия отсутствует в официальном каталоге".into());
         }
-        let slot = paths.slot(&version)?;
-        let sdk = managed_sdk(&slot, &version);
-        if registry
-            .installations
-            .iter()
-            .any(|s| s.version == version && s.state == "ready" && Path::new(&s.root).is_dir())
-        {
+        let slot = paths.slot_for(&version, &target)?;
+        let sdk = managed_sdk_for(&slot, &version, &target);
+        if registry.installations.iter().any(|s| {
+            s.version == version
+                && s.state == "ready"
+                && s.environment
+                    .as_ref()
+                    .is_some_and(|env| env.target == target)
+                && Path::new(&s.root).is_dir()
+        }) {
             return Err("Эта версия SDK уже доступна. Выберите обнаруженную установку без повторной загрузки.".into());
         }
         sdk
@@ -841,6 +903,26 @@ mod tests {
             managed: root.join("managed"),
             cache: root.join("cache"),
         }
+    }
+    #[test]
+    fn target_slots_keep_s3_and_p4_owned_and_independent() {
+        let d = tempfile::tempdir().unwrap();
+        let p = paths(d.path());
+        let s3 = managed_sdk(&p.slot("5.4.4").unwrap(), "5.4.4");
+        let p4 = managed_sdk_for(&p.slot_for("5.4.4", "esp32p4").unwrap(), "5.4.4", "esp32p4");
+        let s3_slot = claim_slot(&p, &s3).unwrap();
+        let p4_slot = claim_slot(&p, &p4).unwrap();
+        assert_ne!(s3_slot, p4_slot);
+        fs::write(s3_slot.join("sentinel"), b"existing S3").unwrap();
+        assert_eq!(assert_owned(&p, &s3).unwrap(), s3_slot);
+        assert_eq!(assert_owned(&p, &p4).unwrap(), p4_slot);
+        let mut wrong = p4.clone();
+        wrong.target = "esp32s3".into();
+        assert!(assert_owned(&p, &wrong).is_err());
+        assert!(p.slot_for("5.4.4", "../../").is_err());
+        fs::remove_dir_all(assert_owned(&p, &p4).unwrap()).unwrap();
+        assert_eq!(fs::read(s3_slot.join("sentinel")).unwrap(), b"existing S3");
+        assert!(assert_owned(&p, &s3).is_ok());
     }
     #[test]
     fn versions_cannot_escape_managed_root() {

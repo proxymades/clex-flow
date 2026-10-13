@@ -71,6 +71,7 @@ jobs:
           npm test
           cargo fmt --manifest-path src-tauri/Cargo.toml --check
           cargo test --manifest-path src-tauri/Cargo.toml --locked
+          npm run test:firmware-parity
 
       - name: Build review-only desktop installers using official Tauri action
         uses: tauri-apps/tauri-action@1deb371b0cd8bd54025b384f1cd735e725c4060f # v1

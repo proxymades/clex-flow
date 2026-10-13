@@ -1,3 +1,7 @@
+import profiles from './runtime-profiles.json' with { type: 'json' };
+import { peripheralBuses } from './drivers/peripheral-buses.js';
+import { stopwatchFirmware } from './drivers/stopwatch.js';
+import { mediaFirmware, MEDIA_TYPES } from './drivers/media.js';
 import { networkFirmware, NETWORK_DEPENDENCIES } from './drivers/network.js';
 import { screenFor, screenBindings, elementUpdatePort } from '../displays/model.js';
 import { displayFirmware, supportsDisplayDriver, GRAPHICS_CONFIG, GRAPHICS_FILES, GRAPHICS_SOURCES } from './drivers/display.js';
@@ -6,7 +10,7 @@ import { validateAssembly, boardFor } from '../assembly/model.js';
 import { validateGraph, hardwareBinding } from '../logic/model.js';
 
 const compare = (a, b) => a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
-const implementationKeys = {'clex.hardware.led':'gpio-led','clex.hardware.button':'gpio-button','clex.logic.timer':'timer','clex.logic.gpio-read':'gpio-read','clex.logic.gpio-set':'gpio-set','clex.logic.gpio-toggle':'gpio-toggle','clex.logic.serial':'serial','clex.logic.display':'display-view','clex.logic.counter':'counter','clex.hardware.ethernet':'ethernet-interface','clex.logic.ethernet':'ethernet','clex.logic.internet-check':'internet-check'};
+const implementationKeys = {'clex.hardware.led':'gpio-led','clex.hardware.button':'gpio-button','clex.logic.timer':'timer','clex.logic.gpio-read':'gpio-read','clex.logic.gpio-set':'gpio-set','clex.logic.gpio-toggle':'gpio-toggle','clex.logic.serial':'serial','clex.logic.display':'display-view','clex.logic.counter':'counter','clex.logic.stopwatch':'stopwatch','clex.hardware.ethernet':'ethernet-interface','clex.logic.ethernet':'ethernet','clex.logic.internet-check':'internet-check','clex.hardware.audio':'audio-interface','clex.hardware.camera':'camera-interface','clex.logic.tone':'tone','clex.logic.camera-capture':'camera-capture'};
 export const IMPLEMENTATIONS = Object.values(implementationKeys);
 export function cString(value) {
   if (value.includes('\0')) throw new Error('Текст сообщения содержит нулевой байт.');
@@ -20,27 +24,43 @@ export function generateFirmware(project, catalog, consoleMode = 'usb') {
   const errors = issues.filter(issue=>issue.severity==='error');
   if (errors.length) throw new Error(`Исправьте схему перед сборкой:\n${errors.map(issue=>issue.message).join('\n')}`);
   const board = boardFor(project,catalog);
-  if (!['waveshare-esp32-s3-eth','espressif-devkitc-1-v1-1-n8r8'].includes(board.id)) throw new Error('Генератор поддерживает только проверенные профили ESP32-S3.');
+  if (board.platform !== 'esp-idf' || !board.firmware || !['esp32s3','esp32p4'].includes(board.target)) throw new Error('Для платы нет реализованного профиля генератора.');
+  const modes = board.firmware.consoleModes;
+  if (!modes.includes(consoleMode)) consoleMode = modes[0];
+  const boardRevision = board.firmware.revisionConfigs ? project.boardSettings.chipRevision || board.options.chipRevision.default : null;
+  if (boardRevision && !Object.hasOwn(board.firmware.revisionConfigs, boardRevision)) throw new Error('Выберите поддерживаемую ревизию микроконтроллера.');
   const nodes = [...project.logic.nodes].sort(compare), components = [...project.components].sort(compare);
   const graphics = displayFirmware(project, catalog, cString);
   const index = new Map(nodes.map((node,i)=>[node.id,i])), hardware = new Map(components.map((component,i)=>[component.id,i]));
   const network=networkFirmware(project,catalog,nodes,index,cString);
-  if (!graphics.runtime && !network.runtime && (!nodes.some(node=>node.moduleId==='clex.logic.timer') || !project.logic.edges.some(edge=>edge.dataType==='event'))) throw new Error('Добавьте таймер и соедините его такт с действием.');
+  const media=mediaFirmware(project,catalog,nodes,index);
+  const stopwatch=stopwatchFirmware(nodes,index);
+  const buses=peripheralBuses(project,catalog);
+  const events=Boolean(network.runtime || media.enabled);
+  const eventModules=new Set([...network.eventModules,...media.eventModules,...stopwatch.eventModules]);
+  const eventTypes=media.enabled ? MEDIA_TYPES+'\n'+(network.types ? network.types.replace('clex_ethernet_snapshot_t ethernet;', 'clex_media_snapshot_t media; clex_ethernet_snapshot_t ethernet;') : 'typedef struct { uint16_t node; uint8_t kind,flags; uint32_t generation; union { clex_media_snapshot_t media; } payload; } clex_flow_event_t;') : network.types;
+  const featureRuntimes=[...new Set([...(graphics.features||[]),...media.features])].sort();
+  const extraProfiles=featureRuntimes.map(feature=>{const profile=profiles[feature];if(!profile || profile.target!==board.target)throw new Error('Неподдерживаемая комбинация драйвера и платы.');return profile;});
+  const extraConfig=[...new Set(extraProfiles.flatMap(profile=>profile.config.trim().split('\n')))].join('\n')+(featureRuntimes.length?'\n':'');
+  if (!graphics.runtime && !network.runtime && !media.enabled && !stopwatch.enabled && (!nodes.some(node=>node.moduleId==='clex.logic.timer') || !project.logic.edges.some(edge=>edge.dataType==='event'))) throw new Error('Добавьте таймер и соедините его такт с действием.');
   for (const element of [...nodes,...components]) {
     const module = catalog.modules.find(module=>module.id===element.moduleId);
     if (!module || module.version !== '1.0.0' || element.moduleVersion !== module.version || ((module.display && !supportsDisplayDriver(module.display, board.platform)) || (!module.display && (!implementationKeys[module.id] || implementationKeys[module.id] !== module.firmware?.generatorKey)))) throw new Error(`Нет проверенной реализации генератора для ${element.moduleId} v${element.moduleVersion}.`);
   }
   const inputEdge = (node, port) => project.logic.edges.find(edge=>edge.target===node.id&&edge.targetHandle===port);
   function dataExpression(edge) {
-    const registered=network.expressions.get(edge.source)?.[edge.sourceHandle];if(registered)return registered;
+    const registered=network.expressions.get(edge.source)?.[edge.sourceHandle] || media.expressions.get(edge.source)?.[edge.sourceHandle] || stopwatch.expressions.get(edge.source)?.[edge.sourceHandle];if(registered)return registered;
     const producer = nodes[index.get(edge.source)];
     if (edge.sourceHandle==='interval' && producer.moduleId==='clex.logic.timer') return `${producer.parameters.intervalMs}.0`;
     if (['boolean', 'number'].includes(edge.dataType)) return `value_${index.get(edge.source)}`;
     if (edge.dataType==='text') return `text_${index.get(edge.source)}`;
     throw new Error('Выход значения не поддерживается генератором.');
   }
+  const runtimeTextSizes = new Map([...network.textSizes, ...media.textSizes, ...stopwatch.textSizes]);
+  const runtimeTextGlyphs = '0123456789.:_-/ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz ';
+  const runtimeGlyphsFor = id => stopwatch.textGlyphs.get(id) || runtimeTextGlyphs;
   const textLengths = new Map();
-  const producerTextLength = edge => network.textSizes.get(edge.source)?.[edge.sourceHandle] || textLength(nodes[index.get(edge.source)]);
+  const producerTextLength = edge => runtimeTextSizes.get(edge.source)?.[edge.sourceHandle] || textLength(nodes[index.get(edge.source)]);
   function textLength(node) {
     if (textLengths.has(node.id)) return textLengths.get(node.id);
     const input = inputEdge(node,'text');
@@ -51,7 +71,7 @@ export function generateFirmware(project, catalog, consoleMode = 'usb') {
   const dynamicLengths = new Map();
   function textLiteral(node) {
     const edge = inputEdge(node, 'text');
-    return edge ? network.textSizes.has(edge.source) ? '0123456789abcdef.:_-/ABCDEFGHIJKLMNOPQRSTUVWXYZ ' : textLiteral(nodes[index.get(edge.source)]) : node.parameters.message;
+    return edge ? runtimeTextSizes.has(edge.source) ? runtimeGlyphsFor(edge.source) : textLiteral(nodes[index.get(edge.source)]) : node.parameters.message;
   }
   for (const node of nodes.filter(node => node.moduleId === 'clex.logic.display')) {
     const component = components.find(component => component.id === node.parameters.componentId);
@@ -61,18 +81,18 @@ export function generateFirmware(project, catalog, consoleMode = 'usb') {
       const edge = inputEdge(node, binding.id);
       const font = display.graphics.fonts.find(font => font.id === element.fontId);
       if (binding.type === 'text' && binding.channel !== 'state') {
-        const literal = network.textSizes.has(edge.source) ? '0123456789abcdef.:_-/ABCDEFGHIJKLMNOPQRSTUVWXYZ ' : textLiteral(nodes[index.get(edge.source)]);
+        const literal = runtimeTextSizes.has(edge.source) ? runtimeGlyphsFor(edge.source) : textLiteral(nodes[index.get(edge.source)]);
         if ([...literal].some(char => !font.ranges.some(([min, max]) => char.codePointAt(0) >= min && char.codePointAt(0) <= max))) throw new Error('Выбранный шрифт не содержит некоторые символы текста источника.');
       }
       const valueLength = edge.dataType === 'text' ? producerTextLength(edge) : 64;
       dynamicLengths.set(component.id + '/' + element.id, new TextEncoder().encode(element.prefix + element.suffix).length + Math.max(valueLength, new TextEncoder().encode(String(element.initialValue)).length) + 1);
     }
   }
-  if ([...textLengths.values(), ...dynamicLengths.values()].reduce((sum,length)=>sum+length,0)>65536) throw new Error('Текстовые выходы требуют более 64 КиБ. Уменьшите число сообщений или длину текста.');
+  if ([...textLengths.values(), ...dynamicLengths.values()].reduce((sum,length)=>sum+length,0)+stopwatch.textBudget>65536) throw new Error('Текстовые выходы требуют более 64 КиБ. Уменьшите число сообщений или длину текста.');
   const declarations = [], initializers = [], inputUpdates = [];
   for (let i=0;i<components.length;i++) {
     const component=components[i];
-    if (catalog.modules.find(module=>module.id===component.moduleId)?.display || catalog.modules.find(module=>module.id===component.moduleId)?.network) continue;
+    if (catalog.modules.find(module=>module.id===component.moduleId)?.display || catalog.modules.find(module=>module.id===component.moduleId)?.network || catalog.modules.find(module=>module.id===component.moduleId)?.hardwareInterface) continue;
     const assignment=project.gpioAssignments.find(assignment=>assignment.componentId===component.id);
     if (!assignment) throw new Error('Компонент не имеет назначения GPIO.');
     const gpio=assignment.gpio, led=component.moduleId==='clex.hardware.led';
@@ -90,15 +110,17 @@ export function generateFirmware(project, catalog, consoleMode = 'usb') {
   const eventCall = edge => {
     const target = nodes[index.get(edge.target)];
     const element = displayElements(target).findIndex(item => elementUpdatePort(item.id) === edge.targetHandle);
-    const suffix = target.moduleId === 'clex.logic.counter' && edge.targetHandle === 'reset' ? '_reset' : element >= 0 ? '_element_' + element : '';
+    const suffix = target.moduleId === 'clex.logic.counter' && edge.targetHandle === 'reset' ? '_reset' : target.moduleId === 'clex.logic.stopwatch' && ['pause','reset'].includes(edge.targetHandle) ? '_' + edge.targetHandle : element >= 0 ? '_element_' + element : '';
     return `node_${index.get(edge.target)}${suffix}();`;
   };
   const functions=nodes.map((node,i)=>{
     const sourceEvents=project.logic.edges.filter(edge=>edge.source===node.id&&edge.dataType==='event');
-    const eventFunctions = network.eventModules.has(node.moduleId) ? catalog.modules.find(module=>module.id===node.moduleId).outputs.filter(port=>port.type==='event').map(port=>`\nstatic void node_${i}_emit_${port.id}(void) {\n${sourceEvents.filter(edge=>edge.sourceHandle===port.id).sort((a,b)=>index.get(a.target)-index.get(b.target) || (a.targetHandle < b.targetHandle ? -1 : a.targetHandle > b.targetHandle ? 1 : 0)).map(edge=>`  ${eventCall(edge)}`).join('\n') || '  /* Unconnected event. */'}\n}`) : [];
-    const calls = (network.eventModules.has(node.moduleId) ? [] : sourceEvents).sort((a,b)=>index.get(a.target)-index.get(b.target) || (a.targetHandle < b.targetHandle ? -1 : a.targetHandle > b.targetHandle ? 1 : 0)).map(edge=>`  ${eventCall(edge)}`);
+    const eventFunctions = eventModules.has(node.moduleId) ? catalog.modules.find(module=>module.id===node.moduleId).outputs.filter(port=>port.type==='event').map(port=>`\nstatic void node_${i}_emit_${port.id}(void) {\n${sourceEvents.filter(edge=>edge.sourceHandle===port.id).sort((a,b)=>index.get(a.target)-index.get(b.target) || (a.targetHandle < b.targetHandle ? -1 : a.targetHandle > b.targetHandle ? 1 : 0)).map(edge=>`  ${eventCall(edge)}`).join('\n') || '  /* Unconnected event. */'}\n}`) : [];
+    const calls = (eventModules.has(node.moduleId) ? [] : sourceEvents).sort((a,b)=>index.get(a.target)-index.get(b.target) || (a.targetHandle < b.targetHandle ? -1 : a.targetHandle > b.targetHandle ? 1 : 0)).map(edge=>`  ${eventCall(edge)}`);
     const binding=hardwareBinding(node,project,catalog), h=hardware.get(binding.component?.id), gpio=binding.gpio;
     const operations=[], elementFunctions=[];
+    if (media.operations.has(node.id)) operations.push(media.operations.get(node.id));
+    if (stopwatch.operations.has(node.id)) operations.push(stopwatch.operations.get(node.id));
     if (node.moduleId==='clex.logic.counter') operations.push(`  int64_t next = (int64_t)value_${i} + (${node.parameters.step}LL);`, `  value_${i} = (int32_t)(next > INT32_MAX ? INT32_MAX : next < INT32_MIN ? INT32_MIN : next);`);
     if (node.moduleId==='clex.logic.gpio-read') operations.push(`  value_${i} = input_stable_${h};`);
     if (node.moduleId==='clex.logic.gpio-toggle') operations.push(`  gpio_state_${h} = !gpio_state_${h};`, `  ESP_ERROR_CHECK(gpio_set_level(${gpio}, gpio_state_${h}));`, `  value_${i} = gpio_state_${h};`);
@@ -120,7 +142,7 @@ export function generateFirmware(project, catalog, consoleMode = 'usb') {
       }
     }
     const reset = node.moduleId==='clex.logic.counter' ? `\nstatic void node_${i}_reset(void) {\n  value_${i} = ${node.parameters.initialValue};\n${calls.join('\n')}\n}` : '';
-    return `static void node_${i}(void) {\n${[...operations,...calls].join('\n') || '  /* No actions for this node. */'}\n}${reset}${elementFunctions.join('')}${eventFunctions.join('')}`;
+    return `static void node_${i}(void) {\n${[...operations,...calls].join('\n') || '  /* No actions for this node. */'}\n}${reset}${stopwatch.extraFunctions.get(node.id) || ''}${elementFunctions.join('')}${eventFunctions.join('')}`;
   });
   const timers=nodes.map((node,i)=>({node,i})).filter(item=>item.node.moduleId==='clex.logic.timer');
   const source = `/* Deterministic firmware generated by CLEX Flow. */
@@ -138,18 +160,20 @@ export function generateFirmware(project, catalog, consoleMode = 'usb') {
 #include "esp_log.h"
 #include "esp_err.h"
 ${network.headers}
+${buses.source}
 ${graphics.source}
-${network.types ? network.types+'\n' : ''}static QueueHandle_t timer_queue;
+${eventTypes ? eventTypes+'\n' : ''}static QueueHandle_t timer_queue;
 static atomic_uint dropped_events;
 ${declarations.join('\n')}
 ${network.source}
-${nodes.map((node,i)=>`static void node_${i}(void) __attribute__((unused));${node.moduleId === 'clex.logic.counter' ? `\nstatic void node_${i}_reset(void) __attribute__((unused));` : ''}${displayElements(node).map((_, j) => `\nstatic void node_${i}_element_${j}(void) __attribute__((unused));`).join('')}${network.eventModules.has(node.moduleId)?catalog.modules.find(module=>module.id===node.moduleId).outputs.filter(port=>port.type==='event').map(port=>`\nstatic void node_${i}_emit_${port.id}(void) __attribute__((unused));`).join(''):''}`).join('\n')}
+${media.source}
+${stopwatch.source ? stopwatch.source+'\n' : ''}${nodes.map((node,i)=>`static void node_${i}(void) __attribute__((unused));${node.moduleId === 'clex.logic.counter' ? `\nstatic void node_${i}_reset(void) __attribute__((unused));` : ''}${node.moduleId === 'clex.logic.stopwatch' ? `\nstatic void node_${i}_pause(void) __attribute__((unused));\nstatic void node_${i}_reset(void) __attribute__((unused));` : ''}${displayElements(node).map((_, j) => `\nstatic void node_${i}_element_${j}(void) __attribute__((unused));`).join('')}${eventModules.has(node.moduleId)?catalog.modules.find(module=>module.id===node.moduleId).outputs.filter(port=>port.type==='event').map(port=>`\nstatic void node_${i}_emit_${port.id}(void) __attribute__((unused));`).join(''):''}`).join('\n')}
 static void update_inputs(void) {
 ${inputUpdates.length?'  int64_t now = esp_timer_get_time();\n'+inputUpdates.join('\n'):'  /* No buttons in this project. */'}
 }
 ${functions.join('\n\n')}
 static void __attribute__((unused)) timer_callback(void *argument) {
-  ${network.runtime?'clex_flow_event_t event = {.node = *(const uint16_t *)argument};':'uint16_t event = *(const uint16_t *)argument;'}
+  ${events?'clex_flow_event_t event = {.node = *(const uint16_t *)argument};':'uint16_t event = *(const uint16_t *)argument;'}
   if (xQueueSend(timer_queue, &event, 0) != pdTRUE) atomic_fetch_add(&dropped_events, 1);
 }
 static void flow_worker(void *argument) {
@@ -157,27 +181,30 @@ static void flow_worker(void *argument) {
   int64_t last_report = 0;
   unsigned dropped_total = 0;
   for (;;) {
-    ${network.runtime?'clex_flow_event_t':'uint16_t'} event;
+    ${events?'clex_flow_event_t':'uint16_t'} event;
     bool available = xQueueReceive(timer_queue, &event, pdMS_TO_TICKS(5)) == pdTRUE;
     update_inputs();
     if (available) {
-      switch (${network.runtime?'event.node':'event'}) {
+      switch (${events?'event.node':'event'}) {
 ${timers.map(({i})=>`        case ${i}: node_${i}(); break;`).join('\n')}
 ${network.dispatch.join('\n')}
+${media.dispatch.join('\n')}
         default: break;
       }
     }
-${graphics.update}
+${stopwatch.poll ? stopwatch.poll+'\n' : ''}${graphics.update}
     dropped_total += atomic_exchange(&dropped_events, 0);
     if (dropped_total && esp_timer_get_time() - last_report >= 1000000) { ESP_LOGW("CLEX", "Timer events dropped: %u", dropped_total); dropped_total = 0; last_report = esp_timer_get_time(); }
     if (available) vTaskDelay(1);
   }
 }
 void app_main(void) {
+${buses.initialize}
 ${graphics.initialize}
 ${initializers.join('\n')}
-  timer_queue = xQueueCreate(128, sizeof(${network.runtime?'clex_flow_event_t':'uint16_t'}));
+${stopwatch.initialize ? stopwatch.initialize+'\n' : ''}  timer_queue = xQueueCreate(128, sizeof(${events?'clex_flow_event_t':'uint16_t'}));
   if (!timer_queue || xTaskCreate(flow_worker, "clex_flow", 8192, NULL, 5, NULL) != pdPASS) { ESP_LOGE("CLEX", "Cannot create worker"); abort(); }
+${media.initialize}
 ${network.initialize}
 ${network.start}
 ${timers.map(({node,i})=>`  static const uint16_t timer_node_${i} = ${i};
@@ -188,21 +215,23 @@ ${timers.map(({node,i})=>`  static const uint16_t timer_node_${i} = ${i};
   ESP_LOGI("CLEX", "Flow ready: ${nodes.length} blocks, ${timers.length} timers");
 }
 `;
-  const flashSize = board.id==='waveshare-esp32-s3-eth'?16:8;
-  const config = `CONFIG_IDF_TARGET="esp32s3"\nCONFIG_ESPTOOLPY_FLASHSIZE_${flashSize}MB=y\nCONFIG_ESPTOOLPY_FLASHMODE_DIO=y\nCONFIG_FREERTOS_HZ=1000\nCONFIG_LOG_COLORS=n\nCONFIG_ESP_CONSOLE_${consoleMode==='usb'?'USB_SERIAL_JTAG':'UART_DEFAULT'}=y\nCONFIG_ESP_CONSOLE_SECONDARY_NONE=y\n`;
+  const flashSize = board.firmware.flashSizeMb;
+  const config = `CONFIG_IDF_TARGET="${board.target}"\nCONFIG_ESPTOOLPY_FLASHSIZE_${flashSize}MB=y\nCONFIG_ESPTOOLPY_FLASHMODE_DIO=y\nCONFIG_FREERTOS_HZ=1000\nCONFIG_LOG_COLORS=n\nCONFIG_ESP_CONSOLE_${consoleMode==='usb'?'USB_SERIAL_JTAG':'UART_DEFAULT'}=y\nCONFIG_ESP_CONSOLE_SECONDARY_NONE=y\n`;
   const graphicsFiles = graphics.runtime ? { ...GRAPHICS_FILES, 'main/idf_component.yml': 'dependencies:\n  lvgl/lvgl: "=9.2.2"\n' } : {};
   const requirements='esp_driver_gpio esp_timer freertos log' + (graphics.runtime?' esp_lcd esp_driver_spi lvgl__lvgl':'') + (network.runtime?' esp_driver_spi '+NETWORK_DEPENDENCIES:'');
-  const dependencyList=[...new Set(requirements.split(' '))].join(' ');
-  return { networkRuntime:network.runtime, graphicsRuntime: graphics.runtime, boardId: board.id, target: 'esp32s3', consoleMode, mainC: source, warnings: issues.filter(issue=>issue.severity==='warning'), files: {
-    ...graphicsFiles,
+  const dependencyList=[...new Set([...requirements.split(' '),...extraProfiles.flatMap(profile=>profile.requires)])].join(' ');
+  const managed=Object.assign({},...(graphics.runtime?[{'lvgl/lvgl':'9.2.2'}]:[]),...extraProfiles.map(profile=>Object.fromEntries(Object.entries(profile.dependencies).sort(([a],[b])=>a.localeCompare(b)))));
+  const manifest=Object.keys(managed).length?{'main/idf_component.yml':'dependencies:\n'+Object.entries(managed).map(([name,version])=>'  '+name+': "='+version+'"\n').join('')}:{};
+  return { networkRuntime:network.runtime, graphicsRuntime: graphics.runtime, boardId: board.id, target: board.target, boardRevision, featureRuntimes, consoleMode, mainC: source, warnings: issues.filter(issue=>issue.severity==='warning'), files: {
+    ...graphicsFiles, ...manifest,
     'CMakeLists.txt': 'cmake_minimum_required(VERSION 3.16)\nset(COMPONENTS main)\ninclude($ENV{IDF_PATH}/tools/cmake/project.cmake)\nproject(clex_flow_firmware)\n',
     'main/CMakeLists.txt': 'idf_component_register(SRCS "main.c"' + (graphics.runtime?' '+GRAPHICS_SOURCES:'') + ' INCLUDE_DIRS "." REQUIRES '+dependencyList+')\n',
     ...(network.partitions?{'partitions.csv':network.partitions}:{}),
-    'main/main.c': source, 'sdkconfig.defaults': config + (graphics.runtime ? GRAPHICS_CONFIG : '') + network.config,
+    'main/main.c': source, 'sdkconfig.defaults': config + (boardRevision ? board.firmware.revisionConfigs[boardRevision] : '') + (graphics.runtime ? GRAPHICS_CONFIG : '') + network.config + extraConfig,
   } };
 }
 export async function firmwareFingerprint(bundle) {
-  const identity=[bundle.boardId,bundle.consoleMode,bundle.mainC];if(bundle.graphicsRuntime)identity.push(bundle.graphicsRuntime);if(bundle.networkRuntime)identity.push(bundle.networkRuntime);
+  const identity=[bundle.boardId,bundle.consoleMode,bundle.mainC];if(bundle.graphicsRuntime)identity.push(bundle.graphicsRuntime);if(bundle.networkRuntime)identity.push(bundle.networkRuntime);if(bundle.boardRevision)identity.push(bundle.boardRevision);if(bundle.featureRuntimes?.length)identity.push(bundle.featureRuntimes);
   const bytes = new TextEncoder().encode(JSON.stringify(identity));
   return [...new Uint8Array(await crypto.subtle.digest('SHA-256',bytes))].map(byte=>byte.toString(16).padStart(2,'0')).join('');
 }

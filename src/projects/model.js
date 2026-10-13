@@ -18,12 +18,12 @@ export function validateName(value) {
   return value.trim();
 }
 
-export function createProject(name, description = '', boardId = 'waveshare-esp32-s3-eth') {
+export function createProject(name, description = '', boardId = 'waveshare-esp32-s3-eth', boardSettings = null) {
   const now = new Date().toISOString();
   return {
     id: crypto.randomUUID(), name: validateName(name), description,
     formatVersion: FORMAT_VERSION, createdAt: now, updatedAt: now,
-    boardId, boardSettings: boardId === 'waveshare-esp32-s3-eth' ? { camera: 'unknown' } : {},
+    boardId, boardSettings: boardSettings || (boardId === 'waveshare-esp32-s3-eth' ? { camera: 'unknown' } : {}),
     components: [], gpioAssignments: [],
     logic: { nodes: [], edges: [], viewport: { ...DEFAULT_VIEWPORT } },
     assembly: { positions: { board: { ...DEFAULT_BOARD_POSITION } }, connections: [], viewport: { ...DEFAULT_VIEWPORT } }, moduleVersions: {},
@@ -96,12 +96,13 @@ export function validateProject(project) {
   for (const wire of assembly.connections) {
     const key = `${wire?.componentId}/${wire?.terminalId}`;
     if (!isObject(wire) || !validKey(wire.id) || wireIds.has(wire.id) || !ids.has(wire.componentId) || !validKey(wire.terminalId) || !validKey(wire.boardPinId) || endpoints.has(key)) throw new Error('Некорректное, повторяющееся или осиротевшее соединение.');
+    if (wire.route !== undefined && (!Array.isArray(wire.route) || wire.route.length<1 || wire.route.length>32 || wire.route.some(p=>!isObject(p) || ![p.x,p.y].every(value=>Number.isFinite(value) && Math.abs(value)<=50000)))) throw new Error('Некорректные точки маршрута соединения.');
     wireIds.add(wire.id); endpoints.add(key);
   }
   const assigned = new Set();
   for (const assignment of project.gpioAssignments) {
     const key = `${assignment?.componentId}/${assignment?.terminalId}`;
-    if (!isObject(assignment) || !Number.isInteger(assignment.gpio) || assignment.gpio < 0 || assignment.gpio > 48 || [22,23,24,25].includes(assignment.gpio) || !['input','output'].includes(assignment.mode) || assigned.has(key) || !assembly.connections.some(wire => wire.componentId === assignment.componentId && wire.terminalId === assignment.terminalId && wire.boardPinId === assignment.pinId)) throw new Error('Некорректное назначение GPIO.');
+    if (!isObject(assignment) || !Number.isInteger(assignment.gpio) || assignment.gpio < 0 || assignment.gpio > 63 || !['input','output'].includes(assignment.mode) || assigned.has(key) || !assembly.connections.some(wire => wire.componentId === assignment.componentId && wire.terminalId === assignment.terminalId && wire.boardPinId === assignment.pinId)) throw new Error('Некорректное назначение GPIO.');
     assigned.add(key);
   }
   if (!isObject(project.moduleVersions) || !Object.entries(project.moduleVersions).every(([key, value]) => validKey(key) && semver(value))) throw new Error('Некорректные версии модулей.');

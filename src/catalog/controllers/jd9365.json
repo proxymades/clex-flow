@@ -1,0 +1,15 @@
+{
+  "id": "jadard.jd9365",
+  "name": "JD9365",
+  "manufacturer": "Jadard",
+  "implementedInterfaces": [
+    "dsi"
+  ],
+  "drivers": [
+    {
+      "platform": "esp-idf",
+      "interface": "dsi",
+      "key": "jd9365-dsi"
+    }
+  ]
+}

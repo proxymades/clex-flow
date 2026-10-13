@@ -138,7 +138,16 @@ pub struct InstallPlan {
     pub estimated_min: u64,
     pub estimated_max: u64,
 }
+#[cfg(test)]
 pub fn estimate_tools(value: &serde_json::Value, platform: &str) -> Result<u64, String> {
+    estimate_tools_for(value, platform, "esp32s3")
+}
+pub fn estimate_tools_for(
+    value: &serde_json::Value,
+    platform: &str,
+    target: &str,
+) -> Result<u64, String> {
+    crate::boards::compiler(target)?;
     let tools = value["tools"]
         .as_array()
         .ok_or("Некорректный официальный манифест инструментов")?;
@@ -150,7 +159,7 @@ pub fn estimate_tools(value: &serde_json::Value, platform: &str) -> Result<u64, 
         if !tool["supported_targets"].as_array().is_some_and(|targets| {
             targets
                 .iter()
-                .any(|target| target == "esp32s3" || target == "all")
+                .any(|value| value == target || value == "all")
         }) {
             continue;
         }
@@ -174,7 +183,8 @@ pub fn estimate_tools(value: &serde_json::Value, platform: &str) -> Result<u64, 
     }
     Ok(total)
 }
-pub fn plan(version: &str) -> Result<InstallPlan, String> {
+pub fn plan_for(version: &str, target: &str) -> Result<InstallPlan, String> {
+    crate::boards::compiler(target)?;
     let platform = match (std::env::consts::OS, std::env::consts::ARCH) {
         ("macos", "aarch64") => "macos-arm64",
         ("macos", "x86_64") => "macos",
@@ -194,7 +204,7 @@ pub fn plan(version: &str) -> Result<InstallPlan, String> {
         .read_to_end(&mut bytes)
         .map_err(|e| e.to_string())?;
     let value: serde_json::Value = serde_json::from_slice(&bytes).map_err(|e| e.to_string())?;
-    let tool_bytes = estimate_tools(&value, platform)?;
+    let tool_bytes = estimate_tools_for(&value, platform, target)?;
     // Tool archives have exact published sizes; Git/submodules and Python vary.
     Ok(InstallPlan {
         tool_bytes,
@@ -420,9 +430,18 @@ fn bootstrap(
     }
     Ok(Some(binary))
 }
+#[cfg(test)]
 pub fn eim_config(slot: &Path, version: &str, allow_prerequisites: bool) -> String {
+    eim_config_for(slot, version, allow_prerequisites, "esp32s3")
+}
+pub fn eim_config_for(
+    slot: &Path,
+    version: &str,
+    allow_prerequisites: bool,
+    target: &str,
+) -> String {
     let q = |path: PathBuf| serde_json::to_string(&path.to_string_lossy()).unwrap();
-    format!("path = {}\nesp_idf_json_path = {}\ntool_install_folder_name = {}\ntool_download_folder_name = {}\nactivation_script_path_override = {}\nconfig_file_save_path = {}\npython_env_folder_name = \"python\"\nidf_versions = [\"v{version}\"]\ntarget = [\"esp32s3\"]\nnon_interactive = true\ninstall_all_prerequisites = {allow_prerequisites}\nskip_prerequisites_check = false\nrecurse_submodules = true\ndo_not_track = true\ncleanup = true\nmirror = \"https://github.com\"\nidf_mirror = \"https://github.com\"\npypi_mirror = \"https://pypi.org/simple\"\n",q(slot.to_path_buf()),q(slot.join("registry")),q(slot.join("tools")),q(slot.join("downloads")),q(slot.join("activation")),q(slot.join("eim-settings.toml")))
+    format!("path = {}\nesp_idf_json_path = {}\ntool_install_folder_name = {}\ntool_download_folder_name = {}\nactivation_script_path_override = {}\nconfig_file_save_path = {}\npython_env_folder_name = \"python\"\nidf_versions = [\"v{version}\"]\ntarget = [\"{target}\"]\nnon_interactive = true\ninstall_all_prerequisites = {allow_prerequisites}\nskip_prerequisites_check = false\nrecurse_submodules = true\ndo_not_track = true\ncleanup = true\nmirror = \"https://github.com\"\nidf_mirror = \"https://github.com\"\npypi_mirror = \"https://pypi.org/simple\"\n",q(slot.to_path_buf()),q(slot.join("registry")),q(slot.join("tools")),q(slot.join("downloads")),q(slot.join("activation")),q(slot.join("eim-settings.toml")))
 }
 pub fn eim_args(slot: &Path, allow_prerequisites: bool) -> Vec<String> {
     vec![
@@ -515,7 +534,7 @@ fn smoke(
     fs::write(dir.join("main/main.c"),"#include \"driver/gpio.h\"\n#include \"esp_timer.h\"\n#include \"esp_log.h\"\nvoid app_main(void) { ESP_LOGI(\"CLEX\", \"SDK check: %lld\", esp_timer_get_time()); }\n").map_err(|e|e.to_string())?;
     let mut cmd = Command::new(&environment.python);
     cmd.arg(Path::new(&environment.root).join("tools/idf.py"))
-        .args(["-D", "IDF_TARGET=esp32s3", "build"])
+        .args(["-D", &format!("IDF_TARGET={}", sdk.target), "build"])
         .envs(&environment.variables)
         .current_dir(&dir);
     let result = idf::execute(app, inner, id, "sdk_install", cmd, cancel)?;
@@ -552,7 +571,7 @@ pub fn install(
     }
     fs::write(
         slot.join("install.toml"),
-        eim_config(&slot, &sdk.version, allow_prerequisites),
+        eim_config_for(&slot, &sdk.version, allow_prerequisites, &sdk.target),
     )
     .map_err(|e| e.to_string())?;
     stage(
@@ -620,7 +639,10 @@ pub fn install(
         app,
         inner,
         id,
-        "Проверочная компиляция ESP32-S3 без прошивки устройства",
+        &format!(
+            "Проверочная компиляция {} без прошивки устройства",
+            sdk.target
+        ),
     );
     if !smoke(app, inner, id, paths, &installed, &environment, cancel)? {
         return Ok(());
@@ -642,6 +664,29 @@ pub fn install(
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn p4_plan_and_eim_include_only_the_selected_target() {
+        let manifest = serde_json::json!({"tools":[
+            {"install":"always","supported_targets":["esp32s3"],"versions":[{"status":"recommended","win64":{"size":100}}]},
+            {"install":"always","supported_targets":["esp32p4"],"versions":[{"status":"recommended","win64":{"size":200}}]},
+            {"install":"always","supported_targets":["all"],"versions":[{"status":"recommended","win64":{"size":10}}]}
+        ]});
+        assert_eq!(
+            estimate_tools_for(&manifest, "win64", "esp32p4").unwrap(),
+            210
+        );
+        assert_eq!(
+            estimate_tools_for(&manifest, "win64", "esp32s3").unwrap(),
+            110
+        );
+        let d = tempfile::tempdir().unwrap();
+        let value: toml::Value =
+            toml::from_str(&eim_config_for(d.path(), "5.4.4", false, "esp32p4")).unwrap();
+        assert_eq!(
+            value["target"].as_array().unwrap(),
+            &vec![toml::Value::String("esp32p4".into())]
+        );
+    }
     #[test]
     fn assets_cover_supported_architectures() {
         for (os, arch) in [
@@ -881,7 +926,9 @@ mod tests {
         let python = std::env::var("CLEX_TEST_SDK_PYTHON").unwrap();
         let tools = std::env::var("CLEX_TEST_SDK_TOOLS").unwrap();
         let cache = tempfile::tempdir().unwrap();
-        let environment = idf_environment::inspect(
+        let target = std::env::var("CLEX_TEST_SDK_TARGET").unwrap_or_else(|_| "esp32s3".into());
+        let environment = idf_environment::inspect_target(
+            &target,
             Path::new(&root),
             Some(Path::new(&python)),
             Some(Path::new(&tools)),
@@ -917,7 +964,7 @@ mod tests {
             let mut command = Command::new(&environment.python);
             command
                 .arg(Path::new(&environment.root).join("tools/idf.py"))
-                .args(["-D", "IDF_TARGET=esp32s3", "build"])
+                .args(["-D", &format!("IDF_TARGET={target}"), "build"])
                 .envs(&environment.variables)
                 .current_dir(&project);
             if std::env::var("CLEX_TEST_GRAPHICS_RUNTIME").ok().as_deref() == Some("lvgl-9.2.2") {
@@ -949,4 +996,9 @@ mod tests {
         let d = tempfile::tempdir().unwrap();
         assert!(free_bytes(d.path()).unwrap() > 0);
     }
+}
+
+#[cfg(test)]
+pub fn plan(version: &str) -> Result<InstallPlan, String> {
+    plan_for(version, "esp32s3")
 }

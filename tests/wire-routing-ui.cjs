@@ -14,16 +14,15 @@ const {chromium}=require('playwright');
  page.on('pageerror',error=>errors.push(error.message));
  const saved=()=>page.evaluate(()=>JSON.parse(Object.values(JSON.parse(localStorage.getItem('clex-flow:projects:v1')))[0]));
  const save=async()=>{await page.getByRole('button',{name:'Сохранить',exact:true}).click();await page.getByText('Проект сохранен',{exact:true}).waitFor();};
- const corners=async terminal=>{
-  const wire=project.assembly.connections.find(w=>w.terminalId===terminal);
-  return page.locator('.physical-wire[data-wire="'+wire.id+'"] .visible-wire').evaluate(element=>[...element.getAttribute('d').matchAll(/Q\s*([-+\d.e]+)[ ,]+([-+\d.e]+)[ ,]+/gi)].map(match=>[Number(match[1]),Number(match[2])]));
- };
  const separated=async()=>{
-  const ground=await corners('gnd'),power=await corners('vcc');
-  assert.ok(ground.length>=4&&power.length>=4);
-  assert.notEqual(ground[1][0],power[1][0],'left detours have separate lanes');
-  assert.notEqual(ground[1][1],power[1][1],'top/bottom detours have separate lanes');
-  assert.notEqual(ground[2][0],power[2][0],'approach trunks have separate lanes');
+  const paths=await page.locator('.physical-wire').evaluateAll(elements=>Object.fromEntries(elements.map(element=>[element.dataset.wire,JSON.parse(element.dataset.routePoints)])));
+  const ground=paths[project.assembly.connections.find(w=>w.terminalId==='gnd').id],power=paths[project.assembly.connections.find(w=>w.terminalId==='vcc').id];
+  assert.ok(ground.length>=3 && power.length>=3);
+  for(let i=1;i<ground.length;i++)for(let j=1;j<power.length;j++){
+   const a=ground[i-1],b=ground[i],c=power[j-1],d=power[j],horizontal=a[1]===b[1];if(horizontal!==(c[1]===d[1]))continue;
+   const axis=horizontal?0:1;if(Math.abs(a[1-axis]-c[1-axis])>0.01)continue;
+   const overlap=Math.min(Math.max(a[axis],b[axis]),Math.max(c[axis],d[axis]))-Math.max(Math.min(a[axis],b[axis]),Math.min(c[axis],d[axis]));assert.ok(overlap<=0,'parallel power and ground segments stay separate');
+  }
  };
  try{
   await page.goto(process.env.CLEX_PREVIEW_URL||'http://127.0.0.1:1420');

@@ -1,0 +1,93 @@
+{
+  "id": "clex.logic.stopwatch",
+  "version": "1.0.0",
+  "kind": "logic",
+  "name": "Секундомер",
+  "description": "Измеряет прошедшее время и передает текст чч:мм:сс. Пуск продолжает отсчет после паузы; сброс возвращает время к нулю.",
+  "category": "time",
+  "categoryName": "Время",
+  "icon": "Timer",
+  "color": "#38bdf8",
+  "inputs": [
+    {
+      "id": "start",
+      "name": "Пуск / продолжить",
+      "type": "event",
+      "required": false,
+      "description": "Запускает или продолжает отсчет. Повторный пуск не сбрасывает время."
+    },
+    {
+      "id": "pause",
+      "name": "Пауза",
+      "type": "event",
+      "required": false,
+      "description": "Останавливает отсчет, сохраняя прошедшее время и долю секунды."
+    },
+    {
+      "id": "reset",
+      "name": "Сбросить время",
+      "type": "event",
+      "required": false,
+      "description": "Возвращает время к 00:00:00. Работающий секундомер продолжает отсчет, приостановленный остается на паузе."
+    }
+  ],
+  "outputs": [
+    {
+      "id": "changed",
+      "name": "Время обновлено",
+      "type": "event",
+      "description": "Отправляет сигнал при смене секунды, пуске, паузе и сбросе. Первое значение передается при запуске прошивки."
+    },
+    {
+      "id": "text",
+      "name": "Время чч:мм:сс",
+      "type": "text",
+      "readyOn": "changed",
+      "bindingLabel": "Показывать время секундомера",
+      "description": "Текст 00:00:00, 00:00:01 и далее. Часы не обнуляются после 24 часов."
+    },
+    {
+      "id": "seconds",
+      "name": "Прошло секунд",
+      "type": "number",
+      "readyOn": "changed",
+      "additional": true,
+      "description": "Количество полных секунд для других блоков."
+    },
+    {
+      "id": "running",
+      "name": "Секундомер работает?",
+      "type": "boolean",
+      "readyOn": "changed",
+      "additional": true,
+      "description": "Да во время отсчета, Нет на паузе."
+    }
+  ],
+  "parameters": {
+    "autoStart": {
+      "label": "Запускать автоматически",
+      "type": "boolean",
+      "default": true,
+      "trueLabel": "Да",
+      "falseLabel": "Нет",
+      "description": "Начинает отсчет при запуске прошивки. Если выключено, подключите сигнал к входу «Пуск / продолжить»."
+    }
+  },
+  "constraints": {},
+  "compatibility": {
+    "projectFormat": 3,
+    "targets": [
+      "esp32s3",
+      "esp32p4"
+    ],
+    "espIdf": "5.4.4"
+  },
+  "firmware": {
+    "status": "implemented",
+    "generatorKey": "stopwatch",
+    "eventSource": true,
+    "dependencies": [
+      "esp_timer"
+    ]
+  }
+}

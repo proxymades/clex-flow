@@ -1,0 +1,216 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1040" height="768" viewBox="0 0 1040 768" role="img" aria-labelledby="p4-title p4-description">
+  <title id="p4-title">Waveshare ESP32-P4-NANO, вид со стороны компонентов</title>
+  <desc id="p4-description">Квадратная плата с двумя длинными FPC-разъёмами LCD и CAM, USB-C сверху, RJ45 и вертикальным USB-A снизу. Справа внизу модуль ESP32-C6 с печатной антенной.</desc>
+  <defs>
+    <linearGradient id="p4-pcb" x2="1" y2="1"><stop stop-color="#25343e"/><stop offset="1" stop-color="#10232a"/></linearGradient>
+    <linearGradient id="p4-metal" x2="0" y2="1"><stop stop-color="#b3bcc6"/><stop offset=".45" stop-color="#697889"/><stop offset="1" stop-color="#929fac"/></linearGradient>
+    <linearGradient id="p4-shield" x2="1" y2=".4"><stop stop-color="#b3b9b9"/><stop offset=".5" stop-color="#88968f"/><stop offset="1" stop-color="#aab4ad"/></linearGradient>
+    <linearGradient id="p4-socket" x2="1"><stop stop-color="#708092"/><stop offset=".45" stop-color="#b6bfc8"/><stop offset="1" stop-color="#627185"/></linearGradient>
+    <g id="p4-passive"><rect width="16" height="8" rx="1.5" fill="#a79470"/><path d="M2 1v6m12-6v6" stroke="#c7d0d1" stroke-width="3"/></g>
+    <g id="p4-ic"><rect width="34" height="21" rx="2" fill="#101820" stroke="#61717a"/><path d="M5-3v3m8-3v3m8-3v3m8-3v3M5 21v3m8-3v3m8-3v3m8-3v3" stroke="#a0adb0" stroke-width="2"/></g>
+    <g id="p4-fpc">
+      <rect width="53" height="284" rx="3" fill="#131d24" stroke="#7e9199" stroke-width="1.4"/>
+      <rect x="13" y="8" width="29" height="254" rx="2" fill="#d0c8ad" stroke="#b3b99f"/>
+      <rect x="20" y="10" width="15" height="249" fill="#242b30"/>
+      <rect x="16" y="8" width="5" height="251" fill="#e0d9bb"/>
+      <rect x="12" y="0" width="29" height="28" rx="2" fill="#141d25" stroke="#61737d"/>
+      <rect x="12" y="256" width="29" height="28" rx="2" fill="#141d25" stroke="#61737d"/>
+
+      <path d="M2 34h10m29 0h10" stroke="#b0b7ae" stroke-width="2"/>
+      <path d="M2 40h10m29 0h10" stroke="#b0b7ae" stroke-width="2"/>
+      <path d="M2 46h10m29 0h10" stroke="#b0b7ae" stroke-width="2"/>
+      <path d="M2 52h10m29 0h10" stroke="#b0b7ae" stroke-width="2"/>
+      <path d="M2 58h10m29 0h10" stroke="#b0b7ae" stroke-width="2"/>
+      <path d="M2 64h10m29 0h10" stroke="#b0b7ae" stroke-width="2"/>
+      <path d="M2 70h10m29 0h10" stroke="#b0b7ae" stroke-width="2"/>
+      <path d="M2 76h10m29 0h10" stroke="#b0b7ae" stroke-width="2"/>
+      <path d="M2 82h10m29 0h10" stroke="#b0b7ae" stroke-width="2"/>
+      <path d="M2 88h10m29 0h10" stroke="#b0b7ae" stroke-width="2"/>
+      <path d="M2 94h10m29 0h10" stroke="#b0b7ae" stroke-width="2"/>
+      <path d="M2 100h10m29 0h10" stroke="#b0b7ae" stroke-width="2"/>
+      <path d="M2 106h10m29 0h10" stroke="#b0b7ae" stroke-width="2"/>
+      <path d="M2 112h10m29 0h10" stroke="#b0b7ae" stroke-width="2"/>
+      <path d="M2 118h10m29 0h10" stroke="#b0b7ae" stroke-width="2"/>
+      <path d="M2 124h10m29 0h10" stroke="#b0b7ae" stroke-width="2"/>
+      <path d="M2 130h10m29 0h10" stroke="#b0b7ae" stroke-width="2"/>
+      <path d="M2 136h10m29 0h10" stroke="#b0b7ae" stroke-width="2"/>
+      <path d="M2 142h10m29 0h10" stroke="#b0b7ae" stroke-width="2"/>
+      <path d="M2 148h10m29 0h10" stroke="#b0b7ae" stroke-width="2"/>
+      <path d="M2 154h10m29 0h10" stroke="#b0b7ae" stroke-width="2"/>
+      <path d="M2 160h10m29 0h10" stroke="#b0b7ae" stroke-width="2"/>
+      <path d="M2 166h10m29 0h10" stroke="#b0b7ae" stroke-width="2"/>
+      <path d="M2 172h10m29 0h10" stroke="#b0b7ae" stroke-width="2"/>
+      <path d="M2 178h10m29 0h10" stroke="#b0b7ae" stroke-width="2"/>
+      <path d="M2 184h10m29 0h10" stroke="#b0b7ae" stroke-width="2"/>
+      <path d="M2 190h10m29 0h10" stroke="#b0b7ae" stroke-width="2"/>
+      <path d="M2 196h10m29 0h10" stroke="#b0b7ae" stroke-width="2"/>
+      <path d="M2 202h10m29 0h10" stroke="#b0b7ae" stroke-width="2"/>
+      <path d="M2 208h10m29 0h10" stroke="#b0b7ae" stroke-width="2"/>
+      <path d="M2 214h10m29 0h10" stroke="#b0b7ae" stroke-width="2"/>
+      <path d="M2 220h10m29 0h10" stroke="#b0b7ae" stroke-width="2"/>
+      <path d="M2 226h10m29 0h10" stroke="#b0b7ae" stroke-width="2"/>
+      <path d="M2 232h10m29 0h10" stroke="#b0b7ae" stroke-width="2"/>
+      <path d="M2 238h10m29 0h10" stroke="#b0b7ae" stroke-width="2"/>
+      <path d="M2 244h10m29 0h10" stroke="#b0b7ae" stroke-width="2"/>
+    </g>
+  </defs>
+  <!-- PCB proportions and major parts follow the supplied top-view reference. -->
+  <rect id="pcb" x="188" y="60" width="640" height="640" rx="25" fill="url(#p4-pcb)" stroke="#507580" stroke-width="2"/>
+  <rect x="196" y="68" width="624" height="624" rx="19" fill="none" stroke="#6a8390" stroke-opacity=".2"/>
+  <g fill="#0b1319" stroke="#9aa99f" stroke-width="5">
+    <circle cx="218" cy="89" r="20"/><circle cx="798" cy="89" r="20"/>
+    <circle cx="218" cy="671" r="20"/><circle cx="798" cy="671" r="20"/>
+  </g>
+  <g fill="#b7cad3" font-family="ui-monospace,monospace" font-size="9" text-anchor="middle">
+    <text x="44" y="124">P1 / 1,3,5…</text><text x="138" y="124">P1 / 2,4,6…</text>
+    <text x="882" y="124">P2 / 1,3,5…</text><text x="976" y="124">P2 / 2,4,6…</text>
+  </g>
+  <!-- Two compact double-row female headers. Interactive contacts are overlaid by the editor. -->
+  <g fill="#111a22" stroke="#667b84" stroke-width="1.3">
+    <rect id="p1-header" x="196" y="132" width="48" height="438" rx="3"/>
+    <rect id="p2-header" x="772" y="132" width="48" height="438" rx="3"/>
+  </g>
+
+  <g fill="#19232d" stroke="#465865">
+    <rect x="198" y="133" width="44" height="26" rx="2"/><rect x="774" y="133" width="44" height="26" rx="2"/>
+  </g>
+  <g fill="#19232d" stroke="#465865">
+    <rect x="198" y="167" width="44" height="26" rx="2"/><rect x="774" y="167" width="44" height="26" rx="2"/>
+  </g>
+  <g fill="#19232d" stroke="#465865">
+    <rect x="198" y="201" width="44" height="26" rx="2"/><rect x="774" y="201" width="44" height="26" rx="2"/>
+  </g>
+  <g fill="#19232d" stroke="#465865">
+    <rect x="198" y="235" width="44" height="26" rx="2"/><rect x="774" y="235" width="44" height="26" rx="2"/>
+  </g>
+  <g fill="#19232d" stroke="#465865">
+    <rect x="198" y="269" width="44" height="26" rx="2"/><rect x="774" y="269" width="44" height="26" rx="2"/>
+  </g>
+  <g fill="#19232d" stroke="#465865">
+    <rect x="198" y="303" width="44" height="26" rx="2"/><rect x="774" y="303" width="44" height="26" rx="2"/>
+  </g>
+  <g fill="#19232d" stroke="#465865">
+    <rect x="198" y="337" width="44" height="26" rx="2"/><rect x="774" y="337" width="44" height="26" rx="2"/>
+  </g>
+  <g fill="#19232d" stroke="#465865">
+    <rect x="198" y="371" width="44" height="26" rx="2"/><rect x="774" y="371" width="44" height="26" rx="2"/>
+  </g>
+  <g fill="#19232d" stroke="#465865">
+    <rect x="198" y="405" width="44" height="26" rx="2"/><rect x="774" y="405" width="44" height="26" rx="2"/>
+  </g>
+  <g fill="#19232d" stroke="#465865">
+    <rect x="198" y="439" width="44" height="26" rx="2"/><rect x="774" y="439" width="44" height="26" rx="2"/>
+  </g>
+  <g fill="#19232d" stroke="#465865">
+    <rect x="198" y="473" width="44" height="26" rx="2"/><rect x="774" y="473" width="44" height="26" rx="2"/>
+  </g>
+  <g fill="#19232d" stroke="#465865">
+    <rect x="198" y="507" width="44" height="26" rx="2"/><rect x="774" y="507" width="44" height="26" rx="2"/>
+  </g>
+  <g fill="#19232d" stroke="#465865">
+    <rect x="198" y="541" width="44" height="26" rx="2"/><rect x="774" y="541" width="44" height="26" rx="2"/>
+  </g>
+  <!-- Tall LCD and camera FPC connectors. -->
+  <use id="dsi-connector" href="#p4-fpc" x="285" y="67"/>
+  <use id="csi-connector" href="#p4-fpc" x="380" y="67"/>
+  <g fill="#c3d2d8" font-family="ui-monospace,monospace" font-size="14" text-anchor="middle">
+    <text x="311.5" y="373">LCD</text><text x="406.5" y="373">CAM</text>
+  </g>
+  <!-- USB-C and the two top buttons. -->
+  <g id="usb-c">
+    <rect x="446" y="46" width="121" height="88" rx="11" fill="#13202a" stroke="#607888"/>
+    <rect x="451" y="43" width="111" height="94" rx="9" fill="url(#p4-metal)" stroke="#c1cad1" stroke-width="1.5"/>
+    <rect x="463" y="49" width="87" height="13" rx="6" fill="#111b25" stroke="#d5dadd"/>
+    <rect x="473" y="53" width="67" height="4" rx="2" fill="#6a7883"/>
+    <path d="M470 118h13m48 0h13" stroke="#d0d7db" stroke-width="4"/>
+    <path d="M471 136v10m6-10v10m6-10v10m6-10v10m6-10v10m6-10v10m6-10v10m6-10v10m6-10v10m6-10v10m6-10v10m6-10v10m6-10v10" stroke="#9eaaa8" stroke-width="2"/>
+  </g>
+  <g id="boot-button"><rect x="638" y="64" width="53" height="37" rx="5" fill="#17232d" stroke="#74868a"/><rect x="653" y="57" width="23" height="11" rx="3" fill="#aab6b8"/><rect x="644" y="72" width="41" height="20" rx="3" fill="#26343f"/><path d="M641 100h10m27 0h10" stroke="#b7aa7b" stroke-width="3"/></g>
+  <g id="reset-button"><rect x="711" y="64" width="53" height="37" rx="5" fill="#17232d" stroke="#74868a"/><rect x="726" y="57" width="23" height="11" rx="3" fill="#aab6b8"/><rect x="717" y="72" width="41" height="20" rx="3" fill="#26343f"/><path d="M714 100h10m27 0h10" stroke="#b7aa7b" stroke-width="3"/></g>
+  <g id="user-led"><rect x="595" y="73" width="26" height="10" rx="2" fill="#aeb9a6" stroke="#4f6a74"/><rect x="600" y="76" width="16" height="4" fill="#dbe4ad"/><rect x="596" y="94" width="25" height="12" rx="1" fill="#101b25" stroke="#7d929b"/></g>
+  <g fill="#c3d2d8" font-family="ui-monospace,monospace" font-size="10" text-anchor="middle">
+    <text x="508" y="160">USB-C · USB &amp; Power</text>
+    <text x="608" y="122">USER</text><text x="665" y="122">BOOT</text><text x="738" y="122">RESET</text>
+  </g>
+  <g id="power-header"><rect x="725" y="133" width="31" height="60" rx="4" fill="#b2a254" stroke="#c5ba77"/><circle cx="740.5" cy="149" r="5" fill="#556064" stroke="#c9c9a5"/><circle cx="740.5" cy="177" r="5" fill="#556064" stroke="#c9c9a5"/></g>
+  <!-- USB bridge, supply circuitry and the P4 package. -->
+  <g opacity=".9">
+    <use href="#p4-ic" x="486" y="191"/><use href="#p4-ic" x="570" y="184"/><use href="#p4-ic" x="660" y="156"/>
+    <use href="#p4-passive" x="461" y="184"/><use href="#p4-passive" x="461" y="201"/><use href="#p4-passive" x="461" y="218"/>
+    <use href="#p4-passive" x="535" y="187"/><use href="#p4-passive" x="535" y="204"/><use href="#p4-passive" x="610" y="189"/>
+    <use href="#p4-passive" x="645" y="137"/><use href="#p4-passive" x="695" y="151"/><use href="#p4-passive" x="695" y="176"/>
+    <use href="#p4-passive" x="463" y="398"/><use href="#p4-passive" x="672" y="329"/><use href="#p4-passive" x="652" y="349"/>
+    <use href="#p4-ic" x="689" y="368"/>
+    <use href="#p4-passive" x="317" y="413"/><use href="#p4-passive" x="349" y="413"/>
+  </g>
+  <text x="606" y="239" text-anchor="middle" fill="#d0dce0" font-family="ui-monospace,monospace" font-size="17" font-weight="600">ESP32-P4-NANO</text>
+  <g id="p4-chip">
+    <rect x="486" y="255" width="133" height="136" rx="3" fill="#141e26" stroke="#7c8e94" stroke-width="1.5"/>
+    <rect x="492" y="261" width="121" height="124" rx="2" fill="#1c2931"/>
+    <circle cx="602" cy="273" r="3.5" fill="#92977a"/>
+
+    <path d="M492 252v3m0 136v3M483 265h3m133 0h3" stroke="#a3aeac" stroke-width="1.5"/>
+    <path d="M498 252v3m0 136v3M483 271h3m133 0h3" stroke="#a3aeac" stroke-width="1.5"/>
+    <path d="M504 252v3m0 136v3M483 277h3m133 0h3" stroke="#a3aeac" stroke-width="1.5"/>
+    <path d="M510 252v3m0 136v3M483 283h3m133 0h3" stroke="#a3aeac" stroke-width="1.5"/>
+    <path d="M516 252v3m0 136v3M483 289h3m133 0h3" stroke="#a3aeac" stroke-width="1.5"/>
+    <path d="M522 252v3m0 136v3M483 295h3m133 0h3" stroke="#a3aeac" stroke-width="1.5"/>
+    <path d="M528 252v3m0 136v3M483 301h3m133 0h3" stroke="#a3aeac" stroke-width="1.5"/>
+    <path d="M534 252v3m0 136v3M483 307h3m133 0h3" stroke="#a3aeac" stroke-width="1.5"/>
+    <path d="M540 252v3m0 136v3M483 313h3m133 0h3" stroke="#a3aeac" stroke-width="1.5"/>
+    <path d="M546 252v3m0 136v3M483 319h3m133 0h3" stroke="#a3aeac" stroke-width="1.5"/>
+    <path d="M552 252v3m0 136v3M483 325h3m133 0h3" stroke="#a3aeac" stroke-width="1.5"/>
+    <path d="M558 252v3m0 136v3M483 331h3m133 0h3" stroke="#a3aeac" stroke-width="1.5"/>
+    <path d="M564 252v3m0 136v3M483 337h3m133 0h3" stroke="#a3aeac" stroke-width="1.5"/>
+    <path d="M570 252v3m0 136v3M483 343h3m133 0h3" stroke="#a3aeac" stroke-width="1.5"/>
+    <path d="M576 252v3m0 136v3M483 349h3m133 0h3" stroke="#a3aeac" stroke-width="1.5"/>
+    <path d="M582 252v3m0 136v3M483 355h3m133 0h3" stroke="#a3aeac" stroke-width="1.5"/>
+    <path d="M588 252v3m0 136v3M483 361h3m133 0h3" stroke="#a3aeac" stroke-width="1.5"/>
+    <path d="M594 252v3m0 136v3M483 367h3m133 0h3" stroke="#a3aeac" stroke-width="1.5"/>
+    <path d="M600 252v3m0 136v3M483 373h3m133 0h3" stroke="#a3aeac" stroke-width="1.5"/>
+    <text x="552.5" y="309" text-anchor="middle" fill="#b4c4cc" font-family="ui-monospace,monospace" font-size="12">ESP32-P4</text>
+    <text x="552.5" y="330" text-anchor="middle" fill="#7e959f" font-family="ui-monospace,monospace" font-size="9">32 MB PSRAM</text>
+    <text x="552.5" y="348" text-anchor="middle" fill="#7e959f" font-family="ui-monospace,monospace" font-size="9">RISC-V</text>
+  </g>
+  <g id="crystal"><rect x="658" y="268" width="44" height="44" rx="3" fill="#31414c" stroke="#8b9a9b"/><rect x="665" y="275" width="30" height="30" rx="2" fill="#aea791" stroke="#c3c4b0"/></g>
+  <g id="poe-header"><rect x="489" y="418" width="133" height="41" rx="4" fill="#b2a254" stroke="#c8bd74"/><path d="M522 420v37m33-37v37m33-37v37" stroke="#8e833e"/><g fill="#647073" stroke="#d0caa1"><circle cx="505.5" cy="438.5" r="6"/><circle cx="538.5" cy="438.5" r="6"/><circle cx="571.5" cy="438.5" r="6"/><circle cx="604.5" cy="438.5" r="6"/></g></g>
+  <text x="592" y="408" text-anchor="middle" fill="#c3d2d8" font-family="ui-monospace,monospace" font-size="12">PoE</text>
+  <g id="rtc-connector"><rect x="659" y="408" width="47" height="53" rx="4" fill="#b4b5a3" stroke="#dbddcb"/><rect x="669" y="416" width="26" height="36" rx="2" fill="#6c766e"/><path d="M681 423v6m0 11v6" stroke="#cec8a1" stroke-width="5"/></g>
+  <text x="738" y="441" text-anchor="middle" fill="#c3d2d8" font-family="ui-monospace,monospace" font-size="12">RTC</text>
+  <!-- RJ45 is a large vertical metal enclosure, not a small horizontal card. -->
+  <text x="368.5" y="435" text-anchor="middle" fill="#c3d2d8" font-family="ui-monospace,monospace" font-size="12">ETHERNET</text>
+  <g id="ethernet-rj45">
+    <rect x="259" y="443" width="219" height="274" rx="5" fill="#13212a" stroke="#8799a0"/>
+    <rect x="264" y="448" width="209" height="269" rx="3" fill="url(#p4-metal)" stroke="#bbc6cc" stroke-width="1.5"/>
+    <path d="M272 448h193M273 453h191" stroke="#d2d9dc" stroke-width="2"/>
+    <path d="M273 463v242m192-242v242" stroke="#5b6b7c" stroke-width="2" opacity=".45"/>
+    <rect x="310" y="688" width="117" height="15" rx="2" fill="#596a79" opacity=".45"/>
+    <text x="368.5" y="568" text-anchor="middle" fill="#243541" font-family="ui-monospace,monospace" font-size="18">RJ45</text>
+  </g>
+  <text x="534" y="472" text-anchor="middle" fill="#c3d2d8" font-family="ui-monospace,monospace" font-size="10">USB-A · OTG</text>
+  <g id="usb-a">
+    <rect x="486" y="480" width="95" height="250" rx="5" fill="#283541" stroke="#a4b3b8"/>
+    <rect x="493" y="482" width="81" height="248" rx="3" fill="url(#p4-socket)" stroke="#c4cdd0" stroke-width="1.5"/>
+    <path d="M501 492v225m66-225v225" stroke="#d9dee0" stroke-width="2" opacity=".7"/>
+    <path d="M504 716l14-70h31l14 70" fill="#6f7f8c" stroke="#c5cfd2" stroke-width="2"/>
+    <rect x="523" y="653" width="21" height="54" rx="4" fill="#17252c"/>
+    <circle cx="495" cy="483" r="5" fill="#b8c2c4" stroke="#536775"/><circle cx="571" cy="483" r="5" fill="#b8c2c4" stroke="#536775"/>
+  </g>
+  <!-- C6 shield plus the bottom PCB antenna, matching the S3 illustration style. -->
+  <g id="c6-module">
+    <rect x="591" y="490" width="166" height="207" rx="4" fill="#17252d" stroke="#819293" stroke-width="1.4"/>
+    <rect x="596" y="495" width="156" height="126" rx="4" fill="url(#p4-shield)" stroke="#c8d0c8"/>
+    <path d="M602 502h144m-144 112h144" stroke="#d2d9d3" opacity=".7"/>
+    <circle cx="738" cy="509" r="2.5" fill="#43534b"/>
+    <text x="674" y="535" text-anchor="middle" fill="#42564f" font-family="ui-monospace,monospace" font-size="9">ESPRESSIF</text>
+    <text x="674" y="560" text-anchor="middle" fill="#273f39" font-family="ui-monospace,monospace" font-size="16">ESP32-C6</text>
+    <path d="M603 627h142" stroke="#45626b"/>
+    <path id="c6-antenna" d="M611 682v-34h14v23h14v-23h14v23h14v-23h14v23h14v-23h14v23h14v-23h14v34" fill="none" stroke="#b6a681" stroke-width="3" stroke-linejoin="round"/>
+    <path d="M668 693v-15h-17" fill="none" stroke="#b6a681" stroke-width="2"/>
+  </g>
+  <g id="speaker-connector"><rect x="201" y="579" width="43" height="45" rx="3" fill="#b4b5a3" stroke="#d7dbcf"/><rect x="212" y="586" width="24" height="30" rx="2" fill="#748278"/><path d="M219 594h10m-10 12h10" stroke="#dad4b0" stroke-width="4"/></g>
+  <text x="222" y="642" text-anchor="middle" fill="#c3d2d8" font-family="ui-monospace,monospace" font-size="9">Speaker</text>
+  <g id="microphone"><rect x="774" y="583" width="43" height="36" rx="2" fill="#98a7a5" stroke="#c2ccc7"/><rect x="780" y="588" width="31" height="26" rx="1" fill="#b9c3bd"/><circle cx="795.5" cy="601" r="2.8" fill="#23372f"/></g>
+  <text x="795" y="639" text-anchor="middle" fill="#c3d2d8" font-family="ui-monospace,monospace" font-size="11">MIC</text>
+  <text x="508" y="755" text-anchor="middle" fill="#819da6" font-family="ui-monospace,monospace" font-size="11">WAVESHARE · ESP32-P4-NANO</text>
+</svg>
