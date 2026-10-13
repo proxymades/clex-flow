@@ -1,7 +1,8 @@
 import { indicatorIssues, indicatorCaption } from './indicator.js';
+import { imageIssues, MAX_IMAGE_PIXELS } from './image.js';
 export const VALUE_TYPES = ['number', 'boolean', 'text'];
-export const isDynamicText = element => element.mode === 'dynamic' || element.type === 'indicator' && element.captionDynamic;
-export const elementName = (element, index) => element.name?.trim() || `${element.type === 'indicator' ? 'Индикатор' : 'Текст'} ${index + 1}`;
+export const isDynamicText = element => element.type !== 'image' && element.mode === 'dynamic' || element.type === 'indicator' && element.captionDynamic;
+export const elementName = (element, index) => element.name?.trim() || `${element.type === 'image' ? 'Изображение' : element.type === 'indicator' ? 'Индикатор' : 'Текст'} ${index + 1}`;
 export function elementPreviewText(element) {
   if (element.type === 'indicator') return indicatorCaption(element);
   if (!isDynamicText(element)) return element.text;
@@ -11,6 +12,7 @@ export function elementPreviewText(element) {
 export const elementUpdatePort = id => 'update.' + id;
 export function elementBindings(element, index = 0) {
   const bindings = [];
+  if (element.type === 'image') return bindings;
   if (element.mode === 'dynamic') bindings.push({id:element.id, name:elementName(element,index), type:element.valueType, channel:element.type === 'indicator' ? 'state' : 'value', element});
   if (element.type === 'indicator' && element.captionDynamic) bindings.push({id:'caption.' + element.id, name:'Надпись: ' + elementName(element,index), type:'text', channel:'caption', element});
   return bindings;
@@ -41,11 +43,16 @@ export function screenIssues(screen, display) {
   const ids = new Set();
   for (const element of screen.elements) {
     const font = display.graphics.fonts.find(font => font.id === element.fontId);
-    if (!['text','indicator'].includes(element.type) || typeof element.id !== 'string' || !element.id || ids.has(element.id)) issues.push('Некорректный или повторяющийся элемент экрана.');
+    if (!['text','indicator','image'].includes(element.type) || typeof element.id !== 'string' || !element.id || ids.has(element.id)) issues.push('Некорректный или повторяющийся элемент экрана.');
     ids.add(element.id);
-    if (!Number.isInteger(element.x) || !Number.isInteger(element.y) || element.x < 0 || element.y < 0 || element.x >= display.resolution.width || element.y >= display.resolution.height) issues.push('Координаты текста находятся вне экрана.');
+    if (!Number.isInteger(element.x) || !Number.isInteger(element.y) || element.x < 0 || element.y < 0 || element.x >= display.resolution.width || element.y >= display.resolution.height) issues.push('Координаты элемента находятся вне экрана.');
     if (element.mode !== undefined && !['static', 'dynamic'].includes(element.mode)) issues.push('Неизвестный режим текстового элемента.');
     if (element.name !== undefined && (typeof element.name !== 'string' || element.name.length > 80)) issues.push('Название элемента не должно превышать 80 символов.');
+    if (element.type === 'image') {
+      issues.push(...imageIssues(element));
+      if (element.x + element.width > display.resolution.width || element.y + element.height > display.resolution.height) issues.push('Изображение выходит за границы экрана.');
+      continue;
+    }
     if (element.mode === 'dynamic' && !dynamicTextValid(element)) issues.push('Проверьте тип, начальное значение, префикс и суффикс динамического текста.');
     if (element.type === 'indicator') {
       issues.push(...indicatorIssues(element));
@@ -55,6 +62,9 @@ export function screenIssues(screen, display) {
     if (!font || !colorValid(element.color) || typeof element.text !== 'string' || element.text.length > 500) issues.push('Проверьте текст, цвет и доступный шрифт.');
     else if ([...elementPreviewText(element)].some(char => !font.ranges.some(([min,max]) => char.codePointAt(0) >= min && char.codePointAt(0) <= max))) issues.push('Выбранный шрифт не содержит некоторые символы текста.');
   }
+  const images = screen.elements.filter(element => element.type === 'image');
+  if (images.reduce((sum, image) => sum + image.width * image.height, 0) > MAX_IMAGE_PIXELS) issues.push('Суммарный размер изображений превышает 65 536 пикселей. Уменьшите изображения.');
+  if (images.filter(image => image.splash).length > 1) issues.push('На экране может быть одна заставка.');
   const ports = screenPorts(screen);
   if (new Set(ports.map(port => port.id)).size !== ports.length) issues.push('Идентификаторы элементов конфликтуют с портами обновления.');
   return issues;

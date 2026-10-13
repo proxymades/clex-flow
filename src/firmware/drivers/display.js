@@ -1,3 +1,4 @@
+import { imageFirmware } from './image.js';
 import { indicatorFirmware } from './indicator.js';
 import fonts from '../../displays/fonts/lvgl-fonts.json' with { type: 'json' };
 import { jd9365Dsi } from './esp-idf/jd9365-dsi.js';
@@ -26,6 +27,7 @@ export function displayFirmware(project, catalog, cString) {
   if (errors.length) throw new Error(errors.join('\n'));
   const { width, height } = display.resolution;
   const dynamic = screen.elements.filter(element=>element.type==='text'&&isDynamicText(element));
+  const images = imageFirmware({ ...screen, width, height });
   const indicators=indicatorFirmware(component,screen,cString,fontSymbols);
   const setters = dynamic.length ? [
     '/* Objects are initialized before the worker starts. All text updates run in flow_worker. */',
@@ -49,6 +51,7 @@ export function displayFirmware(project, catalog, cString) {
   const source = [
     driver.source,
     ...Object.values(fonts).map(font => 'LV_FONT_DECLARE(' + font.symbol + '); /* asset ' + font.sha256 + ' */'),
+    ...images.source,
     ...indicators.source,
     ...setters,
     'static uint32_t clex_graphics_tick(void) { return (uint32_t)(esp_timer_get_time() / 1000LL); }',
@@ -75,7 +78,9 @@ export function displayFirmware(project, catalog, cString) {
     '  lv_obj_set_style_bg_opa(screen, LV_OPA_COVER, LV_PART_MAIN);',
     '  lv_obj_set_style_pad_all(screen, 0, LV_PART_MAIN);',
     '  lv_obj_remove_flag(screen, LV_OBJ_FLAG_SCROLLABLE);',
+    ...images.prepare,
     ...screen.elements.flatMap((element,i) => {
+      if(element.type==='image')return images.initialize(element,i);
       if(element.type==='indicator')return indicators.initialize(element,i);
       const symbol = fontSymbols[element.fontId];
       if (!symbol) throw new Error('Нет реализации выбранного шрифта.');
@@ -93,6 +98,7 @@ export function displayFirmware(project, catalog, cString) {
         '  lv_obj_set_pos(text_' + i + ', ' + element.x + ', ' + element.y + ');',
       ];
     }),
+    ...images.start,
     '}',
   ].join('\n');
   return { runtime: GRAPHICS_RUNTIME, features:driver.features || [], source, initialize: '  clex_graphics_initialize();', update: '    lv_timer_handler();' };

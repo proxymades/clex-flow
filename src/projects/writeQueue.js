@@ -1,10 +1,12 @@
 export function createWriteQueue(write) {
   let tail = Promise.resolve();
-  return value => {
+  const queue = value => {
     const result = tail.then(() => write(value));
     tail = result.catch(() => {});
     return result;
   };
+  queue.setWriter = current => { write = current; };
+  return queue;
 }
 
 export function acknowledgeWrite(current, snapshot, saved) {

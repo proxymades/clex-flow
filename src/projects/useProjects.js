@@ -21,6 +21,10 @@ export function useProjects() {
   const timer = useRef(null), generation = useRef(0), paused = useRef(false), interacting = useRef(false), live = useRef(true);
   const autoEnabled = useRef(autoSaveEnabled);
   const [write] = useState(() => createWriteQueue(storage.saveProject));
+  // Fast Refresh retains state, including queues created by older code.
+  // Upgrade that queue in place without changing the hook signature or dropping drafts.
+  const queue = typeof write.setWriter === 'function' ? write : (write.liveQueue ||= createWriteQueue(storage.saveProject));
+  queue.setWriter(storage.saveProject);
   const saved = projects.find(project => project.id === active?.id);
   const dirty = Boolean(active && !same(active, saved));
   const isWriting = useCallback(() => inFlight.current || autoInFlight.current > 0, []);
@@ -37,7 +41,7 @@ export function useProjects() {
 
   const persist = useCallback(async snapshot => {
     const project = { ...snapshot, name: validateName(snapshot.name), updatedAt: new Date().toISOString() };
-    await write(project);
+    await queue(project);
     if (!live.current) return project;
     projectsRef.current = sortedProjects([...projectsRef.current.filter(item => item.id !== project.id), project]);
     setProjects(projectsRef.current);
@@ -45,7 +49,7 @@ export function useProjects() {
     const acknowledged = acknowledgeWrite(activeRef.current, snapshot, project);
     if (acknowledged !== activeRef.current) { activeRef.current = acknowledged; setActiveState(acknowledged); }
     return project;
-  }, [write]);
+  }, [queue]);
 
   const armAuto = useCallback(project => {
     cancelAuto();

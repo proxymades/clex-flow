@@ -1,3 +1,4 @@
+import { imageIssues } from '../displays/image.js';
 import { indicatorIssues } from '../displays/indicator.js';
 import { dynamicTextValid, screenPorts } from '../displays/model.js';
 import { DEFAULT_BOARD_POSITION, DEFAULT_VIEWPORT } from '../assembly/model.js';
@@ -77,11 +78,18 @@ export function validateProject(project) {
     for (const screen of Object.values(project.screens)) {
       const elementIds = new Set();
       for (const element of screen.elements) {
-        if (!isObject(element) || !validKey(element.id) || elementIds.has(element.id) || !['text','indicator'].includes(element.type) || !Number.isInteger(element.x) || !Number.isInteger(element.y) || element.x < 0 || element.y < 0 || element.x > 4096 || element.y > 4096 || !validKey(element.fontId) || typeof element.text !== 'string' || element.text.length > 500 || !/^#[0-9a-f]{6}$/i.test(element.color)) throw new Error('Некорректный элемент интерфейса экрана.');
+        if (!isObject(element) || !validKey(element.id) || elementIds.has(element.id) || !['text','indicator','image'].includes(element.type) || !Number.isInteger(element.x) || !Number.isInteger(element.y) || element.x < 0 || element.y < 0 || element.x > 4096 || element.y > 4096) throw new Error('Некорректный элемент интерфейса экрана.');
+        if (element.name !== undefined && (typeof element.name !== 'string' || element.name.length > 80)) throw new Error('Некорректное название элемента.');
+        if (element.type === 'image') {
+          if (imageIssues(element).length) throw new Error(imageIssues(element).join(' '));
+          elementIds.add(element.id); continue;
+        }
+        if (!validKey(element.fontId) || typeof element.text !== 'string' || element.text.length > 500 || !/^#[0-9a-f]{6}$/i.test(element.color)) throw new Error('Некорректный текстовый элемент интерфейса экрана.');
         if (element.mode !== undefined && !['static', 'dynamic'].includes(element.mode) || element.name !== undefined && (typeof element.name !== 'string' || element.name.length > 80) || element.mode === 'dynamic' && !dynamicTextValid(element)) throw new Error('Некорректная настройка динамического текста.');
         if (element.type === 'indicator' && indicatorIssues(element).length) throw new Error('Некорректный индикатор состояния.');
         elementIds.add(element.id);
       }
+      if (screen.elements.filter(element => element.type === 'image' && element.splash).length > 1) throw new Error('На экране может быть одна заставка.');
       const ports = screenPorts(screen);
       if (new Set(ports.map(port => port.id)).size !== ports.length) throw new Error('Повторяющиеся порты интерфейса экрана.');
     }

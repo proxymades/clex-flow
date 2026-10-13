@@ -1,3 +1,4 @@
+import { formatCount } from '../utils/plural.js';
 import { hardwareProvider } from '../hardware/resources.js';
 import { networkProvider, probeUrl } from '../network/model.js';
 import { displayDescription, screenFor, screenIssues, screenPorts, screenBindings, elementUpdatePort } from '../displays/model.js';
@@ -154,7 +155,7 @@ export function validateGraph(project, catalog) {
       if (parameter.type === 'integer' && (!Number.isInteger(value) || value < parameter.min || value > parameter.max)) add('error', 'logic-parameter', `${node.name}: «${parameter.label}» должен быть целым числом ${parameter.min}-${parameter.max}.`, fields);
       if (parameter.type === 'boolean' && typeof value !== 'boolean') add('error', 'logic-parameter', `${node.name}: неверное логическое значение.`, fields);
       if (parameter.type === 'select' && !parameter.options.some(option=>option.value===value)) add('error','logic-parameter',node.name+': выберите допустимый вариант «'+parameter.label+'».',fields);
-      if (parameter.type === 'text' && (typeof value !== 'string' || value.length > parameter.maxLength)) add('error', 'logic-parameter', `${node.name}: текст не должен превышать ${parameter.maxLength} символов.`, fields);
+      if (parameter.type === 'text' && (typeof value !== 'string' || value.length > parameter.maxLength)) add('error', 'logic-parameter', `${node.name}: текст не должен превышать ${formatCount(parameter.maxLength, ['символ', 'символа', 'символов'])}.`, fields);
     }
     if(module.constraints.network){if(!project.components.some(component=>catalog.modules.find(module=>module.id===component.moduleId)?.network))add('error','probe-network',node.name+': добавьте сетевой интерфейс в монтаж.',fields);if(!probeUrl(node.parameters.url))add('error','probe-url',node.name+': укажите HTTP/HTTPS-адрес без логина, пароля и фрагмента.',fields);}
     const binding = hardwareBinding(node, project, catalog);

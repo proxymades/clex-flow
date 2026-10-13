@@ -27,6 +27,8 @@
     "test:firmware-ui": "node tests/firmware-ui.cjs",
     "test:sdk-ui": "node tests/sdk-ui.cjs",
     "test:display-ui": "node tests/display-ui.cjs",
+    "test:image-ui": "node tests/image-ui.cjs",
+    "test:image-runtime": "node tests/image-lvgl-runtime.mjs",
     "test:interface-ui": "node tests/interface-ui.cjs",
     "test:process-log-ui": "node tests/process-log-ui.cjs",
     "test:wire-routing-ui": "node tests/wire-routing-ui.cjs",

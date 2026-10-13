@@ -1519,7 +1519,8 @@
       "features": [
         "background",
         "text",
-        "indicator"
+        "indicator",
+        "image"
       ],
       "maxElements": 32,
       "fonts": [

@@ -1,3 +1,4 @@
+import { formatCount } from '../utils/plural.js';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ReactFlow, Background, BackgroundVariant, ConnectionMode } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
@@ -232,7 +233,7 @@ export default function AssemblyCanvas({ project, board, catalog, selection, set
   }, [focusComponentId, ready, instance, busy, nodes, size, interaction, onTransform, onFocusDone]);
 
   return <div className={['assembly-canvas', busy ? 'canvas-busy' : '', spaceHeld ? 'canvas-space-pan' : ''].join(' ')}>
-    <div className="canvas-top"><span className="badge purple"><MousePointer2 size={12} />МОНТАЖ / {project.components.length} компонентов</span><span className="canvas-scale">{Math.round(zoom * 100)}%</span></div>
+    <div className="canvas-top"><span className="badge purple"><MousePointer2 size={12} />МОНТАЖ / {formatCount(project.components.length, ['компонент', 'компонента', 'компонентов'])}</span><span className="canvas-scale">{Math.round(zoom * 100)}%</span></div>
     {pending && <div className="connection-prompt"><span className="dot green-dot" />{pending.componentId ? 'Выберите контакт платы для соединения' : 'Выберите контакт компонента'}<button aria-label="Отменить соединение" className="icon-button" onClick={() => setPending(null)}><Unplug size={15} /></button></div>}
     <div ref={root} className="assembly-flow-region" data-ready={ready} aria-label="Холст монтажа">
       {/* Fix node styles as well as routing layers: React Flow resets its selection elevation during Strict Mode initialization. */}

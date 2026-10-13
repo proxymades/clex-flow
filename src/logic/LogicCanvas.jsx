@@ -1,3 +1,4 @@
+import { formatCount } from '../utils/plural.js';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ReactFlow, Background, BackgroundVariant, MarkerType, SelectionMode } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
@@ -132,6 +133,6 @@ export default function LogicCanvas({ project, catalog, history, selection, setS
     {pending && <div className="logic-connection-prompt"><span className="dot green-dot" />{pending.direction === 'output' ? 'Выберите совместимый вход блока' : 'Выберите совместимый выход блока'}<button className="icon-button" aria-label="Отменить связь логики" onClick={() => onPort(null)}><Unplug size={15} /></button></div>}
     {error && <div className="wiring-error logic-connect-error" role="alert"><span>{error}</span><button className="text-button" onClick={() => setError('')}>Закрыть</button></div>}
     </div>
-    <footer className="logic-canvas-footer"><span>{nodes.length} блоков · {edges.length} связей</span><CanvasControls subject="граф" zoom={project.logic.viewport.zoom} busy={busy} fitDisabled={!nodes.length} onZoomOut={() => instance?.zoomOut({ duration: 0 })} onZoomIn={() => instance?.zoomIn({ duration: 0 })} onFit={fitView} /><span className="canvas-navigation-hint">Пробел + перетаскивание · панорама</span></footer>
+    <footer className="logic-canvas-footer"><span>{formatCount(nodes.length, ['блок', 'блока', 'блоков'])} · {formatCount(edges.length, ['связь', 'связи', 'связей'])}</span><CanvasControls subject="граф" zoom={project.logic.viewport.zoom} busy={busy} fitDisabled={!nodes.length} onZoomOut={() => instance?.zoomOut({ duration: 0 })} onZoomIn={() => instance?.zoomIn({ duration: 0 })} onFit={fitView} /><span className="canvas-navigation-hint">Пробел + перетаскивание · панорама</span></footer>
   </main>;
 }

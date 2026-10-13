@@ -64,3 +64,15 @@ input:is([type=checkbox],[type=radio],[type=color],[type=range],[type=button],[t
 .board-peripherals{margin:20px 0}.board-peripherals>div:not(.panel-label){margin-top:12px}.board-peripherals strong{font-size:11px;font-weight:550;color:#b9c7db}.board-peripherals p{font-size:10px;line-height:1.7;color:var(--muted);margin-top:5px}
 
 .wire-bend-control{cursor:move;touch-action:none}.wire-bend-control:hover,.wire-bend-control:focus{fill:#33445f;stroke-width:3;outline:none}.reset-wire-route{margin-top:14px;margin-bottom:10px}
+
+.screen-image{position:absolute;touch-action:none;cursor:move;user-select:none}
+.screen-image canvas{display:block;width:100%;height:100%;pointer-events:none}
+.screen-splash-toggle{display:flex;align-items:center;gap:9px;font-size:11px;color:#c3d0e1;margin:12px 0}
+.screen-splash-toggle input{width:auto}
+.screen-element-list [data-element-type="image"] svg{color:#34d399}
+.screen-editor-surfaces{display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:center;gap:20px;width:100%}
+.screen-editor-surface{flex-shrink:0;max-width:100%}
+.screen-editor-surface h3{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:11px;color:#b7c9de;font-weight:500;margin:0 0 12px}
+.screen-editor-surface h3 span{font-size:10px;color:#8099b2}
+.screen-splash-surface{position:relative}
+.screen-splash-hint{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;color:#6d829b;font-size:11px;line-height:1.8;margin:0;pointer-events:none}

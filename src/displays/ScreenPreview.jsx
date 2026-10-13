@@ -1,15 +1,17 @@
+import ScreenImage from './ScreenImage.jsx';
 import { indicatorState, indicatorLayout } from './indicator.js';
 import { elementPreviewText } from './model.js';
 import fontUrl from './fonts/Montserrat-Medium.ttf?url';
 
-export default function ScreenPreview({ display, screen, maxWidth = 180, maxHeight = 140, selected, onElementPointerDown, onElementResizePointerDown }) {
+export default function ScreenPreview({ display, screen, maxWidth = 180, maxHeight = 140, selected, onElementPointerDown, onElementResizePointerDown, showSplash = false }) {
   if (!display) return null;
   const { width, height } = display.resolution;
   const scale = Math.min(maxWidth / width, maxHeight / height);
   return <div className="screen-preview" style={{ width: width * scale, height: height * scale }}>
     <style>{'@font-face{font-family:ClexMontserrat;src:url("' + fontUrl + '") format("truetype");font-weight:500;font-style:normal}'}</style>
     <div className="screen-pixels" data-screen-width={width} data-screen-height={height} style={{ width, height, background: screen.background, transform: 'scale(' + scale + ')' }}>
-      {screen.elements.map(element => {
+      {screen.elements.filter(element => showSplash ? element.type === 'image' && element.splash : !(element.type === 'image' && element.splash)).map(element => {
+        if (element.type === 'image') return <ScreenImage key={element.id} element={element} scale={scale} selected={selected === element.id} onPointerDown={onElementPointerDown} onResize={onElementResizePointerDown} />;
         const font = display.graphics.fonts.find(font => font.id === element.fontId);
         if (element.type === 'indicator') {
           const state = (selected===element.id&&element.editStateId?element.states.find(state=>state.id===element.editStateId):null)||indicatorState(element), layout = indicatorLayout(element);

@@ -1,3 +1,4 @@
+import { formatCount } from '../utils/plural.js';
 import {memo,useEffect,useState} from 'react';
 import {Handle,Position,useUpdateNodeInternals} from '@xyflow/react';
 import {Timer,ScanLine,ArrowUpRight,Repeat2,Terminal,Box,TriangleAlert,Monitor,Hash,Network,Globe,Link2, Camera, Volume2 } from 'lucide-react';
@@ -26,7 +27,7 @@ function LogicNode({id,data,selected}){
  }
  const additional=[...ports.inputs,...ports.outputs].filter(port=>port.additional);
  return <article className={`logic-node ${selected?'node-selected':''} ${issueCount?'node-invalid':''}`} style={{'--node-color':definition?.color||'#fb7185'}}>
-  <header className="logic-drag-handle"><span className="logic-node-icon"><Icon size={19}/></span><div><strong title={title}>{title}</strong><small>{definition?.categoryName||'Модуль не установлен'} · v{node.moduleVersion}</small></div>{issueCount>0&&<span className="node-issue-count" title={`${issueCount} ошибок`}><TriangleAlert size={12}/>{issueCount}</span>}</header>
+  <header className="logic-drag-handle"><span className="logic-node-icon"><Icon size={19}/></span><div><strong title={title}>{title}</strong><small>{definition?.categoryName||'Модуль не установлен'} · v{node.moduleVersion}</small></div>{issueCount>0&&<span className="node-issue-count" title={formatCount(issueCount, ['ошибка', 'ошибки', 'ошибок'])}><TriangleAlert size={12}/>{issueCount}</span>}</header>
   <div className="logic-node-summary" title={summary}>{summary}</div>
   {definition?.editor==='screen'&&display&&<><div className="logic-display-preview nodrag" title="Двойное нажатие открывает редактор экрана"><ScreenPreview display={display} screen={screen||{background:'#000000',elements:[]}}/></div>{screen?.elements.some(element=>element.mode==='dynamic'||element.captionDynamic)&&<button className="node-bind-button nodrag" disabled={data.busy} onClick={()=>onBindData(node)}><Link2 size={13}/>Подключить данные</button>}</>}
   {!definition&&<p className="logic-missing">Точная версия модуля отсутствует в библиотеке.</p>}

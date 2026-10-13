@@ -1,3 +1,4 @@
+import { formatCount } from '../utils/plural.js';
 import { useState } from 'react';
 import { Cpu, Search, Lightbulb, MousePointer2, Monitor, Timer, ScanLine, ArrowUpRight, Repeat2, Terminal, Hash, Box , Network, Globe , Camera, Volume2 } from 'lucide-react';
 import Modal from '../components/Modal.jsx';
@@ -16,7 +17,7 @@ export default function LibraryDialog({ catalog, onClose }) {
         const controller = item.display && catalog.controllers.find(controller => controller.id === item.display.controllerId);
         return <article className="library-catalog-card" key={item.id}>
           <header><span style={{ color: item.color || '#a78bfa' }}><Icon size={23} /></span><div><h3>{item.name}</h3><small>{item.manufacturer || item.categoryName || item.mcu}</small></div></header>
-          <p>{kind === 'board' ? `${item.mcu} · ${item.pins.length} физических контактов` : item.description}</p>
+          <p>{kind === 'board' ? `${item.mcu} · ${formatCount(item.pins.length, ['физический контакт', 'физических контакта', 'физических контактов'])}` : item.description}</p>
           {item.display && <div className="library-catalog-details"><span>{controller?.name || item.display.controllerId}</span><span>{item.display.interface.toUpperCase()}</span><span>{item.display.resolution.width} × {item.display.resolution.height}</span></div>}
           {kind === 'hardware' && <div className="library-catalog-details">{item.terminals.map(terminal => <span key={terminal.id}>{terminal.label}</span>)}</div>}
           {kind === 'logic' && <div className="library-catalog-details">{[...item.inputs, ...item.outputs].map(port => <span key={port.id}>{port.name}</span>)}{item.editor === 'screen' && <span>Редактор интерфейса</span>}</div>}

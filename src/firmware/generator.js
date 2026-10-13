@@ -215,6 +215,7 @@ ${timers.map(({node,i})=>`  static const uint16_t timer_node_${i} = ${i};
   ESP_LOGI("CLEX", "Flow ready: ${nodes.length} blocks, ${timers.length} timers");
 }
 `;
+  if (new TextEncoder().encode(source).length > 2 * 1024 * 1024) throw new Error('Исходники прошивки превышают 2 МБ. Уменьшите изображения.');
   const flashSize = board.firmware.flashSizeMb;
   const config = `CONFIG_IDF_TARGET="${board.target}"\nCONFIG_ESPTOOLPY_FLASHSIZE_${flashSize}MB=y\nCONFIG_ESPTOOLPY_FLASHMODE_DIO=y\nCONFIG_FREERTOS_HZ=1000\nCONFIG_LOG_COLORS=n\nCONFIG_ESP_CONSOLE_${consoleMode==='usb'?'USB_SERIAL_JTAG':'UART_DEFAULT'}=y\nCONFIG_ESP_CONSOLE_SECONDARY_NONE=y\n`;
   const graphicsFiles = graphics.runtime ? { ...GRAPHICS_FILES, 'main/idf_component.yml': 'dependencies:\n  lvgl/lvgl: "=9.2.2"\n' } : {};
