@@ -1,0 +1,6 @@
+Режим: встроенный image_gen, редактирование предоставленного пользователем логотипа с transparent_background=true.
+Мастер: assets/app-icon.png.
+Иконки: штатная Tauri CLI, команда node node_modules/@tauri-apps/cli/tauri.js icon assets/app-icon.png --output .artifacts/app-icons; desktop-файлы перенесены в src-tauri/icons.
+
+Промпт:
+Use case: background-extraction. Asset type: desktop application icon master for CLEX Flow / Tauri. Edit target: the latest user-attached image showing a purple rounded-square app badge with a white lightning bolt, against a dark black background. Remove ONLY the dark black background surrounding the purple badge. Preserve the original badge silhouette, rounded corners, glossy lilac highlight along the upper-left rim, purple-to-violet gradient, and the exact white lightning-bolt geometry and orientation. Do not add text, strokes, objects, a black halo, a colored background, or a new shadow. Preserve clean antialiased edges and genuine alpha transparency outside the badge. Upscale faithfully into a crisp square high-resolution master, ideally 1024 by 1024 pixels, badge centered and occupying approximately 82% of the square canvas in both dimensions, with even transparent padding. The opaque purple square and the white lightning bolt must remain opaque. This is a faithful transparent cutout of the supplied logo, not a redesign.

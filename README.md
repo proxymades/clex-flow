@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/app-icon.svg" width="96" alt="Логотип CLEX Flow" />
+  <img src="assets/app-icon.png" width="96" alt="Логотип CLEX Flow" />
 </p>
 
 <h1 align="center">CLEX Flow</h1>
