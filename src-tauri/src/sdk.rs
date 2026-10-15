@@ -203,7 +203,7 @@ fn upsert_detected(registry: &mut Registry, mut sdk: Sdk) -> String {
     if let Some(old) = registry
         .installations
         .iter()
-        .find(|old| old.root == sdk.root)
+        .find(|old| old.root == sdk.root && old.state == "ready")
     {
         if old
             .python
@@ -1190,15 +1190,14 @@ mod tests {
         let custom_tools = d.path().join("custom tools");
         fs::create_dir(&custom_tools).unwrap();
         let mut registry = Registry::default();
-        let id = upsert(
-            &mut registry,
-            new_external(
-                &root,
-                Some(custom_python.display().to_string()),
-                Some(custom_tools.display().to_string()),
-            )
-            .unwrap(),
-        );
+        let mut manual = new_external(
+            &root,
+            Some(custom_python.display().to_string()),
+            Some(custom_tools.display().to_string()),
+        )
+        .unwrap();
+        manual.state = "ready".into();
+        let id = upsert(&mut registry, manual);
         let config = d.path().join("eim_idf.json");
         fs::write(&config, serde_json::to_vec(&serde_json::json!({"idfInstalled":[{"path":root,"python":"old-python.exe","idfToolsPath":"old-tools"}]})).unwrap()).unwrap();
         read_registration(&mut registry, &config);
@@ -1209,5 +1208,19 @@ mod tests {
             .unwrap();
         assert_eq!(sdk.python.as_deref(), custom_python.to_str());
         assert_eq!(sdk.tools_path.as_deref(), custom_tools.to_str());
+        registry
+            .installations
+            .iter_mut()
+            .find(|sdk| sdk.id == id)
+            .unwrap()
+            .state = "invalid".into();
+        read_registration(&mut registry, &config);
+        let sdk = registry
+            .installations
+            .iter()
+            .find(|sdk| sdk.id == id)
+            .unwrap();
+        assert_eq!(sdk.python.as_deref(), Some("old-python.exe"));
+        assert_eq!(sdk.tools_path.as_deref(), Some("old-tools"));
     }
 }
