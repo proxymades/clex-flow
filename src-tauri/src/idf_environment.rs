@@ -139,12 +139,118 @@ pub fn find_tool(name: &str, path: &str) -> Option<PathBuf> {
 }
 // EIM stores tools directly under its tools directory; idf_tools.py expects a parent containing tools/.
 pub fn export_root(tools: &Path) -> PathBuf {
-    if tools.join("tools").is_dir() {
-        tools.to_path_buf()
-    } else {
+    if tools
+        .file_name()
+        .is_some_and(|name| name.to_string_lossy().eq_ignore_ascii_case("tools"))
+        && !tools.join("tools").is_dir()
+    {
         tools.parent().unwrap_or(tools).to_path_buf()
+    } else {
+        tools.to_path_buf()
     }
 }
+
+fn python_environment(python: &Path) -> Result<PathBuf, String> {
+    let parent = python.parent().ok_or("Некорректный Python-путь")?;
+    if parent
+        .file_name()
+        .is_some_and(|name| name.to_string_lossy().eq_ignore_ascii_case("scripts") || name == "bin")
+    {
+        parent
+            .parent()
+            .map(Path::to_path_buf)
+            .ok_or("Некорректный Python-путь".into())
+    } else {
+        Ok(parent.to_path_buf())
+    }
+}
+
+fn layout_candidates(
+    root: &Path,
+    python: Option<&Path>,
+    tools: Option<&Path>,
+    home: &Path,
+    env_tools: Option<&Path>,
+    env_python: Option<&Path>,
+    version: &str,
+) -> Result<(PathBuf, PathBuf), String> {
+    let major_minor = version.rsplit_once('.').ok_or("Некорректная версия")?.0;
+    let default_tools = home.join(".espressif");
+    let mut bases = Vec::new();
+    if let Some(tools) = tools {
+        bases.extend([tools.to_path_buf(), tools.join("tools")]);
+    }
+    if let Some(python) = python {
+        bases.extend(crate::sdk_discovery::related_bases(&python_environment(
+            python,
+        )?));
+    }
+    bases.extend(crate::sdk_discovery::related_bases(root));
+    if let Some(tools) = env_tools {
+        bases.extend([tools.to_path_buf(), tools.join("tools")]);
+    }
+    bases.extend([default_tools.clone(), default_tools.join("tools")]);
+    let bases = crate::sdk_discovery::unique(bases);
+    let constraints = format!("espidf.constraints.v{major_minor}.txt");
+    let mut pythons = Vec::new();
+    if let Some(python) = python {
+        pythons.push(python.to_path_buf());
+    } else {
+        for base in &bases {
+            pythons.extend([
+                executable(&base.join("python").join(format!("v{version}")).join("venv")),
+                executable(&base.join(".venv")),
+                executable(&base.join("venv")),
+            ]);
+            if let Ok(entries) = fs::read_dir(base.join("python_env")) {
+                let mut environments: Vec<_> = entries
+                    .flatten()
+                    .filter(|entry| {
+                        entry
+                            .file_name()
+                            .to_string_lossy()
+                            .starts_with(&format!("idf{major_minor}_"))
+                    })
+                    .map(|entry| executable(&entry.path()))
+                    .collect();
+                environments.sort();
+                environments.reverse();
+                pythons.extend(environments);
+            }
+        }
+        if let Some(path) = env_python {
+            pythons.push(executable(path));
+        }
+    }
+    for candidate in crate::sdk_discovery::unique(pythons) {
+        if !candidate.is_file() {
+            continue;
+        }
+        let inferred = crate::sdk_discovery::related_bases(&python_environment(&candidate)?);
+        let candidates = if let Some(tools) = tools {
+            vec![tools.to_path_buf(), tools.join("tools")]
+        } else {
+            crate::sdk_discovery::unique(inferred.into_iter().chain(bases.iter().cloned()))
+        };
+        if let Some(tools) = candidates
+            .into_iter()
+            .find(|path| path.join(&constraints).is_file())
+        {
+            return Ok((candidate, tools));
+        }
+    }
+    if python.is_some_and(|path| !path.is_file()) {
+        return Err("Указанный Python не найден. Выберите python.exe из окружения ESP-IDF.".into());
+    }
+    if let Some(tools) = tools {
+        if !tools.join(&constraints).is_file() && !tools.join("tools").join(&constraints).is_file()
+        {
+            return Err(format!("В указанной папке инструментов не найден {constraints}. Укажите каталог инструментов выбранной ESP-IDF."));
+        }
+    }
+    Err("Не удалось найти Python и инструменты выбранной ESP-IDF. Укажите Python окружения и каталог инструментов в настройках.".into())
+}
+
 fn filtered_tools(root: &Path, cache: &Path, target: &str) -> Result<PathBuf, String> {
     let mut value: serde_json::Value = serde_json::from_slice(
         &fs::read(root.join("tools/tools.json")).map_err(|e| e.to_string())?,
@@ -187,63 +293,19 @@ pub fn inspect_target(
         .canonicalize()
         .map_err(|e| format!("SDK недоступен: {e}"))?;
     let sdk_version = sdk_version(&root)?;
-    let major_minor = sdk_version.rsplit_once('.').ok_or("Некорректная версия")?.0;
     let home = home()?;
-    let default_tools = home.join(".espressif");
-    let mut pythons = Vec::new();
-    if let Some(python) = python {
-        pythons.push(python.to_path_buf());
-    } else {
-        if let Some(path) = env::var_os("IDF_PYTHON_ENV_PATH") {
-            pythons.push(executable(&PathBuf::from(path)));
-        }
-        if let Some(tools) = tools {
-            pythons.push(executable(
-                &tools
-                    .join("python")
-                    .join(format!("v{sdk_version}"))
-                    .join("venv"),
-            ));
-        }
-        pythons.push(executable(
-            &default_tools
-                .join("tools/python")
-                .join(format!("v{sdk_version}"))
-                .join("venv"),
-        ));
-        if let Ok(entries) = fs::read_dir(default_tools.join("python_env")) {
-            for entry in entries.flatten() {
-                if entry
-                    .file_name()
-                    .to_string_lossy()
-                    .starts_with(&format!("idf{major_minor}_"))
-                {
-                    pythons.push(executable(&entry.path()));
-                }
-            }
-        }
-    }
-    let python=pythons.into_iter().find(|path|path.is_file()).ok_or("Python окружения SDK не найден. Укажите существующий Python или установите инструменты через CLEX Flow.")?;
-    let venv = python
-        .parent()
-        .and_then(Path::parent)
-        .ok_or("Некорректный Python-путь")?;
-    let mut candidates = Vec::new();
-    if let Some(tools) = tools {
-        candidates.push(tools.to_path_buf());
-    }
-    if let Some(tools) = env::var_os("IDF_TOOLS_PATH") {
-        candidates.push(PathBuf::from(tools));
-    }
-    if let Some(parent) = venv.parent().and_then(Path::parent).and_then(Path::parent) {
-        candidates.push(parent.to_path_buf());
-    }
-    candidates.extend([default_tools.clone(), default_tools.join("tools")]);
-    let constraints = format!("espidf.constraints.v{major_minor}.txt");
-    let tools = candidates
-        .into_iter()
-        .find(|path| path.join(&constraints).is_file())
-        .ok_or("Не найдены инструменты/constraints выбранного SDK. Установка неполная.")?;
+    let env_tools = env::var_os("IDF_TOOLS_PATH").map(PathBuf::from);
+    let env_python = env::var_os("IDF_PYTHON_ENV_PATH").map(PathBuf::from);
+    let (python, tools) = layout_candidates(
+        &root,
+        python,
+        tools,
+        &home,
+        env_tools.as_deref(),
+        env_python.as_deref(),
+        &sdk_version,
+    )?;
+    let venv = python_environment(&python)?;
     let mut variables = BTreeMap::new();
     variables.insert("IDF_PATH".into(), root.to_string_lossy().to_string());
     variables.insert(
@@ -415,5 +477,110 @@ mod tests {
     fn missing_sdk_is_not_healthy() {
         let d = tempfile::tempdir().unwrap();
         assert!(sdk_version(d.path()).is_err());
+    }
+    fn touch(path: &Path) {
+        fs::create_dir_all(path.parent().unwrap()).unwrap();
+        fs::write(path, "fixture").unwrap();
+    }
+    #[test]
+    fn standard_installer_resolves_python_and_tools_from_the_selected_installation() {
+        let d = tempfile::tempdir().unwrap();
+        let base = d.path().join("X Espressif - тест");
+        let root = base.join("frameworks/esp-idf-v5.4.4");
+        fs::create_dir_all(&root).unwrap();
+        let python = executable(&base.join("python_env/idf5.4_py3.11_env"));
+        touch(&python);
+        touch(&base.join("espidf.constraints.v5.4.txt"));
+        let home = d.path().join("home");
+        // A different SDK in the default home must not win over the selected installation.
+        touch(&executable(
+            &home.join(".espressif/python_env/idf5.4_py3.9_env"),
+        ));
+        touch(&home.join(".espressif/espidf.constraints.v5.4.txt"));
+        let found = layout_candidates(&root, None, None, &home, None, None, "5.4.4").unwrap();
+        assert_eq!(found, (python.clone(), base.clone()));
+        assert_eq!(
+            layout_candidates(&root, Some(&python), None, &home, None, None, "5.4.4").unwrap(),
+            (python, base.clone())
+        );
+        assert_eq!(export_root(&base), base);
+    }
+    #[test]
+    fn eim_layout_and_explicit_tools_preserve_owned_slot_paths() {
+        let d = tempfile::tempdir().unwrap();
+        let root = d.path().join("v5.4.4/esp-idf");
+        let tools = d.path().join("tools");
+        let python = executable(&tools.join("python/v5.4.4/venv"));
+        touch(&python);
+        touch(&tools.join("espidf.constraints.v5.4.txt"));
+        assert_eq!(
+            layout_candidates(
+                &root,
+                None,
+                Some(&tools),
+                &d.path().join("home"),
+                None,
+                None,
+                "5.4.4"
+            )
+            .unwrap(),
+            (python, tools.clone())
+        );
+        assert_eq!(export_root(&tools), d.path());
+    }
+    #[test]
+    fn supports_split_tools_paths_and_rejects_bad_explicit_overrides() {
+        let d = tempfile::tempdir().unwrap();
+        let root = d.path().join("sdk/esp-idf");
+        let tools = d.path().join("other-drive/инструменты");
+        let python = executable(&tools.join("python_env/idf5.4_py3.12_env"));
+        touch(&python);
+        touch(&tools.join("espidf.constraints.v5.4.txt"));
+        assert_eq!(
+            layout_candidates(
+                &root,
+                None,
+                None,
+                &d.path().join("home"),
+                Some(&tools),
+                None,
+                "5.4.4"
+            )
+            .unwrap(),
+            (python.clone(), tools.clone())
+        );
+        assert!(layout_candidates(
+            &root,
+            Some(&d.path().join("missing/python.exe")),
+            Some(&tools),
+            d.path(),
+            None,
+            None,
+            "5.4.4"
+        )
+        .unwrap_err()
+        .contains("Python не найден"));
+        assert!(layout_candidates(
+            &root,
+            Some(&python),
+            Some(&d.path().join("wrong")),
+            d.path(),
+            None,
+            None,
+            "5.4.4"
+        )
+        .unwrap_err()
+        .contains("папке инструментов"));
+        fs::remove_file(tools.join("espidf.constraints.v5.4.txt")).unwrap();
+        assert!(layout_candidates(
+            &root,
+            Some(&python),
+            Some(&tools),
+            d.path(),
+            None,
+            None,
+            "5.4.4"
+        )
+        .is_err());
     }
 }

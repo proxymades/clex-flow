@@ -4,6 +4,7 @@ mod idf_environment;
 mod menu;
 mod projects;
 mod sdk;
+mod sdk_discovery;
 mod sdk_installer;
 use tauri::{Emitter, Manager};
 

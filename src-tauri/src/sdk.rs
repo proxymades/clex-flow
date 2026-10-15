@@ -198,40 +198,149 @@ fn upsert(registry: &mut Registry, sdk: Sdk) -> String {
     registry.installations.push(sdk);
     id
 }
-pub fn eim_config_paths(home: &Path) -> Vec<PathBuf> {
-    #[allow(unused_mut)]
-    let mut paths = vec![home.join(".espressif/tools/eim_idf.json")];
-    #[cfg(windows)]
+// Discovery fills missing/stale hints; it must not undo a working manual override.
+fn upsert_detected(registry: &mut Registry, mut sdk: Sdk) -> String {
+    if let Some(old) = registry
+        .installations
+        .iter()
+        .find(|old| old.root == sdk.root)
     {
-        paths.extend([
-            PathBuf::from(r"C:\Espressif\tools\eim_idf.json"),
-            PathBuf::from(r"C:\esp\tools\eim_idf.json"),
-            home.join("AppData/Local/Espressif/tools/eim_idf.json"),
-        ]);
+        if old
+            .python
+            .as_deref()
+            .is_some_and(|path| Path::new(path).is_file())
+        {
+            sdk.python = old.python.clone();
+        }
+        if old
+            .tools_path
+            .as_deref()
+            .is_some_and(|path| Path::new(path).is_dir())
+        {
+            sdk.tools_path = old.tools_path.clone();
+        }
+        if old
+            .git_path
+            .as_deref()
+            .is_some_and(|path| Path::new(path).is_file())
+        {
+            sdk.git_path = old.git_path.clone();
+        }
     }
-    paths
+    upsert(registry, sdk)
 }
+
+pub fn eim_config_paths(home: &Path) -> Vec<PathBuf> {
+    let mut configs: Vec<_> = crate::sdk_discovery::installation_bases(home)
+        .iter()
+        .flat_map(|base| crate::sdk_discovery::registries(base))
+        .collect();
+    configs.push(home.join("AppData/Local/Espressif/tools/eim_idf.json"));
+    crate::sdk_discovery::unique(configs)
+}
+
+fn read_registration(registry: &mut Registry, config: &Path) {
+    let Ok(file) = fs::File::open(config) else {
+        return;
+    };
+    use std::io::Read;
+    let mut bytes = Vec::new();
+    if file.take(1024 * 1024 + 1).read_to_end(&mut bytes).is_err() || bytes.len() > 1024 * 1024 {
+        return;
+    }
+    let bytes = bytes.strip_prefix(&[0xEF, 0xBB, 0xBF]).unwrap_or(&bytes);
+    let Ok(value) = serde_json::from_slice::<serde_json::Value>(bytes) else {
+        return;
+    };
+    let entries: Vec<_> = match &value["idfInstalled"] {
+        serde_json::Value::Array(entries) => entries.iter().collect(),
+        serde_json::Value::Object(entries) => entries.values().collect(),
+        _ => return,
+    };
+    for entry in entries {
+        let Some(root) = entry["path"].as_str() else {
+            continue;
+        };
+        let tools = entry["idfToolsPath"]
+            .as_str()
+            .or_else(|| value["idfToolsPath"].as_str())
+            .map(str::to_owned);
+        if let Some(mut sdk) = new_external(
+            Path::new(root),
+            entry["python"].as_str().map(str::to_owned),
+            tools,
+        ) {
+            sdk.git_path = value["gitPath"].as_str().map(str::to_owned);
+            upsert_detected(registry, sdk);
+        }
+    }
+}
+
+fn detect_base(registry: &mut Registry, base: &Path) {
+    for config in crate::sdk_discovery::registries(base) {
+        read_registration(registry, &config);
+    }
+    for root in crate::sdk_discovery::roots_in(base) {
+        if let Some(sdk) = new_external(&root, None, None) {
+            upsert_detected(registry, sdk);
+        }
+    }
+}
+
+fn external_selection(
+    registry: &mut Registry,
+    root: &str,
+    python: Option<String>,
+    tools: Option<String>,
+) -> Result<Sdk, String> {
+    let selected = PathBuf::from(root.trim().trim_matches('"'));
+    for base in crate::sdk_discovery::related_bases(&selected) {
+        for config in crate::sdk_discovery::registries(&base) {
+            read_registration(registry, &config);
+        }
+    }
+    let mut roots = crate::sdk_discovery::roots_in(&selected);
+    // The installer may keep SDK sources on a different disk than its tools.
+    let mut local = Registry::default();
+    for config in crate::sdk_discovery::registries(&selected) {
+        read_registration(&mut local, &config);
+    }
+    for sdk in local.installations {
+        let root = PathBuf::from(sdk.root);
+        if !roots.contains(&root) {
+            roots.push(root);
+        }
+    }
+    let root = if idf_environment::sdk_version(&selected).is_ok() {
+        selected
+    } else {
+        let compatible: Vec<_> = roots
+            .iter()
+            .filter(|root| {
+                idf_environment::sdk_version(root).ok().as_deref() == Some(REQUIRED_VERSION)
+            })
+            .collect();
+        match compatible.as_slice() {
+            [root] => (*root).clone(),
+            [] if roots.len() == 1 => roots[0].clone(),
+            [] if roots.is_empty() => return Err("В выбранной папке ESP-IDF не найдена. Укажите папку установки Espressif или каталог с tools/idf.py.".into()),
+            [] => return Err("В этой папке найдены другие версии ESP-IDF. Укажите каталог нужного SDK с tools/idf.py.".into()),
+            _ => return Err("В выбранной папке несколько установок ESP-IDF 5.4.4. Укажите каталог конкретного SDK с tools/idf.py.".into()),
+        }
+    };
+    let normalize = |value: Option<String>| {
+        value
+            .map(|v| v.trim().trim_matches('"').to_owned())
+            .filter(|v| !v.is_empty())
+    };
+    new_external(&root, normalize(python), normalize(tools))
+        .ok_or("Указанная ESP-IDF недоступна или повреждена".into())
+}
+
 pub fn detect(registry: &mut Registry, paths: &Paths, legacy: Option<&Path>) -> Result<(), String> {
     let home = idf_environment::home()?;
     for config in eim_config_paths(&home) {
-        if let Ok(bytes) = fs::read(&config) {
-            if let Ok(value) = serde_json::from_slice::<serde_json::Value>(&bytes) {
-                if let Some(entries) = value["idfInstalled"].as_array() {
-                    for entry in entries {
-                        if let Some(root) = entry["path"].as_str() {
-                            if let Some(mut sdk) = new_external(
-                                Path::new(root),
-                                entry["python"].as_str().map(str::to_owned),
-                                entry["idfToolsPath"].as_str().map(str::to_owned),
-                            ) {
-                                sdk.git_path = value["gitPath"].as_str().map(str::to_owned);
-                                upsert(registry, sdk);
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        read_registration(registry, &config);
     }
     if let Some(path) = legacy {
         if let Ok(bytes) = fs::read(path) {
@@ -242,7 +351,7 @@ pub fn detect(registry: &mut Registry, paths: &Paths, legacy: Option<&Path>) -> 
                         value["python"].as_str().map(str::to_owned),
                         None,
                     ) {
-                        upsert(registry, sdk);
+                        upsert_detected(registry, sdk);
                     }
                 }
             }
@@ -258,28 +367,11 @@ pub fn detect(registry: &mut Registry, paths: &Paths, legacy: Option<&Path>) -> 
             }),
             std::env::var("IDF_TOOLS_PATH").ok(),
         ) {
-            upsert(registry, sdk);
+            upsert_detected(registry, sdk);
         }
     }
-    for base in [
-        home.join(".espressif"),
-        home.join(".espressif-s3"),
-        home.join("esp"),
-        PathBuf::from(r"C:\Espressif"),
-        PathBuf::from(r"C:\esp"),
-    ] {
-        if let Some(sdk) = new_external(&base.join("esp-idf"), None, None) {
-            upsert(registry, sdk);
-        }
-        if let Ok(entries) = fs::read_dir(base) {
-            for entry in entries.flatten() {
-                if entry.file_type().map(|t| t.is_dir()).unwrap_or(false) {
-                    if let Some(sdk) = new_external(&entry.path().join("esp-idf"), None, None) {
-                        upsert(registry, sdk);
-                    }
-                }
-            }
-        }
+    for base in crate::sdk_discovery::installation_bases(&home) {
+        detect_base(registry, &base);
     }
     // Rediscover only our owned slots; never treat a directory as removable by location alone.
     if let Ok(entries) = fs::read_dir(&paths.managed) {
@@ -455,6 +547,7 @@ pub fn auto_environment(
     inner: &idf::Inner,
     root: Option<String>,
     python: Option<String>,
+    tools_path: Option<String>,
     target: &str,
 ) -> Result<Environment, String> {
     let paths = Paths::for_app(app)?;
@@ -462,12 +555,7 @@ pub fn auto_environment(
     let mut registry = paths.load()?;
     detect(&mut registry, &paths, legacy(app).as_deref())?;
     if let Some(root) = root.filter(|v| !v.trim().is_empty()) {
-        let sdk = new_external(
-            Path::new(&root),
-            python.filter(|v| !v.trim().is_empty()),
-            None,
-        )
-        .ok_or("Указанный SDK недоступен или поврежден")?;
+        let sdk = external_selection(&mut registry, &root, python, tools_path)?;
         let id = upsert(&mut registry, sdk);
         registry.active.insert(target.into(), id);
     } else if !registry.active.contains_key(target) {
@@ -683,6 +771,7 @@ pub fn sdk_register(
     state: tauri::State<'_, Service>,
     root: String,
     python: Option<String>,
+    tools_path: Option<String>,
 ) -> Result<(), String> {
     if idf::busy(&state.0) {
         return Err("Дождитесь завершения операции".into());
@@ -690,12 +779,7 @@ pub fn sdk_register(
     let paths = Paths::for_app(&app)?;
     let _guard = state.0.sdk_gate.lock().map_err(|e| e.to_string())?;
     let mut registry = paths.load()?;
-    let sdk = new_external(
-        Path::new(&root),
-        python.filter(|p| !p.trim().is_empty()),
-        None,
-    )
-    .ok_or("Указанная ESP-IDF недоступна или повреждена")?;
+    let sdk = external_selection(&mut registry, &root, python, tools_path)?;
     upsert(&mut registry, sdk);
     paths.save(&registry)
 }
@@ -978,5 +1062,152 @@ mod tests {
         symlink(&outside, p.slot("5.4.4").unwrap()).unwrap();
         assert!(assert_owned(&p, &sdk).is_err());
         assert!(outside.join("sentinel").is_file());
+    }
+    fn external_fixture(root: &Path, patch: u32) {
+        fs::create_dir_all(root.join("components/esp_common/include")).unwrap();
+        fs::create_dir_all(root.join("tools")).unwrap();
+        fs::write(root.join("components/esp_common/include/esp_idf_version.h"), format!("#define ESP_IDF_VERSION_MAJOR 5\n#define ESP_IDF_VERSION_MINOR 4\n#define ESP_IDF_VERSION_PATCH {patch}\n")).unwrap();
+        for file in ["tools/idf.py", "tools/idf_tools.py"] {
+            fs::write(root.join(file), "fixture").unwrap();
+        }
+    }
+    #[test]
+    fn old_installer_registry_object_keeps_python_tools_git_and_source_file_intact() {
+        let d = tempfile::tempdir().unwrap();
+        let base = d.path().join("Espressif - пример");
+        let root = base.join("frameworks/esp-idf-v5.4.4");
+        external_fixture(&root, 4);
+        let python = base.join("python_env/idf5.4_py3.11_env/Scripts/python.exe");
+        let git = base.join("tools/idf-git/cmd/git.exe");
+        let value = serde_json::json!({"idfToolsPath":base,"gitPath":git,"idfSelectedId":"id", "idfInstalled":{"id":{"path":root,"python":python,"version":"5.4"}}});
+        let config = base.join("esp_idf.json");
+        let mut bytes = vec![0xEF, 0xBB, 0xBF];
+        bytes.extend(serde_json::to_vec(&value).unwrap());
+        fs::write(&config, &bytes).unwrap();
+        let mut registry = Registry::default();
+        detect_base(&mut registry, &base);
+        assert_eq!(registry.installations.len(), 1);
+        let sdk = &registry.installations[0];
+        assert_eq!(sdk.version, "5.4.4");
+        assert_eq!(sdk.python.as_deref(), python.to_str());
+        assert_eq!(sdk.tools_path.as_deref(), base.to_str());
+        assert_eq!(sdk.git_path.as_deref(), git.to_str());
+        assert!(!sdk.managed);
+        assert_eq!(fs::read(&config).unwrap(), bytes);
+        let selected =
+            external_selection(&mut registry, &base.display().to_string(), None, None).unwrap();
+        let id = upsert(&mut registry, selected);
+        let sdk = registry.installations.iter().find(|s| s.id == id).unwrap();
+        assert_eq!(sdk.python.as_deref(), python.to_str());
+        assert_eq!(sdk.tools_path.as_deref(), base.to_str());
+    }
+    #[test]
+    fn eim_registry_array_preserves_per_installation_tools_and_never_claims_external_sdk() {
+        let d = tempfile::tempdir().unwrap();
+        let root = d.path().join("v5.4.4/esp-idf");
+        external_fixture(&root, 4);
+        let tools = d.path().join("tools");
+        fs::create_dir_all(&tools).unwrap();
+        let config = tools.join("eim_idf.json");
+        fs::write(&config, serde_json::to_vec(&serde_json::json!({"idfInstalled":[{"path":root,"idfToolsPath":tools,"python":"python.exe"}]})).unwrap()).unwrap();
+        let mut registry = Registry::default();
+        read_registration(&mut registry, &config);
+        assert_eq!(registry.installations.len(), 1);
+        assert_eq!(
+            registry.installations[0].tools_path.as_deref(),
+            tools.to_str()
+        );
+        assert!(!registry.installations[0].managed);
+    }
+    #[test]
+    fn selecting_installation_container_rejects_ambiguous_sdks_and_honors_exact_root() {
+        let d = tempfile::tempdir().unwrap();
+        let a = d.path().join("frameworks/esp-idf-v5.4.4");
+        let b = d.path().join("v5.4.4/esp-idf");
+        external_fixture(&a, 4);
+        external_fixture(&b, 4);
+        let mut registry = Registry::default();
+        assert!(
+            external_selection(&mut registry, &d.path().display().to_string(), None, None)
+                .unwrap_err()
+                .contains("несколько")
+        );
+        let sdk = external_selection(
+            &mut registry,
+            &a.display().to_string(),
+            None,
+            Some(" custom tools ".into()),
+        )
+        .unwrap();
+        assert_eq!(sdk.root, a.canonicalize().unwrap().to_string_lossy());
+        assert_eq!(sdk.tools_path.as_deref(), Some("custom tools"));
+        assert!(external_selection(
+            &mut registry,
+            &d.path().join("missing").display().to_string(),
+            None,
+            None
+        )
+        .is_err());
+    }
+    #[test]
+    fn installation_registry_can_reference_sdk_sources_on_another_drive() {
+        let d = tempfile::tempdir().unwrap();
+        let base = d.path().join("tools-drive/Espressif");
+        fs::create_dir_all(&base).unwrap();
+        let root = d.path().join("source-drive/custom-sdk");
+        external_fixture(&root, 4);
+        fs::write(
+            base.join("esp_idf.json"),
+            serde_json::to_vec(
+                &serde_json::json!({"idfToolsPath":base,"idfInstalled":{"sdk":{"path":root}}}),
+            )
+            .unwrap(),
+        )
+        .unwrap();
+        let mut registry = Registry::default();
+        let sdk =
+            external_selection(&mut registry, &base.display().to_string(), None, None).unwrap();
+        assert_eq!(sdk.root, root.canonicalize().unwrap().to_string_lossy());
+        let id = upsert(&mut registry, sdk);
+        assert_eq!(
+            registry
+                .installations
+                .iter()
+                .find(|s| s.id == id)
+                .unwrap()
+                .tools_path
+                .as_deref(),
+            base.to_str()
+        );
+    }
+    #[test]
+    fn rediscovery_preserves_valid_manual_python_and_tools_overrides() {
+        let d = tempfile::tempdir().unwrap();
+        let root = d.path().join("esp-idf");
+        external_fixture(&root, 4);
+        let custom_python = d.path().join("custom-python.exe");
+        fs::write(&custom_python, "fixture").unwrap();
+        let custom_tools = d.path().join("custom tools");
+        fs::create_dir(&custom_tools).unwrap();
+        let mut registry = Registry::default();
+        let id = upsert(
+            &mut registry,
+            new_external(
+                &root,
+                Some(custom_python.display().to_string()),
+                Some(custom_tools.display().to_string()),
+            )
+            .unwrap(),
+        );
+        let config = d.path().join("eim_idf.json");
+        fs::write(&config, serde_json::to_vec(&serde_json::json!({"idfInstalled":[{"path":root,"python":"old-python.exe","idfToolsPath":"old-tools"}]})).unwrap()).unwrap();
+        read_registration(&mut registry, &config);
+        let sdk = registry
+            .installations
+            .iter()
+            .find(|sdk| sdk.id == id)
+            .unwrap();
+        assert_eq!(sdk.python.as_deref(), custom_python.to_str());
+        assert_eq!(sdk.tools_path.as_deref(), custom_tools.to_str());
     }
 }

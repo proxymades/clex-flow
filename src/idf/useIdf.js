@@ -86,12 +86,12 @@ export default function useIdf(project) {
     window.addEventListener('focus',foreground);document.addEventListener('visibilitychange',foreground);
     return()=>{closed=true;clearTimeout(timer);window.removeEventListener('focus',foreground);document.removeEventListener('visibilitychange',foreground);};
   },[environment,refreshPorts,sdkLoading]);
-  const check=useCallback(async(root=null,python=null)=>{
+  const check=useCallback(async(root=null,python=null,toolsPath=null)=>{
     if(!desktop){setError('ESP-IDF доступна в десктопном приложении Tauri.');return false;}
     if(flight.current || probing.current)return false;
     probing.current=true;
     setChecking(true);setError('');
-    try{const environment=await invoke('idf_environment',{root,python,target});setEnvironment(environment);await refreshPorts();await refreshSdk();return environment;}
+    try{const environment=await invoke('idf_environment',{root,python,toolsPath,target});setEnvironment(environment);await refreshPorts();await refreshSdk();return environment;}
     catch(error){setEnvironment(null);setError(String(error));try{await refreshSdk();}catch{ /* Keep the actionable probe error. */ }return false;}
     finally{probing.current=false;if(mounted.current)setChecking(false);}
   },[refreshPorts,refreshSdk,target]);
@@ -116,7 +116,7 @@ export default function useIdf(project) {
   };
   return {sdks,sdkLoading,refreshSdk,requirement,compatible,
     installPlan:version=>invoke('sdk_install_plan',{version,target}),
-    refreshCatalog:()=>sdkAction('sdk_refresh_versions'),registerSdk:(root,python)=>sdkAction('sdk_register',{root,python:python||null}),
+    refreshCatalog:()=>sdkAction('sdk_refresh_versions'),registerSdk:(root,python,toolsPath)=>sdkAction('sdk_register',{root,python:python||null,toolsPath:toolsPath||null}),
     selectSdk:sdkId=>start('sdk_select',{sdkId,target}),installSdk:(version,allowPrerequisites)=>start('sdk_install',{version,allowPrerequisites,target}),removeSdk:sdkId=>start('sdk_remove',{sdkId}),
     desktop,environment,checking,check,ports,port,setPort,refreshPorts,consoleModes,consoleMode,setConsole,job,events,build,error,setError,preview,fingerprint,generationError,ready,
     busy:Boolean(checking||running||sdkLoading),monitoring:Boolean(running&&job.operation==='monitor'),fresh:Boolean(compatible&&build&&fingerprint&&build.fingerprint===fingerprint&&environment?.identity===build.environmentIdentity),startBuild,startFlash,startMonitor,cancel};

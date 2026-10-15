@@ -636,6 +636,7 @@ pub async fn idf_environment(
     state: tauri::State<'_, Service>,
     root: Option<String>,
     python: Option<String>,
+    tools_path: Option<String>,
     target: Option<String>,
 ) -> Result<Environment, String> {
     let inner = state.0.clone();
@@ -647,7 +648,7 @@ pub async fn idf_environment(
     let check_inner = inner.clone();
     let check_app = app.clone();
     let result = tauri::async_runtime::spawn_blocking(move || {
-        crate::sdk::auto_environment(&check_app, &check_inner, root, python, &target)
+        crate::sdk::auto_environment(&check_app, &check_inner, root, python, tools_path, &target)
     })
     .await
     .map_err(|e| e.to_string())

@@ -927,11 +927,20 @@ mod tests {
         let tools = std::env::var("CLEX_TEST_SDK_TOOLS").unwrap();
         let cache = tempfile::tempdir().unwrap();
         let target = std::env::var("CLEX_TEST_SDK_TARGET").unwrap_or_else(|_| "esp32s3".into());
+        let automatic = std::env::var_os("CLEX_TEST_SDK_AUTO_DISCOVERY").is_some();
         let environment = idf_environment::inspect_target(
             &target,
             Path::new(&root),
-            Some(Path::new(&python)),
-            Some(Path::new(&tools)),
+            if automatic {
+                None
+            } else {
+                Some(Path::new(&python))
+            },
+            if automatic {
+                None
+            } else {
+                Some(Path::new(&tools))
+            },
             None,
             cache.path(),
         )
