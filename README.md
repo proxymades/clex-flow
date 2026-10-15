@@ -4,7 +4,7 @@
 
 <h1 align="center">CLEX Flow</h1>
 <p align="center">Визуальная среда разработки для микроконтроллеров</p>
-<p align="center"><strong>0.1.4 · В разработке · macOS / Windows · MIT</strong></p>
+<p align="center"><strong>0.1.5 · В разработке · macOS / Windows · MIT</strong></p>
 
 Визуальная среда разработки для микроконтроллеров и одноплатных компьютеров. Плата, аппаратные подключения и блоки логики объединяются в одном проекте. Проекты, инструменты и данные остаются на вашем компьютере.
 
@@ -96,7 +96,7 @@ CLEX Flow развивается с прицелом на семейства ESP
 
 ## Запуск для разработки
 
-Нужны **Node.js 22.12+**, npm и Rust. На macOS также нужны Xcode Command Line Tools; на Windows – Build Tools for Visual Studio с инструментами C++ и WebView2. Для редакторов ESP-IDF не требуется; для сборки firmware в версии **0.1.4** нужна **ESP-IDF 5.4.4**. Её можно обнаружить или установить через «Инструменты разработки».
+Нужны **Node.js 22.12+**, npm и Rust. На macOS также нужны Xcode Command Line Tools; на Windows – Build Tools for Visual Studio с инструментами C++ и WebView2. Для редакторов ESP-IDF не требуется; для сборки firmware в версии **0.1.5** нужна **ESP-IDF 5.4.4**. Её можно обнаружить или установить через «Инструменты разработки».
 
 ```sh
 git clone https://github.com/proxymades/clex-flow.git

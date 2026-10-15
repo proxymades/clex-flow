@@ -299,7 +299,7 @@ dependencies = [
 
 [[package]]
 name = "clex-flow"
-version = "0.1.4"
+version = "0.1.5"
 dependencies = [
  "dunce",
  "libc",

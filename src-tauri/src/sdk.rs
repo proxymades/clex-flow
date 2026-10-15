@@ -831,7 +831,9 @@ pub fn sdk_remove(
                 .lock()
                 .map_err(|e| e.to_string())?
                 .as_ref()
-                .is_some_and(|env| env.root == sdk.root);
+                .is_some_and(|env| {
+                    idf_environment::tool_path(Path::new(&sdk.root)) == Path::new(&env.root)
+                });
             registry.active.retain(|_, selected| selected != &sdk_id);
             if selected {
                 *inner.environment.lock().map_err(|e| e.to_string())? = None;
