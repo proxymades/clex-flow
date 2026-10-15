@@ -6,6 +6,7 @@ export function createWriteQueue(write) {
     return result;
   };
   queue.setWriter = current => { write = current; };
+  queue.flush = () => tail;
   return queue;
 }
 

@@ -28,3 +28,22 @@ test('changing the writer keeps pending writes serialized and uses the current h
   await first; await second;
   assert.deepEqual(calls, ['old:1', 'new:2']);
 });
+
+
+test('flush waits for pending writes, including a recovered failure, before a storage switch', async () => {
+  const calls = [];
+  let finish;
+  const queue = createWriteQueue(value => new Promise(resolve => { calls.push(value); finish = resolve; }));
+  const pending = queue('old directory');
+  await Promise.resolve();
+  let flushed = false;
+  const flush = queue.flush().then(() => { flushed = true; });
+  await Promise.resolve(); assert.equal(flushed, false);
+  finish(); await pending; await flush; assert.equal(flushed, true);
+  queue.setWriter(() => { throw new Error('write failed'); });
+  await assert.rejects(queue('failed'), /write failed/);
+  await queue.flush();
+  queue.setWriter(value => calls.push(value));
+  await queue('new directory');
+  assert.deepEqual(calls, ['old directory', 'new directory']);
+});

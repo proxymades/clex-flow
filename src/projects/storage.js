@@ -74,3 +74,8 @@ export async function exportProject(project) {
 export async function storagePath() {
   return desktop ? invoke('storage_path') : 'localStorage этого браузера (предпросмотр)';
 }
+
+export async function changeProjectDirectory() {
+  if (!desktop) throw new Error('Выбор папки доступен в десктопном приложении.');
+  return invoke('change_project_directory');
+}

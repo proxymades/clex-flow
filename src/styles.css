@@ -76,3 +76,5 @@ input:is([type=checkbox],[type=radio],[type=color],[type=range],[type=button],[t
 .screen-editor-surface h3 span{font-size:10px;color:#8099b2}
 .screen-splash-surface{position:relative}
 .screen-splash-hint{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;color:#6d829b;font-size:11px;line-height:1.8;margin:0;pointer-events:none}
+
+.storage-actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:16px}.storage-actions .button{margin:0}

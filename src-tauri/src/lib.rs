@@ -34,6 +34,7 @@ pub fn run() {
             projects::import_project,
             projects::export_project,
             projects::storage_path,
+            projects::change_project_directory,
             idf::idf_environment,
             idf::idf_ports,
             idf::idf_build,

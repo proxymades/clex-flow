@@ -23,7 +23,7 @@ export function useProjects() {
   const [write] = useState(() => createWriteQueue(storage.saveProject));
   // Fast Refresh retains state, including queues created by older code.
   // Upgrade that queue in place without changing the hook signature or dropping drafts.
-  const queue = typeof write.setWriter === 'function' ? write : (write.liveQueue ||= createWriteQueue(storage.saveProject));
+  const queue = typeof write.flush === 'function' ? write : (write.liveQueue ||= createWriteQueue(storage.saveProject));
   queue.setWriter(storage.saveProject);
   const saved = projects.find(project => project.id === active?.id);
   const dirty = Boolean(active && !same(active, saved));
@@ -149,5 +149,26 @@ export function useProjects() {
     const result = await storage.exportProject(activeRef.current);
     if (result) setNotice('JSON проекта экспортирован'); return result;
   });
-  return { projects, active, setActive, loading, busy, error, setError, damaged, notice, path, dirty, create, save, rename, remove, openFile, exportFile, updateLogic, setInteracting, autoSaveEnabled, setAutoSaveEnabled, autoState, autoSaving, isWriting, pauseAutosave, resumeAutosave };
+  const changeDirectory = () => run(async () => {
+    // Prevent an autosave from crossing the directory switch, including one already queued.
+    const wasPaused = paused.current;
+    paused.current = true; cancelAuto();
+    try {
+      await queue.flush();
+      const snapshot = activeRef.current;
+      if (snapshot && !same(snapshot, projectsRef.current.find(item => item.id === snapshot.id))) await persist(snapshot);
+      const selected = await storage.changeProjectDirectory();
+      if (!selected) return false;
+      setPath(selected);
+      const data = await storage.listProjects();
+      projectsRef.current = sortedProjects(data.projects); setProjects(projectsRef.current); setDamaged(data.errors);
+      setAutoState(autoEnabled.current ? 'saved' : 'disabled');
+      setNotice('Папка проектов изменена. Исходные файлы сохранены в прежней папке.');
+      return true;
+    } finally {
+      paused.current = wasPaused;
+      if (!wasPaused) armAuto(activeRef.current);
+    }
+  });
+  return { projects, active, setActive, loading, busy, error, setError, damaged, notice, path, dirty, changeDirectory, create, save, rename, remove, openFile, exportFile, updateLogic, setInteracting, autoSaveEnabled, setAutoSaveEnabled, autoState, autoSaving, isWriting, pauseAutosave, resumeAutosave };
 }
