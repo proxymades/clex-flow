@@ -634,10 +634,12 @@ pub fn sdk_list(
             e.target == target
                 && Path::new(&e.root).is_dir()
                 && registry.active.get(&target).is_some_and(|id| {
-                    registry
-                        .installations
-                        .iter()
-                        .any(|sdk| &sdk.id == id && sdk.root == e.root && sdk.state == "ready")
+                    registry.installations.iter().any(|sdk| {
+                        &sdk.id == id
+                            && idf_environment::tool_path(Path::new(&sdk.root))
+                                == Path::new(&e.root)
+                            && sdk.state == "ready"
+                    })
                 })
         });
     Ok(Snapshot {

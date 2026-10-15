@@ -150,6 +150,21 @@ pub fn export_root(tools: &Path) -> PathBuf {
     }
 }
 
+// canonicalize() produces \\?\ paths on Windows. ESP-IDF constructs child paths
+// containing forward slashes and passes paths to Git, which cannot use that form.
+// Keep filesystem canonicalization for identity/ownership, simplify only at the
+// external-tool boundary. Do not resolve Python symlinks: that would escape a venv.
+pub fn tool_path(path: &Path) -> PathBuf {
+    #[cfg(windows)]
+    {
+        dunce::simplified(path).components().collect()
+    }
+    #[cfg(not(windows))]
+    {
+        path.to_path_buf()
+    }
+}
+
 fn python_environment(python: &Path) -> Result<PathBuf, String> {
     let parent = python.parent().ok_or("Некорректный Python-путь")?;
     if parent
@@ -280,32 +295,13 @@ fn filtered_tools(root: &Path, cache: &Path, target: &str) -> Result<PathBuf, St
     Ok(path)
 }
 
-pub fn inspect_target(
-    target: &str,
+fn process_variables(
     root: &Path,
-    python: Option<&Path>,
-    tools: Option<&Path>,
+    python: &Path,
+    tools: &Path,
     git: Option<&Path>,
-    cache: &Path,
-) -> Result<Environment, String> {
-    let compiler = crate::boards::compiler(target)?;
-    let root = root
-        .canonicalize()
-        .map_err(|e| format!("SDK недоступен: {e}"))?;
-    let sdk_version = sdk_version(&root)?;
-    let home = home()?;
-    let env_tools = env::var_os("IDF_TOOLS_PATH").map(PathBuf::from);
-    let env_python = env::var_os("IDF_PYTHON_ENV_PATH").map(PathBuf::from);
-    let (python, tools) = layout_candidates(
-        &root,
-        python,
-        tools,
-        &home,
-        env_tools.as_deref(),
-        env_python.as_deref(),
-        &sdk_version,
-    )?;
-    let venv = python_environment(&python)?;
+) -> Result<BTreeMap<String, String>, String> {
+    let venv = python_environment(python)?;
     let mut variables = BTreeMap::new();
     variables.insert("IDF_PATH".into(), root.to_string_lossy().to_string());
     variables.insert(
@@ -320,7 +316,7 @@ pub fn inspect_target(
     let separator = if cfg!(windows) { ";" } else { ":" };
     let mut path_parts = vec![python
         .parent()
-        .unwrap_or(&root)
+        .unwrap_or(root)
         .to_string_lossy()
         .to_string()];
     for candidate in [
@@ -336,8 +332,43 @@ pub fn inspect_target(
         path_parts.push(parent.to_string_lossy().to_string());
     }
     path_parts.push(base_path());
-    let child_base_path = path_parts.join(separator);
-    variables.insert("PATH".into(), child_base_path.clone());
+    variables.insert("PATH".into(), path_parts.join(separator));
+    Ok(variables)
+}
+
+pub fn inspect_target(
+    target: &str,
+    root: &Path,
+    python: Option<&Path>,
+    tools: Option<&Path>,
+    git: Option<&Path>,
+    cache: &Path,
+) -> Result<Environment, String> {
+    let compiler = crate::boards::compiler(target)?;
+    let root = tool_path(
+        &root
+            .canonicalize()
+            .map_err(|e| format!("SDK недоступен: {e}"))?,
+    );
+    let sdk_version = sdk_version(&root)?;
+    let home = home()?;
+    let env_tools = env::var_os("IDF_TOOLS_PATH").map(|path| tool_path(Path::new(&path)));
+    let env_python = env::var_os("IDF_PYTHON_ENV_PATH").map(|path| tool_path(Path::new(&path)));
+    let requested_python = python.map(tool_path);
+    let requested_tools = tools.map(tool_path);
+    let (python, tools) = layout_candidates(
+        &root,
+        requested_python.as_deref(),
+        requested_tools.as_deref(),
+        &home,
+        env_tools.as_deref(),
+        env_python.as_deref(),
+        &sdk_version,
+    )?;
+    let python = tool_path(&python);
+    let tools = tool_path(&tools);
+    let git = git.map(tool_path);
+    let mut variables = process_variables(&root, &python, &tools, git.as_deref())?;
     let spec = filtered_tools(&root, cache, target)?;
     let deactivate = cache.join(format!(
         "{:x}-{target}-deactivate.json",
@@ -345,18 +376,18 @@ pub fn inspect_target(
     ));
     variables.insert(
         "IDF_DEACTIVATE_FILE_PATH".into(),
-        deactivate.to_string_lossy().to_string(),
+        tool_path(&deactivate).to_string_lossy().to_string(),
     );
     let mut export = Command::new(&python);
     export
         .arg(root.join("tools/idf_tools.py"))
         .arg("--tools-json")
-        .arg(spec)
+        .arg(tool_path(&spec))
         .args(["export", "--format", "key-value"])
         .envs(&variables)
         .env("IDF_TOOLS_PATH", export_root(&tools));
     let (output, diagnostics) = capture(export, Duration::from_secs(30))?;
-    let base = child_base_path;
+    let base = variables["PATH"].clone();
     for line in output.lines() {
         if let Some((key, value)) = line.split_once('=') {
             if [
@@ -466,6 +497,118 @@ pub fn allowed_port(path: &str) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[cfg(windows)]
+    #[test]
+    fn tool_paths_use_native_separators_without_reinterpreting_special_paths() {
+        assert_eq!(
+            tool_path(Path::new(r"\\?\X:\Espressif\frameworks\esp-idf-v5.4.4")),
+            PathBuf::from(r"X:\Espressif\frameworks\esp-idf-v5.4.4")
+        );
+        assert_eq!(
+            tool_path(Path::new(
+                "X:/Espressif/python_env/idf5.4_py3.11_env/Scripts/python.exe"
+            ))
+            .as_os_str(),
+            std::ffi::OsStr::new(r"X:\Espressif\python_env\idf5.4_py3.11_env\Scripts\python.exe")
+        );
+        // A network share must never be silently turned into a local relative path.
+        let unc = Path::new(r"\\server\share\Espressif");
+        assert_eq!(tool_path(unc), unc);
+        let special = Path::new(r"\\?\X:\Espressif\name.");
+        assert_eq!(tool_path(special), special);
+    }
+    #[cfg(unix)]
+    #[test]
+    fn tool_path_keeps_the_venv_python_symlink() {
+        let d = tempfile::tempdir().unwrap();
+        let system = d.path().join("system-python");
+        touch(&system);
+        let python = d.path().join("venv/bin/python");
+        fs::create_dir_all(python.parent().unwrap()).unwrap();
+        std::os::unix::fs::symlink(&system, &python).unwrap();
+        assert_eq!(tool_path(&python), python);
+        assert_ne!(tool_path(&python), python.canonicalize().unwrap());
+    }
+    #[cfg(windows)]
+    #[test]
+    fn windows_environment_paths_work_with_real_python_venv_git_and_version_cmake() {
+        let d = tempfile::tempdir().unwrap();
+        let base = d.path().join("Espressif - тест");
+        let root = base.join("frameworks/esp-idf-v5.4.4");
+        fs::create_dir_all(root.join("tools/cmake")).unwrap();
+        fs::write(
+            root.join("tools/cmake/version.cmake"),
+            "set(IDF_VERSION_MAJOR 5)\nset(IDF_VERSION_MINOR 4)\nset(IDF_VERSION_PATCH 4)\n",
+        )
+        .unwrap();
+        let git =
+            find_tool("git", &base_path()).expect("Git required for Windows integration test");
+        let run_git = |args: &[&str]| {
+            let mut command = Command::new(&git);
+            command
+                .current_dir(&root)
+                .args(args)
+                .env("GIT_CONFIG_NOSYSTEM", "1")
+                .env("GIT_CONFIG_GLOBAL", "NUL")
+                .env("GIT_AUTHOR_NAME", "CLEX test")
+                .env("GIT_AUTHOR_EMAIL", "test@example.invalid")
+                .env("GIT_COMMITTER_NAME", "CLEX test")
+                .env("GIT_COMMITTER_EMAIL", "test@example.invalid");
+            capture(command, Duration::from_secs(30)).unwrap();
+        };
+        run_git(&["init", "--quiet"]);
+        run_git(&[
+            "-c",
+            "core.hooksPath=NUL",
+            "commit",
+            "--quiet",
+            "--allow-empty",
+            "-m",
+            "fixture",
+        ]);
+        run_git(&["tag", "v5.4.4"]);
+        let venv = base.join("python_env/idf5.4_py3.11_env");
+        let mut create = Command::new("python");
+        create.args(["-m", "venv", "--without-pip"]).arg(&venv);
+        capture(create, Duration::from_secs(30)).unwrap();
+        let python = tool_path(&executable(&venv));
+        // These are the exact path operations used by ESP-IDF 5.4.4: the venv
+        // prefix comparison, Git --git-dir/--work-tree, and version.cmake fallback.
+        // No SDK or compiler is downloaded; all writes stay in this temporary dir.
+        let probe = r#"
+import json, os, re, subprocess, sys
+root = os.environ['IDF_PATH']
+try:
+    with open(os.path.join(root, 'tools/cmake/version.cmake'), encoding='utf-8') as source:
+        parts = dict(re.findall(r'set\(IDF_VERSION_(MAJOR|MINOR|PATCH) (\d+)\)', source.read()))
+    version = 'v' + '.'.join(parts[key] for key in ['MAJOR', 'MINOR', 'PATCH'])
+except (OSError, KeyError):
+    version = None
+result = subprocess.run(['git', '--git-dir=' + os.path.join(root, '.git'), '--work-tree=' + root,
+                         'describe', '--tags', '--dirty', '--match', 'v*.*'],
+                        capture_output=True, text=True, timeout=10)
+print(json.dumps({'venvMatches': sys.executable.startswith(os.environ['IDF_PYTHON_ENV_PATH']),
+                  'cmakeVersion': version, 'gitVersion': result.stdout.strip(),
+                  'gitError': result.stderr.strip()}))
+"#;
+        let check = |root: &Path, python_hint: &Path| {
+            let variables = process_variables(root, python_hint, &base, Some(&git)).unwrap();
+            let mut command = Command::new(&python);
+            command.args(["-c", probe]).envs(&variables);
+            let (output, _) = capture(command, Duration::from_secs(30)).unwrap();
+            serde_json::from_str::<serde_json::Value>(&output).unwrap()
+        };
+        let canonical = root.canonicalize().unwrap();
+        let mixed_python = PathBuf::from(python.to_string_lossy().replace('\\', "/"));
+        let broken = check(&canonical, &mixed_python);
+        assert_eq!(broken["venvMatches"], false, "{broken}");
+        assert!(broken["cmakeVersion"].is_null(), "{broken}");
+        let fixed = check(&tool_path(&canonical), &python);
+        assert_eq!(fixed["venvMatches"], true, "{fixed}");
+        assert_eq!(fixed["cmakeVersion"], "v5.4.4", "{fixed}");
+        assert_eq!(fixed["gitVersion"], "v5.4.4", "{fixed}");
+        assert_eq!(fixed["gitError"], "", "{fixed}");
+    }
     #[test]
     fn eim_and_standard_export_roots_are_distinct() {
         let d = tempfile::tempdir().unwrap();
