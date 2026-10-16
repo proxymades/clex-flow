@@ -1,0 +1,108 @@
+{
+  "id": "16b905dc-fa28-4672-a11f-d739f806587c",
+  "name": "Nano: счетчик",
+  "description": "Таймер каждую секунду увеличивает счетчик. Serial выводит число в монитор на скорости 115200 бод.",
+  "formatVersion": 3,
+  "createdAt": "2026-10-16T10:09:42.930Z",
+  "updatedAt": "2026-10-16T10:09:42.930Z",
+  "boardId": "arduino-nano-atmega328p-ch340",
+  "boardSettings": {
+    "bootloader": "standard"
+  },
+  "components": [],
+  "gpioAssignments": [],
+  "logic": {
+    "nodes": [
+      {
+        "id": "b198ccea-7f78-4671-91e1-a4252954e91b",
+        "moduleId": "clex.logic.timer",
+        "moduleVersion": "1.0.0",
+        "name": "Таймер 1",
+        "position": {
+          "x": 60,
+          "y": 100
+        },
+        "parameters": {
+          "intervalMs": 1000
+        }
+      },
+      {
+        "id": "2c6ad491-4004-4e2c-9fa4-4756a9204e53",
+        "moduleId": "clex.logic.counter",
+        "moduleVersion": "1.0.0",
+        "name": "Счетчик 1",
+        "position": {
+          "x": 390,
+          "y": 100
+        },
+        "parameters": {
+          "initialValue": 0,
+          "step": 1
+        }
+      },
+      {
+        "id": "16fe22f8-3ac6-4e03-9f8b-ee0f379bc186",
+        "moduleId": "clex.logic.serial",
+        "moduleVersion": "1.0.0",
+        "name": "Сообщение в монитор 1",
+        "position": {
+          "x": 60,
+          "y": 410
+        },
+        "parameters": {
+          "message": "Счетчик:"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "6951c2ab-8cdc-4832-b27e-ae4e806836af",
+        "source": "b198ccea-7f78-4671-91e1-a4252954e91b",
+        "target": "2c6ad491-4004-4e2c-9fa4-4756a9204e53",
+        "sourceHandle": "tick",
+        "targetHandle": "increment",
+        "dataType": "event"
+      },
+      {
+        "id": "27298c9a-85e0-4952-b07e-2298ef2a0fc1",
+        "source": "2c6ad491-4004-4e2c-9fa4-4756a9204e53",
+        "target": "16fe22f8-3ac6-4e03-9f8b-ee0f379bc186",
+        "sourceHandle": "done",
+        "targetHandle": "trigger",
+        "dataType": "event"
+      },
+      {
+        "id": "3c03424e-a3ff-4837-84eb-662604c7cb67",
+        "source": "2c6ad491-4004-4e2c-9fa4-4756a9204e53",
+        "target": "16fe22f8-3ac6-4e03-9f8b-ee0f379bc186",
+        "sourceHandle": "value",
+        "targetHandle": "number",
+        "dataType": "number"
+      }
+    ],
+    "viewport": {
+      "x": 0,
+      "y": 0,
+      "zoom": 1
+    }
+  },
+  "assembly": {
+    "positions": {
+      "board": {
+        "x": 100,
+        "y": 40
+      }
+    },
+    "connections": [],
+    "viewport": {
+      "x": 0,
+      "y": 0,
+      "zoom": 1
+    }
+  },
+  "moduleVersions": {
+    "clex.logic.timer": "1.0.0",
+    "clex.logic.counter": "1.0.0",
+    "clex.logic.serial": "1.0.0"
+  }
+}

@@ -1,0 +1,85 @@
+{
+  "id": "clex.logic.espnow-command-received",
+  "version": "1.0.0",
+  "kind": "logic",
+  "name": "Получена команда ESP-NOW",
+  "description": "Запускает действия при получении указанной защищенной команды.",
+  "category": "network",
+  "categoryName": "Связь",
+  "icon": "Radio",
+  "color": "#f472b6",
+  "inputs": [],
+  "outputs": [
+    {
+      "id": "received",
+      "name": "Команда получена",
+      "type": "event",
+      "description": "Срабатывает один раз для нового сообщения."
+    },
+    {
+      "id": "text",
+      "name": "Текст сообщения",
+      "type": "text",
+      "description": "Принятый текст UTF-8.",
+      "readyOn": "received"
+    },
+    {
+      "id": "sender",
+      "name": "MAC отправителя",
+      "type": "text",
+      "description": "MAC разрешенного отправителя.",
+      "readyOn": "received"
+    },
+    {
+      "id": "rssi",
+      "name": "Уровень сигнала, дБм",
+      "type": "number",
+      "description": "RSSI принятого пакета. Значение -127 означает, что API не передал RSSI.",
+      "readyOn": "received",
+      "additional": true
+    },
+    {
+      "id": "command",
+      "name": "Имя команды",
+      "type": "text",
+      "description": "Имя полученной команды.",
+      "readyOn": "received"
+    }
+  ],
+  "parameters": {
+    "componentId": {
+      "label": "ESP-NOW",
+      "type": "component",
+      "default": ""
+    },
+    "command": {
+      "label": "Имя команды",
+      "type": "text",
+      "default": "SET_LR",
+      "maxLength": 32
+    }
+  },
+  "constraints": {
+    "hardware": {
+      "kind": "radio",
+      "modules": [
+        "clex.hardware.espnow"
+      ]
+    }
+  },
+  "compatibility": {
+    "projectFormat": 3,
+    "targets": [
+      "esp32s3"
+    ],
+    "espIdf": "5.4.4"
+  },
+  "firmware": {
+    "status": "implemented",
+    "generatorKey": "espnow-command-received",
+    "eventSource": true,
+    "dependencies": [
+      "esp_wifi"
+    ]
+  }
+}

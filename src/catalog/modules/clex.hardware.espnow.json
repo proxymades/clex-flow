@@ -1,0 +1,99 @@
+{
+  "id": "clex.hardware.espnow",
+  "version": "1.0.0",
+  "kind": "hardware",
+  "name": "ESP-NOW",
+  "description": "Беспроводной обмен между ESP-устройствами на одном Wi-Fi-канале. Использует встроенное радио.",
+  "category": "network",
+  "categoryName": "Связь",
+  "icon": "Radio",
+  "color": "#f472b6",
+  "visual": {
+    "svg": "espnow.svg",
+    "width": 230,
+    "height": 160
+  },
+  "terminals": [],
+  "inputs": [],
+  "outputs": [],
+  "editor": "espnow",
+  "softwareInterface": "espnow",
+  "parameters": {
+    "channel": {
+      "label": "Wi-Fi канал",
+      "type": "number",
+      "default": 1,
+      "min": 1,
+      "max": 11,
+      "step": 1
+    },
+    "mode": {
+      "label": "Начальный режим",
+      "type": "select",
+      "default": "normal",
+      "options": [
+        {
+          "value": "normal",
+          "label": "Обычный (Normal)"
+        },
+        {
+          "value": "lr",
+          "label": "Дальний (Long Range)"
+        }
+      ]
+    },
+    "allowModeChange": {
+      "label": "Разрешить переключение из логики",
+      "type": "boolean",
+      "default": true
+    },
+    "encryption": {
+      "label": "Шифрование",
+      "type": "boolean",
+      "default": true
+    },
+    "pmk": {
+      "label": "PMK",
+      "type": "text",
+      "default": "",
+      "maxLength": 32
+    },
+    "peers": {
+      "label": "Удаленные устройства",
+      "type": "text",
+      "default": "[]",
+      "maxLength": 8192
+    },
+    "timeoutMs": {
+      "label": "Ожидание подтверждения, мс",
+      "type": "number",
+      "default": 1000,
+      "min": 100,
+      "max": 30000,
+      "step": 100
+    },
+    "retries": {
+      "label": "Число повторов",
+      "type": "number",
+      "default": 2,
+      "min": 0,
+      "max": 5,
+      "step": 1
+    }
+  },
+  "constraints": {},
+  "compatibility": {
+    "projectFormat": 3,
+    "targets": [
+      "esp32s3"
+    ],
+    "espIdf": "5.4.4"
+  },
+  "firmware": {
+    "status": "implemented",
+    "generatorKey": "espnow-interface",
+    "dependencies": [
+      "esp_wifi"
+    ]
+  }
+}

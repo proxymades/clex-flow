@@ -766,5 +766,10 @@
         "height": 118
       }
     ]
+  },
+  "radio": {
+    "espNow": true,
+    "longRange": true,
+    "interface": "station"
   }
 }

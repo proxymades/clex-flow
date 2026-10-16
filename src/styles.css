@@ -78,3 +78,13 @@ input:is([type=checkbox],[type=radio],[type=color],[type=range],[type=button],[t
 .screen-splash-hint{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;color:#6d829b;font-size:11px;line-height:1.8;margin:0;pointer-events:none}
 
 .storage-actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:16px}.storage-actions .button{margin:0}
+
+.tooling-bundles{display:flex;flex-direction:column;gap:12px;margin:16px 0}.tooling-bundle{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px 12px;padding:12px;border:1px solid var(--border,#303a4e);border-radius:9px}.tooling-bundle strong{font-size:12px}.tooling-bundle small{grid-column:1/-1;color:#8ba0ba;overflow-wrap:anywhere;line-height:1.7}.tooling-bundle .badge{align-self:start}.sdk-manager a.button{text-decoration:none}.sdk-manager .storage-path{overflow-wrap:anywhere;white-space:normal}
+
+.modal-backdrop:has(.tooling-modal){z-index:150}.tooling-modal{width:560px}
+
+.tooling-modal .flash-confirm{margin-top:14px}
+
+.espnow-settings{display:flex;flex-direction:column;gap:12px}.espnow-settings .field{margin:0}.espnow-check{display:flex;align-items:center;gap:9px;font-size:11px;line-height:1.6;color:#b4c4d9}.espnow-check input{width:auto;flex-shrink:0}.espnow-peer{display:flex;flex-direction:column;gap:12px;padding:12px;background:#111a27;border:1px solid #334158;border-radius:8px}.espnow-peer header{display:flex;justify-content:space-between;align-items:center;font-size:11px}.espnow-mac{display:flex;flex-direction:column;gap:8px;font-size:11px;color:#9bb1cc}.espnow-mac code{overflow-wrap:anywhere;color:#e2e8f0;font-size:11px}.espnow-settings .text-button{align-self:flex-start}.espnow-settings>.button{width:100%;white-space:normal}
+
+.espnow-settings .connections-heading{margin:8px 0 0}

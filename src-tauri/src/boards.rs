@@ -7,6 +7,7 @@ pub fn compiler(target: &str) -> Result<&'static str, String> {
     match target {
         "esp32s3" => Ok("xtensa-esp32s3-elf-gcc"),
         "esp32p4" => Ok("riscv32-esp-elf-gcc"),
+        "atmega328p" => Ok("avr-gcc"),
         _ => Err("Цель SDK не поддерживается".into()),
     }
 }
@@ -17,6 +18,9 @@ pub fn target(value: Option<String>) -> Result<String, String> {
 }
 pub fn profile(id: &str) -> Result<Value, String> {
     let source = match id {
+        "arduino-nano-atmega328p-ch340" => {
+            include_str!("../../src/catalog/boards/arduino-nano-atmega328p-ch340.json")
+        }
         "waveshare-esp32-s3-eth" => {
             include_str!("../../src/catalog/boards/waveshare-esp32-s3-eth.json")
         }

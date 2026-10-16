@@ -79,5 +79,5 @@ jobs:
       - name: Run native unit tests
         run: cargo test --manifest-path src-tauri/Cargo.toml --locked
 
-      - name: Compare frontend and native firmware files for S3 and P4
+      - name: Compare frontend and native firmware files for ESP32 and Nano
         run: npm run test:firmware-parity

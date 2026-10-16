@@ -12,6 +12,7 @@ export default function useIdf(project) {
   const [environment,setEnvironment]=useState(null), [checking,setChecking]=useState(false), [ports,setPorts]=useState([]), [port,setPort]=useState('');
   const [selectedConsoleMode,setConsoleMode]=useState(()=>localStorage.getItem('clex-flow:console')||'usb');
   const [job,setJob]=useState(null), [events,setEvents]=useState([]), [build,setBuild]=useState(null), [error,setError]=useState('');
+  const [toolsPrepared,setToolsPrepared]=useState(()=>localStorage.getItem('clex-flow:tools-prepared')==='yes');
   const [sdks,setSdks]=useState(null), [sdkLoading,setSdkLoading]=useState(false);
   const board = getBoard(project?.boardId || 'waveshare-esp32-s3-eth');
   const requirement=sdkRequirement(board);
@@ -58,6 +59,7 @@ export default function useIdf(project) {
     received.current.max=Math.max(received.current.max,event.sequence);
     if(received.current.sequences.size>3000)received.current.sequences=new Set([...received.current.sequences].filter(sequence=>sequence>=received.current.max-3000));
     setEvents(items=>[...items,event].slice(-1200));
+    if(event.status==='success'&&current.current.operation==='sdk_prepare_all'){localStorage.setItem('clex-flow:tools-prepared','yes');setToolsPrepared(true);}
     if(terminal.includes(event.status)){setJob(value=>value?.id===event.jobId?{...value,status:event.status}:value);flight.current=false;if(event.build)setBuild(event.build);if(event.status==='failed')setError(event.text);if(event.operation.startsWith('sdk_'))refreshSdk().catch(error=>setError(String(error)));}
     if(event.status==='connected')setJob(value=>value?.id===event.jobId && !terminal.includes(value.status)?{...value,status:'connected'}:value);
   },[refreshSdk]);
@@ -87,7 +89,7 @@ export default function useIdf(project) {
     return()=>{closed=true;clearTimeout(timer);window.removeEventListener('focus',foreground);document.removeEventListener('visibilitychange',foreground);};
   },[environment,refreshPorts,sdkLoading]);
   const check=useCallback(async(root=null,python=null,toolsPath=null)=>{
-    if(!desktop){setError('ESP-IDF доступна в десктопном приложении Tauri.');return false;}
+    if(!desktop){setError('Инструменты доступны в десктопном приложении Tauri.');return false;}
     if(flight.current || probing.current)return false;
     probing.current=true;
     setChecking(true);setError('');
@@ -114,7 +116,9 @@ export default function useIdf(project) {
     setSdkLoading(true);setError('');
     try{await invoke(command,args);await refreshSdk();return true;}catch(error){setError(String(error));return false;}finally{setSdkLoading(false);}
   };
-  return {sdks,sdkLoading,refreshSdk,requirement,compatible,
+  return {sdks,sdkLoading,refreshSdk,requirement,compatible,toolsPrepared,
+    planTools:async()=>{setSdkLoading(true);try{return await invoke('tooling_plan');}finally{setSdkLoading(false);}},
+    prepareAll:(targets,allowPrerequisites)=>start('sdk_prepare_all',{targets,target,confirmed:true,allowPrerequisites}),
     installPlan:version=>invoke('sdk_install_plan',{version,target}),
     refreshCatalog:()=>sdkAction('sdk_refresh_versions'),registerSdk:(root,python,toolsPath)=>sdkAction('sdk_register',{root,python:python||null,toolsPath:toolsPath||null}),
     selectSdk:sdkId=>start('sdk_select',{sdkId,target}),installSdk:(version,allowPrerequisites)=>start('sdk_install',{version,allowPrerequisites,target}),removeSdk:sdkId=>start('sdk_remove',{sdkId}),

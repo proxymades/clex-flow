@@ -1,0 +1,87 @@
+{
+  "id": "clex.logic.espnow-mode",
+  "version": "1.0.0",
+  "kind": "logic",
+  "name": "Режим ESP-NOW",
+  "description": "Меняет скорость передачи; прием Normal и LR остается доступным.",
+  "category": "network",
+  "categoryName": "Связь",
+  "icon": "Radio",
+  "color": "#f472b6",
+  "inputs": [
+    {
+      "id": "trigger",
+      "name": "Установить режим",
+      "type": "event",
+      "description": "Меняет скорость передачи без перезагрузки.",
+      "required": true
+    }
+  ],
+  "outputs": [
+    {
+      "id": "done",
+      "name": "Режим установлен",
+      "type": "event",
+      "description": "Скорость передачи для всех устройств изменена."
+    },
+    {
+      "id": "failed",
+      "name": "Режим не изменен",
+      "type": "event",
+      "description": "Ошибка настройки или отката скоростей."
+    },
+    {
+      "id": "error",
+      "name": "Причина ошибки",
+      "type": "text",
+      "description": "Ошибка настройки радио.",
+      "readyOn": "failed",
+      "additional": true
+    }
+  ],
+  "parameters": {
+    "componentId": {
+      "label": "ESP-NOW",
+      "type": "component",
+      "default": ""
+    },
+    "mode": {
+      "label": "Режим",
+      "type": "select",
+      "default": "lr",
+      "options": [
+        {
+          "value": "normal",
+          "label": "Обычный (Normal)"
+        },
+        {
+          "value": "lr",
+          "label": "Дальний (Long Range)"
+        }
+      ]
+    }
+  },
+  "constraints": {
+    "hardware": {
+      "kind": "radio",
+      "modules": [
+        "clex.hardware.espnow"
+      ]
+    }
+  },
+  "compatibility": {
+    "projectFormat": 3,
+    "targets": [
+      "esp32s3"
+    ],
+    "espIdf": "5.4.4"
+  },
+  "firmware": {
+    "status": "implemented",
+    "generatorKey": "espnow-mode",
+    "eventSource": false,
+    "dependencies": [
+      "esp_wifi"
+    ]
+  }
+}

@@ -1,0 +1,136 @@
+{
+  "id": "c06ea0f2-f492-471f-88a6-385da5b78d3e",
+  "name": "Nano: светодиод",
+  "description": "Внешний светодиод: D13 через резистор 470 Ом к аноду, катод к GND. Таймер переключает его раз в секунду.",
+  "formatVersion": 3,
+  "createdAt": "2026-10-16T10:09:42.932Z",
+  "updatedAt": "2026-10-16T10:09:42.932Z",
+  "boardId": "arduino-nano-atmega328p-ch340",
+  "boardSettings": {
+    "bootloader": "standard"
+  },
+  "components": [
+    {
+      "id": "b96b52ba-ac80-4161-ba57-f9a4413bbd89",
+      "moduleId": "clex.hardware.led",
+      "moduleVersion": "1.0.0",
+      "name": "Внешний светодиод 1",
+      "parameters": {
+        "resistorOhms": 470,
+        "forwardVoltage": 2
+      }
+    }
+  ],
+  "gpioAssignments": [
+    {
+      "componentId": "b96b52ba-ac80-4161-ba57-f9a4413bbd89",
+      "terminalId": "anode",
+      "pinId": "D13",
+      "gpio": 13,
+      "mode": "output"
+    }
+  ],
+  "logic": {
+    "nodes": [
+      {
+        "id": "dd1dc82a-e5d0-4a0a-8d66-0e33b4f40478",
+        "moduleId": "clex.logic.timer",
+        "moduleVersion": "1.0.0",
+        "name": "Таймер 1",
+        "position": {
+          "x": 60,
+          "y": 100
+        },
+        "parameters": {
+          "intervalMs": 1000
+        }
+      },
+      {
+        "id": "70f30c85-ec13-482f-b03e-f2456a7272e7",
+        "moduleId": "clex.logic.gpio-toggle",
+        "moduleVersion": "1.0.0",
+        "name": "Переключить выход 1",
+        "position": {
+          "x": 390,
+          "y": 100
+        },
+        "parameters": {
+          "componentId": "b96b52ba-ac80-4161-ba57-f9a4413bbd89"
+        }
+      },
+      {
+        "id": "1702dcb1-2a7b-4f74-92e3-ecc9cdfce6ad",
+        "moduleId": "clex.logic.serial",
+        "moduleVersion": "1.0.0",
+        "name": "Сообщение в монитор 1",
+        "position": {
+          "x": 60,
+          "y": 410
+        },
+        "parameters": {
+          "message": "Светодиод переключен"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "807d4585-f083-40d1-8a0c-da16f893e611",
+        "source": "dd1dc82a-e5d0-4a0a-8d66-0e33b4f40478",
+        "target": "70f30c85-ec13-482f-b03e-f2456a7272e7",
+        "sourceHandle": "tick",
+        "targetHandle": "trigger",
+        "dataType": "event"
+      },
+      {
+        "id": "88618ba3-f308-42d4-8c21-a9cc480477df",
+        "source": "70f30c85-ec13-482f-b03e-f2456a7272e7",
+        "target": "1702dcb1-2a7b-4f74-92e3-ecc9cdfce6ad",
+        "sourceHandle": "done",
+        "targetHandle": "trigger",
+        "dataType": "event"
+      }
+    ],
+    "viewport": {
+      "x": 0,
+      "y": 0,
+      "zoom": 1
+    }
+  },
+  "assembly": {
+    "positions": {
+      "board": {
+        "x": 100,
+        "y": 40
+      },
+      "b96b52ba-ac80-4161-ba57-f9a4413bbd89": {
+        "x": 528,
+        "y": 120
+      }
+    },
+    "connections": [
+      {
+        "id": "5aad27ec-70cc-40f6-9bbf-ffc0c0254b74",
+        "componentId": "b96b52ba-ac80-4161-ba57-f9a4413bbd89",
+        "terminalId": "anode",
+        "boardPinId": "D13"
+      },
+      {
+        "id": "19b0c079-d702-4e5e-8a75-7869bc5ed984",
+        "componentId": "b96b52ba-ac80-4161-ba57-f9a4413bbd89",
+        "terminalId": "cathode",
+        "boardPinId": "GND-R"
+      }
+    ],
+    "viewport": {
+      "x": 0,
+      "y": 0,
+      "zoom": 1
+    }
+  },
+  "moduleVersions": {
+    "clex.hardware.led": "1.0.0",
+    "clex.logic.timer": "1.0.0",
+    "clex.logic.gpio-toggle": "1.0.0",
+    "clex.logic.serial": "1.0.0"
+  }
+}

@@ -1,3 +1,4 @@
+mod arduino;
 mod boards;
 mod idf;
 mod idf_environment;
@@ -6,6 +7,7 @@ mod projects;
 mod sdk;
 mod sdk_discovery;
 mod sdk_installer;
+mod tooling;
 use tauri::{Emitter, Manager};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -50,6 +52,9 @@ pub fn run() {
             sdk::sdk_install,
             sdk::sdk_install_plan,
             sdk::sdk_remove,
+            tooling::tooling_plan,
+            tooling::tooling_directory,
+            tooling::sdk_prepare_all,
         ])
         .run(tauri::generate_context!())
         .expect("Не удалось запустить CLEX Flow");

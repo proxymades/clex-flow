@@ -13,7 +13,8 @@ const {chromium}=require('playwright');
   const emit=(status,text,extra={})=>{const event={jobId:job.id,sequence:sequence++,operation:job.operation,status,stream:'system',text,build:null,downloaded:null,total:null,...extra};events.push(event);for(const [id,value] of listeners){if(value.event==='idf-event')callbacks.get(value.handler)?.({event:'idf-event',id,payload:event});}};
   window.__TAURI_INTERNALS__={metadata:{currentWindow:{label:'main'},currentWebview:{label:'main'}},transformCallback:callback=>{const id=next++;callbacks.set(id,callback);return id;},unregisterCallback:id=>callbacks.delete(id),invoke:async(command,args={})=>{
    if(command==='plugin:event|listen'){const id=next++;listeners.set(id,args);return id;}if(command==='plugin:event|unlisten'){listeners.delete(args.eventId);return null;}
-   if(command==='list_projects')return [];if(command==='storage_path')return '/fixture/projects';
+   if(command==='list_projects')return [];if(command==='tooling_directory')return '/fixture/CLEX/sdks';
+   if(command==='storage_path')return '/fixture/projects';
    if(command==='idf_environment')throw 'Fixture: SDK отсутствует';if(command==='idf_ports')return [];
    if(command==='sdk_list')return {installations,active:environment?{esp32s3:'external-fixture'}:{},available:[{version:'5.4.4',supported:true},{version:'5.5.2',supported:false}],catalogError:'',managedPath:'/fixture/CLEX/sdks',host:'macos-aarch64',environment};
    if(command==='sdk_refresh_versions')return null;

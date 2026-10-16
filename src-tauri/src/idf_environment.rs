@@ -25,6 +25,8 @@ pub struct Environment {
     pub cmake_version: String,
     pub ninja_version: String,
     pub diagnostics: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub arduino: Option<crate::arduino::ArduinoEnvironment>,
     #[serde(skip)]
     pub variables: BTreeMap<String, String>,
 }
@@ -459,6 +461,7 @@ pub fn inspect_target(
         cmake_version,
         ninja_version,
         diagnostics: format!("{diagnostics}{warnings}"),
+        arduino: None,
         variables,
     })
 }
@@ -470,6 +473,9 @@ pub struct Port {
     pub usb: bool,
 }
 pub fn ports(environment: &Environment) -> Result<Vec<Port>, String> {
+    if let Some(arduino) = &environment.arduino {
+        return crate::arduino::ports(arduino);
+    }
     let code="import json; from serial.tools import list_ports; print(json.dumps([{'path':p.device,'description':p.description,'usb':p.vid is not None} for p in list_ports.comports()]))";
     let mut command = Command::new(&environment.python);
     command.args(["-c", code]).envs(&environment.variables);

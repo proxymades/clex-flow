@@ -55,7 +55,7 @@ export default function ProcessPanel({ idf, onPreview, issues, onIssue }) {
       <button className={tab === 'check' ? 'selected' : ''} onClick={() => changeTab('check')}>Проверка{errors.length ? ` · ${errors.length}` : ''}</button>
     </div>
       {!following && tab !== 'check' && <button className="icon-button" onClick={followEnd} aria-label="К последним сообщениям" title="К последним сообщениям"><ArrowDownToLine size={16} /></button>}
-      <span className={`process-state ${idf.job?.status === 'failed' ? 'failed' : ''}`}>{idf.job ? labels[idf.job.status] : idf.environment ? 'ESP-IDF готова' : 'Среда не проверена'}</span>
+      <span className={`process-state ${idf.job?.status === 'failed' ? 'failed' : ''}`}>{idf.job ? labels[idf.job.status] : idf.environment ? 'Среда готова' : 'Среда не проверена'}</span>
       {idf.busy && idf.job && <button className="text-button" onClick={idf.cancel}><Square size={12} />Остановить</button>}
       <button className="icon-button" onClick={onPreview} disabled={!idf.preview} aria-label="Посмотреть исходники прошивки"><FileCode2 size={15} /></button>
     </header>

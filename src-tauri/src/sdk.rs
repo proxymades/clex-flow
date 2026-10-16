@@ -79,6 +79,7 @@ pub struct Paths {
     pub registry: PathBuf,
     pub managed: PathBuf,
     pub cache: PathBuf,
+    pub previous_managed: Vec<PathBuf>,
 }
 impl Paths {
     pub fn for_app(app: &tauri::AppHandle) -> Result<Self, String> {
@@ -88,11 +89,11 @@ impl Paths {
                 .app_config_dir()
                 .map_err(|e| e.to_string())?
                 .join("sdk-manager.json"),
-            managed: app
-                .path()
-                .app_local_data_dir()
-                .map_err(|e| e.to_string())?
-                .join("sdks/esp-idf"),
+            managed: crate::tooling::tools_root(app)?.join("esp-idf"),
+            previous_managed: crate::tooling::tool_roots(app)?
+                .into_iter()
+                .map(|root| root.join("esp-idf"))
+                .collect(),
             cache: app
                 .path()
                 .app_cache_dir()
@@ -130,7 +131,9 @@ impl Paths {
         Ok(())
     }
     pub fn slot_for(&self, version: &str, target: &str) -> Result<PathBuf, String> {
-        crate::boards::compiler(target)?;
+        if !["esp32s3", "esp32p4"].contains(&target) {
+            return Err("Для этой платформы используется отдельный установщик".into());
+        }
         let slot = self.slot(version)?;
         Ok(if target == PLATFORM {
             slot
@@ -374,20 +377,26 @@ pub fn detect(registry: &mut Registry, paths: &Paths, legacy: Option<&Path>) -> 
         detect_base(registry, &base);
     }
     // Rediscover only our owned slots; never treat a directory as removable by location alone.
-    if let Ok(entries) = fs::read_dir(&paths.managed) {
-        for entry in entries.flatten() {
-            if let Ok(bytes) = fs::read(entry.path().join(".clex-sdk.json")) {
-                if let Ok(owner) = serde_json::from_slice::<Owner>(&bytes) {
-                    if owner.family == "esp-idf" && valid_version(&owner.version) {
-                        let slot = paths.slot_for(&owner.version, &owner.target)?;
-                        if slot == entry.path()
-                            && !registry.installations.iter().any(|s| s.id == owner.id)
-                        {
-                            registry.installations.push(managed_sdk_for(
-                                &slot,
-                                &owner.version,
-                                &owner.target,
-                            ));
+    for managed in std::iter::once(&paths.managed).chain(paths.previous_managed.iter()) {
+        if let Ok(entries) = fs::read_dir(managed) {
+            for entry in entries.flatten() {
+                if let Ok(bytes) = fs::read(entry.path().join(".clex-sdk.json")) {
+                    if let Ok(owner) = serde_json::from_slice::<Owner>(&bytes) {
+                        if owner.family == "esp-idf" && valid_version(&owner.version) {
+                            let slot = Paths {
+                                managed: managed.clone(),
+                                ..paths.clone()
+                            }
+                            .slot_for(&owner.version, &owner.target)?;
+                            if slot == entry.path()
+                                && !registry.installations.iter().any(|s| s.id == owner.id)
+                            {
+                                registry.installations.push(managed_sdk_for(
+                                    &slot,
+                                    &owner.version,
+                                    &owner.target,
+                                ));
+                            }
                         }
                     }
                 }
@@ -493,22 +502,23 @@ pub fn assert_owned(paths: &Paths, sdk: &Sdk) -> Result<PathBuf, String> {
     if !sdk.managed || sdk.family != "esp-idf" {
         return Err("Удаление и переустановка пользовательских SDK запрещены".into());
     }
-    let slot = paths.slot_for(&sdk.version, &sdk.target)?;
+    let declared = PathBuf::from(sdk.slot.as_deref().ok_or("Нет каталога SDK")?);
+    let managed = declared.parent().ok_or("Нет каталога SDK")?;
+    if managed != paths.managed && !paths.previous_managed.iter().any(|root| root == managed) {
+        return Err("SDK находится вне каталогов CLEX Flow".into());
+    }
+    let owned_paths = Paths {
+        managed: managed.to_path_buf(),
+        ..paths.clone()
+    };
+    let slot = owned_paths.slot_for(&sdk.version, &sdk.target)?;
     if sdk.slot.as_deref() != Some(slot.to_string_lossy().as_ref()) {
         return Err("Путь SDK не соответствует управляемому каталогу".into());
     }
-    no_link(&paths.managed)?;
+    no_link(managed)?;
     no_link(&slot)?;
     let canonical = slot.canonicalize().map_err(|e| e.to_string())?;
-    if canonical.parent()
-        != Some(
-            paths
-                .managed
-                .canonicalize()
-                .map_err(|e| e.to_string())?
-                .as_path(),
-        )
-    {
+    if canonical.parent() != Some(managed.canonicalize().map_err(|e| e.to_string())?.as_path()) {
         return Err("SDK находится вне каталога CLEX Flow".into());
     }
     let owner: Owner =
@@ -611,6 +621,9 @@ pub fn sdk_list(
     target: Option<String>,
 ) -> Result<Snapshot, String> {
     let target = crate::boards::target(target)?;
+    if target == crate::arduino::TARGET {
+        return crate::arduino::snapshot(&app, &state.0);
+    }
     let paths = Paths::for_app(&app)?;
     let _guard = state.0.sdk_gate.lock().map_err(|e| e.to_string())?;
     let mut registry = paths.load()?;
@@ -990,6 +1003,7 @@ mod tests {
             registry: root.join("config/sdk.json"),
             managed: root.join("managed"),
             cache: root.join("cache"),
+            previous_managed: vec![],
         }
     }
     #[test]
@@ -1011,6 +1025,22 @@ mod tests {
         fs::remove_dir_all(assert_owned(&p, &p4).unwrap()).unwrap();
         assert_eq!(fs::read(s3_slot.join("sentinel")).unwrap(), b"existing S3");
         assert!(assert_owned(&p, &s3).is_ok());
+    }
+    #[test]
+    fn changing_tools_folder_preserves_old_ownership_without_claiming_external_dirs() {
+        let dir = tempfile::tempdir().unwrap();
+        let old = paths(dir.path());
+        let sdk = managed_sdk(&old.slot("5.4.4").unwrap(), "5.4.4");
+        let slot = claim_slot(&old, &sdk).unwrap();
+        fs::write(slot.join("keep"), b"original SDK").unwrap();
+        let mut new = old.clone();
+        new.managed = dir.path().join("new-tools/esp-idf");
+        new.previous_managed = vec![old.managed.clone()];
+        assert_eq!(assert_owned(&new, &sdk).unwrap(), slot);
+        let unrelated = paths(&dir.path().join("other"));
+        assert!(assert_owned(&unrelated, &sdk).is_err());
+        assert_eq!(fs::read(slot.join("keep")).unwrap(), b"original SDK");
+        assert!(new.slot_for("1.8.6", "atmega328p").is_err());
     }
     #[test]
     fn versions_cannot_escape_managed_root() {

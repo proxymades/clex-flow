@@ -173,7 +173,19 @@ fn verify_specification(spec: &Specification) -> Result<(), String> {
     {
         return Err("Режим консоли недоступен на этой плате".into());
     }
-    if board["firmware"]["revisionConfigs"].is_object() {
+    if board["platform"] == "arduino-avr" {
+        crate::arduino::fqbn(
+            spec.board_revision
+                .as_deref()
+                .ok_or("Выберите загрузчик Nano")?,
+        )?;
+        if spec.graphics_runtime.is_some()
+            || spec.network_runtime.is_some()
+            || !spec.feature_runtimes.is_empty()
+        {
+            return Err("Драйверы ESP-IDF несовместимы с Arduino AVR".into());
+        }
+    } else if board["firmware"]["revisionConfigs"].is_object() {
         if !spec
             .board_revision
             .as_deref()
@@ -218,6 +230,9 @@ fn verify_specification(spec: &Specification) -> Result<(), String> {
 }
 fn write_project(dir: &PathBuf, spec: &Specification) -> Result<(), String> {
     verify_specification(spec)?;
+    if crate::boards::profile(&spec.board_id)?["platform"] == "arduino-avr" {
+        return crate::arduino::write_project(dir, spec);
+    }
     fs::create_dir_all(dir.join("main")).map_err(|e| e.to_string())?;
     write_source(&dir.join("CMakeLists.txt"),"cmake_minimum_required(VERSION 3.16)\nset(COMPONENTS main)\ninclude($ENV{IDF_PATH}/tools/cmake/project.cmake)\nproject(clex_flow_firmware)\n")?;
     let dependencies = if spec.network_runtime.is_some() {
@@ -295,7 +310,9 @@ fn write_project(dir: &PathBuf, spec: &Specification) -> Result<(), String> {
                 }
             }
         }
-        write_source(&path, &manifest)?;
+        if !managed.is_empty() {
+            write_source(&path, &manifest)?;
+        }
     }
     write_source(&dir.join("main/main.c"), &spec.main_c)?;
     let board = crate::boards::profile(&spec.board_id)?;
@@ -345,6 +362,14 @@ fn write_project(dir: &PathBuf, spec: &Specification) -> Result<(), String> {
         contents.push_str("CONFIG_MBEDTLS_CERTIFICATE_BUNDLE=y\nCONFIG_MBEDTLS_CERTIFICATE_BUNDLE_DEFAULT_FULL=y\nCONFIG_ESP_NETIF_IP_LOST_TIMER_INTERVAL=1\nCONFIG_PARTITION_TABLE_CUSTOM=y\nCONFIG_PARTITION_TABLE_CUSTOM_FILENAME=\"partitions.csv\"\n");
         write_source(&path, &contents)?;
         write_source(&dir.join("partitions.csv"), "nvs,data,nvs,0x9000,0x6000\nphy_init,data,phy,0xf000,0x1000\nfactory,app,factory,0x10000,0x300000\n")?;
+    }
+    if spec.network_runtime.is_none()
+        && spec
+            .feature_runtimes
+            .iter()
+            .any(|feature| feature == "espnow-s3")
+    {
+        write_source(&dir.join("partitions.csv"),"nvs,data,nvs,0x9000,0x6000\nphy_init,data,phy,0xf000,0x1000\nfactory,app,factory,0x10000,0x300000\n")?;
     }
     if !spec.feature_runtimes.is_empty() {
         let path = dir.join("sdkconfig.defaults");
@@ -470,9 +495,14 @@ pub(crate) fn execute_process(
     if cancel.load(Ordering::SeqCst) {
         return Ok(false);
     }
-    cmd.stdin(Stdio::null())
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped());
+    // Arduino CLI closes its monitor on stdin EOF; keep the pipe open for the job lifetime.
+    cmd.stdin(if operation == "monitor" {
+        Stdio::piped()
+    } else {
+        Stdio::null()
+    })
+    .stdout(Stdio::piped())
+    .stderr(Stdio::piped());
     #[cfg(unix)]
     {
         use std::os::unix::process::CommandExt;
@@ -578,7 +608,7 @@ pub(crate) fn reserve(inner: &Arc<Inner>, id: &str) -> Result<Arc<AtomicBool>, S
     }
     let mut active = inner.active.lock().map_err(|e| e.to_string())?;
     if active.is_some() {
-        return Err("Другая операция ESP-IDF уже выполняется".into());
+        return Err("Другая операция уже выполняется".into());
     }
     let cancel = Arc::new(AtomicBool::new(false));
     *active = Some(Active {
@@ -628,7 +658,7 @@ fn env_from(state: &Service) -> Result<Environment, String> {
         .lock()
         .map_err(|e| e.to_string())?
         .clone()
-        .ok_or("Сначала проверьте ESP-IDF в настройках".into())
+        .ok_or("Сначала проверьте инструменты в настройках".into())
 }
 #[tauri::command]
 pub async fn idf_environment(
@@ -648,7 +678,18 @@ pub async fn idf_environment(
     let check_inner = inner.clone();
     let check_app = app.clone();
     let result = tauri::async_runtime::spawn_blocking(move || {
-        crate::sdk::auto_environment(&check_app, &check_inner, root, python, tools_path, &target)
+        if target == crate::arduino::TARGET {
+            crate::arduino::auto_environment(&check_app, root, tools_path)
+        } else {
+            crate::sdk::auto_environment(
+                &check_app,
+                &check_inner,
+                root,
+                python,
+                tools_path,
+                &target,
+            )
+        }
     })
     .await
     .map_err(|e| e.to_string())
@@ -686,9 +727,12 @@ pub fn idf_build(
         .as_str()
         .ok_or("Нет цели платы")?
         .to_string();
-    if environment.sdk_version != board["espIdfVersion"].as_str().unwrap_or("")
-        || environment.target != target
-    {
+    let required = if board["platform"] == "arduino-avr" {
+        &board["coreVersion"]
+    } else {
+        &board["espIdfVersion"]
+    };
+    if environment.sdk_version != required.as_str().unwrap_or("") || environment.target != target {
         return Err("Выберите и проверьте SDK и компилятор для выбранной платы".into());
     }
     let inner = state.0.clone();
@@ -701,28 +745,56 @@ pub fn idf_build(
             "build",
             "running",
             "system",
-            "Генерация отдельного ESP-IDF проекта",
+            "Подготовка проекта прошивки",
             None,
         );
         let result = (|| {
             let dir = prepare(&app, &environment, &spec)?;
-            let mut cmd = sdk_command(&environment);
+            let mut cmd = if let Some(a) = &environment.arduino {
+                crate::arduino::build_command(
+                    a,
+                    &dir,
+                    spec.board_revision.as_deref().ok_or("Выберите загрузчик")?,
+                )?
+            } else {
+                sdk_command(&environment)
+            };
             if spec.graphics_runtime.is_some() || !spec.feature_runtimes.is_empty() {
                 cmd.env("IDF_COMPONENT_MANAGER", "1")
                     .env("IDF_COMPONENT_CACHE_PATH", dir.join("component-cache"));
             }
-            cmd.current_dir(&dir)
-                .args(["-D", &format!("IDF_TARGET={target}"), "build"]);
+            if environment.arduino.is_none() {
+                cmd.current_dir(&dir)
+                    .args(["-D", &format!("IDF_TARGET={target}"), "build"]);
+            }
             if !execute(&app, &inner, &id, "build", cmd, &cancel)? {
                 return Ok(None);
             }
+            if let Some(a) = &environment.arduino {
+                crate::arduino::verify_memory(a, &dir)?;
+            }
+            let binary = if environment.arduino.is_some() {
+                "build/clex_flow.ino.hex"
+            } else {
+                "build/clex_flow_firmware.bin"
+            };
             let mut hashes = Vec::new();
-            for path in [
-                "build/bootloader/bootloader.bin",
-                "build/partition_table/partition-table.bin",
-                "build/clex_flow_firmware.bin",
-                "build/flash_args",
-            ] {
+            let artifacts: &[&str] = if environment.arduino.is_some() {
+                &[
+                    "build/clex_flow.ino.hex",
+                    "build/clex_flow.ino.elf",
+                    "fqbn.txt",
+                    "clex_flow/src/flow.cpp",
+                ]
+            } else {
+                &[
+                    "build/bootloader/bootloader.bin",
+                    "build/partition_table/partition-table.bin",
+                    "build/clex_flow_firmware.bin",
+                    "build/flash_args",
+                ]
+            };
+            for &path in artifacts {
                 let file = dir.join(path);
                 let bytes = fs::read(&file)
                     .map_err(|e| format!("Не найден результат сборки {path}: {e}"))?;
@@ -732,10 +804,7 @@ pub fn idf_build(
                 id: id.clone(),
                 fingerprint: spec.fingerprint,
                 project_dir: dir.to_string_lossy().to_string(),
-                binary: dir
-                    .join("build/clex_flow_firmware.bin")
-                    .to_string_lossy()
-                    .to_string(),
+                binary: dir.join(binary).to_string_lossy().to_string(),
                 environment_root: environment.root.clone(),
                 environment_identity: environment.identity.clone(),
                 target: target.clone(),
@@ -812,20 +881,32 @@ pub fn idf_flash(
             &format!("Прошивка выбранного порта {port}"),
             None,
         );
-        let mut cmd = command(&environment);
-        cmd.current_dir(PathBuf::from(&build.project_dir).join("build"))
-            .args([
-                "-m",
-                "esptool",
-                "--chip",
-                &build.target,
-                "--port",
-                &port,
-                "--baud",
-                "460800",
-                "write_flash",
-                "@flash_args",
-            ]);
+        let mut cmd = if let Some(a) = &environment.arduino {
+            match crate::arduino::upload_command(a, &build, &port) {
+                Ok(c) => c,
+                Err(e) => {
+                    finish(&app, &inner, &id, "flash", Err(e), &cancel);
+                    return;
+                }
+            }
+        } else {
+            command(&environment)
+        };
+        if environment.arduino.is_none() {
+            cmd.current_dir(PathBuf::from(&build.project_dir).join("build"))
+                .args([
+                    "-m",
+                    "esptool",
+                    "--chip",
+                    &build.target,
+                    "--port",
+                    &port,
+                    "--baud",
+                    "460800",
+                    "write_flash",
+                    "@flash_args",
+                ]);
+        }
         let result = execute(&app, &inner, &id, "flash", cmd, &cancel).map(|_| None);
         finish(&app, &inner, &id, "flash", result, &cancel);
     });
@@ -869,8 +950,14 @@ pub fn idf_monitor(
             &format!("Открываем монитор {port}, 115200 бод"),
             None,
         );
-        let mut cmd = command(&environment);
-        cmd.args(["-u", "-c", MONITOR, &port]);
+        let mut cmd = if let Some(a) = &environment.arduino {
+            crate::arduino::monitor_command(a, &port)
+        } else {
+            command(&environment)
+        };
+        if environment.arduino.is_none() {
+            cmd.args(["-u", "-c", MONITOR, &port]);
+        }
         let result = execute(&app, &inner, &id, "monitor", cmd, &cancel).map(|_| None);
         finish(&app, &inner, &id, "monitor", result, &cancel);
     });
@@ -919,6 +1006,42 @@ mod tests {
                 "{file}"
             );
         }
+    }
+    #[test]
+    fn espnow_profile_is_s3_only_and_needs_no_downloaded_component() {
+        let mut spec = Specification {
+            board_id: "waveshare-esp32-s3-eth".into(),
+            board_revision: None,
+            feature_runtimes: vec!["espnow-s3".into()],
+            console_mode: "usb".into(),
+            main_c: "source".into(),
+            fingerprint: String::new(),
+            graphics_runtime: None,
+            network_runtime: None,
+        };
+        spec.fingerprint = hash(
+            &serde_json::to_vec(&serde_json::json!([
+                spec.board_id,
+                spec.console_mode,
+                spec.main_c,
+                spec.feature_runtimes
+            ]))
+            .unwrap(),
+        );
+        assert!(verify_specification(&spec).is_ok());
+        let dir = tempfile::tempdir().unwrap();
+        write_project(&dir.path().to_path_buf(), &spec).unwrap();
+        assert!(!dir.path().join("main/idf_component.yml").exists());
+        assert!(dir.path().join("partitions.csv").is_file());
+        assert!(fs::read_to_string(dir.path().join("main/CMakeLists.txt"))
+            .unwrap()
+            .contains("esp_wifi"));
+        spec.board_id = "waveshare-esp32-p4-nano".into();
+        spec.console_mode = "uart".into();
+        spec.board_revision = Some("pre-v3".into());
+        assert!(verify_specification(&spec)
+            .unwrap_err()
+            .contains("профиль драйвера"));
     }
     #[test]
     fn graphics_runtime_is_allowlisted_and_part_of_source_identity() {
@@ -1067,6 +1190,38 @@ mod tests {
         assert!(verify_build(&build, "abc", "changed sdk").is_err());
         fs::write(path, b"tampered args").unwrap();
         assert!(verify_build(&build, "abc", "sdk").is_err());
+    }
+    #[cfg(unix)]
+    #[test]
+    fn monitor_keeps_stdin_open_until_cancelled() {
+        let inner = Arc::new(Inner::default());
+        let cancel = Arc::new(AtomicBool::new(false));
+        let seen = Arc::new(std::sync::atomic::AtomicBool::new(false));
+        let flag = seen.clone();
+        let control = cancel.clone();
+        let mut cmd = Command::new("/bin/sh");
+        cmd.args([
+            "-c",
+            "if read line; then exit 2; else echo stdin-closed; fi",
+        ]);
+        std::thread::spawn(move || {
+            std::thread::sleep(Duration::from_millis(120));
+            control.store(true, Ordering::SeqCst);
+        });
+        assert!(!execute_process(
+            &inner,
+            "monitor",
+            cmd,
+            &cancel,
+            Arc::new(move |_, _, _| {
+                flag.store(true, Ordering::SeqCst);
+            })
+        )
+        .unwrap());
+        assert!(
+            !seen.load(Ordering::SeqCst),
+            "stdin EOF must not close the monitor"
+        );
     }
     #[cfg(unix)]
     #[test]

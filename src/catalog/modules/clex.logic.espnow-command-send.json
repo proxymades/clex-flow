@@ -1,0 +1,96 @@
+{
+  "id": "clex.logic.espnow-command-send",
+  "version": "1.0.0",
+  "kind": "logic",
+  "name": "Отправить команду ESP-NOW",
+  "description": "Передает команду и ждет подтверждения ее обработки.",
+  "category": "network",
+  "categoryName": "Связь",
+  "icon": "Radio",
+  "color": "#f472b6",
+  "inputs": [
+    {
+      "id": "trigger",
+      "name": "Отправить",
+      "type": "event",
+      "description": "Запускает один обмен с выбранным устройством.",
+      "required": true
+    },
+    {
+      "id": "text",
+      "name": "Текст",
+      "type": "text",
+      "description": "Необязательный текст вместо настройки блока.",
+      "additional": true
+    }
+  ],
+  "outputs": [
+    {
+      "id": "confirmed",
+      "name": "Получатель подтвердил",
+      "type": "event",
+      "description": "Для сообщения: текст принят. Для команды: получатель явно подтвердил ее обработку."
+    },
+    {
+      "id": "failed",
+      "name": "Отправка не выполнена",
+      "type": "event",
+      "description": "Ошибка, отрицательное подтверждение или истекло время ожидания."
+    },
+    {
+      "id": "error",
+      "name": "Причина ошибки",
+      "type": "text",
+      "description": "Причина неудачного обмена.",
+      "readyOn": "failed",
+      "additional": true
+    }
+  ],
+  "parameters": {
+    "componentId": {
+      "label": "ESP-NOW",
+      "type": "component",
+      "default": ""
+    },
+    "peerId": {
+      "label": "Удаленное устройство",
+      "type": "espnow-peer",
+      "default": ""
+    },
+    "message": {
+      "label": "Данные команды",
+      "type": "text",
+      "default": "",
+      "maxLength": 160
+    },
+    "command": {
+      "label": "Имя команды",
+      "type": "text",
+      "default": "SET_LR",
+      "maxLength": 32
+    }
+  },
+  "constraints": {
+    "hardware": {
+      "kind": "radio",
+      "modules": [
+        "clex.hardware.espnow"
+      ]
+    }
+  },
+  "compatibility": {
+    "projectFormat": 3,
+    "targets": [
+      "esp32s3"
+    ],
+    "espIdf": "5.4.4"
+  },
+  "firmware": {
+    "status": "implemented",
+    "generatorKey": "espnow-command-send",
+    "eventSource": false,
+    "dependencies": [
+      "esp_wifi"
+    ]
+  }
+}

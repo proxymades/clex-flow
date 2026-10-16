@@ -8,6 +8,8 @@ import { catalog, timer } from '../tests/catalog-fixture.js';
 import { firmwareProject } from '../tests/firmware-fixture.js';
 import { networkProject } from '../tests/network-fixture.js';
 import { p4Project } from '../tests/p4-fixture.js';
+import {espNowProject,espNowButtonProject} from '../tests/espnow-fixture.js';
+import {nanoProject} from '../tests/nano-fixture.js';
 import { peripheralProject } from '../tests/peripheral-fixture.js';
 import { createProject } from '../src/projects/model.js';
 import { addHardware } from '../src/assembly/model.js';
@@ -28,6 +30,13 @@ function mediaProject(family) {
 }
 
 const cases = [
+  ['s3-espnow-mac',espNowProject({zeroPeers:true}).project,'usb'],
+  ['s3-espnow-receiver',espNowProject().project,'usb'],
+  ['s3-espnow-button',espNowButtonProject().project,'usb'],
+  ['nano-counter',nanoProject(),'uart'],
+  ['nano-old',nanoProject({bootloader:'old'}),'uart'],
+  ['nano-gpio',nanoProject({blink:true}),'uart'],
+  ['nano-watch',nanoProject({watch:true}),'uart'],
   ['s3-gpio-usb', firmwareProject(), 'usb'],
   ['s3-gpio-uart', firmwareProject(), 'uart'],
   ['s3-spi-network', networkProject(), 'usb'],
@@ -61,7 +70,7 @@ try {
     assert.match(result.stdout, /1 passed/);
     console.log('PASS: ' + name);
   }
-  console.log('Firmware file parity verified: ' + cases.length + ' S3/P4 configurations.');
+  console.log('Firmware file parity verified: ' + cases.length + ' platform configurations.');
 } finally {
   rmSync(temporary, {recursive:true,force:true});
 }

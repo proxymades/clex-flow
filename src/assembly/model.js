@@ -1,3 +1,5 @@
+import {ESPNOW_MODULE,espNowSupported,espNowIssues,newKey} from '../espnow/model.js';
+import { moduleSupportsBoard } from '../catalog/compatibility.js';
 import { terminalLayout } from './terminalLayout.js';
 import { reanchorManualRoute } from './wireRouting.js';
 import { hardwareProvider, resourceIssues, claimedGpio, sharedPinProblem } from '../hardware/resources.js';
@@ -29,9 +31,10 @@ export function transformAssembly(project,catalog,transform){
 export function moduleProblem(component, catalog, board = null) {
   const module = moduleFor(component, catalog);
   if (!module) return 'Модуль не установлен в библиотеке.';
+  if(module.softwareInterface==='espnow'&&board&&!espNowSupported(board))return 'Эта плата не имеет поддерживаемого ESP-NOW-радиоинтерфейса.';
   if (board && module.hardwareInterface && !hardwareProvider(component,module,board)) return 'Выберите совместимый аппаратный интерфейс платы.';
   if (module.version !== component.moduleVersion) return `Требуется модуль ${component.moduleId} версии ${component.moduleVersion}; установлен ${module.version}.`;
-  if (board && module.compatibility.espIdf !== board.espIdfVersion) return 'Модуль несовместим с целевой версией ESP-IDF платы.';
+  if (board && !moduleSupportsBoard(module,board)) return 'Для выбранной платформы нет реализованного драйвера этого компонента.';
   if (module.network && board && !board.networkInterfaces?.some(provider=>provider.family===module.network.family)) return 'Для выбранной платы нет описанного сетевого интерфейса этого типа.';
   if (module.kind !== 'hardware' || module.compatibility.projectFormat !== 3 || !module.compatibility.targets.includes(board?.target || 'esp32s3')) return 'Модуль несовместим с этим редактором монтажа.';
   return null;
@@ -117,10 +120,12 @@ export function addHardware(project, module, catalog = null) {
   while (project.components.some(component => component.name === instanceName(number) || component.name === `${module.name} ${number}`)) number++;
   const name = instanceName(number);
   const parameters=Object.fromEntries(Object.entries(module.parameters).map(([key,parameter])=>[key,parameter.default]));
+  if(module.softwareInterface==='espnow'){if(!catalog||!espNowSupported(boardFor(project,catalog)))throw new Error('Для платы нет ESP-NOW-радиоинтерфейса.');if(project.components.some(c=>c.moduleId===ESPNOW_MODULE))throw new Error('ESP-NOW уже добавлен: плата использует одно радио.');parameters.pmk=newKey();}
   if(module.hardwareInterface&&catalog){const provider=boardFor(project,catalog)?.peripherals?.find(provider=>provider.family===module.hardwareInterface.family && provider.interface===module.hardwareInterface.interface);parameters.interfaceId=provider?.id || '';}
   if(module.network&&catalog){const board=boardFor(project,catalog),provider=board.networkInterfaces?.find(provider=>provider.family===module.network.family);if(!provider)throw new Error('На этой плате нет описанного сетевого интерфейса.');if(project.components.some(component=>networkProvider(component,board,module)?.id===provider.id))throw new Error('Этот встроенный интерфейс уже добавлен.');parameters.providerId=provider.id;}
   if(module.parameters.spiHost&&catalog&&(!module.network||networkProvider({parameters},boardFor(project,catalog),module)?.interface==='spi')){const options=spiOptions(project,catalog,id).filter(option=>!option.busy.length);parameters.spiHost=options.find(option=>option.value===String(parameters.spiHost))?.value||options[0]?.value||'';}
 
+  if(catalog)Object.assign(parameters,boardFor(project,catalog)?.componentDefaults?.[module.id]);
   const occupied = project.components.map(component => {
     const layout = terminalLayout(catalog?.modules.find(item => item.id === component.moduleId), project.assembly.portSides?.[component.id]);
     return { ...project.assembly.positions[component.id], width: layout.width, height: layout.height };
@@ -164,6 +169,7 @@ export function validateAssembly(project, catalog) {
   const issue = (severity, code, message, fields = {}) => issues.push({ severity, code, message, ...fields });
   const board = boardFor(project, catalog);
   issues.push(...resourceIssues(project,catalog));
+  if(project.components.filter(c=>c.moduleId===ESPNOW_MODULE).length>1)issue('error','espnow-duplicate','В проекте поддерживается один ESP-NOW-интерфейс платы.');
   if (!board) { issue('error', 'board-missing', 'Плата отсутствует в каталоге.'); return issues; }
   if (!board.pins.length) issue('error', 'board-generic', 'Выберите конкретную плату. Общая ESP32-S3 не имеет распиновки.');
   else if (!board.pinoutVerified) issue('warning', 'revision-unconfirmed', 'Ревизия ESP32-S3-ETH не подтверждена. Сверьте физическую плату с документацией профиля.');
@@ -183,11 +189,12 @@ export function validateAssembly(project, catalog) {
       if (parameter.type === 'number' && (!Number.isFinite(value) || value < parameter.min || value > parameter.max)) issue('error', 'parameter-range', `${component.name}: «${parameter.label}» должен быть в диапазоне ${parameter.min}-${parameter.max}.`, fields);
       if (parameter.type === 'select' && !parameter.options.some(option => option.value === value)) issue('error', 'parameter-option', `${component.name}: неверный параметр «${parameter.label}».`, fields);
     }
+    if(module.softwareInterface==='espnow')for(const message of espNowIssues(component,board))issue('error','espnow-config',component.name+': '+message,fields);
     if(module.network)for(const message of networkIssues(component,board,module))issue('error','network-config',component.name+': '+message,fields);
     if(module.parameters.spiHost&&(!module.network||networkProvider(component,board,module)?.interface==='spi')&&!board.interfaces?.spi?.hosts.includes(Number(component.parameters.spiHost)))issue('error','spi-host',component.name+': выберите доступный SPI.',fields);
     if (module.constraints.requiresSeriesResistor) {
       const { resistorOhms, forwardVoltage } = component.parameters;
-      const currentMa = (module.constraints.signalVoltage - forwardVoltage) / resistorOhms * 1000;
+      const currentMa = ((board.logicVoltage || module.constraints.signalVoltage) - forwardVoltage) / resistorOhms * 1000;
       if (Number.isFinite(currentMa) && currentMa > module.constraints.maxCurrentMa) issue('error', 'led-current', `${component.name}: расчетный ток ${currentMa.toFixed(1)} мА превышает предел модуля ${module.constraints.maxCurrentMa} мА. Увеличьте резистор.`, fields);
     }
     for (const terminal of module.terminals) {

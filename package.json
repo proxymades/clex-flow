@@ -12,6 +12,9 @@
     "desktop:build": "tauri build",
     "test": "node --test tests/*.test.js",
     "test:firmware-parity": "node scripts/check-firmware-parity.mjs",
+    "test:nano-ui": "node tests/nano-ui.cjs",
+    "test:tooling-ui": "node tests/tooling-ui.cjs",
+    "test:nano-runtime": "node tests/nano-runtime.mjs",
     "test:p4-ui": "node tests/p4-ui.cjs",
     "test:peripheral-ui": "node tests/peripheral-ui.cjs",
     "test:manual-routing-ui": "node tests/manual-routing-ui.cjs",
@@ -44,7 +47,9 @@
     "test:automatic-display-ui": "node tests/automatic-display-ui.cjs",
     "test:value-states-ui": "node tests/value-states-ui.cjs",
     "test:project-storage-ui": "node tests/project-storage-ui.cjs",
-    "test:sdk-external-ui": "node tests/sdk-external-ui.cjs"
+    "test:sdk-external-ui": "node tests/sdk-external-ui.cjs",
+    "test:espnow-ui": "node tests/espnow-ui.cjs",
+    "test:espnow-runtime": "node tests/espnow-runtime.mjs"
   },
   "dependencies": {
     "@tauri-apps/api": "2.10.1",

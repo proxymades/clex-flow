@@ -1,0 +1,78 @@
+{
+  "id": "clex.logic.gpio-edge",
+  "version": "1.0.0",
+  "kind": "logic",
+  "name": "Изменение входа",
+  "description": "Отправляет событие при изменении цифрового входа после фильтрации дребезга.",
+  "category": "gpio",
+  "categoryName": "Контакты",
+  "icon": "ScanLine",
+  "color": "#38BDF8",
+  "inputs": [],
+  "outputs": [
+    {
+      "id": "rising",
+      "name": "Вход стал высоким",
+      "type": "event",
+      "description": "Сигнал после перехода входа из низкого уровня в высокий."
+    },
+    {
+      "id": "falling",
+      "name": "Вход стал низким",
+      "type": "event",
+      "description": "Сигнал после перехода входа из высокого уровня в низкий."
+    },
+    {
+      "id": "changed",
+      "name": "Состояние входа изменилось",
+      "type": "event",
+      "description": "Сигнал после любого изменения уровня входа.",
+      "additional": true
+    },
+    {
+      "id": "level",
+      "name": "Высокий уровень?",
+      "type": "boolean",
+      "description": "Текущее состояние входа с учетом фильтрации дребезга.",
+      "readyOn": "changed",
+      "additional": true
+    }
+  ],
+  "parameters": {
+    "componentId": {
+      "label": "Входной компонент",
+      "type": "component",
+      "default": "",
+      "description": "Выберите подключенный входной компонент из монтажа."
+    }
+  },
+  "constraints": {
+    "hardware": {
+      "kind": "gpio",
+      "mode": "input"
+    }
+  },
+  "compatibility": {
+    "projectFormat": 3,
+    "targets": [
+      "esp32s3",
+      "esp32p4",
+      "atmega328p"
+    ],
+    "espIdf": "5.4.4",
+    "platforms": {
+      "arduino-avr": "1.8.6"
+    }
+  },
+  "firmware": {
+    "status": "implemented",
+    "generatorKey": "gpio-edge",
+    "dependencies": [
+      "esp_driver_gpio"
+    ],
+    "eventSource": true
+  },
+  "legacyNames": [
+    "Чтение GPIO"
+  ]
+}

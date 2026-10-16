@@ -1,3 +1,5 @@
+import {ESPNOW_MODULE,espNowSupported,espNowLogicIssues,espNowAckIssues} from '../espnow/model.js';
+import { moduleSupportsBoard } from '../catalog/compatibility.js';
 import { formatCount } from '../utils/plural.js';
 import { hardwareProvider } from '../hardware/resources.js';
 import { networkProvider, probeUrl } from '../network/model.js';
@@ -29,11 +31,19 @@ export function withLogic(project, logic) {
   return { ...project, logic, moduleVersions: versions };
 }
 
+export function hardwareMatches(component,requirement,catalog){
+ if(!component||!requirement)return false;
+ const definition=catalog?.modules.find(module=>module.id===component.moduleId);
+ if(requirement.kind==='display')return Boolean(definition?.display);
+ if(requirement.kind==='gpio')return Boolean(definition?.terminals?.some(terminal=>terminal.kind===(requirement.mode==='input'?'gpio-input':'gpio-output')));
+ return Boolean(requirement.modules?.includes(component.moduleId));
+}
+
 export function addNode(graph, module, components = [], project = null, catalog = null) {
   if (graph.nodes.length >= 100) throw new Error('В одном графе поддерживается до 100 блоков.');
   if (graph.nodes.some(node => node.moduleId === module.id && node.moduleVersion !== module.version)) throw new Error('Проект использует другую версию этого модуля.');
   const parameters = Object.fromEntries(Object.entries(module.parameters).map(([key, parameter]) => [key, parameter.default]));
-  if (module.constraints.hardware) parameters.componentId = components.find(component => module.constraints.hardware.kind === 'display' ? catalog?.modules.some(definition=>definition.id===component.moduleId && definition.display) : module.constraints.hardware.modules?.includes(component.moduleId))?.id || '';
+  if (module.constraints.hardware) parameters.componentId = components.find(component => hardwareMatches(component,module.constraints.hardware,catalog))?.id || '';
   let number = 1;
   while (graph.nodes.some(node => [module.name,...(module.legacyNames||[])].some(name=>node.name === `${name} ${number}`))) number++;
   const height = node => {
@@ -118,6 +128,7 @@ export function hardwareBinding(node, project, catalog) {
     const component=project.components.find(component=>component.id===node.parameters.componentId),definition=catalog.modules.find(module=>module.id===component?.moduleId);
     return {component,gpio:null,error:component && requirement.modules.includes(component.moduleId) && hardwareProvider(component,definition,boardFor(project,catalog)) ? null : 'Выберите аппаратный компонент и его интерфейс в монтаже.'};
   }
+  if(requirement?.kind==='radio'){const component=project.components.find(c=>c.id===node.parameters.componentId&&c.moduleId===ESPNOW_MODULE);return {component,gpio:null,error:component&&espNowSupported(boardFor(project,catalog))?null:'Выберите ESP-NOW из монтажа.'};}
   if (requirement?.kind === 'network') {
     const component=project.components.find(component=>component.id===node.parameters.componentId),definition=catalog.modules.find(module=>module.id===component?.moduleId);
     return {component,gpio:null,error:component&&requirement.modules.includes(component.moduleId)&&networkProvider(component,boardFor(project,catalog),definition)?null:'Выберите сетевой интерфейс из монтажа.'};
@@ -128,12 +139,13 @@ export function hardwareBinding(node, project, catalog) {
   }
   if (!requirement) return { component: null, gpio: null, error: null };
   const component = project.components.find(component => component.id === node.parameters.componentId);
-  if (!component || !requirement.modules.includes(component.moduleId)) return { component: null, gpio: null, error: 'Выберите подходящий компонент монтажа.' };
-  const assignment = project.gpioAssignments.find(assignment => assignment.componentId === component.id && assignment.terminalId === requirement.terminal);
+  if (!component || !hardwareMatches(component,requirement,catalog)) return { component: null, gpio: null, error: 'Выберите подходящий компонент монтажа.' };
+  const terminalId=requirement.terminal||catalog.modules.find(module=>module.id===component.moduleId)?.terminals.find(terminal=>terminal.kind===(requirement.mode==='input'?'gpio-input':'gpio-output'))?.id;
+  const assignment = project.gpioAssignments.find(assignment => assignment.componentId === component.id && assignment.terminalId === terminalId);
   if (!assignment || assignment.mode !== requirement.mode) return { component, gpio: null, error: 'Сначала назначьте GPIO этому компоненту во вкладке «Монтаж».' };
-  const wire = project.assembly.connections.find(wire => wire.componentId === component.id && wire.terminalId === requirement.terminal && wire.boardPinId === assignment.pinId);
+  const wire = project.assembly.connections.find(wire => wire.componentId === component.id && wire.terminalId === terminalId && wire.boardPinId === assignment.pinId);
   if (!wire) return { component, gpio: assignment.gpio, error: 'Назначение GPIO не совпадает с монтажом.' };
-  const problem = physicalConnectionProblem(project, catalog, component.id, requirement.terminal, assignment.pinId);
+  const problem = physicalConnectionProblem(project, catalog, component.id, terminalId, assignment.pinId);
   const physicalModule = catalog.modules.find(module => module.id === component.moduleId);
   const grounded = physicalModule?.terminals.filter(terminal => terminal.kind === 'ground').every(terminal => {
     const wire = project.assembly.connections.find(wire => wire.componentId === component.id && wire.terminalId === terminal.id);
@@ -148,7 +160,7 @@ export function validateGraph(project, catalog) {
   if (!graph.nodes.length) add('warning', 'logic-empty', 'Добавьте блоки во вкладке «Логика».');
   for (const node of graph.nodes) {
     const module = graphModule(node, catalog), fields = { nodeId: node.id };
-    if (!module || module.version !== node.moduleVersion || module.compatibility.projectFormat !== 3 || !module.compatibility.targets.includes(boardFor(project, catalog)?.target || 'esp32s3') || module.compatibility.espIdf !== boardFor(project, catalog)?.espIdfVersion) { add('error', 'logic-module', `${node.name}: модуль отсутствует или версия несовместима.`, fields); continue; }
+    if (!module || module.version !== node.moduleVersion || module.compatibility.projectFormat !== 3 || !moduleSupportsBoard(module,boardFor(project,catalog))) { add('error', 'logic-module', `${node.name}: модуль отсутствует или версия несовместима.`, fields); continue; }
     if (!node.name.trim()) add('error', 'logic-name', 'Укажите название блока.', fields);
     for (const [key, parameter] of Object.entries(module.parameters)) {
       const value = node.parameters[key];
@@ -157,6 +169,7 @@ export function validateGraph(project, catalog) {
       if (parameter.type === 'select' && !parameter.options.some(option=>option.value===value)) add('error','logic-parameter',node.name+': выберите допустимый вариант «'+parameter.label+'».',fields);
       if (parameter.type === 'text' && (typeof value !== 'string' || value.length > parameter.maxLength)) add('error', 'logic-parameter', `${node.name}: текст не должен превышать ${formatCount(parameter.maxLength, ['символ', 'символа', 'символов'])}.`, fields);
     }
+    for(const message of [...espNowLogicIssues(node,project,boardFor(project,catalog)),...espNowAckIssues(node,project,catalog)])add('error','espnow-logic',node.name+': '+message,fields);
     if(module.constraints.network){if(!project.components.some(component=>catalog.modules.find(module=>module.id===component.moduleId)?.network))add('error','probe-network',node.name+': добавьте сетевой интерфейс в монтаж.',fields);if(!probeUrl(node.parameters.url))add('error','probe-url',node.name+': укажите HTTP/HTTPS-адрес без логина, пароля и фрагмента.',fields);}
     const binding = hardwareBinding(node, project, catalog);
     if (module.editor === 'screen' && binding.component) {

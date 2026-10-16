@@ -1,0 +1,265 @@
+{
+  "id": "d99df275-dba6-438d-bf2d-2eac06bc2341",
+  "name": "ESP-NOW: кнопка",
+  "description": "Заполните MAC второй платы и ключи в настройках ESP-NOW. Инструкция: docs/espnow.md",
+  "formatVersion": 3,
+  "createdAt": "2026-10-16T13:55:08.896Z",
+  "updatedAt": "2026-10-16T13:55:08.896Z",
+  "boardId": "waveshare-esp32-s3-eth",
+  "boardSettings": {
+    "camera": "disconnected"
+  },
+  "components": [
+    {
+      "id": "29c24fcc-5c91-41b3-8c72-711ed1aae330",
+      "moduleId": "clex.hardware.espnow",
+      "moduleVersion": "1.0.0",
+      "name": "ESP-NOW 1",
+      "parameters": {
+        "channel": 1,
+        "mode": "normal",
+        "allowModeChange": true,
+        "encryption": true,
+        "pmk": "",
+        "peers": "[{\"id\":\"12345678-1234-4234-8234-123456789abc\",\"name\":\"Вторая плата\",\"mac\":\"\",\"encrypted\":true,\"lmk\":\"\"}]",
+        "timeoutMs": 1000,
+        "retries": 2
+      }
+    },
+    {
+      "id": "52e15e66-4bd9-412d-a5ea-1066cc3edb0a",
+      "moduleId": "clex.hardware.button",
+      "moduleVersion": "1.0.0",
+      "name": "Кнопка 1",
+      "parameters": {
+        "debounceMs": 30,
+        "pull": "up"
+      }
+    }
+  ],
+  "gpioAssignments": [
+    {
+      "componentId": "52e15e66-4bd9-412d-a5ea-1066cc3edb0a",
+      "terminalId": "signal",
+      "pinId": "P26",
+      "gpio": 2,
+      "mode": "input"
+    }
+  ],
+  "logic": {
+    "nodes": [
+      {
+        "id": "a7604f1f-371e-4dd2-92cc-ee0c146f7a3d",
+        "moduleId": "clex.logic.espnow-status",
+        "moduleVersion": "1.0.0",
+        "name": "Состояние ESP-NOW 1",
+        "position": {
+          "x": 60,
+          "y": 100
+        },
+        "parameters": {
+          "componentId": "29c24fcc-5c91-41b3-8c72-711ed1aae330"
+        }
+      },
+      {
+        "id": "71b4634f-c9f2-429c-bbea-6261b1e06082",
+        "moduleId": "clex.logic.serial",
+        "moduleVersion": "1.0.0",
+        "name": "Сообщение в монитор 1",
+        "position": {
+          "x": 390,
+          "y": 100
+        },
+        "parameters": {
+          "message": "Сообщение CLEX Flow"
+        }
+      },
+      {
+        "id": "6769c803-7a69-4691-a334-8f36cecc90d9",
+        "moduleId": "clex.logic.espnow-received",
+        "moduleVersion": "1.0.0",
+        "name": "Получено сообщение ESP-NOW 1",
+        "position": {
+          "x": 390,
+          "y": 410
+        },
+        "parameters": {
+          "componentId": "29c24fcc-5c91-41b3-8c72-711ed1aae330"
+        }
+      },
+      {
+        "id": "312b60b4-4b78-405f-b28a-f62dd0bccece",
+        "moduleId": "clex.logic.espnow-command-send",
+        "moduleVersion": "1.0.0",
+        "name": "Отправить команду ESP-NOW 1",
+        "position": {
+          "x": 60,
+          "y": 1030
+        },
+        "parameters": {
+          "componentId": "29c24fcc-5c91-41b3-8c72-711ed1aae330",
+          "peerId": "12345678-1234-4234-8234-123456789abc",
+          "message": "",
+          "command": "SET_LR"
+        }
+      },
+      {
+        "id": "1eb64f6a-ff22-4960-9a4a-5c3e6259f17b",
+        "moduleId": "clex.logic.espnow-mode",
+        "moduleVersion": "1.0.0",
+        "name": "Режим ESP-NOW 1",
+        "position": {
+          "x": 390,
+          "y": 1030
+        },
+        "parameters": {
+          "componentId": "29c24fcc-5c91-41b3-8c72-711ed1aae330",
+          "mode": "lr"
+        }
+      },
+      {
+        "id": "7dd6e820-ed78-47b4-8e1c-1136afac0077",
+        "moduleId": "clex.logic.gpio-edge",
+        "moduleVersion": "1.0.0",
+        "name": "Изменение входа 1",
+        "position": {
+          "x": 60,
+          "y": 720
+        },
+        "parameters": {
+          "componentId": "52e15e66-4bd9-412d-a5ea-1066cc3edb0a"
+        }
+      },
+      {
+        "id": "b4f1bee5-3b9d-41ef-bf15-cb38e8df2f07",
+        "moduleId": "clex.logic.espnow-command-send",
+        "moduleVersion": "1.0.0",
+        "name": "Отправить команду ESP-NOW 2",
+        "position": {
+          "x": 60,
+          "y": 1340
+        },
+        "parameters": {
+          "componentId": "29c24fcc-5c91-41b3-8c72-711ed1aae330",
+          "peerId": "12345678-1234-4234-8234-123456789abc",
+          "message": "",
+          "command": "SET_NORMAL"
+        }
+      },
+      {
+        "id": "15e50f24-4ccf-426c-ba13-bb9c3b093043",
+        "moduleId": "clex.logic.espnow-mode",
+        "moduleVersion": "1.0.0",
+        "name": "Режим ESP-NOW 2",
+        "position": {
+          "x": 390,
+          "y": 1340
+        },
+        "parameters": {
+          "componentId": "29c24fcc-5c91-41b3-8c72-711ed1aae330",
+          "mode": "normal"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "682b13ff-cb71-4012-89d3-c268588f32a4",
+        "source": "a7604f1f-371e-4dd2-92cc-ee0c146f7a3d",
+        "target": "71b4634f-c9f2-429c-bbea-6261b1e06082",
+        "sourceHandle": "changed",
+        "targetHandle": "trigger",
+        "dataType": "event"
+      },
+      {
+        "id": "b6988d66-458f-4fec-a655-f32eea699695",
+        "source": "a7604f1f-371e-4dd2-92cc-ee0c146f7a3d",
+        "target": "71b4634f-c9f2-429c-bbea-6261b1e06082",
+        "sourceHandle": "mac",
+        "targetHandle": "text",
+        "dataType": "text"
+      },
+      {
+        "id": "9747d2d8-48fd-4e4c-968a-510350571c0e",
+        "source": "312b60b4-4b78-405f-b28a-f62dd0bccece",
+        "target": "1eb64f6a-ff22-4960-9a4a-5c3e6259f17b",
+        "sourceHandle": "confirmed",
+        "targetHandle": "trigger",
+        "dataType": "event"
+      },
+      {
+        "id": "8168ed6a-56be-4ed1-9035-0ac821db3efc",
+        "source": "7dd6e820-ed78-47b4-8e1c-1136afac0077",
+        "target": "312b60b4-4b78-405f-b28a-f62dd0bccece",
+        "sourceHandle": "falling",
+        "targetHandle": "trigger",
+        "dataType": "event"
+      },
+      {
+        "id": "b5eafb21-3888-4d55-ae17-dd2f791192f8",
+        "source": "7dd6e820-ed78-47b4-8e1c-1136afac0077",
+        "target": "b4f1bee5-3b9d-41ef-bf15-cb38e8df2f07",
+        "sourceHandle": "rising",
+        "targetHandle": "trigger",
+        "dataType": "event"
+      },
+      {
+        "id": "279cde20-e9fa-4d02-af21-b3b4d0bbb3e4",
+        "source": "b4f1bee5-3b9d-41ef-bf15-cb38e8df2f07",
+        "target": "15e50f24-4ccf-426c-ba13-bb9c3b093043",
+        "sourceHandle": "confirmed",
+        "targetHandle": "trigger",
+        "dataType": "event"
+      }
+    ],
+    "viewport": {
+      "x": 0,
+      "y": 0,
+      "zoom": 1
+    }
+  },
+  "assembly": {
+    "positions": {
+      "board": {
+        "x": 100,
+        "y": 40
+      },
+      "29c24fcc-5c91-41b3-8c72-711ed1aae330": {
+        "x": 528,
+        "y": 120
+      },
+      "52e15e66-4bd9-412d-a5ea-1066cc3edb0a": {
+        "x": 528,
+        "y": 304
+      }
+    },
+    "connections": [
+      {
+        "id": "920fae36-2b4a-4805-9242-bba959986a0a",
+        "componentId": "52e15e66-4bd9-412d-a5ea-1066cc3edb0a",
+        "terminalId": "signal",
+        "boardPinId": "P26"
+      },
+      {
+        "id": "c74ef477-db38-46ec-9d1c-1eee58f2311a",
+        "componentId": "52e15e66-4bd9-412d-a5ea-1066cc3edb0a",
+        "terminalId": "ground",
+        "boardPinId": "P33"
+      }
+    ],
+    "viewport": {
+      "x": 0,
+      "y": 0,
+      "zoom": 1
+    }
+  },
+  "moduleVersions": {
+    "clex.hardware.espnow": "1.0.0",
+    "clex.hardware.button": "1.0.0",
+    "clex.logic.espnow-status": "1.0.0",
+    "clex.logic.serial": "1.0.0",
+    "clex.logic.espnow-received": "1.0.0",
+    "clex.logic.espnow-command-send": "1.0.0",
+    "clex.logic.espnow-mode": "1.0.0",
+    "clex.logic.gpio-edge": "1.0.0"
+  }
+}

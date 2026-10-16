@@ -64,3 +64,11 @@ EIM и стандартная ESP-IDF имеют разные размещени
 Источники: [CLI EIM](https://docs.espressif.com/projects/idf-im-ui/en/latest/cli_commands.html), [изоляция конфигурации](https://docs.espressif.com/projects/idf-im-ui/en/latest/cli_configuration.html), [EIM 0.20.0](https://github.com/espressif/idf-im-ui/releases/tag/v0.20.0).
 
 Формат старого Windows-реестра и расположение Python: [официальный Espressif Tools Installer](https://github.com/espressif/idf-installer/blob/main/src/InnoSetup/Configuration.iss).
+
+## Общая подготовка платформ
+
+В настройках доступна единая подготовка инструментов ESP32-S3, ESP32-P4 и Arduino AVR. Сначала проверяются готовые установки, затем показывается суммарный объем загрузки недостающих пакетов. Загрузка начинается после подтверждения пользователя. Переключение платы не запускает установку.
+
+Папка новых инструментов выбирается отдельно от папки проектов. По умолчанию это `<app-local-data>/sdks`; внутри находятся `esp-idf/` и `arduino-avr/v1.8.6/`. При выборе другого диска предыдущие управляемые папки сохраняются в настройках и продолжают обнаруживаться; внешние SDK остаются по исходным путям. Удаление требует совпадения каталога, платформы, версии и маркера владельца. Arduino IDE/Arduino15 не удаляются и не обновляются.
+
+AVR использует отдельный менеджер Arduino CLI и отдельный пакет платформы, без зависимости от ESP-IDF. Подробнее: [Arduino Nano](arduino-nano.md).

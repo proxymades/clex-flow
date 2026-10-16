@@ -1,0 +1,517 @@
+{
+  "id": "arduino-nano-atmega328p-ch340",
+  "name": "Arduino Nano · CH340 · Type-C",
+  "manufacturer": "Nano-совместимая плата",
+  "mcu": "ATmega328P-AU",
+  "revision": "ATmega328P · CH340G",
+  "platform": "arduino-avr",
+  "target": "atmega328p",
+  "coreVersion": "1.8.6",
+  "pinoutVerified": true,
+  "verificationNote": "Контакты классической Nano по документации Arduino. У платы Type-C/CH340G сверьте подписи на текстолите перед подключением.",
+  "orientation": "Вид сверху, USB Type-C сверху. A6 и A7 работают только как аналоговые входы. D0/RX и D1/TX заняты загрузкой и монитором.",
+  "sources": [
+    {
+      "title": "Распиновка Arduino Nano",
+      "url": "https://docs.arduino.cc/resources/pinouts/A000005-full-pinout.pdf"
+    },
+    {
+      "title": "Выбор загрузчика Nano",
+      "url": "https://support.arduino.cc/hc/en-us/articles/4401874304274-Select-the-right-processor-for-Arduino-Nano"
+    }
+  ],
+  "svg": "arduino-nano-ch340.svg",
+  "width": 380,
+  "height": 700,
+  "logicVoltage": 5,
+  "reservedGpios": {},
+  "options": {
+    "bootloader": {
+      "label": "Загрузчик Nano",
+      "default": "standard",
+      "values": [
+        {
+          "value": "standard",
+          "label": "Обычный · 115200 бод"
+        },
+        {
+          "value": "old",
+          "label": "Старый · 57600 бод"
+        }
+      ]
+    }
+  },
+  "firmware": {
+    "compiler": "AVR GCC",
+    "consoleModes": [
+      "uart"
+    ],
+    "flashBytes": 30720,
+    "ramBytes": 2048,
+    "variants": {
+      "standard": "arduino:avr:nano:cpu=atmega328",
+      "old": "arduino:avr:nano:cpu=atmega328old"
+    }
+  },
+  "componentDefaults": {
+    "clex.hardware.led": {
+      "resistorOhms": 470
+    }
+  },
+  "pins": [
+    {
+      "id": "D13",
+      "label": "D13",
+      "physicalNumber": "1",
+      "side": "left",
+      "kind": "gpio",
+      "gpio": 13,
+      "x": 98,
+      "y": 140,
+      "functions": [
+        "SPI SCK",
+        "Встроенный светодиод L"
+      ],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ]
+    },
+    {
+      "id": "3V3",
+      "label": "3V3",
+      "physicalNumber": "2",
+      "side": "left",
+      "kind": "power",
+      "gpio": null,
+      "x": 98,
+      "y": 170,
+      "functions": [],
+      "capabilities": [],
+      "voltage": 3.3
+    },
+    {
+      "id": "AREF",
+      "label": "AREF",
+      "physicalNumber": "3",
+      "side": "left",
+      "kind": "control",
+      "gpio": null,
+      "x": 98,
+      "y": 200,
+      "functions": [],
+      "capabilities": []
+    },
+    {
+      "id": "A0",
+      "label": "A0",
+      "physicalNumber": "4",
+      "side": "left",
+      "kind": "gpio",
+      "gpio": 14,
+      "x": 98,
+      "y": 230,
+      "functions": [
+        "ADC0"
+      ],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ]
+    },
+    {
+      "id": "A1",
+      "label": "A1",
+      "physicalNumber": "5",
+      "side": "left",
+      "kind": "gpio",
+      "gpio": 15,
+      "x": 98,
+      "y": 260,
+      "functions": [
+        "ADC1"
+      ],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ]
+    },
+    {
+      "id": "A2",
+      "label": "A2",
+      "physicalNumber": "6",
+      "side": "left",
+      "kind": "gpio",
+      "gpio": 16,
+      "x": 98,
+      "y": 290,
+      "functions": [
+        "ADC2"
+      ],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ]
+    },
+    {
+      "id": "A3",
+      "label": "A3",
+      "physicalNumber": "7",
+      "side": "left",
+      "kind": "gpio",
+      "gpio": 17,
+      "x": 98,
+      "y": 320,
+      "functions": [
+        "ADC3"
+      ],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ]
+    },
+    {
+      "id": "A4",
+      "label": "A4",
+      "physicalNumber": "8",
+      "side": "left",
+      "kind": "gpio",
+      "gpio": 18,
+      "x": 98,
+      "y": 350,
+      "functions": [
+        "ADC4",
+        "I2C SDA"
+      ],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ]
+    },
+    {
+      "id": "A5",
+      "label": "A5",
+      "physicalNumber": "9",
+      "side": "left",
+      "kind": "gpio",
+      "gpio": 19,
+      "x": 98,
+      "y": 380,
+      "functions": [
+        "ADC5",
+        "I2C SCL"
+      ],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ]
+    },
+    {
+      "id": "A6",
+      "label": "A6",
+      "physicalNumber": "10",
+      "side": "left",
+      "kind": "analog",
+      "gpio": null,
+      "x": 98,
+      "y": 410,
+      "functions": [
+        "ADC6"
+      ],
+      "capabilities": []
+    },
+    {
+      "id": "A7",
+      "label": "A7",
+      "physicalNumber": "11",
+      "side": "left",
+      "kind": "analog",
+      "gpio": null,
+      "x": 98,
+      "y": 440,
+      "functions": [
+        "ADC7"
+      ],
+      "capabilities": []
+    },
+    {
+      "id": "5V",
+      "label": "5V",
+      "physicalNumber": "12",
+      "side": "left",
+      "kind": "power",
+      "gpio": null,
+      "x": 98,
+      "y": 470,
+      "functions": [],
+      "capabilities": [],
+      "voltage": 5
+    },
+    {
+      "id": "RST-L",
+      "label": "RST",
+      "physicalNumber": "13",
+      "side": "left",
+      "kind": "control",
+      "gpio": null,
+      "x": 98,
+      "y": 500,
+      "functions": [],
+      "capabilities": []
+    },
+    {
+      "id": "GND-L",
+      "label": "GND",
+      "physicalNumber": "14",
+      "side": "left",
+      "kind": "ground",
+      "gpio": null,
+      "x": 98,
+      "y": 530,
+      "functions": [],
+      "capabilities": []
+    },
+    {
+      "id": "VIN",
+      "label": "VIN",
+      "physicalNumber": "15",
+      "side": "left",
+      "kind": "power",
+      "gpio": null,
+      "x": 98,
+      "y": 560,
+      "functions": [
+        "Вход питания 7-12 В; не выход питания компонентов"
+      ],
+      "capabilities": [],
+      "voltage": 9
+    },
+    {
+      "id": "D12",
+      "label": "D12",
+      "physicalNumber": "30",
+      "side": "right",
+      "kind": "gpio",
+      "gpio": 12,
+      "x": 282,
+      "y": 140,
+      "functions": [
+        "SPI MISO"
+      ],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ]
+    },
+    {
+      "id": "D11",
+      "label": "D11",
+      "physicalNumber": "29",
+      "side": "right",
+      "kind": "gpio",
+      "gpio": 11,
+      "x": 282,
+      "y": 170,
+      "functions": [
+        "SPI MOSI"
+      ],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ]
+    },
+    {
+      "id": "D10",
+      "label": "D10",
+      "physicalNumber": "28",
+      "side": "right",
+      "kind": "gpio",
+      "gpio": 10,
+      "x": 282,
+      "y": 200,
+      "functions": [
+        "SPI SS"
+      ],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ]
+    },
+    {
+      "id": "D9",
+      "label": "D9",
+      "physicalNumber": "27",
+      "side": "right",
+      "kind": "gpio",
+      "gpio": 9,
+      "x": 282,
+      "y": 230,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ]
+    },
+    {
+      "id": "D8",
+      "label": "D8",
+      "physicalNumber": "26",
+      "side": "right",
+      "kind": "gpio",
+      "gpio": 8,
+      "x": 282,
+      "y": 260,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ]
+    },
+    {
+      "id": "D7",
+      "label": "D7",
+      "physicalNumber": "25",
+      "side": "right",
+      "kind": "gpio",
+      "gpio": 7,
+      "x": 282,
+      "y": 290,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ]
+    },
+    {
+      "id": "D6",
+      "label": "D6",
+      "physicalNumber": "24",
+      "side": "right",
+      "kind": "gpio",
+      "gpio": 6,
+      "x": 282,
+      "y": 320,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ]
+    },
+    {
+      "id": "D5",
+      "label": "D5",
+      "physicalNumber": "23",
+      "side": "right",
+      "kind": "gpio",
+      "gpio": 5,
+      "x": 282,
+      "y": 350,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ]
+    },
+    {
+      "id": "D4",
+      "label": "D4",
+      "physicalNumber": "22",
+      "side": "right",
+      "kind": "gpio",
+      "gpio": 4,
+      "x": 282,
+      "y": 380,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ]
+    },
+    {
+      "id": "D3",
+      "label": "D3",
+      "physicalNumber": "21",
+      "side": "right",
+      "kind": "gpio",
+      "gpio": 3,
+      "x": 282,
+      "y": 410,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ]
+    },
+    {
+      "id": "D2",
+      "label": "D2",
+      "physicalNumber": "20",
+      "side": "right",
+      "kind": "gpio",
+      "gpio": 2,
+      "x": 282,
+      "y": 440,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ]
+    },
+    {
+      "id": "GND-R",
+      "label": "GND",
+      "physicalNumber": "19",
+      "side": "right",
+      "kind": "ground",
+      "gpio": null,
+      "x": 282,
+      "y": 470,
+      "functions": [],
+      "capabilities": []
+    },
+    {
+      "id": "RST-R",
+      "label": "RST",
+      "physicalNumber": "18",
+      "side": "right",
+      "kind": "control",
+      "gpio": null,
+      "x": 282,
+      "y": 500,
+      "functions": [],
+      "capabilities": []
+    },
+    {
+      "id": "D0",
+      "label": "D0 / RX",
+      "physicalNumber": "17",
+      "side": "right",
+      "kind": "gpio",
+      "gpio": 0,
+      "x": 282,
+      "y": 530,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "reservedReason": "Последовательный порт CH340G используется для загрузки и монитора."
+    },
+    {
+      "id": "D1",
+      "label": "D1 / TX",
+      "physicalNumber": "16",
+      "side": "right",
+      "kind": "gpio",
+      "gpio": 1,
+      "x": 282,
+      "y": 560,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "reservedReason": "Последовательный порт CH340G используется для загрузки и монитора."
+    }
+  ]
+}

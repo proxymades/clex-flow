@@ -27,7 +27,7 @@ function BoardNode({ id, data }) {
           <rect x={layout.x} y={layout.y} width={layout.width} height={layout.height} rx="4" fill={selected || connected ? '#24364a' : '#101722'} opacity={selected || connected ? 0.9 : 0.7} />
           <circle cx={pin.x} cy={pin.y} r={candidate ? 6 : 5} fill={connected || candidate || selected || hoveredPin === pin.id ? color : '#121c26'} stroke={color} strokeWidth={selected || candidate ? 2.5 : 1.5} />
           <text x={layout.textX} y={layout.textY} textAnchor={layout.textAnchor} fill={blocked && pin.kind === 'gpio' ? '#69758e' : '#bbc9db'} fontSize={layout.fontSize} fontFamily="ui-monospace, monospace">{layout.text}</text>
-          <title>{label + ' · ' + (blocked || (pin.kind === 'gpio' ? 'Цифровой GPIO' : pin.kind === 'ground' ? 'Общая земля' : 'Питание / управление')) + (pin.functions.length ? ' · ' + pin.functions.join(', ') : '')}</title>
+          <title>{label + ' · ' + (blocked || (pin.kind === 'gpio' ? 'Цифровой GPIO' : pin.kind === 'ground' ? 'Общая земля' : pin.kind === 'analog' ? 'Аналоговый вход' : 'Питание / управление')) + (pin.functions.length ? ' · ' + pin.functions.join(', ') : '')}</title>
         </g>;
       })}
     </svg>

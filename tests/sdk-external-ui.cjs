@@ -12,6 +12,7 @@ const { chromium } = require('playwright');
   window.__TAURI_INTERNALS__={metadata:{currentWindow:{label:'main'},currentWebview:{label:'main'}},transformCallback:()=>next++,unregisterCallback:()=>{},invoke:async(command,args={})=>{
    if(command.startsWith('plugin:event|'))return next++;
    if(command==='list_projects')return [];
+   if(command==='tooling_directory')return '/fixture/CLEX/sdks';
    if(command==='storage_path')return String.raw`D:\CLEX Projects`;
    if(command==='idf_ports')return [];
    if(command==='sdk_list')return {installations:environment?[{id:'external-x',version:'5.4.4',root,managed:false,state:'ready',environment}]:[],active:environment?{esp32s3:'external-x'}:{},available:[{version:'5.4.4',supported:true}],catalogError:'',managedPath:'/fixture/managed',host:'windows-x86_64',environment};
