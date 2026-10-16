@@ -12,6 +12,7 @@ export default function useIdf(project) {
   const [environment,setEnvironment]=useState(null), [checking,setChecking]=useState(false), [ports,setPorts]=useState([]), [port,setPort]=useState('');
   const [selectedConsoleMode,setConsoleMode]=useState(()=>localStorage.getItem('clex-flow:console')||'usb');
   const [job,setJob]=useState(null), [events,setEvents]=useState([]), [build,setBuild]=useState(null), [error,setError]=useState('');
+  const [readingMac,setReadingMac]=useState(false), [deviceMacs,setDeviceMacs]=useState({}), [macError,setMacError]=useState(null);
   const [toolsPrepared,setToolsPrepared]=useState(()=>localStorage.getItem('clex-flow:tools-prepared')==='yes');
   const [sdks,setSdks]=useState(null), [sdkLoading,setSdkLoading]=useState(false);
   const board = getBoard(project?.boardId || 'waveshare-esp32-s3-eth');
@@ -28,6 +29,10 @@ export default function useIdf(project) {
   const generationError=generated.error||(computed.key===signature?computed.error:'');
   const current=useRef(null), received=useRef({sequences:new Set(),max:-1}), flight=useRef(false), probing=useRef(false), mounted=useRef(true);
   const [ready,setReady]=useState(false);
+  const macContext=useRef(null), macAttempts=useRef(new Map());
+  const hasEspNow=Boolean(project?.components.some(component=>component.moduleId==='clex.hardware.espnow'));
+  const macKey=String(port)+'|'+String(environment?.identity||'')+'|'+String(target);
+  useEffect(()=>{macContext.current=macKey;},[macKey]);
   const portRefresh=useRef(null);
   const refreshPorts=useCallback(async({silent=false}={})=>{
     if(!desktop)return;
@@ -36,6 +41,12 @@ export default function useIdf(project) {
       try{
         const items=await invoke('idf_ports');
         if(mounted.current&&!flight.current){
+          const connected=new Set(items.map(item=>item.path));
+          for(const [key,path]of macAttempts.current)if(!connected.has(path))macAttempts.current.delete(key);
+          setDeviceMacs(previous=>{
+            const entries=Object.entries(previous).filter(([,value])=>connected.has(value.port));
+            return entries.length===Object.keys(previous).length?previous:Object.fromEntries(entries);
+          });
           setPorts(previous=>JSON.stringify(previous)===JSON.stringify(items)?previous:items);
           setPort(selected=>choosePort(items,selected));
         }
@@ -101,16 +112,37 @@ export default function useIdf(project) {
   const start=async(operation,args)=>{
     if(!desktop||!ready){setError('Операции доступны после запуска десктопного приложения.');return false;}
     if(flight.current||checking)return false;
-    flight.current=true;const id=crypto.randomUUID();current.current={id,operation};received.current={sequences:new Set(),max:-1};setJob({id,operation,status:'running'});setEvents([]);setError('');
+    flight.current=true;const id=crypto.randomUUID();current.current={id,operation};received.current={sequences:new Set(),max:-1};setJob({id,operation,status:'running',port:args?.port});setEvents([]);setError('');
     try{await invoke(operation.startsWith('sdk_')?operation:`idf_${operation}`,{id,...args});const backlog=await invoke('idf_events',{id});for(const event of backlog)ingest(event);return true;}
     catch(error){flight.current=false;setJob({id,operation,status:'failed'});setError(String(error));return false;}
   };
+  const readMac=useCallback(async()=>{
+    if(!desktop||!compatible||target!=='esp32s3'||!port||flight.current||checking||sdkLoading)return false;
+    const key=macKey,selectedPort=port;
+    flight.current=true;setReadingMac(true);setMacError(null);
+    try{
+      const result=await invoke('idf_read_mac',{port:selectedPort});
+      if(mounted.current&&macContext.current===key&&result.port===selectedPort){setDeviceMacs(previous=>({...previous,[key]:result}));return result.mac;}
+      macAttempts.current.delete(key);return false;
+    }catch(error){if(mounted.current&&macContext.current===key){setMacError({key,message:String(error)});}return false;}
+    finally{flight.current=false;if(mounted.current)setReadingMac(false);}
+  },[compatible,target,port,checking,sdkLoading,macKey]);
+  const running=job&&['running','connected','stopping'].includes(job.status);
+  useEffect(()=>{
+    if(!desktop||!hasEspNow||!compatible||target!=='esp32s3'||!ready||checking||sdkLoading||readingMac||running||!ports.some(item=>item.path===port&&item.usb))return;
+    if(macAttempts.current.has(macKey))return;
+    const timer=setTimeout(()=>{
+      if(flight.current||probing.current)return;
+      macAttempts.current.set(macKey,port);
+      void readMac();
+    },0);
+    return()=>clearTimeout(timer);
+  },[hasEspNow,compatible,target,ready,checking,sdkLoading,readingMac,running,ports,port,macKey,readMac]);
   const startBuild=()=>preview&&fingerprint&&compatible?start('build',{spec:{boardId:preview.boardId,boardRevision:preview.boardRevision,featureRuntimes:preview.featureRuntimes,consoleMode:preview.consoleMode,mainC:preview.mainC,graphicsRuntime:preview.graphicsRuntime,networkRuntime:preview.networkRuntime,fingerprint}}):Promise.resolve(false);
   const startFlash=(confirmedPort=port)=>build&&fingerprint&&port&&confirmedPort===port?start('flash',{buildId:build.id,fingerprint,port}):Promise.resolve(false);
   const startMonitor=()=>port?start('monitor',{port}):Promise.resolve(false);
   const cancel=async()=>{if(!current.current)return;try{await invoke('idf_cancel',{id:current.current.id});setJob(value=>value && !terminal.includes(value.status)?{...value,status:'stopping'}:value);}catch(error){setError(String(error));}};
   const setConsole=value=>{if(!['usb','uart'].includes(value))return;localStorage.setItem('clex-flow:console',value);setConsoleMode(value);};
-  const running=job&&['running','connected','stopping'].includes(job.status);
   const sdkAction=async(command,args={})=>{
     if(flight.current||checking||sdkLoading)return false;
     setSdkLoading(true);setError('');
@@ -122,6 +154,7 @@ export default function useIdf(project) {
     installPlan:version=>invoke('sdk_install_plan',{version,target}),
     refreshCatalog:()=>sdkAction('sdk_refresh_versions'),registerSdk:(root,python,toolsPath)=>sdkAction('sdk_register',{root,python:python||null,toolsPath:toolsPath||null}),
     selectSdk:sdkId=>start('sdk_select',{sdkId,target}),installSdk:(version,allowPrerequisites)=>start('sdk_install',{version,allowPrerequisites,target}),removeSdk:sdkId=>start('sdk_remove',{sdkId}),
+    readingMac,readMac,deviceMac:deviceMacs[macKey]||null,macError:macError?.key===macKey?macError.message:'',
     desktop,environment,checking,check,ports,port,setPort,refreshPorts,consoleModes,consoleMode,setConsole,job,events,build,error,setError,preview,fingerprint,generationError,ready,
-    busy:Boolean(checking||running||sdkLoading),monitoring:Boolean(running&&job.operation==='monitor'),fresh:Boolean(compatible&&build&&fingerprint&&build.fingerprint===fingerprint&&environment?.identity===build.environmentIdentity),startBuild,startFlash,startMonitor,cancel};
+    busy:Boolean(checking||running||sdkLoading||readingMac),monitoring:Boolean(running&&job.operation==='monitor'),fresh:Boolean(compatible&&build&&fingerprint&&build.fingerprint===fingerprint&&environment?.identity===build.environmentIdentity),startBuild,startFlash,startMonitor,cancel};
 }

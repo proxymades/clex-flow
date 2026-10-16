@@ -714,6 +714,86 @@ pub async fn idf_ports(state: tauri::State<'_, Service>) -> Result<Vec<Port>, St
         .await
         .map_err(|e| e.to_string())?
 }
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DeviceMac {
+    mac: String,
+    port: String,
+}
+fn mac_read_command(environment: &Environment, port: &str) -> Result<Command, String> {
+    if environment.target != "esp32s3" || environment.arduino.is_some() {
+        return Err("Чтение MAC ESP-NOW доступно для ESP32-S3".into());
+    }
+    let mut cmd = command(environment);
+    cmd.args([
+        "-m",
+        "esptool",
+        "--chip",
+        "esp32s3",
+        "--port",
+        port,
+        "--baud",
+        "115200",
+        "--no-stub",
+        "--connect-attempts",
+        "3",
+        "read_mac",
+    ]);
+    Ok(cmd)
+}
+fn parse_device_mac(output: &str) -> Result<String, String> {
+    let mut found = None;
+    for line in output.lines() {
+        let Some(value) = line.trim().strip_prefix("MAC:") else {
+            continue;
+        };
+        let value = value.trim();
+        let octets = value.split(':').collect::<Vec<_>>();
+        if octets.len() != 6
+            || octets
+                .iter()
+                .any(|part| part.len() != 2 || !part.bytes().all(|byte| byte.is_ascii_hexdigit()))
+        {
+            return Err("Плата вернула некорректный MAC-адрес".into());
+        }
+        let bytes = octets
+            .iter()
+            .map(|part| u8::from_str_radix(part, 16).unwrap())
+            .collect::<Vec<_>>();
+        if bytes[0] & 1 != 0 || bytes.iter().all(|byte| *byte == 0) {
+            return Err("Плата вернула некорректный MAC-адрес".into());
+        }
+        let mac = value.to_ascii_uppercase();
+        if found.as_ref().is_some_and(|previous| previous != &mac) {
+            return Err("Получены разные MAC-адреса. Повторите чтение выбранной платы".into());
+        }
+        found = Some(mac);
+    }
+    found.ok_or("Не удалось прочитать MAC-адрес платы".into())
+}
+#[tauri::command]
+pub async fn idf_read_mac(
+    state: tauri::State<'_, Service>,
+    port: String,
+) -> Result<DeviceMac, String> {
+    let inner = state.0.clone();
+    let operation = "00000000-0000-4000-8000-000000000002";
+    let _lease = reserve(&inner, operation)?;
+    let read_inner = inner.clone();
+    let result = tauri::async_runtime::spawn_blocking(move || {
+        let environment = env_from(&Service(read_inner))?;
+        let cmd = mac_read_command(&environment, &port)?;
+        validated_port(&environment, &port)?;
+        let (output, _) = idf_environment::capture(cmd, Duration::from_secs(20))
+            .map_err(|error| format!("Не удалось прочитать MAC. Проверьте USB-подключение и закройте другие программы, использующие порт.\n{error}"))?;
+        Ok(DeviceMac { mac: parse_device_mac(&output)?, port })
+    })
+    .await
+    .map_err(|error| error.to_string())
+    .and_then(|result| result);
+    release(&inner, operation);
+    result
+}
 #[tauri::command]
 pub fn idf_build(
     app: tauri::AppHandle,
@@ -1125,6 +1205,54 @@ mod tests {
             spec.fingerprint = hash(&serde_json::to_vec(&identity).unwrap());
             assert!(verify_specification(&spec).is_err());
         }
+    }
+    #[test]
+    fn device_mac_requires_a_valid_unambiguous_unicast_address() {
+        assert_eq!(parse_device_mac("esptool.py v4.11\nMAC: a0:b7:65:12:34:56\nMAC: a0:b7:65:12:34:56\nHard resetting via RTS pin..."), Ok("A0:B7:65:12:34:56".into()));
+        for output in [
+            "Connecting...",
+            "MAC: 00:00:00:00:00:00",
+            "MAC: FF:FF:FF:FF:FF:FF",
+            "MAC: 01:12:34:56:78:90",
+            "MAC: 02:11:22:33:44:55:66:77",
+            "MAC: 02:11:22:33:44:GG",
+            "MAC: 02:11:22:33:44:55 trailing",
+            "MAC: 02:11:22:33:44:55\nMAC: 02:11:22:33:44:66",
+        ] {
+            assert!(parse_device_mac(output).is_err(), "{output}");
+        }
+    }
+    #[test]
+    fn device_mac_command_reads_rom_without_writing_flash() {
+        let mut environment: Environment = serde_json::from_value(serde_json::json!({
+            "target":"esp32s3", "root":"sdk", "python":"python", "toolsPath":"tools", "sdkVersion":"5.4.4", "identity":"test", "version":"test", "compilerVersion":"test", "cmakeVersion":"test", "ninjaVersion":"test", "diagnostics":""
+        })).unwrap();
+        let cmd = mac_read_command(&environment, "COM42").unwrap();
+        let args = cmd
+            .get_args()
+            .map(|arg| arg.to_str().unwrap())
+            .collect::<Vec<_>>();
+        assert_eq!(
+            args,
+            [
+                "-m",
+                "esptool",
+                "--chip",
+                "esp32s3",
+                "--port",
+                "COM42",
+                "--baud",
+                "115200",
+                "--no-stub",
+                "--connect-attempts",
+                "3",
+                "read_mac"
+            ]
+        );
+        environment.target = "esp32p4".into();
+        assert!(mac_read_command(&environment, "COM42").is_err());
+        environment.target = "arduino-avr".into();
+        assert!(mac_read_command(&environment, "COM42").is_err());
     }
     #[test]
     fn reservation_is_exclusive_and_uuid_is_strict() {

@@ -49,7 +49,8 @@
     "test:project-storage-ui": "node tests/project-storage-ui.cjs",
     "test:sdk-external-ui": "node tests/sdk-external-ui.cjs",
     "test:espnow-ui": "node tests/espnow-ui.cjs",
-    "test:espnow-runtime": "node tests/espnow-runtime.mjs"
+    "test:espnow-runtime": "node tests/espnow-runtime.mjs",
+    "test:espnow-mac-ui": "node tests/espnow-mac-ui.cjs"
   },
   "dependencies": {
     "@tauri-apps/api": "2.10.1",

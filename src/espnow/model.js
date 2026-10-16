@@ -34,9 +34,9 @@ export function espNowLogicIssues(node,project,board=null){
  if(['clex.logic.espnow-send','clex.logic.espnow-command-send'].includes(node.moduleId)&&!peer)issues.push('Выберите удаленное устройство.');
  if(['clex.logic.espnow-command-send','clex.logic.espnow-command-received'].includes(node.moduleId)&&(!p.command?.trim()||new TextEncoder().encode(p.command).length>32))issues.push('Имя команды должно занимать 1-32 байта UTF-8.');
  if(p.message!==undefined&&(p.message.includes('\0')||new TextEncoder().encode(p.message).length>MAX_TEXT_BYTES))issues.push('Сообщение должно занимать не более 160 байт UTF-8 без нулевых символов.');
- if(node.moduleId==='clex.logic.espnow-command-received'&&(!component.parameters.encryption||!readPeers(component).some(peer=>peer.encrypted)))issues.push('Для приема команд добавьте защищенное устройство и включите шифрование.');
+ if(node.moduleId==='clex.logic.espnow-command-received'&&(!component.parameters.encryption||!readPeers(component).some(peer=>peer.encrypted)))issues.push('Для приема команд добавьте устройство и включите у него «Шифровать соединение».');
  if(node.moduleId==='clex.logic.espnow-mode'&&p.mode==='lr'&&board&&!board.radio?.longRange)issues.push('На выбранной плате нет поддерживаемого Long Range.');
- if(node.moduleId==='clex.logic.espnow-command-send'&&peer&&(!component.parameters.encryption||!peer.encrypted))issues.push('Удаленные команды требуют зашифрованного соединения с выбранным устройством.');
+ if(node.moduleId==='clex.logic.espnow-command-send'&&peer&&(!component.parameters.encryption||!peer.encrypted))issues.push('Удаленные команды требуют зашифрованного соединения. Включите «Шифровать соединение» у выбранного устройства.');
  if(node.moduleId==='clex.logic.espnow-mode'&&!component.parameters.allowModeChange)issues.push('Разрешите программное переключение режима в настройках ESP-NOW.');
  return issues;
 }

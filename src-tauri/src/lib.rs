@@ -40,6 +40,7 @@ pub fn run() {
             projects::change_project_directory,
             idf::idf_environment,
             idf::idf_ports,
+            idf::idf_read_mac,
             idf::idf_build,
             idf::idf_flash,
             idf::idf_monitor,
