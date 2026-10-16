@@ -154,7 +154,7 @@ export default function AssemblyCanvas({ project, board, catalog, selection, set
     const label = 'Соединение ' + (component?.name || wire.componentId) + ': ' + (terminal?.label || wire.terminalId) + ' → ' + (pin?.label || wire.boardPinId);
     return { ...edge, selected, ariaLabel: label, data: { label, diagnostic, selected, manualRoute: wire.route, manualSourceAnchor: pin && [project.assembly.positions.board.x+pin.x,project.assembly.positions.board.y+pin.y], manualTargetAnchor: targetTerminal && [project.assembly.positions[wire.componentId].x+targetTerminal.x,project.assembly.positions[wire.componentId].y+targetTerminal.y], editable: !busy && !spaceHeld, onRouteChange, onRouteInteraction: routeInteraction, sourcePin: pin, targetTerminal, targetWidth: targetLayout.width, targetHeight: targetLayout.height, boardWidth: board.width, boardHeight: board.height, ground: terminal?.kind === 'ground',
       color: diagnostic ? '#fb7185' : colors[wire.id],
-      highlighted: selected || (selection?.type === 'component' && selection.id === wire.componentId), onSelect: selectWire } };
+      highlighted: selected || (selection?.type === 'component' && selection.id === wire.componentId), dimmed: (selection?.type === 'wire' || selection?.type === 'component') && !selected && selection.id !== wire.componentId, onSelect: selectWire } };
   })), [project, board, catalog, colors, selection, selectWire, busy, spaceHeld, onRouteChange, routeInteraction]);
   const edges=useMemo(()=>routeAssemblyEdges(projectedEdges,nodes,board),[projectedEdges,nodes,board]);
 

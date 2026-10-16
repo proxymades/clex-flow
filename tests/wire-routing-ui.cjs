@@ -3,6 +3,7 @@ const {chromium}=require('playwright');
 (async()=>{
  const {displayProject}=await import('./display-fixture.js');
  const {catalog}=await import('./catalog-fixture.js');
+ const {POWER_COLOR}=await import('../src/assembly/wireColors.js');
  const {connectTerminal}=await import('../src/assembly/model.js');
  const {serializeProject}=await import('../src/projects/model.js');
  const {generateFirmware,firmwareFingerprint}=await import('../src/firmware/generator.js');
@@ -32,7 +33,7 @@ const {chromium}=require('playwright');
   await page.locator('.physical-wire').nth(6).waitFor();await separated();
   const styles=await page.locator('.physical-wire').evaluateAll(elements=>Object.fromEntries(elements.map(element=>{const path=element.querySelector('.visible-wire');return[element.dataset.wire,{stroke:path.style.stroke,dash:path.style.strokeDasharray}];})));
   const powerId=project.assembly.connections.find(w=>w.terminalId==='vcc').id,groundId=project.assembly.connections.find(w=>w.terminalId==='gnd').id;
-  assert.equal(styles[powerId].stroke,'rgb(239, 102, 102)');assert.ok(styles[groundId].dash);
+  assert.equal(styles[powerId].stroke,'rgb('+POWER_COLOR.slice(1).match(/../g).map(value=>parseInt(value,16)).join(', ')+')');assert.ok(styles[groundId].dash);
   const signals=project.assembly.connections.filter(w=>!['vcc','gnd'].includes(w.terminalId));
   assert.equal(new Set(signals.map(w=>styles[w.id].stroke)).size,signals.length);
   const frame=await page.locator('.assembly-flow-region').boundingBox();

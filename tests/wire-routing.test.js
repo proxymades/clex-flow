@@ -2,14 +2,16 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {allocateWireLanes,orthogonalWireRoute,routeAssemblyEdges,wireFitPadding,wireObstacles,segmentCrossesObstacle,manualWirePoints,reanchorManualRoute} from '../src/assembly/wireRouting.js';
 import {catalog} from './catalog-fixture.js';
+import {p4Project} from './p4-fixture.js';
+import {displayProject} from './display-fixture.js';
 import {peripheralProject} from './peripheral-fixture.js';
 import {physicalEdges} from '../src/assembly/flow.js';
 import {terminalLayout} from '../src/assembly/terminalLayout.js';
 import {generateFirmware,firmwareFingerprint} from '../src/firmware/generator.js';
 import {transformAssembly} from '../src/assembly/model.js';
 import {parseProject,serializeProject} from '../src/projects/model.js';
-function fixture(){
- const p=peripheralProject({audio:false,camera:false}),board=catalog.boards.find(b=>b.id===p.boardId),nodes=[{id:'board',position:p.assembly.positions.board,width:board.width,height:board.height}];
+function fixture(p=peripheralProject({audio:false,camera:false})){
+ const board=catalog.boards.find(b=>b.id===p.boardId),nodes=[{id:'board',position:p.assembly.positions.board,width:board.width,height:board.height}];
  for(const component of p.components){const layout=terminalLayout(catalog.modules.find(m=>m.id===component.moduleId));nodes.push({id:component.id,position:p.assembly.positions[component.id],width:layout.width,height:layout.height});}
  const edges=allocateWireLanes(physicalEdges(p).map(edge=>{
   const wire=p.assembly.connections.find(w=>w.id===edge.id),c=p.components.find(c=>c.id===wire.componentId),layout=terminalLayout(catalog.modules.find(m=>m.id===c.moduleId));
@@ -21,7 +23,7 @@ const segmentOverlap=(a,b,c,d)=>{
  const axis=horizontal?0:1;if(Math.abs(a[1-axis]-c[1-axis])>0.001)return 0;
  return Math.max(0,Math.min(Math.max(a[axis],b[axis]),Math.max(c[axis],d[axis]))-Math.max(Math.min(a[axis],b[axis]),Math.min(c[axis],d[axis])));
 };
-test('internal P4 pin exits across its own board with short orthogonal geometry and avoids all other pin labels and components',()=>{
+test('P4 inner header exits outwards with short orthogonal geometry and avoids other pins, labels and components',()=>{
  const {board,nodes,edges}=fixture(),routed=routeAssemblyEdges(edges,nodes,board);
  for(const edge of routed){const {route}=edge.data,pin=edge.data.sourcePin;
   assert.equal(route.blocked,false);assert.deepEqual(route.points[0],[nodes[0].position.x+pin.x,nodes[0].position.y+pin.y]);
@@ -35,13 +37,34 @@ test('internal P4 pin exits across its own board with short orthogonal geometry 
  const [a,b]=routed.map(e=>e.data.route.points);
  for(let i=1;i<a.length;i++)for(let j=1;j<b.length;j++)assert.equal(segmentOverlap(a[i-1],a[i],b[j-1],b[j]),0,'parallel wires do not share a segment');
 });
+test('S3 and two-row P4 wiring uses the board perimeter without overlapping runs on either side or below',()=>{
+ for(const make of [displayProject,p4Project])for(const side of ['right','left','below']){
+  const p=make(),board=catalog.boards.find(b=>b.id===p.boardId),origin={x:400,y:100};p.assembly.positions.board=origin;
+  p.components.forEach((c,i)=>{p.assembly.positions[c.id]=side==='right'?{x:origin.x+board.width+180+i*300,y:180}:side==='left'?{x:origin.x-450-i*300,y:180}:{x:origin.x-180+i*300,y:origin.y+board.height+160};});
+  const f=fixture(p),routed=routeAssemblyEdges(f.edges,f.nodes,board),body={left:origin.x-12,right:origin.x+board.width+12,top:origin.y-12,bottom:origin.y+board.height+12};
+  const outside=point=>point[0]<=body.left || point[0]>=body.right || point[1]<=body.top || point[1]>=body.bottom;
+  for(const edge of routed){
+   const points=edge.data.route.points,label=board.id+'/'+side+'/'+edge.targetHandle;
+   assert.equal(edge.data.route.blocked,false,label);
+   assert.deepEqual(points[0],[origin.x+edge.data.sourcePin.x,origin.y+edge.data.sourcePin.y],label);
+   const exit=points.findIndex(outside);assert.ok(exit>0,label+' exits board');
+   for(let i=exit+1;i<points.length;i++)assert.equal(segmentCrossesObstacle(points[i-1],points[i],body),false,label+' stays outside after header exit');
+   const pin=edge.data.sourcePin;
+   for(const point of points.slice(0,exit))assert.ok(pin.side==='left'?point[0]<=points[0][0]+10:point[0]>=points[0][0]-10,label+' only a short escape strip on PCB');
+  }
+  for(let a=0;a<routed.length;a++)for(let b=a+1;b<routed.length;b++){
+   const one=routed[a].data.route.points,two=routed[b].data.route.points;
+   for(let i=1;i<one.length;i++)for(let j=1;j<two.length;j++)assert.equal(segmentOverlap(one[i-1],one[i],two[j-1],two[j]),0,board.id+'/'+side+': '+routed[a].targetHandle+' and '+routed[b].targetHandle+' share a run');
+  }
+ }
+});
 test('routing lanes and paths are stable after serialized edge order changes',()=>{
  const {board,nodes,edges}=fixture(),a=routeAssemblyEdges(edges,nodes,board),b=routeAssemblyEdges(allocateWireLanes([...edges].reverse()),nodes,board);
  for(const edge of a)assert.deepEqual(edge.data.route.points,b.find(e=>e.id===edge.id).data.route.points);
  const sameColumn=Array.from({length:3},(_,i)=>({id:['a','d','g'][i],source:'board',target:'display',targetHandle:String(i),data:{sourcePin:{x:458,y:222+i*30},boardWidth:724}}));
  assert.deepEqual(allocateWireLanes(sameColumn).map(e=>e.data.laneIndex),[0,1,2]);
 });
-test('all target sides retain exact anchor and outward approach without treating board body as an obstacle',()=>{
+test('generic routes without board metadata retain exact anchors and outward approach for all target sides',()=>{
  for(const side of ['left','right','top','bottom']){
   const position={x:940,y:100},width=250,height=220,terminal={left:[0,125],right:[250,125],top:[125,0],bottom:[125,220]}[side],end=[position.x+terminal[0],position.y+terminal[1]];
   const route=orthogonalWireRoute({data:{sourceAnchor:[558,262],targetAnchor:end,sceneNodes:[{id:'display',position,width,height}],boardPins:[]},targetPosition:side});

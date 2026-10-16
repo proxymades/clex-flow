@@ -1,14 +1,15 @@
-const SIGNAL_COLORS = ['#5ba8ef', '#efa45e', '#e6c75b', '#df83a8', '#58bfc2', '#b5a06b', '#91b9d8', '#cc9476', '#cad27f', '#bb91a3'];
-export const GROUND_COLOR = '#97a6bd';
-export const POWER_COLOR = '#ef6666';
+// Saturated, separated hues remain legible as thin lines on the dark canvas.
+const SIGNAL_COLORS = ['#37d7ff', '#ffb52e', '#c58aff', '#56ed87', '#ff83d1', '#f5ec55', '#789bff', '#e9f4ff', '#24dfcb', '#ff9a60'];
+export const GROUND_COLOR = '#d1dbea';
+export const POWER_COLOR = '#ff6565';
 const compare = (a,b) => a < b ? -1 : a > b ? 1 : 0;
 function signalColor(index) {
   if (index < SIGNAL_COLORS.length) return SIGNAL_COLORS[index];
   // Extra signals use distinct hues outside the red power band and the
-  // violet/neon-green interface bands. No finite palette is reused.
+  // violet/neon-green interface bands instead of restarting the base palette.
   const offset = ((index - SIGNAL_COLORS.length) * 67) % 173;
   const hue = offset < 63 ? 22 + offset : offset < 143 ? 155 + offset - 63 : 310 + offset - 143;
-  return `hsl(${hue} 58% ${index % 2 ? 68 : 54}%)`;
+  return `hsl(${hue} 90% ${index % 2 ? 75 : 63}%)`;
 }
 export function wireColors(project, catalog) {
   const colors = {}, signals = [];

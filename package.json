@@ -15,6 +15,7 @@
     "test:p4-ui": "node tests/p4-ui.cjs",
     "test:peripheral-ui": "node tests/peripheral-ui.cjs",
     "test:manual-routing-ui": "node tests/manual-routing-ui.cjs",
+    "test:perimeter-routing-ui": "node tests/perimeter-routing-ui.cjs",
     "test:ui": "node tests/ui-smoke.cjs",
     "lint": "eslint .",
     "test:assembly-ui": "node tests/assembly-ui.cjs",

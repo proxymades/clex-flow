@@ -5,9 +5,9 @@ const same = (a,b) => a[0]===b[0] && a[1]===b[1];
 const length = (a,b) => Math.abs(a[0]-b[0])+Math.abs(a[1]-b[1]);
 export function allocateWireLanes(edges) {
  const groups=new Map(),lanes=new Map();
- for(const edge of edges){const pin=edge.data.sourcePin;if(!pin)continue;const key=edge.source+':'+pin.x;if(!groups.has(key))groups.set(key,[]);groups.get(key).push(edge);}
+ for(const edge of edges){const pin=edge.data.sourcePin;if(!pin)continue;const key=edge.source+':'+(pin.side || pin.x);if(!groups.has(key))groups.set(key,[]);groups.get(key).push(edge);}
  for(const group of groups.values()){
-  group.sort((a,b)=>a.data.sourcePin.y-b.data.sourcePin.y || compare(a.target,b.target) || compare(a.targetHandle,b.targetHandle) || compare(a.id,b.id));
+  group.sort((a,b)=>a.data.sourcePin.y-b.data.sourcePin.y || a.data.sourcePin.x-b.data.sourcePin.x || compare(a.target,b.target) || compare(a.targetHandle,b.targetHandle) || compare(a.id,b.id));
   group.forEach((edge,index)=>lanes.set(edge.id,{laneIndex:index,laneCount:group.length}));
  }
  return edges.map(edge=>({...edge,data:{...edge.data,...lanes.get(edge.id)}}));
@@ -42,7 +42,7 @@ export function wireObstacles(data){
   const x=board.x+pin.x,y=board.y+pin.y;
   const legacyWidth=Math.max(98,(String(pin.physicalNumber)+' · '+pin.label).length*6.1+14);
   const labelRect=pin.labelX===undefined?{x:pin.side==='left'?x-legacyWidth:x+10,y:y-8,width:legacyWidth-10,height:15}:{x:board.x+(pin.side==='left'?label.textX-labelWidth:label.textX),y:y-8,width:labelWidth,height:15};
-  return [inflate(labelRect,2),...(!chosen?[inflate({x:x-16,y:y-7,width:32,height:14},2)]:[])];
+  return [inflate(labelRect,2),...(!chosen?[inflate({x:x-6,y:y-6,width:12,height:12},2)]:[])];
  });
  for(const rectangle of data.boardKeepOut || [])obstacles.push(inflate({x:board.x+rectangle.x,y:board.y+rectangle.y,width:rectangle.width,height:rectangle.height},2));
  for(const node of data.sceneNodes || [])if(node.id!=='board')obstacles.push(inflate({x:node.position.x,y:node.position.y,width:node.width || node.measured?.width || 0,height:node.height || node.measured?.height || 0},8));
@@ -60,7 +60,7 @@ function segmentPenalty(a,b,routes){
   const c=route[i-1],d=route[i],horizontal=a[1]===b[1],otherHorizontal=c[1]===d[1];
   if(horizontal===otherHorizontal){
    const axis=horizontal?0:1,constant=1-axis;
-   if(Math.abs(a[constant]-c[constant])<5){const overlap=Math.min(Math.max(a[axis],b[axis]),Math.max(c[axis],d[axis]))-Math.max(Math.min(a[axis],b[axis]),Math.min(c[axis],d[axis]));if(overlap>0)penalty+=overlap*12;}
+   if(Math.abs(a[constant]-c[constant])<10){const overlap=Math.min(Math.max(a[axis],b[axis]),Math.max(c[axis],d[axis]))-Math.max(Math.min(a[axis],b[axis]),Math.min(c[axis],d[axis]));if(overlap>0)penalty+=overlap*1000;}
   }else{
    const h=horizontal?[a,b]:[c,d],v=horizontal?[c,d]:[a,b];
    if(v[0][0]>Math.min(h[0][0],h[1][0]) && v[0][0]<Math.max(h[0][0],h[1][0]) && h[0][1]>Math.min(v[0][1],v[1][1]) && h[0][1]<Math.max(v[0][1],v[1][1]))penalty+=16;
@@ -74,7 +74,11 @@ function shortRoute(start,end,obstacles,routes,laneIndex){
  const relevant=obstacles.filter(r=>r.left<Math.max(start[0],end[0])+64 && r.right>Math.min(start[0],end[0])-64 && r.top<Math.max(start[1],end[1])+160 && r.bottom>Math.min(start[1],end[1])-160);
  if(relevant.some(r=>inside(end,r)))return null;
  for(const r of relevant){ys.add(r.top);ys.add(r.bottom);if(Math.abs(r.left-start[0])<80)xs.add(r.left);if(Math.abs(r.right-start[0])<80)xs.add(r.right);}
- const rows=[...ys].sort((a,b)=>(Math.abs(a-start[1])+Math.abs(a-end[1]))-(Math.abs(b-start[1])+Math.abs(b-end[1]))).slice(0,32);
+ for(const route of routes)for(const p of route){
+  if(p[0]>=Math.min(start[0],end[0])-64 && p[0]<=Math.max(start[0],end[0])+64){xs.add(p[0]-12);xs.add(p[0]+12);}
+  ys.add(p[1]-12);ys.add(p[1]+12);
+ }
+ const rows=[...ys].sort((a,b)=>(Math.abs(a-start[1])+Math.abs(a-end[1]))-(Math.abs(b-start[1])+Math.abs(b-end[1]))).slice(0,64);
  const candidates=[simplifyWirePoints([start,[end[0],start[1]],end]),simplifyWirePoints([start,[start[0],end[1]],end])];
  for(const y of rows){candidates.push(simplifyWirePoints([start,[start[0],y],[end[0],y],end]));for(const x of xs)candidates.push(simplifyWirePoints([start,[x,start[1]],[x,y],[end[0],y],end]));}
  const estimate=points=>points.reduce((sum,p,i)=>sum+(i?length(points[i-1],p):0),0)+Math.max(0,points.length-2)*12;
@@ -83,16 +87,16 @@ function shortRoute(start,end,obstacles,routes,laneIndex){
   const cost=candidate.cost+p.slice(1).reduce((sum,b,i)=>sum+segmentPenalty(p[i],b,routes),0);if(cost<score){score=cost;best=p;}}
  return best;
 }
-// Sparse rectilinear visibility grid. The board body is deliberately not an obstacle.
+// Sparse rectilinear visibility grid for obstructed exits and exterior corridors.
 function searchRoute(start,end,obstacles,routes,laneIndex,padding){
  const bounds={left:Math.min(start[0],end[0])-padding,right:Math.max(start[0],end[0])+padding,top:Math.min(start[1],end[1])-padding,bottom:Math.max(start[1],end[1])+padding};
  const relevant=obstacles.filter(r=>r.left<bounds.right && r.right>bounds.left && r.top<bounds.bottom && r.bottom>bounds.top);
  if(relevant.some(r=>inside(end,r)))return null;
  const xs=new Set([start[0],end[0],bounds.left,bounds.right]),ys=new Set([start[1],end[1],bounds.top,bounds.bottom]);
- const gap=12+(laneIndex%12)*8;
+ const gap=16+laneIndex*12;
  for(const sign of [-1,1]){xs.add(start[0]+sign*gap);xs.add(end[0]+sign*gap);ys.add(start[1]+sign*gap);ys.add(end[1]+sign*gap);}
  for(const r of relevant){xs.add(Math.max(bounds.left,r.left));xs.add(Math.min(bounds.right,r.right));ys.add(Math.max(bounds.top,r.top));ys.add(Math.min(bounds.bottom,r.bottom));}
- for(const route of routes)for(const p of route){if(p[0]>bounds.left && p[0]<bounds.right){xs.add(p[0]-8);xs.add(p[0]+8);}if(p[1]>bounds.top && p[1]<bounds.bottom){ys.add(p[1]-8);ys.add(p[1]+8);}}
+ for(const route of routes)for(const p of route){if(p[0]>bounds.left && p[0]<bounds.right){xs.add(p[0]-12);xs.add(p[0]+12);}if(p[1]>bounds.top && p[1]<bounds.bottom){ys.add(p[1]-12);ys.add(p[1]+12);}}
  const x=[...xs].filter(v=>v>=bounds.left && v<=bounds.right).sort((a,b)=>a-b),y=[...ys].filter(v=>v>=bounds.top && v<=bounds.bottom).sort((a,b)=>a-b);
  const width=x.length,startIndex=y.indexOf(start[1])*width+x.indexOf(start[0]),endIndex=y.indexOf(end[1])*width+x.indexOf(end[0]);
  const point=index=>[x[index%width],y[Math.floor(index/width)]];
@@ -147,19 +151,43 @@ export function reanchorManualRoute(start,end,waypoints,nextStart=start,nextEnd=
  result[1][sourceAxis]=nextStart[sourceAxis];result[last-1][targetAxis]=nextEnd[targetAxis];
  return simplifyWirePoints(result);
 }
+function findRoute(start,end,obstacles,previous,laneIndex){
+ let points=shortRoute(start,end,obstacles,previous,laneIndex);
+ for(const padding of points?[]:[48,160,480]){points=searchRoute(start,end,obstacles,previous,laneIndex,padding);if(points)break;}
+ return points;
+}
+function boardExit(start,data,obstacles,previous){
+ const origin=data.boardPosition || {x:0,y:0},lane=data.laneIndex || 0;
+ const body=inflate({x:origin.x,y:origin.y,width:data.boardWidth,height:data.boardHeight},12);
+ const side=data.sourcePin.side || (start[0]<origin.x+data.boardWidth/2?'left':'right');
+ const left=side==='left',portal=[(left?body.left:body.right)+(left?-1:1)*(16+lane*12),start[1]];
+ // Only the strip next to the source header is open during escape. An internal
+ // contact may leave between adjacent pins, never take a shortcut across the PCB.
+ const guard=left?{left:start[0]+10,right:body.right,top:body.top,bottom:body.bottom}
+  :{left:body.left,right:start[0]-10,top:body.top,bottom:body.bottom};
+ const exit=findRoute(start,portal,[...obstacles,guard],previous,lane);
+ return {body,portal,exit};
+}
 export function orthogonalWireRoute({sourceX,sourceY,targetX,targetY,targetPosition='left',data},previous=[]){
  const start=data.sourceAnchor || [sourceX,sourceY],end=data.targetAnchor || [targetX,targetY];
- if(data.manualRoute?.length){const points=reanchorManualRoute(data.manualSourceAnchor || start,data.manualTargetAnchor || end,data.manualRoute,start,end);return {points,path:roundedWirePath(points),manual:true,spacing:8};}
+ if(data.manualRoute?.length){const points=reanchorManualRoute(data.manualSourceAnchor || start,data.manualTargetAnchor || end,data.manualRoute,start,end);return {points,path:roundedWirePath(points),manual:true,spacing:12};}
  const obstacles=wireObstacles(data),normal={left:[-1,0],right:[1,0],top:[0,-1],bottom:[0,1]}[targetPosition] || [-1,0];
- const preferred=18+(data.laneIndex||0)%8*8;
- const gap=[preferred,18,10].find(value=>!obstacles.some(o=>inside([end[0]+normal[0]*value,end[1]+normal[1]*value],o))) || 10;
+ const escape=data.sourcePin && data.boardWidth && data.boardHeight?boardExit(start,data,obstacles,previous):null;
+ const exterior=escape?[escape.body,...obstacles.filter(r=>r.left<escape.body.left || r.right>escape.body.right || r.top<escape.body.top || r.bottom>escape.body.bottom)]:obstacles;
+ const preferred=18+(data.laneIndex||0)*12;
+ const gap=[preferred,18,10].find(value=>!exterior.some(o=>inside([end[0]+normal[0]*value,end[1]+normal[1]*value],o))) || 10;
  const approach=[end[0]+normal[0]*gap,end[1]+normal[1]*gap];
- let points=shortRoute(start,approach,obstacles,previous,data.laneIndex||0);
- for(const padding of points?[]:[48,160,480]){points=searchRoute(start,approach,obstacles,previous,data.laneIndex||0,padding);if(points)break;}
- const fallback=!points;
- if(!points)points=manualWirePoints(start,approach,[]);
- points=simplifyWirePoints([...points,end]);
- return {points,path:roundedWirePath(points),spacing:8,blocked:fallback};
+ const begin=escape?.portal || start;
+ let points=findRoute(begin,approach,exterior,previous,data.laneIndex||0);
+ const blocked=!points || Boolean(escape && !escape.exit);
+ if(!points){
+  if(escape){const y=escape.body.top-16;points=[begin,[begin[0],y],[approach[0],y],approach];}
+  else points=manualWirePoints(start,approach,[]);
+ }
+ let exit=escape?.exit;
+ if(escape && !exit){const y=escape.body.top-16;exit=[start,[start[0],y],[begin[0],y],begin];}
+ points=simplifyWirePoints([...(exit || []).slice(0,-1),...points,end]);
+ return {points,path:roundedWirePath(points),spacing:12,blocked};
 }
 // Kept as a callable adapter for existing integrations; all contacts use the new router.
 export const boardDetour=orthogonalWireRoute;
@@ -170,7 +198,7 @@ export function routeAssemblyEdges(edges,nodes,board){
  for(const edge of sorted){
   const target=byId.get(edge.target),pin=edge.data.sourcePin,terminal=edge.data.targetTerminal;if(!target || !pin || !terminal)continue;
   const data={...edge.data,sourceAnchor:[origin.x+pin.x,origin.y+pin.y],targetAnchor:[target.position.x+terminal.x,target.position.y+terminal.y],boardPosition:origin,boardPins:board.pins,boardKeepOut:board.routing?.keepOutAreas || [],sceneNodes:nodes};
-  const route=orthogonalWireRoute({data,targetPosition:terminal.side},routes);routes.push(route.points);result.set(edge.id,{...edge,zIndex:edge.selected?12:4,data:{...data,route}});
+  const route=orthogonalWireRoute({data,targetPosition:terminal.side},routes);routes.push(route.points);result.set(edge.id,{...edge,zIndex:edge.selected?12:edge.data.highlighted?8:4,data:{...data,route}});
  }
  return edges.map(edge=>result.get(edge.id) || edge);
 }
