@@ -15,7 +15,7 @@ const {chromium}=require('playwright');
  };
  try{
   await page.goto(url);await page.getByRole('button',{name:'Новый проект',exact:true}).click();
-  const dialog=page.getByRole('dialog');await dialog.getByRole('combobox',{name:'Плата',exact:true}).selectOption('waveshare-esp32-p4-nano');
+  const dialog=page.getByRole('dialog');await dialog.getByRole('button',{name:'Сменить плату',exact:true}).click();await page.getByRole('button',{name:'Выбрать плату: ESP32-P4-NANO',exact:true}).click();
   await dialog.getByRole('textbox',{name:'Название проекта'}).fill('Периферия P4');await dialog.getByRole('button',{name:'Создать проект',exact:true}).click();
   await page.getByRole('heading',{name:'Периферия P4',exact:true}).waitFor();await page.getByRole('button',{name:'Монтаж',exact:true}).click();
   await page.getByRole('button',{name:'Добавить: Динамик',exact:true}).click();await page.locator('.react-flow__node-physicalHardware').first().waitFor();

@@ -1,11 +1,11 @@
 {
   "id": "clex.hardware.espnow",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "kind": "hardware",
   "name": "ESP-NOW",
   "description": "Беспроводной обмен между ESP-устройствами на одном Wi-Fi-канале. Использует встроенное радио.",
   "category": "network",
-  "categoryName": "Связь",
+  "categoryName": "Сеть",
   "icon": "Radio",
   "color": "#f472b6",
   "visual": {

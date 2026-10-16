@@ -5,6 +5,7 @@ import {spawnSync} from 'node:child_process';
 import {resolve} from 'node:path';
 import {nanoProject,nano} from './nano-fixture.js';
 import {catalog} from './catalog-fixture.js';
+import {touchButtonProject} from './touch-button-fixture.js';
 import {createProject} from '../src/projects/model.js';
 import {addHardware,connectTerminal} from '../src/assembly/model.js';
 import{addNode,connectNodes,withLogic}from '../src/logic/model.js';
@@ -16,6 +17,7 @@ writeFileSync(root+'/Arduino.h',`#pragma once
 #include <string>
 #include <vector>
 #include <assert.h>
+#define INPUT 0
 #define OUTPUT 1
 #define INPUT_PULLUP 2
 #define LOW 0
@@ -53,3 +55,10 @@ p=withLogic(p,graph);run('button-debounce-and-gpio-set',p,'inputs[2]=true;setup(
 graph={nodes:[],edges:[],viewport:p.logic.viewport};for(const id of ['clex.logic.gpio-edge','clex.logic.gpio-toggle'])graph=addNode(graph,catalog.modules.find(m=>m.id===id),p.components,p,catalog);
 const[edge,toggle]=graph.nodes;edge.parameters.componentId=button.id;toggle.parameters.componentId=led.id;graph=connectNodes(graph,catalog,{source:edge.id,sourceHandle:'falling',target:toggle.id,targetHandle:'trigger'},{...p,logic:graph});p=withLogic(p,graph);
 run('button-single-edge',p,'inputs[2]=true;setup();loop();assert(!pins[13]);inputs[2]=false;clock_ms=100;loop();clock_ms=120;loop();assert(!pins[13]);clock_ms=130;loop();assert(pins[13]);clock_ms=1000;loop();assert(pins[13]);inputs[2]=true;clock_ms=1100;loop();clock_ms=1130;loop();assert(pins[13]);inputs[2]=false;clock_ms=1200;loop();clock_ms=1230;loop();assert(!pins[13]);');
+
+for(const activeLevel of ['high','low']){
+ const {project,component,nodes}=touchButtonProject(nano.id,activeLevel),pin=project.gpioAssignments.find(a=>a.componentId===component.id).gpio;
+ const sorted=[...project.logic.nodes].sort((a,b)=>a.id<b.id?-1:1),read=sorted.findIndex(n=>n.id===nodes.read.id),count=sorted.findIndex(n=>n.id===nodes.counter.id);
+ const active=activeLevel==='high'?'true':'false',inactive=activeLevel==='high'?'false':'true';
+ run('touch-'+activeLevel,project,`inputs[${pin}]=${inactive};setup();assert(modes[${pin}]==INPUT);loop();assert(Serial.lines.empty());node_${read}();assert(!value_${read});inputs[${pin}]=${active};clock_ms=100;loop();clock_ms=120;inputs[${pin}]=${inactive};loop();clock_ms=140;inputs[${pin}]=${active};loop();clock_ms=169;loop();assert(value_${count}==0);clock_ms=170;loop();assert(value_${count}==1);assert(value_${read});assert(Serial.lines.back()=="Касаний: 1");clock_ms=1000;loop();assert(value_${count}==1);clock_ms=1100;inputs[${pin}]=${inactive};loop();clock_ms=1130;loop();assert(!value_${read});assert(Serial.lines.back()=="Сенсор выключен");clock_ms=1200;inputs[${pin}]=${active};loop();clock_ms=1230;loop();assert(value_${count}==2);`);
+}

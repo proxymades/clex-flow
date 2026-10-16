@@ -8,8 +8,8 @@ const {chromium}=require('playwright');
  try{
   await page.goto(process.env.CLEX_PREVIEW_URL||'http://127.0.0.1:1430');
   await page.getByRole('button',{name:'Новый проект',exact:true}).click();
-  const dialog=page.getByRole('dialog');await dialog.getByRole('combobox',{name:'Плата',exact:true}).selectOption(nano.id);
-  assert.match(await dialog.locator('.target-choice').innerText(),/Arduino AVR 1.8.6/);assert.doesNotMatch(await dialog.locator('.target-choice').innerText(),/ESP-IDF/);
+  const dialog=page.getByRole('dialog');await dialog.getByRole('button',{name:'Сменить плату',exact:true}).click();await page.getByRole('button',{name:'Выбрать плату: '+nano.name,exact:true}).click();
+  assert.match(await dialog.locator('.selected-board-card').innerText(),/Arduino AVR 1.8.6/);assert.doesNotMatch(await dialog.locator('.selected-board-card').innerText(),/ESP-IDF/);
   await dialog.getByRole('textbox',{name:'Название проекта'}).fill('Проверка Nano');await dialog.getByRole('button',{name:'Создать проект',exact:true}).click();
   await page.getByRole('heading',{name:'Проверка Nano',exact:true}).waitFor();
   await page.getByRole('button',{name:'Монтаж',exact:true}).click();await page.getByRole('combobox',{name:'Загрузчик Nano',exact:true}).selectOption('old');

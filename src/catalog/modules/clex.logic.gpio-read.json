@@ -47,10 +47,7 @@
   },
   "constraints": {
     "hardware": {
-      "modules": [
-        "clex.hardware.button"
-      ],
-      "terminal": "signal",
+      "kind": "gpio",
       "mode": "input"
     }
   },

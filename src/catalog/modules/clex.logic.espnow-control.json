@@ -1,0 +1,238 @@
+{
+  "id": "clex.logic.espnow-control",
+  "version": "2.0.0",
+  "kind": "logic",
+  "name": "Управление ESP-NOW",
+  "description": "Следит за состоянием радио или изменяет режим передачи Normal / Long Range.",
+  "category": "network",
+  "categoryName": "Сеть",
+  "icon": "Radio",
+  "color": "#f472b6",
+  "inputs": [
+    {
+      "id": "trigger",
+      "name": "Установить режим",
+      "type": "event",
+      "description": "Меняет скорость передачи без перезагрузки.",
+      "required": true,
+      "when": {
+        "field": "action",
+        "value": "mode"
+      }
+    }
+  ],
+  "outputs": [
+    {
+      "id": "changed",
+      "name": "Данные радио обновлены",
+      "type": "event",
+      "description": "Передает новые значения после запуска, обмена или ошибки.",
+      "when": {
+        "field": "action",
+        "value": "status"
+      }
+    },
+    {
+      "id": "ready",
+      "name": "Радио готово?",
+      "type": "boolean",
+      "description": "Радио запущено и может обмениваться сообщениями.",
+      "readyOn": "changed",
+      "when": {
+        "field": "action",
+        "value": "status"
+      }
+    },
+    {
+      "id": "mac",
+      "name": "MAC этого устройства",
+      "type": "text",
+      "description": "Реальный MAC Wi-Fi Station этой платы.",
+      "readyOn": "changed",
+      "when": {
+        "field": "action",
+        "value": "status"
+      }
+    },
+    {
+      "id": "mode",
+      "name": "Режим передачи",
+      "type": "number",
+      "description": "Код скорости передачи. Прием Normal и LR остается включенным.",
+      "readyOn": "changed",
+      "valueStates": {
+        "initialValue": 0,
+        "fallbackValue": 2,
+        "options": [
+          {
+            "value": 0,
+            "label": "Обычный (Normal)",
+            "dotColor": "#38bdf8"
+          },
+          {
+            "value": 1,
+            "label": "Дальний (Long Range)",
+            "dotColor": "#f472b6"
+          },
+          {
+            "value": 2,
+            "label": "Ошибка настройки скоростей",
+            "dotColor": "#ef6666"
+          }
+        ]
+      },
+      "when": {
+        "field": "action",
+        "value": "status"
+      }
+    },
+    {
+      "id": "sent",
+      "name": "Отправлено пакетов",
+      "type": "number",
+      "description": "Число принятых драйвером попыток передачи сообщений и команд.",
+      "readyOn": "changed",
+      "additional": true,
+      "when": {
+        "field": "action",
+        "value": "status"
+      }
+    },
+    {
+      "id": "received",
+      "name": "Получено сообщений",
+      "type": "number",
+      "description": "Принятые уникальные сообщения и команды от разрешенных устройств.",
+      "readyOn": "changed",
+      "additional": true,
+      "when": {
+        "field": "action",
+        "value": "status"
+      }
+    },
+    {
+      "id": "lost",
+      "name": "Без подтверждения",
+      "type": "number",
+      "description": "Обмены, для которых после повторов не получено подтверждение. Это не измерение всех потерянных радиопакетов.",
+      "readyOn": "changed",
+      "additional": true,
+      "when": {
+        "field": "action",
+        "value": "status"
+      }
+    },
+    {
+      "id": "statusError",
+      "name": "Ошибка радио",
+      "type": "text",
+      "description": "Причина последней ошибки обмена или настройки.",
+      "readyOn": "changed",
+      "additional": true,
+      "when": {
+        "field": "action",
+        "value": "status"
+      }
+    },
+    {
+      "id": "done",
+      "name": "Режим установлен",
+      "type": "event",
+      "description": "Скорость передачи для всех устройств изменена.",
+      "when": {
+        "field": "action",
+        "value": "mode"
+      }
+    },
+    {
+      "id": "failed",
+      "name": "Режим не изменен",
+      "type": "event",
+      "description": "Ошибка настройки или отката скоростей.",
+      "when": {
+        "field": "action",
+        "value": "mode"
+      }
+    },
+    {
+      "id": "error",
+      "name": "Причина ошибки",
+      "type": "text",
+      "description": "Ошибка настройки радио.",
+      "readyOn": "failed",
+      "additional": true,
+      "when": {
+        "field": "action",
+        "value": "mode"
+      }
+    }
+  ],
+  "parameters": {
+    "componentId": {
+      "label": "ESP-NOW",
+      "type": "component",
+      "default": ""
+    },
+    "action": {
+      "label": "Действие",
+      "type": "select",
+      "default": "status",
+      "options": [
+        {
+          "value": "status",
+          "label": "Следить за состоянием"
+        },
+        {
+          "value": "mode",
+          "label": "Изменить режим"
+        }
+      ]
+    },
+    "mode": {
+      "label": "Режим",
+      "type": "select",
+      "default": "lr",
+      "options": [
+        {
+          "value": "normal",
+          "label": "Обычный (Normal)"
+        },
+        {
+          "value": "lr",
+          "label": "Дальний (Long Range)"
+        }
+      ],
+      "when": {
+        "field": "action",
+        "value": "mode"
+      }
+    }
+  },
+  "constraints": {
+    "hardware": {
+      "kind": "radio",
+      "modules": [
+        "clex.hardware.espnow"
+      ]
+    }
+  },
+  "compatibility": {
+    "projectFormat": 3,
+    "targets": [
+      "esp32s3"
+    ],
+    "espIdf": "5.4.4"
+  },
+  "firmware": {
+    "status": "implemented",
+    "generatorKey": "espnow-control",
+    "eventSource": true,
+    "dependencies": [
+      "esp_wifi"
+    ],
+    "eventSourceWhen": {
+      "field": "action",
+      "value": "status"
+    }
+  }
+}

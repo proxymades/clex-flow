@@ -1,11 +1,11 @@
 {
   "id": "clex.logic.espnow-ack",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "kind": "logic",
   "name": "Подтвердить команду ESP-NOW",
   "description": "Подтверждает выполнение текущей команды или сообщает об ошибке.",
   "category": "network",
-  "categoryName": "Связь",
+  "categoryName": "Сеть",
   "icon": "Radio",
   "color": "#f472b6",
   "inputs": [

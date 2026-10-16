@@ -1,0 +1,150 @@
+{
+  "version": "1.0.0",
+  "kind": "hardware",
+  "inputs": [],
+  "outputs": [],
+  "compatibility": {
+    "projectFormat": 3,
+    "targets": [
+      "esp32s3",
+      "esp32p4",
+      "atmega328p"
+    ],
+    "espIdf": "5.4.4",
+    "platforms": {
+      "arduino-avr": "1.8.6"
+    }
+  },
+  "id": "clex.hardware.touch-button",
+  "name": "Сенсорная кнопка",
+  "category": "input",
+  "categoryName": "Ввод",
+  "description": "Емкостный сенсорный модуль с цифровым выходом. Выберите питание и напряжение OUT по документации вашего модуля. Для ESP32 уровень OUT должен быть не выше 3,3 В.",
+  "icon": "MousePointer2",
+  "color": "#38BDF8",
+  "visual": {
+    "svg": "touch-button.svg",
+    "width": 230,
+    "height": 220
+  },
+  "terminals": [
+    {
+      "id": "power",
+      "label": "VCC",
+      "kind": "power",
+      "voltageParameter": "supplyVoltage",
+      "x": 0,
+      "y": 125
+    },
+    {
+      "id": "ground",
+      "label": "GND",
+      "kind": "ground",
+      "x": 0,
+      "y": 160
+    },
+    {
+      "id": "signal",
+      "label": "OUT",
+      "kind": "gpio-input",
+      "x": 0,
+      "y": 195
+    }
+  ],
+  "parameters": {
+    "supplyVoltage": {
+      "label": "Питание VCC",
+      "type": "select",
+      "default": "3.3",
+      "options": [
+        {
+          "value": "3.3",
+          "label": "3,3 В"
+        },
+        {
+          "value": "5",
+          "label": "5 В"
+        }
+      ],
+      "description": "Выберите напряжение питания, допустимое по документации конкретного модуля."
+    },
+    "outputVoltage": {
+      "label": "Напряжение HIGH на OUT",
+      "type": "select",
+      "default": "3.3",
+      "options": [
+        {
+          "value": "3.3",
+          "label": "3,3 В"
+        },
+        {
+          "value": "5",
+          "label": "5 В"
+        }
+      ],
+      "description": "Фактическое напряжение выхода модуля. Питание 5 В не означает совместимость OUT с ESP32. Указывайте 3,3 В только если модуль обеспечивает такой выход."
+    },
+    "activeLevel": {
+      "label": "Активный уровень OUT",
+      "type": "select",
+      "default": "high",
+      "options": [
+        {
+          "value": "high",
+          "label": "HIGH – высокий уровень"
+        },
+        {
+          "value": "low",
+          "label": "LOW – низкий уровень"
+        }
+      ],
+      "description": "Уровень OUT при касании. Настройка определяет события активации и состояние «Сенсор активен?»."
+    },
+    "debounceMs": {
+      "label": "Фильтр изменения, мс",
+      "type": "number",
+      "default": 30,
+      "min": 0,
+      "max": 1000,
+      "step": 5
+    }
+  },
+  "constraints": {
+    "signalVoltageParameter": "outputVoltage",
+    "supplyVoltageParameter": "supplyVoltage"
+  },
+  "firmware": {
+    "status": "implemented",
+    "generatorKey": "gpio-input",
+    "dependencies": [
+      "esp_driver_gpio"
+    ]
+  },
+  "logicPresentation": {
+    "deviceLabel": "Сенсорная кнопка",
+    "read": {
+      "title": "Проверить сенсор",
+      "trigger": "Проверить сенсор",
+      "done": "Сенсор проверен",
+      "level": "Сенсор активен?",
+      "descriptions": {
+        "trigger": "Считывает состояние сенсора с учетом активного уровня HIGH/LOW и фильтра изменения.",
+        "done": "Сигнал после считывания состояния сенсора.",
+        "level": "Да, если OUT соответствует выбранному активному уровню; Нет, если сенсор неактивен."
+      }
+    },
+    "edge": {
+      "title": "События сенсора",
+      "rising": "Сенсор активирован",
+      "falling": "Сенсор деактивирован",
+      "changed": "Состояние сенсора изменилось",
+      "level": "Сенсор активен?",
+      "descriptions": {
+        "rising": "Один сигнал при переходе OUT в выбранный активный уровень после фильтра изменения.",
+        "falling": "Один сигнал при выходе OUT из активного уровня после фильтра изменения.",
+        "changed": "Один сигнал при активации или деактивации сенсора.",
+        "level": "Да, если сенсор активен с учетом выбранного уровня HIGH/LOW; Нет, если неактивен."
+      }
+    }
+  }
+}

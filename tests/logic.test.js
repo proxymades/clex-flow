@@ -14,7 +14,7 @@ function mounted() {
 }
 function nodes(project, ...modules) {
   let graph = project.logic;
-  for (const module of modules) graph = addNode(graph,module,project.components);
+  for (const module of modules) graph = addNode(graph,module,project.components,project,catalog);
   return withLogic(project,graph);
 }
 const edge = (graph, source, sourceHandle, target, targetHandle) => ({ source: graph.nodes[source].id, sourceHandle, target: graph.nodes[target].id, targetHandle });

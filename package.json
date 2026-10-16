@@ -50,7 +50,10 @@
     "test:sdk-external-ui": "node tests/sdk-external-ui.cjs",
     "test:espnow-ui": "node tests/espnow-ui.cjs",
     "test:espnow-runtime": "node tests/espnow-runtime.mjs",
-    "test:espnow-mac-ui": "node tests/espnow-mac-ui.cjs"
+    "test:espnow-mac-ui": "node tests/espnow-mac-ui.cjs",
+    "test:espnow-blocks-ui": "node tests/espnow-blocks-ui.cjs",
+    "test:touch-button-ui": "node tests/touch-button-ui.cjs",
+    "test:board-picker-ui": "node tests/board-picker-ui.cjs"
   },
   "dependencies": {
     "@tauri-apps/api": "2.10.1",

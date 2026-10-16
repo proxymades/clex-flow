@@ -1,1 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 56"><g fill="none" stroke="#f472b6" stroke-width="2"><rect x="65" y="8" width="50" height="40" rx="8" fill="#25172b"/><circle cx="90" cy="34" r="3" fill="#f472b6"/><path d="M80 26q10-10 20 0M75 20q15-15 30 0M54 17q-10 11 0 22M45 9q-17 19 0 38M126 17q10 11 0 22M135 9q17 19 0 38"/></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="180" height="56" viewBox="0 0 180 56" fill="none">
+  <!-- Radio icon from Lucide, ISC license; see THIRD_PARTY_NOTICES.md. -->
+  <g transform="translate(62 0) scale(2.3333333333)" stroke="#f472b6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"/>
+    <path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5"/>
+    <circle cx="12" cy="12" r="2"/>
+    <path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5"/>
+    <path d="M19.1 4.9C23 8.8 23 15.1 19.1 19"/>
+  </g>
+</svg>

@@ -25,15 +25,14 @@ export function presentPort(port,node,project,catalog){
  }
  return {...port,name,description:description||'Передает данные или сигнал между блоками.'};
 }
-export function visiblePorts(node,project,catalog,{expanded=false,connection=null}={}){
- const raw=nodePorts(node,catalog,project),screen=graphModule(node,catalog)?.editor==='screen';
+export function visiblePorts(node,project,catalog,{connection=null}={}){
+ const raw=nodePorts(node,catalog,project);
  return Object.fromEntries(['inputs','outputs'].map(direction=>[direction,raw[direction].map(port=>{
   const connected=project.logic.edges.some(edge=>direction==='inputs'?edge.target===node.id&&edge.targetHandle===port.id:edge.source===node.id&&edge.sourceHandle===port.id);
   const candidate=connection&&connection.nodeId!==node.id&&connection.direction!==(direction==='inputs'?'input':'output');
   const link=candidate?(direction==='inputs'?{source:connection.nodeId,sourceHandle:connection.portId,target:node.id,targetHandle:port.id}:{source:node.id,sourceHandle:port.id,target:connection.nodeId,targetHandle:connection.portId}):null;
   const reason=link?connectionProblem(project.logic,catalog,link,null,project):null,compatible=Boolean(link&&!reason);
-  const additional=screen?port.id==='trigger':Boolean(port.additional);
-  return {...presentPort(port,node,project,catalog),additional,connected,compatible,incompatible:Boolean(connection&&!compatible&&!(connection.nodeId===node.id&&connection.portId===port.id)),reason,hidden:additional&&!connected&&!expanded&&!compatible};
+  return {...presentPort(port,node,project,catalog),connected,compatible,incompatible:Boolean(connection&&!compatible&&!(connection.nodeId===node.id&&connection.portId===port.id)),reason,hidden:false};
  })]));
 }
 export function friendlyConnectionProblem(project,catalog,connection){

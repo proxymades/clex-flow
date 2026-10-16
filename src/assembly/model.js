@@ -62,9 +62,10 @@ export function connectionProblem(project, catalog, componentId, terminalId, pin
   const pin = lookup(board.pins, pinId);
   if (!terminal) return 'Контакт компонента не найден.';
   if (!pin) return 'Контакт платы не найден.';
-  if (terminal.kind === 'power') return pin.kind === 'power' && pin.voltage === terminal.voltage ? null : 'Питание компонента подключается к контакту платы с указанным напряжением.';
+  if (terminal.kind === 'power') return pin.kind === 'power' && pin.voltage === (terminal.voltageParameter ? Number(component.parameters[terminal.voltageParameter]) : terminal.voltage) ? null : 'Питание компонента подключается к контакту платы с указанным напряжением.';
   if (terminal.kind === 'ground') return pin.kind === 'ground' ? null : 'Общий контакт / катод должен быть подключен к GND. Питание и GPIO здесь недопустимы.';
   if (pin.kind !== 'gpio') return 'Сигнальный контакт подключается к GPIO, а не к питанию, GND или управлению.';
+  if (module.constraints.signalVoltageParameter && Number(component.parameters[module.constraints.signalVoltageParameter]) > (board.logicVoltage || 3.3)) return `Уровень OUT превышает допустимые ${board.logicVoltage || 3.3} В GPIO платы. Используйте совместимый уровень сигнала.`;
   const claim = claimedGpio(project,catalog,pin.gpio);
   if (claim) return `GPIO${pin.gpio} используется компонентом «${claim.name}» (${claim.label || claim.key}).`;
   const restriction = pinProblem(project, pin, board);
@@ -189,6 +190,7 @@ export function validateAssembly(project, catalog) {
       if (parameter.type === 'number' && (!Number.isFinite(value) || value < parameter.min || value > parameter.max)) issue('error', 'parameter-range', `${component.name}: «${parameter.label}» должен быть в диапазоне ${parameter.min}-${parameter.max}.`, fields);
       if (parameter.type === 'select' && !parameter.options.some(option => option.value === value)) issue('error', 'parameter-option', `${component.name}: неверный параметр «${parameter.label}».`, fields);
     }
+    if (module.constraints.signalVoltageParameter && Number(component.parameters[module.constraints.signalVoltageParameter]) > Number(component.parameters[module.constraints.supplyVoltageParameter])) issue('error','input-voltage',`${component.name}: напряжение OUT не может превышать выбранное питание VCC.`,fields);
     if(module.softwareInterface==='espnow')for(const message of espNowIssues(component,board))issue('error','espnow-config',component.name+': '+message,fields);
     if(module.network)for(const message of networkIssues(component,board,module))issue('error','network-config',component.name+': '+message,fields);
     if(module.parameters.spiHost&&(!module.network||networkProvider(component,board,module)?.interface==='spi')&&!board.interfaces?.spi?.hosts.includes(Number(component.parameters.spiHost)))issue('error','spi-host',component.name+': выберите доступный SPI.',fields);

@@ -10,16 +10,14 @@ const { chromium } = require('playwright');
  try {
   await page.goto(url);
   await page.getByRole('button',{name:'Новый проект',exact:true}).click();
-  const dialog=page.getByRole('dialog'), board=dialog.getByRole('combobox',{name:'Плата',exact:true});
-  assert.equal(await board.locator('option[value="waveshare-esp32-p4-nano"]').innerText(),'ESP32-P4-NANO');
-  await board.selectOption('waveshare-esp32-p4-nano');
+  const dialog=page.getByRole('dialog');await dialog.getByRole('button',{name:'Сменить плату',exact:true}).click();await page.getByRole('button',{name:'Выбрать плату: ESP32-P4-NANO',exact:true}).click();
   await dialog.getByRole('textbox',{name:'Название проекта'}).fill('P4 UI check');
   await dialog.getByRole('button',{name:'Создать проект',exact:true}).click();
   await page.getByRole('heading',{name:'P4 UI check',exact:true}).waitFor();
   await page.getByRole('button',{name:'Монтаж',exact:true}).click();
   await page.locator('.assembly-board-node').waitFor();
   assert.equal(await page.locator('.assembly-board-node g[data-pin]').count(),52);
-  await page.locator('.board-option.chosen').click();
+  await page.locator('.assembly-board-node').click();
   const revision=page.getByRole('combobox',{name:'Ревизия ESP32-P4',exact:true});
   assert.equal(await revision.inputValue(),'pre-v3');
   await revision.selectOption('v3');

@@ -1,5 +1,5 @@
 import { hardwareBinding } from '../../logic/model.js';
-const keys=new Set(['clex.logic.gpio-edge','clex.hardware.led','clex.hardware.button','clex.logic.timer','clex.logic.counter','clex.logic.stopwatch','clex.logic.serial','clex.logic.gpio-read','clex.logic.gpio-set','clex.logic.gpio-toggle']);
+const keys=new Set(['clex.hardware.touch-button','clex.logic.gpio-edge','clex.hardware.led','clex.hardware.button','clex.logic.timer','clex.logic.counter','clex.logic.stopwatch','clex.logic.serial','clex.logic.gpio-read','clex.logic.gpio-set','clex.logic.gpio-toggle']);
 export function generateArduinoAvr(project,catalog,board,cString,issues){
  const revision=project.boardSettings.bootloader || board.options.bootloader.default;
  if(!Object.hasOwn(board.firmware.variants,revision))throw new Error('Выберите загрузчик Nano.');
@@ -27,11 +27,11 @@ export function generateArduinoAvr(project,catalog,board,cString,issues){
  const declarations=[],initialize=[],poll=[];
  components.forEach((c,i)=>{
   const assignment=project.gpioAssignments.find(a=>a.componentId===c.id);if(!assignment)throw new Error('Назначьте контакт Nano компоненту «'+c.name+'».');
-  const pin=assignment.gpio,output=c.moduleId==='clex.hardware.led';
+  const pin=assignment.gpio,output=c.moduleId==='clex.hardware.led',sample='digitalRead('+pin+') '+(c.parameters.activeLevel==='low'?'== LOW':'!= LOW');
   declarations.push(output?'static bool gpio_state_'+i+';':'static bool input_stable_'+i+', input_raw_'+i+';\nstatic uint32_t input_changed_'+i+';');
-  initialize.push('  pinMode('+pin+', '+(output?'OUTPUT':'INPUT_PULLUP')+');');
+  initialize.push('  pinMode('+pin+', '+(output?'OUTPUT':c.parameters.pull==='up'?'INPUT_PULLUP':'INPUT')+');');
   if(output)initialize.push('  digitalWrite('+pin+', LOW);');
-  else {initialize.push('  input_stable_'+i+' = input_raw_'+i+' = digitalRead('+pin+') != LOW; input_changed_'+i+' = millis();');poll.push('  { bool raw = digitalRead('+pin+') != LOW; if(raw != input_raw_'+i+'){ input_raw_'+i+' = raw; input_changed_'+i+' = now; } if((uint32_t)(now-input_changed_'+i+') >= '+c.parameters.debounceMs+'UL) input_stable_'+i+' = raw; }');}
+  else {initialize.push('  input_stable_'+i+' = input_raw_'+i+' = '+sample+'; input_changed_'+i+' = millis();');poll.push('  { bool raw = '+sample+'; if(raw != input_raw_'+i+'){ input_raw_'+i+' = raw; input_changed_'+i+' = now; } if((uint32_t)(now-input_changed_'+i+') >= '+c.parameters.debounceMs+'UL) input_stable_'+i+' = raw; }');}
  });
  nodes.forEach((n,i)=>{
   if(n.moduleId==='clex.logic.gpio-edge'){const h=hardware.get(hardwareBinding(n,project,catalog).component.id);declarations.push('static bool value_'+i+';');initialize.push('  value_'+i+' = input_stable_'+h+';');poll.push('  if(value_'+i+' != input_stable_'+h+'){value_'+i+'=input_stable_'+h+';'+emit(n,'changed')+'if(value_'+i+'){'+emit(n,'rising')+'}else{'+emit(n,'falling')+'}}');}

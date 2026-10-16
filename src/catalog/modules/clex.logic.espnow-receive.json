@@ -1,41 +1,55 @@
 {
-  "id": "clex.logic.espnow-command-received",
-  "version": "1.0.0",
+  "id": "clex.logic.espnow-receive",
+  "version": "2.0.0",
   "kind": "logic",
-  "name": "Получена команда ESP-NOW",
-  "description": "Запускает действия при получении указанной защищенной команды.",
+  "name": "Получено ESP-NOW",
+  "description": "Получает сообщения или команды с указанным именем от устройств из списка.",
   "category": "network",
-  "categoryName": "Связь",
+  "categoryName": "Сеть",
   "icon": "Radio",
   "color": "#f472b6",
   "inputs": [],
   "outputs": [
     {
-      "id": "received",
+      "id": "messageReceived",
+      "name": "Сообщение получено",
+      "type": "event",
+      "description": "Срабатывает один раз для нового сообщения.",
+      "when": {
+        "field": "transferType",
+        "value": "message"
+      }
+    },
+    {
+      "id": "commandReceived",
       "name": "Команда получена",
       "type": "event",
-      "description": "Срабатывает один раз для нового сообщения."
+      "description": "Срабатывает один раз для новой команды с указанным именем.",
+      "when": {
+        "field": "transferType",
+        "value": "command"
+      }
     },
     {
       "id": "text",
       "name": "Текст сообщения",
       "type": "text",
       "description": "Принятый текст UTF-8.",
-      "readyOn": "received"
+      "readyOn": "messageReceived"
     },
     {
       "id": "sender",
       "name": "MAC отправителя",
       "type": "text",
       "description": "MAC разрешенного отправителя.",
-      "readyOn": "received"
+      "readyOn": "messageReceived"
     },
     {
       "id": "rssi",
       "name": "Уровень сигнала, дБм",
       "type": "number",
       "description": "RSSI принятого пакета. Значение -127 означает, что API не передал RSSI.",
-      "readyOn": "received",
+      "readyOn": "messageReceived",
       "additional": true
     },
     {
@@ -43,7 +57,11 @@
       "name": "Имя команды",
       "type": "text",
       "description": "Имя полученной команды.",
-      "readyOn": "received"
+      "readyOn": "commandReceived",
+      "when": {
+        "field": "transferType",
+        "value": "command"
+      }
     }
   ],
   "parameters": {
@@ -52,11 +70,30 @@
       "type": "component",
       "default": ""
     },
+    "transferType": {
+      "label": "Тип приема",
+      "type": "select",
+      "default": "message",
+      "options": [
+        {
+          "value": "message",
+          "label": "Сообщение"
+        },
+        {
+          "value": "command",
+          "label": "Команда"
+        }
+      ]
+    },
     "command": {
       "label": "Имя команды",
       "type": "text",
       "default": "SET_LR",
-      "maxLength": 32
+      "maxLength": 32,
+      "when": {
+        "field": "transferType",
+        "value": "command"
+      }
     }
   },
   "constraints": {
@@ -76,7 +113,7 @@
   },
   "firmware": {
     "status": "implemented",
-    "generatorKey": "espnow-command-received",
+    "generatorKey": "espnow-receive",
     "eventSource": true,
     "dependencies": [
       "esp_wifi"
