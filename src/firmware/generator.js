@@ -1,4 +1,5 @@
 import {gpioEdgeFirmware} from './drivers/gpio-edge.js';
+import {selectNumberCode} from './drivers/select-number.js';
 import {espNowFirmware} from './drivers/espnow.js';
 import { generateArduinoAvr } from './platforms/arduino-avr.js';
 import profiles from './runtime-profiles.json' with { type: 'json' };
@@ -21,6 +22,7 @@ const implementationVersions = {
   'clex.logic.espnow-ack':'2.0.0',
   'clex.logic.espnow-control':'2.0.0',
 };
+implementationKeys['clex.logic.select-number'] = 'select-number';
 export const IMPLEMENTATIONS = Object.values(implementationKeys);
 export function cString(value) {
   if (value.includes('\0')) throw new Error('Текст сообщения содержит нулевой байт.');
@@ -50,7 +52,7 @@ export function generateFirmware(project, catalog, consoleMode = 'usb') {
   const stopwatch=stopwatchFirmware(nodes,index);
   const buses=peripheralBuses(project,catalog);
   const events=Boolean(network.runtime || media.enabled);
-  const eventModules=new Set([...network.eventModules,...media.eventModules,...stopwatch.eventModules,...espnow.eventModules,...gpioEdge.eventModules]);
+  const eventModules=new Set([...network.eventModules,...media.eventModules,...stopwatch.eventModules,...espnow.eventModules,...gpioEdge.eventModules,'clex.logic.select-number']);
   const eventTypes=media.enabled ? MEDIA_TYPES+'\n'+(network.types ? network.types.replace('clex_ethernet_snapshot_t ethernet;', 'clex_media_snapshot_t media; clex_ethernet_snapshot_t ethernet;') : 'typedef struct { uint16_t node; uint8_t kind,flags; uint32_t generation; union { clex_media_snapshot_t media; } payload; } clex_flow_event_t;') : network.types;
   const featureRuntimes=[...new Set([...(graphics.features||[]),...media.features,...espnow.features])].sort();
   const extraProfiles=featureRuntimes.map(feature=>{const profile=profiles[feature];if(!profile || profile.target!==board.target)throw new Error('Неподдерживаемая комбинация драйвера и платы.');return profile;});
@@ -132,6 +134,7 @@ export function generateFirmware(project, catalog, consoleMode = 'usb') {
     const calls = (eventModules.has(node.moduleId) ? [] : sourceEvents).sort((a,b)=>index.get(a.target)-index.get(b.target) || (a.targetHandle < b.targetHandle ? -1 : a.targetHandle > b.targetHandle ? 1 : 0)).map(edge=>`  ${eventCall(edge)}`);
     const binding=hardwareBinding(node,project,catalog), h=hardware.get(binding.component?.id), gpio=binding.gpio;
     const operations=[], elementFunctions=[];
+    if (node.moduleId === 'clex.logic.select-number') operations.push(selectNumberCode(node, dataExpression(inputEdge(node, 'value')), port => `    node_${i}_emit_${port}();`));
     if(espnow.operations.has(node.id)){const op=espnow.operations.get(node.id);operations.push(typeof op==='function'?op({inputEdge,dataExpression}):op);}
     if (media.operations.has(node.id)) operations.push(media.operations.get(node.id));
     if (stopwatch.operations.has(node.id)) operations.push(stopwatch.operations.get(node.id));

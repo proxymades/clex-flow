@@ -1,5 +1,6 @@
 import {ESPNOW_MODULE,readPeers} from '../../espnow/model.js';
 import {ESPNOW_RUNTIME} from './esp-idf/espnow-runtime.js';
+import {espNowPersistence} from './esp-idf/espnow-persistence.js';
 const bytes=value=>'{'+(value.match(/../g)||[]).map(part=>'0x'+part).join(',')+'}';
 export function espNowFirmware(project,nodes,index,cString,netifReady){
  const components=project.components.filter(c=>c.moduleId===ESPNOW_MODULE),blocks=nodes.filter(n=>n.moduleId.startsWith('clex.logic.espnow-'));
@@ -50,6 +51,7 @@ export function espNowFirmware(project,nodes,index,cString,netifReady){
  notify+=' default:break;}\n}\n';
  const config=`static const clex_en_config_t clex_en_config[${peers.length||1}]={\n${peers.length?peers.map(peer=>` { .mac=${bytes(peer.mac.replaceAll(':',''))},.lmk=${bytes(p.encryption&&peer.encrypted?peer.lmk:'00'.repeat(16))},.encrypted=${Boolean(p.encryption&&peer.encrypted)} },`).join('\n'):' { .mac={0},.lmk={0},.encrypted=false }'}\n};`;
  const replacements={CONFIG:config,COUNT:peers.length,TIMEOUT:p.timeoutMs,RETRIES:p.retries,ALLOW_MODE:p.allowModeChange?'1':'0',COMPONENT:cString(component.id),NETIF:netifReady?'':'err=esp_netif_init();if(err!=ESP_OK){en_error("Не удалось подготовить Wi-Fi netif");goto finish;}',PMK:p.encryption?`{const uint8_t pmk[16]=${bytes(p.pmk)};EN_INIT(esp_now_set_pmk(pmk));}`:'',MODE:p.mode==='lr'?1:0,CHANNEL:p.channel};
+ replacements.MODE_STORAGE=espNowPersistence(project.id,component.id,cString,p.rememberMode===true);
  const runtime=ESPNOW_RUNTIME.replace(/@([A-Z_]+)@/g,(_,name)=>String(replacements[name]));
- return {...empty,enabled:true,features:['espnow-s3'],headers:'#include "esp_wifi.h"\n#include "esp_now.h"\n#include "esp_random.h"\n#include "esp_mac.h"\n#include "esp_event.h"\n#include "esp_netif.h"\n#include "nvs_flash.h"\n#include "mbedtls/md.h"',source:runtime+'\n'+declarations,notify,initialize:'  clex_en_initialize();',poll:'    clex_en_poll();',expressions,textSizes,operations,extraFunctions,eventModules:new Set(blocks.map(node=>node.moduleId))};
+ return {...empty,enabled:true,features:['espnow-s3'],headers:'#include "esp_wifi.h"\n#include "esp_now.h"\n#include "esp_random.h"\n#include "esp_mac.h"\n#include "esp_event.h"\n#include "esp_netif.h"\n#include "nvs_flash.h"\n#include "mbedtls/md.h"'+(p.rememberMode===true?'\n#include "nvs.h"':''),source:runtime+'\n'+declarations,notify,initialize:'  clex_en_initialize();',poll:'    clex_en_poll();',expressions,textSizes,operations,extraFunctions,eventModules:new Set(blocks.map(node=>node.moduleId))};
 }

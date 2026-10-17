@@ -23,6 +23,7 @@ static uint8_t en_local_mac[6];
 static uint64_t en_boot;
 static uint32_t en_sequence;
 static bool en_dirty;
+@MODE_STORAGE@
 typedef struct { uint64_t source,challenge; uint32_t hello_seq,last_seq; bool complete,ok; uint8_t auth_key[32]; } en_peer_t;
 static en_peer_t en_peers[EN_PEER_COUNT?EN_PEER_COUNT:1];
 typedef struct { uint16_t length; uint8_t peer; int8_t rssi; uint8_t bytes[250]; } en_raw_t;
@@ -71,7 +72,7 @@ static bool __attribute__((unused)) clex_en_set_mode(int mode){
  for(;applied<en_count();applied++){err=en_rate(applied,mode);if(err!=ESP_OK)break;}
  if(err!=ESP_OK){bool rolled=true;for(unsigned i=0;i<en_count();i++)if(en_rate(i,before==1?1:0)!=ESP_OK)rolled=false;clex_en_status.mode=rolled?(before==1?1:0):2;snprintf(clex_en_status.error,sizeof(clex_en_status.error),"Режим: %s%s",esp_err_to_name(err),rolled?"":"; откат выполнен не полностью");en_dirty=true;return false;}
  if(before!=mode||clex_en_status.error[0]){en_dirty=true;}
- clex_en_status.mode=mode;clex_en_status.error[0]=0;return true;
+ clex_en_status.mode=mode;if(!en_mode_save(mode))return false;en_mode_clear_error();return true;
 }
 static bool __attribute__((unused)) clex_en_respond(bool ok){
  if(!en_rx.active){en_error("Нет команды, ожидающей подтверждения");en_dirty=true;return false;}
@@ -79,7 +80,7 @@ static bool __attribute__((unused)) clex_en_respond(bool ok){
  // Cache the result even if ACK delivery failed: duplicates may resend it, never execute twice.
  en_peers[en_rx.peer].complete=true;en_peers[en_rx.peer].ok=ok;en_rx.active=false;en_dirty=true;return sent;
 }
-static void en_tx_end(bool ok,bool lost,const char*reason){unsigned node=en_tx.node;en_tx.active=false;if(lost)clex_en_status.lost++;if(!ok)en_error(reason);else clex_en_status.error[0]=0;en_dirty=true;clex_en_notify(ok?EN_CONFIRMED:EN_FAILED,node);}
+static void en_tx_end(bool ok,bool lost,const char*reason){unsigned node=en_tx.node;en_tx.active=false;if(lost)clex_en_status.lost++;if(!ok)en_error(reason);else en_mode_clear_error();en_dirty=true;clex_en_notify(ok?EN_CONFIRMED:EN_FAILED,node);}
 static void en_hello(void){en_tx.phase=1;en_tx.due=esp_timer_get_time()+EN_TIMEOUT_US;en_packet(en_tx.peer,EN_HELLO,0,en_boot,0,en_tx.seq,"","");}
 static bool __attribute__((unused)) clex_en_send(unsigned peer,unsigned node,bool command,const char*name,const char*text){
  if(!clex_en_status.ready){en_error("Радио ESP-NOW не готово");en_dirty=true;return false;}
@@ -156,8 +157,8 @@ static void clex_en_initialize(void){
   if(peer.encrypt&&mbedtls_md_hmac(mbedtls_md_info_from_type(MBEDTLS_MD_SHA256),peer.lmk,16,(const uint8_t*)"CLEXFlowESPNowAuthv1",sizeof("CLEXFlowESPNowAuthv1")-1,en_peers[i].auth_key)){en_error("Не удалось подготовить аутентификацию ESP-NOW");goto finish;}
  }
  EN_INIT(esp_now_register_recv_cb(en_receive));EN_INIT(esp_now_register_send_cb(en_send_complete));
- clex_en_status.ready=true;clex_en_status.mode=@MODE@;
- if(!en_initial_rate(@MODE@)){clex_en_status.mode=2;en_error("Не удалось установить начальную скорость передачи");}
+ int mode=en_mode_load(@MODE@);clex_en_status.ready=true;clex_en_status.mode=mode;
+ if(!en_initial_rate(mode)){clex_en_status.mode=2;en_error("Не удалось установить начальную скорость передачи");}
  finish:
  #undef EN_INIT
  en_dirty=true;atomic_store(&en_initialized,true);

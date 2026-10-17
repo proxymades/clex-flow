@@ -1,8 +1,8 @@
 import { formatCount } from '../utils/plural.js';
 import { useState } from 'react';
-import { Search, Plus, Timer, ScanLine, ArrowUpRight, Repeat2, Terminal, Box, Layers, Monitor, Hash , Network, Globe , Camera, Volume2, Radio } from 'lucide-react';
+import { Search, Plus, Timer, ScanLine, ArrowUpRight, Repeat2, Terminal, Box, Layers, Monitor, Hash , Network, Globe , Camera, Volume2, Radio, GitBranch } from 'lucide-react';
 import { TYPE_COLORS, TYPE_NAMES, logicAdditionProblem } from './model.js';
-const icons = { Timer, ScanLine, ArrowUpRight, Repeat2, Terminal, Monitor, Hash, Network, Globe, Camera, Volume2, Radio };
+const icons = { Timer, ScanLine, ArrowUpRight, Repeat2, Terminal, Monitor, Hash, Network, Globe, Camera, Volume2, Radio, GitBranch };
 export default function LogicLibrary({ modules, project, catalog, busy, onAdd }) {
   const [search, setSearch] = useState(''), [category, setCategory] = useState('all');
   const categories = [...new Map(modules.map(module => [module.category, module.categoryName])).entries()];

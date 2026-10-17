@@ -3,10 +3,10 @@ import {createProject} from '../src/projects/model.js';
 import {addHardware,connectTerminal} from '../src/assembly/model.js';
 import {addNode,connectNodes,withLogic,updateNode} from '../src/logic/model.js';
 export const testKey='0123456789abcdef0123456789abcdef';
-export function espNowProject({combined=false,zeroPeers=false,receiver=true}={}){
+export function espNowProject({combined=false,zeroPeers=false,receiver=true,rememberMode=false}={}){
  let p=createProject('ESP-NOW: '+(zeroPeers?'MAC':receiver?'приемник':'отправитель'),'','waveshare-esp32-s3-eth',{camera:'disconnected'});
  p=addHardware(p,catalog.modules.find(m=>m.id==='clex.hardware.espnow'),catalog);const component=p.components[0];
- component.parameters.pmk=testKey;component.parameters.peers=JSON.stringify(zeroPeers?[]:[{id:'12345678-1234-4234-8234-123456789abc',name:'Вторая плата',mac:'02:11:22:33:44:55',encrypted:true,lmk:testKey}]);
+ component.parameters.rememberMode=rememberMode;component.parameters.pmk=testKey;component.parameters.peers=JSON.stringify(zeroPeers?[]:[{id:'12345678-1234-4234-8234-123456789abc',name:'Вторая плата',mac:'02:11:22:33:44:55',encrypted:true,lmk:testKey}]);
  let graph=p.logic;const nodes={};
  function add(name,key,parameters={}){graph=addNode(graph,catalog.modules.find(m=>m.id===key),p.components,p,catalog);let n=graph.nodes.at(-1);graph=updateNode(graph,n.id,{parameters:{...n.parameters,...parameters}});nodes[name]=graph.nodes.find(node=>node.id===n.id);}
  const radio=(name,key,parameters={})=>add(name,'clex.logic.espnow-'+key,parameters);

@@ -1,5 +1,6 @@
 import { hardwareBinding } from '../../logic/model.js';
-const keys=new Set(['clex.hardware.touch-button','clex.logic.gpio-edge','clex.hardware.led','clex.hardware.button','clex.logic.timer','clex.logic.counter','clex.logic.stopwatch','clex.logic.serial','clex.logic.gpio-read','clex.logic.gpio-set','clex.logic.gpio-toggle']);
+import { selectNumberCode } from '../drivers/select-number.js';
+const keys=new Set(['clex.logic.select-number','clex.hardware.touch-button','clex.logic.gpio-edge','clex.hardware.led','clex.hardware.button','clex.logic.timer','clex.logic.counter','clex.logic.stopwatch','clex.logic.serial','clex.logic.gpio-read','clex.logic.gpio-set','clex.logic.gpio-toggle']);
 export function generateArduinoAvr(project,catalog,board,cString,issues){
  const revision=project.boardSettings.bootloader || board.options.bootloader.default;
  if(!Object.hasOwn(board.firmware.variants,revision))throw new Error('Выберите загрузчик Nano.');
@@ -43,6 +44,7 @@ export function generateArduinoAvr(project,catalog,board,cString,issues){
  });
  const prototypes=nodes.map((n,i)=>'static void node_'+i+'();'+(n.moduleId==='clex.logic.counter'?'\nstatic void node_'+i+'_reset();':'')+(n.moduleId==='clex.logic.stopwatch'?'\nstatic void node_'+i+'_pause();\nstatic void node_'+i+'_reset();\nstatic void node_'+i+'_changed();':'')).join('\n');
  const functions=nodes.map((n,i)=>{
+  if(n.moduleId==='clex.logic.select-number')return 'static void node_'+i+'(){\n'+selectNumberCode(n,data(edge(n,'value')),port=>emit(n,port),true)+'\n}';
   const binding=hardwareBinding(n,project,catalog),h=hardware.get(binding.component?.id),operations=[];
   if(n.moduleId==='clex.logic.gpio-read')operations.push('  value_'+i+' = input_stable_'+h+';');
   if(n.moduleId==='clex.logic.gpio-set'){const input=edge(n,'value');operations.push('  gpio_state_'+h+' = '+(input?data(input):n.parameters.defaultValue?'true':'false')+';\n  digitalWrite('+binding.gpio+', gpio_state_'+h+' ? HIGH : LOW);');}

@@ -1,0 +1,32 @@
+{
+  "id": "clex.logic.select-number",
+  "version": "1.0.0",
+  "kind": "logic",
+  "name": "Выбор по значению",
+  "description": "По сигналу читает последнее значение источника и запускает одну из двух настроенных ветвей либо ветвь для остальных значений. Изменение числа само по себе не запускает выбор.",
+  "category": "values",
+  "categoryName": "Данные",
+  "icon": "GitBranch",
+  "color": "#fbbf24",
+  "inputs": [
+    { "id": "trigger", "name": "Выбрать действие", "type": "event", "required": true, "description": "Сравнивает последнее значение на числовом входе с настройками блока." },
+    { "id": "value", "name": "Текущее значение", "type": "number", "required": true, "sample": "latest", "description": "Последнее значение источника на момент сигнала. Отдельная связь события обновления источника не требуется." }
+  ],
+  "outputs": [
+    { "id": "first", "name": "Первое значение", "type": "event", "description": "Срабатывает только при совпадении с первым настроенным значением." },
+    { "id": "second", "name": "Второе значение", "type": "event", "description": "Срабатывает только при совпадении со вторым настроенным значением." },
+    { "id": "other", "name": "Другое значение", "type": "event", "description": "Срабатывает, если число не совпадает ни с одним настроенным значением." }
+  ],
+  "parameters": {
+    "firstValue": { "label": "Первое значение", "type": "integer", "default": 0, "min": -2147483648, "max": 2147483647, "step": 1 },
+    "secondValue": { "label": "Второе значение", "type": "integer", "default": 1, "min": -2147483648, "max": 2147483647, "step": 1 }
+  },
+  "constraints": {},
+  "compatibility": {
+    "projectFormat": 3,
+    "targets": ["esp32s3", "esp32p4", "atmega328p"],
+    "espIdf": "5.4.4",
+    "platforms": { "arduino-avr": "1.8.6" }
+  },
+  "firmware": { "status": "implemented", "generatorKey": "select-number", "dependencies": [] }
+}

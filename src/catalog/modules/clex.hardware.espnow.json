@@ -47,6 +47,12 @@
       "type": "boolean",
       "default": true
     },
+    "rememberMode": {
+      "label": "Запоминать режим передачи после перезагрузки",
+      "type": "boolean",
+      "default": false,
+      "description": "Сохраняет выбранный режим в памяти этой ESP32. Если сохраненного режима еще нет, используется начальный режим проекта."
+    },
     "encryption": {
       "label": "Шифрование",
       "type": "boolean",

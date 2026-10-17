@@ -1,12 +1,12 @@
 import { formatCount } from '../utils/plural.js';
 import {memo,useEffect} from 'react';
 import {Handle,Position,useUpdateNodeInternals} from '@xyflow/react';
-import {Timer,ScanLine,ArrowUpRight,Repeat2,Terminal,Box,TriangleAlert,Monitor,Hash,Network,Globe,Link2, Camera, Volume2, Radio } from 'lucide-react';
+import {Timer,ScanLine,ArrowUpRight,Repeat2,Terminal,Box,TriangleAlert,Monitor,Hash,Network,Globe,Link2, Camera, Volume2, Radio, GitBranch } from 'lucide-react';
 import ScreenPreview from '../displays/ScreenPreview.jsx';
 import PortValueStates from './PortValueStates.jsx';
 import {TYPE_COLORS,TYPE_NAMES} from './model.js';
 import {visiblePorts,nodeDisplayName} from './presentation.js';
-const icons={Timer,ScanLine,ArrowUpRight,Repeat2,Terminal,Monitor,Hash,Network,Globe,Camera,Volume2,Radio};
+const icons={Timer,ScanLine,ArrowUpRight,Repeat2,Terminal,Monitor,Hash,Network,Globe,Camera,Volume2,Radio,GitBranch};
 function LogicNode({id,data,selected}){
  const {definition,node,binding,issueCount,onPort,pending,display,screen,project,catalog,connection,onBindData}=data;
  const ports=visiblePorts(node,project,catalog,{connection});

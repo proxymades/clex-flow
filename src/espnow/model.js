@@ -13,6 +13,7 @@ export function espNowIssues(component,board){
  if(!espNowSupported(board))errors.push('Для этой платы нет доступного ESP-NOW-радиоинтерфейса.');
  if(!Number.isInteger(p.channel)||p.channel<1||p.channel>11)errors.push('Выберите канал Wi-Fi от 1 до 11.');
  if(typeof p.encryption!=='boolean'||typeof p.allowModeChange!=='boolean')errors.push('Неверные переключатели ESP-NOW.');
+ if(p.rememberMode!==undefined&&typeof p.rememberMode!=='boolean')errors.push('Неверная настройка сохранения режима ESP-NOW.');
  if(p.encryption&&!keyValid(p.pmk))errors.push('PMK должен содержать 32 шестнадцатеричных символа (16 байт).');
  if(!['normal','lr'].includes(p.mode)||p.mode==='lr'&&!board.radio?.longRange)errors.push('Выберите доступный режим радио.');
  if(!Number.isInteger(p.timeoutMs)||p.timeoutMs<100||p.timeoutMs>30000||!Number.isInteger(p.retries)||p.retries<0||p.retries>5)errors.push('Таймаут: 100-30000 мс; повторов: 0-5.');

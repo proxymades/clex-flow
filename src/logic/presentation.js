@@ -13,6 +13,10 @@ export function presentPort(port,node,project,catalog){
   const step=node.parameters.step;name=step>0?'Прибавить '+step:step<0?'Вычесть '+Math.abs(step):'Применить шаг 0';
   description=step===0?'Сохраняет число и отправляет сигнал «Счетчик обновлен».':'При получении сигнала '+(step>0?'прибавляет '+step:'вычитает '+Math.abs(step))+'.';
  }
+ if(module?.firmware?.generatorKey==='select-number'&&['first','second'].includes(port.id)){
+  const value=node.parameters[port.id==='first'?'firstValue':'secondValue'];
+  name='Значение '+value;description='Сигнал, если текущее число равно '+value+'.';
+ }
  if(module?.editor==='screen'){
   const bindings=screenBindings(screenFor(project,node.parameters.componentId));
   const binding=bindings.find(item=>item.id===port.id||'update.'+item.id===port.id);

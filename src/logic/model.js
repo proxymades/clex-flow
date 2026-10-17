@@ -192,6 +192,7 @@ export function validateGraph(project, catalog) {
       if (parameter.type === 'select' && !parameter.options.some(option=>option.value===value)) add('error','logic-parameter',node.name+': выберите допустимый вариант «'+parameter.label+'».',fields);
       if (parameter.type === 'text' && (typeof value !== 'string' || value.length > parameter.maxLength)) add('error', 'logic-parameter', `${node.name}: текст не должен превышать ${formatCount(parameter.maxLength, ['символ', 'символа', 'символов'])}.`, fields);
     }
+    if (module.id === 'clex.logic.select-number' && node.parameters.firstValue === node.parameters.secondValue) add('error', 'logic-parameter', node.name + ': укажите два разных значения для выбора.', fields);
     for(const message of [...espNowLogicIssues(node,project,boardFor(project,catalog)),...espNowAckIssues(node,project,catalog)])add('error','espnow-logic',node.name+': '+message,fields);
     if(module.constraints.network){if(!project.components.some(component=>catalog.modules.find(module=>module.id===component.moduleId)?.network))add('error','probe-network',node.name+': добавьте сетевой интерфейс в монтаж.',fields);if(!probeUrl(node.parameters.url))add('error','probe-url',node.name+': укажите HTTP/HTTPS-адрес без логина, пароля и фрагмента.',fields);}
     const binding = hardwareBinding(node, project, catalog);
@@ -214,7 +215,8 @@ export function validateGraph(project, catalog) {
     const source = graph.nodes.find(node => node.id === edge.source), port = nodePorts(source,catalog,project).outputs.find(port => port.id === edge.sourceHandle);
     if (edge.dataType !== port.type) add('error', 'logic-type', 'Сохраненный тип связи не совпадает с типом портов.', { edgeId: edge.id });
     const orderedEdges = graphModule(graph.nodes.find(node => node.id === edge.target), catalog)?.editor === 'screen' ? graph.edges.filter(item => item.target !== edge.target || item.dataType !== 'event' || ['trigger', elementUpdatePort(edge.targetHandle)].includes(item.targetHandle)) : graph.edges;
-    if (port.readyOn && !hasPath(orderedEdges, source.id, edge.target, true)) add('error', 'logic-order', 'Значение должно передаваться после события «Готово» его источника. Соедините также события.', { edgeId: edge.id, nodeId: edge.target });
+    const input = nodePorts(graph.nodes.find(node => node.id === edge.target), catalog, project).inputs.find(port => port.id === edge.targetHandle);
+    if (port.readyOn && input?.sample !== 'latest' && !hasPath(orderedEdges, source.id, edge.target, true)) add('error', 'logic-order', 'Значение должно передаваться после события «Готово» его источника. Соедините также события.', { edgeId: edge.id, nodeId: edge.target });
   }
   const roots = graph.nodes.filter(node => {const firmware=graphModule(node,catalog)?.firmware;return node.moduleId==='clex.logic.timer'||firmware?.eventSource&&(!firmware.eventSourceWhen||node.parameters[firmware.eventSourceWhen.field]===firmware.eventSourceWhen.value);}).map(node => node.id);
   for (const node of graph.nodes.filter(node => !roots.includes(node.id) && !graphModule(node, catalog)?.editor)) if (!roots.some(root => hasPath(graph.edges, root, node.id, true))) add('warning', 'logic-unreachable', `${node.name}: нет событийного пути от источника событий.`, { nodeId: node.id });

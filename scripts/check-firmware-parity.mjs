@@ -10,6 +10,7 @@ import { networkProject } from '../tests/network-fixture.js';
 import { p4Project } from '../tests/p4-fixture.js';
 import {espNowProject,espNowButtonProject} from '../tests/espnow-fixture.js';
 import {nanoProject} from '../tests/nano-fixture.js';
+import {selectNumberProject} from '../tests/select-number-fixture.js';
 import {touchButtonProject} from '../tests/touch-button-fixture.js';
 import { peripheralProject } from '../tests/peripheral-fixture.js';
 import { createProject } from '../src/projects/model.js';
@@ -31,11 +32,15 @@ function mediaProject(family) {
 }
 
 const cases = [
+  ['s3-select-number',selectNumberProject().project,'usb'],
+  ['p4-select-number',selectNumberProject('waveshare-esp32-p4-nano').project,'uart'],
+  ['nano-select-number',selectNumberProject('arduino-nano-atmega328p-ch340').project,'uart'],
   ['s3-touch-high',touchButtonProject().project,'usb'],
   ['p4-touch-low',touchButtonProject('waveshare-esp32-p4-nano','low').project,'uart'],
   ['nano-touch-low',touchButtonProject('arduino-nano-atmega328p-ch340','low').project,'uart'],
   ['s3-espnow-mac',espNowProject({zeroPeers:true}).project,'usb'],
   ['s3-espnow-receiver',espNowProject().project,'usb'],
+  ['s3-espnow-persistence',espNowProject({rememberMode:true}).project,'usb'],
   ['s3-espnow-button',espNowButtonProject().project,'usb'],
   ['nano-counter',nanoProject(),'uart'],
   ['nano-old',nanoProject({bootloader:'old'}),'uart'],
