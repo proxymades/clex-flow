@@ -112,7 +112,9 @@ int main(void){
  // Invalid mode/version/owner/length is never applied; the initial value wins.
  for(int bad=0;bad<5;bad++){
   assert(clex_en_set_mode(0));en_mode_record_t record;memcpy(&record,durable,sizeof(record));
-  if(bad==0)record.mode=7;if(bad==1)record.version=9;if(bad==2)memset(record.owner,'X',sizeof(record.owner));
+  if(bad==0){record.mode=7;}
+  if(bad==1){record.version=9;}
+  if(bad==2){memset(record.owner,'X',sizeof(record.owner));}
   memcpy(durable,&record,sizeof(record));durable_length=sizeof(record)+(bad==3?1:bad==4?-1:0);
   boot(1);assert(clex_en_status.mode==1&&clex_en_status.error[0]);assert(clex_en_set_mode(1));assert(!clex_en_status.error[0]);
  }
