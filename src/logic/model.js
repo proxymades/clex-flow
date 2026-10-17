@@ -1,5 +1,5 @@
 import {ESPNOW_MODULE,espNowSupported,espNowLogicIssues,espNowAckIssues} from '../espnow/model.js';
-import { moduleSupportsBoard } from '../catalog/compatibility.js';
+import { moduleSupportsBoard,moduleIsEventSource } from '../catalog/compatibility.js';
 import { formatCount } from '../utils/plural.js';
 import { hardwareProvider } from '../hardware/resources.js';
 import { networkProvider, probeUrl } from '../network/model.js';
@@ -80,7 +80,13 @@ export function addNode(graph, module, components = [], project = null, catalog 
 }
 
 export function updateNode(graph, id, patch, catalog = null, project = null) {
-  const previous=graph.nodes.find(node=>node.id===id), next={...graph,nodes:graph.nodes.map(node=>node.id===id?{...node,...patch}:node)};
+  const previous=graph.nodes.find(node=>node.id===id);
+  if(catalog&&previous?.moduleId==='clex.logic.espnow-control'&&patch.parameters?.action==='peer'){
+    const module=graphModule(previous,catalog);
+    patch={...patch,parameters:{...patch.parameters}};
+    for(const [key,parameter] of Object.entries(module?.parameters||{}))if(parameter.when?.field==='action'&&parameter.when.value==='peer'&&patch.parameters[key]===undefined)patch.parameters[key]=parameter.default;
+  }
+  const next={...graph,nodes:graph.nodes.map(node=>node.id===id?{...node,...patch}:node)};
   if(!catalog||!previous?.moduleId.startsWith('clex.logic.espnow-')||!patch.parameters||!['transferType','action'].some(key=>previous.parameters[key]!==patch.parameters[key]))return next;
   const current=next.nodes.find(node=>node.id===id), before=nodePorts(previous,catalog,project), after=nodePorts(current,catalog,project);
   // Different purposes have different port IDs; retain only the same purpose and data type.
@@ -218,7 +224,7 @@ export function validateGraph(project, catalog) {
     const input = nodePorts(graph.nodes.find(node => node.id === edge.target), catalog, project).inputs.find(port => port.id === edge.targetHandle);
     if (port.readyOn && input?.sample !== 'latest' && !hasPath(orderedEdges, source.id, edge.target, true)) add('error', 'logic-order', 'Значение должно передаваться после события «Готово» его источника. Соедините также события.', { edgeId: edge.id, nodeId: edge.target });
   }
-  const roots = graph.nodes.filter(node => {const firmware=graphModule(node,catalog)?.firmware;return node.moduleId==='clex.logic.timer'||firmware?.eventSource&&(!firmware.eventSourceWhen||node.parameters[firmware.eventSourceWhen.field]===firmware.eventSourceWhen.value);}).map(node => node.id);
+  const roots = graph.nodes.filter(node => node.moduleId==='clex.logic.timer'||moduleIsEventSource(graphModule(node,catalog),node)).map(node => node.id);
   for (const node of graph.nodes.filter(node => !roots.includes(node.id) && !graphModule(node, catalog)?.editor)) if (!roots.some(root => hasPath(graph.edges, root, node.id, true))) add('warning', 'logic-unreachable', `${node.name}: нет событийного пути от источника событий.`, { nodeId: node.id });
   return issues;
 }

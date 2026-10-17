@@ -3,7 +3,7 @@
   "version": "2.0.0",
   "kind": "logic",
   "name": "Управление ESP-NOW",
-  "description": "Следит за состоянием радио или изменяет режим передачи Normal / Long Range.",
+  "description": "Показывает состояние местного радио, проверяет связь с выбранным устройством или меняет режим Normal / Long Range.",
   "category": "network",
   "categoryName": "Сеть",
   "icon": "Radio",
@@ -18,6 +18,16 @@
       "when": {
         "field": "action",
         "value": "mode"
+      }
+    },
+    {
+      "id": "resetStatistics",
+      "name": "Сбросить измерение потерь",
+      "type": "event",
+      "description": "Начинает новое измерение проверочных пакетов для выбранного устройства. Общие счетчики сообщений сохраняются.",
+      "when": {
+        "field": "action",
+        "value": "peer"
       }
     }
   ],
@@ -36,7 +46,7 @@
       "id": "ready",
       "name": "Радио готово?",
       "type": "boolean",
-      "description": "Радио запущено и может обмениваться сообщениями.",
+      "description": "Местное радио запущено. Не означает, что удаленная плата доступна.",
       "readyOn": "changed",
       "when": {
         "field": "action",
@@ -165,6 +175,194 @@
         "field": "action",
         "value": "mode"
       }
+    },
+    {
+      "id": "peerChanged",
+      "name": "Данные устройства обновлены",
+      "type": "event",
+      "description": "После запуска, ответа или изменения актуальности данных.",
+      "when": {
+        "field": "action",
+        "value": "peer"
+      }
+    },
+    {
+      "id": "connected",
+      "name": "Связь появилась",
+      "type": "event",
+      "description": "Выбранное устройство снова отвечает.",
+      "when": {
+        "field": "action",
+        "value": "peer"
+      }
+    },
+    {
+      "id": "disconnected",
+      "name": "Связь потеряна",
+      "type": "event",
+      "description": "Устройство перестало отвечать или местное радио стало недоступно.",
+      "when": {
+        "field": "action",
+        "value": "peer"
+      }
+    },
+    {
+      "id": "peerState",
+      "name": "Состояние связи",
+      "type": "number",
+      "description": "Доступность выбранной платы по ответам приложения.",
+      "readyOn": "peerChanged",
+      "when": {
+        "field": "action",
+        "value": "peer"
+      },
+      "valueStates": {
+        "initialValue": 0,
+        "fallbackValue": 3,
+        "options": [
+          {
+            "value": 0,
+            "label": "Ожидание ответа",
+            "dotColor": "#97a6bd"
+          },
+          {
+            "value": 1,
+            "label": "Связь есть",
+            "dotColor": "#34d399"
+          },
+          {
+            "value": 2,
+            "label": "Нет ответа",
+            "dotColor": "#ef6666"
+          },
+          {
+            "value": 3,
+            "label": "Радио не готово",
+            "dotColor": "#fbbf24"
+          }
+        ]
+      }
+    },
+    {
+      "id": "online",
+      "name": "Устройство на связи?",
+      "type": "boolean",
+      "description": "Есть актуальный ответ выбранного устройства; не подтверждает выполнение команды.",
+      "readyOn": "peerChanged",
+      "when": {
+        "field": "action",
+        "value": "peer"
+      }
+    },
+    {
+      "id": "rssi",
+      "name": "Уровень сигнала, дБм",
+      "type": "number",
+      "description": "RSSI последнего актуального ответа этого устройства. При отсутствии измерения 0; проверяйте актуальность RSSI.",
+      "readyOn": "peerChanged",
+      "when": {
+        "field": "action",
+        "value": "peer"
+      }
+    },
+    {
+      "id": "rssiValid",
+      "name": "RSSI актуален?",
+      "type": "boolean",
+      "description": "Есть измерение RSSI и не истек таймаут связи.",
+      "readyOn": "peerChanged",
+      "when": {
+        "field": "action",
+        "value": "peer"
+      }
+    },
+    {
+      "id": "rssiText",
+      "name": "Уровень сигнала, текст",
+      "type": "text",
+      "description": "Текущее значение RSSI либо --, если данных нет или они устарели.",
+      "readyOn": "peerChanged",
+      "when": {
+        "field": "action",
+        "value": "peer"
+      }
+    },
+    {
+      "id": "testSent",
+      "name": "Пакетов в измерении",
+      "type": "number",
+      "description": "Число проверочных пакетов до номера из последнего отчета приемника. Еще не сверенные пакеты учитываются отдельно.",
+      "readyOn": "peerChanged",
+      "when": { "field": "action", "value": "peer" }
+    },
+    {
+      "id": "testReceived",
+      "name": "Получено проверочных пакетов",
+      "type": "number",
+      "description": "Уникальные проверочные пакеты, учтенные приемником в этом измерении. Дубликаты не увеличивают счетчик.",
+      "readyOn": "peerChanged",
+      "when": { "field": "action", "value": "peer" }
+    },
+    {
+      "id": "testLost",
+      "name": "Потеряно проверочных пакетов",
+      "type": "number",
+      "description": "Разница между пакетами в измерении и реально учтенными приемником. Потеря обратного отчета не увеличивает потери.",
+      "readyOn": "peerChanged",
+      "when": { "field": "action", "value": "peer" }
+    },
+    {
+      "id": "lossPercent",
+      "name": "Потери, %",
+      "type": "number",
+      "description": "Процент потерянных проверочных пакетов за текущее измерение. Перед использованием проверяйте актуальность отчета.",
+      "readyOn": "peerChanged",
+      "when": { "field": "action", "value": "peer" }
+    },
+    {
+      "id": "statisticsValid",
+      "name": "Статистика актуальна?",
+      "type": "boolean",
+      "description": "Получен свежий отчет с ненулевым количеством пакетов; до первого измерения и после таймаута – нет.",
+      "readyOn": "peerChanged",
+      "when": { "field": "action", "value": "peer" }
+    },
+    {
+      "id": "statisticsText",
+      "name": "Статистика потерь, текст",
+      "type": "text",
+      "description": "Получено N из M и Потери K (P%) на двух строках. До измерения --, после таймаута – Нет свежего отчета.",
+      "readyOn": "peerChanged",
+      "when": { "field": "action", "value": "peer" }
+    },
+    {
+      "id": "pendingPackets",
+      "name": "Еще не сверено пакетов",
+      "type": "number",
+      "description": "Отправленные проверочные пакеты после последнего отчета. Их доставка пока неизвестна; они не включены в потери.",
+      "readyOn": "peerChanged",
+      "additional": true,
+      "when": { "field": "action", "value": "peer" }
+    },
+    {
+      "id": "testSendErrors",
+      "name": "Ошибки отправки проверок",
+      "type": "number",
+      "description": "Проверки, которые местный драйвер не принял к отправке. Не включены в число переданных или потерянных пакетов.",
+      "readyOn": "peerChanged",
+      "additional": true,
+      "when": { "field": "action", "value": "peer" }
+    },
+    {
+      "id": "lastSeenSeconds",
+      "name": "Секунд после ответа",
+      "type": "number",
+      "description": "Возраст последнего ответа. -1 означает, что ответа еще не было; при потере связи возраст продолжает расти.",
+      "readyOn": "peerChanged",
+      "when": {
+        "field": "action",
+        "value": "peer"
+      }
     }
   ],
   "parameters": {
@@ -185,6 +383,10 @@
         {
           "value": "mode",
           "label": "Изменить режим"
+        },
+        {
+          "value": "peer",
+          "label": "Следить за устройством"
         }
       ]
     },
@@ -205,6 +407,38 @@
       "when": {
         "field": "action",
         "value": "mode"
+      }
+    },
+    "peerId": {
+      "label": "Удаленное устройство",
+      "type": "espnow-peer",
+      "default": "",
+      "when": {
+        "field": "action",
+        "value": "peer"
+      }
+    },
+    "probeIntervalMs": {
+      "label": "Период проверки, мс",
+      "type": "integer",
+      "default": 1000,
+      "min": 250,
+      "max": 30000,
+      "when": {
+        "field": "action",
+        "value": "peer"
+      }
+    },
+    "offlineTimeoutMs": {
+      "label": "Нет ответа в течение, мс",
+      "type": "integer",
+      "default": 5000,
+      "min": 750,
+      "max": 120000,
+      "description": "Должен быть не меньше трех периодов проверки.",
+      "when": {
+        "field": "action",
+        "value": "peer"
       }
     }
   },
@@ -232,7 +466,10 @@
     ],
     "eventSourceWhen": {
       "field": "action",
-      "value": "status"
+      "values": [
+        "status",
+        "peer"
+      ]
     }
   }
 }

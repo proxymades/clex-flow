@@ -56,6 +56,7 @@ pub struct Event {
     pub build: Option<Build>,
     pub downloaded: Option<u64>,
     pub total: Option<u64>,
+    pub progress_key: Option<String>,
 }
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -94,24 +95,57 @@ pub(crate) fn publish(
     text: &str,
     build: Option<Build>,
 ) {
+    let progress = if operation == "build" && status == "output" {
+        let parsed = crate::component_progress::parse(text);
+        if crate::component_progress::is_message(text) && parsed.is_none() {
+            return;
+        }
+        parsed
+    } else {
+        None
+    };
     let event = Event {
         job_id: id.into(),
         sequence: inner.sequence.fetch_add(1, Ordering::SeqCst),
         operation: operation.into(),
-        status: status.into(),
-        stream: stream.into(),
-        text: text.chars().take(8192).collect(),
+        status: if progress.is_some() {
+            "progress"
+        } else {
+            status
+        }
+        .into(),
+        stream: if progress.is_some() { "system" } else { stream }.into(),
+        text: progress
+            .as_ref()
+            .map(|p| p.text.as_str())
+            .unwrap_or(text)
+            .chars()
+            .take(8192)
+            .collect(),
         build,
-        downloaded: None,
-        total: None,
+        downloaded: progress.as_ref().and_then(|p| p.downloaded),
+        total: progress.as_ref().and_then(|p| p.total),
+        progress_key: progress.map(|p| p.key),
     };
+    remember_event(inner, &event);
+    let _ = app.emit("idf-event", event);
+}
+fn remember_event(inner: &Inner, event: &Event) {
     if let Ok(mut events) = inner.events.lock() {
+        if let Some(key) = &event.progress_key {
+            if let Some(index) = events.iter().position(|previous| {
+                previous.job_id == event.job_id
+                    && previous.operation == event.operation
+                    && previous.progress_key.as_ref() == Some(key)
+            }) {
+                events.remove(index);
+            }
+        }
         if events.len() >= 1500 {
             events.pop_front();
         }
         events.push_back(event.clone());
     }
-    let _ = app.emit("idf-event", event);
 }
 fn command(environment: &Environment) -> Command {
     let mut command = Command::new(&environment.python);
@@ -845,6 +879,11 @@ pub fn idf_build(
             if spec.graphics_runtime.is_some() || !spec.feature_runtimes.is_empty() {
                 cmd.env("IDF_COMPONENT_MANAGER", "1")
                     .env("IDF_COMPONENT_CACHE_PATH", dir.join("component-cache"));
+                if environment.arduino.is_none() {
+                    if crate::component_progress::configure(&mut cmd, &dir).is_err() {
+                        publish(&app,&inner,&id,"build","output","system","Не удалось включить подробный прогресс загрузки. Продолжаем сборку со штатным журналом ESP-IDF.",None);
+                    }
+                }
             }
             if environment.arduino.is_none() {
                 cmd.current_dir(&dir)
@@ -1140,6 +1179,41 @@ pub fn idf_events(state: tauri::State<'_, Service>, id: String) -> Result<Vec<Ev
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn download_backlog_coalesces_updates_and_keeps_sequence_order() {
+        let inner = Inner::default();
+        let mut event = Event {
+            job_id: "build".into(),
+            sequence: 1,
+            operation: "build".into(),
+            status: "output".into(),
+            stream: "stdout".into(),
+            text: "NOTICE".into(),
+            build: None,
+            downloaded: None,
+            total: None,
+            progress_key: None,
+        };
+        remember_event(&inner, &event);
+        event.sequence = 2;
+        event.status = "progress".into();
+        event.progress_key = Some("archive".into());
+        remember_event(&inner, &event);
+        let mut ordinary = event.clone();
+        ordinary.sequence = 3;
+        ordinary.progress_key = None;
+        ordinary.status = "output".into();
+        remember_event(&inner, &ordinary);
+        event.sequence = 4;
+        event.downloaded = Some(500);
+        remember_event(&inner, &event);
+        let events = inner.events.lock().unwrap();
+        assert_eq!(
+            events.iter().map(|e| e.sequence).collect::<Vec<_>>(),
+            vec![1, 3, 4]
+        );
+        assert_eq!(events.back().unwrap().downloaded, Some(500));
+    }
     #[test]
     #[ignore = "Integration: explicit frontend specification and isolated output directory"]
     fn generated_project_matches_frontend_assets() {
@@ -1509,12 +1583,8 @@ pub(crate) fn publish_download(
         build: None,
         downloaded: Some(downloaded),
         total,
+        progress_key: None,
     };
-    if let Ok(mut events) = inner.events.lock() {
-        if events.len() >= 1500 {
-            events.pop_front();
-        }
-        events.push_back(event.clone());
-    }
+    remember_event(inner, &event);
     let _ = app.emit("idf-event", event);
 }

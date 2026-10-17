@@ -1,5 +1,6 @@
 mod arduino;
 mod boards;
+mod component_progress;
 mod idf;
 mod idf_environment;
 mod menu;

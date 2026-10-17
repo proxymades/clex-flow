@@ -1,7 +1,7 @@
 // All graph callbacks run from flow_worker. Wi-Fi callbacks only copy bounded packets.
 export const ESPNOW_RUNTIME=String.raw`
-enum { EN_HELLO=1, EN_HELLO_ACK=2, EN_MESSAGE=3, EN_COMMAND=4, EN_ACK=5 };
-enum { EN_STATUS=1, EN_RECEIVED=2, EN_COMMAND_RECEIVED=3, EN_CONFIRMED=4, EN_FAILED=5 };
+enum { EN_HELLO=1, EN_HELLO_ACK=2, EN_MESSAGE=3, EN_COMMAND=4, EN_ACK=5, EN_PING=6, EN_PONG=7 };
+enum { EN_STATUS=1, EN_RECEIVED=2, EN_COMMAND_RECEIVED=3, EN_CONFIRMED=4, EN_FAILED=5, EN_PEER=6 };
 typedef struct { bool ready; int mode; uint32_t sent,received,lost; char mac[18],error[128]; } clex_en_status_t;
 typedef struct { char sender[18],text[161],command[33]; int rssi; } clex_en_received_t;
 static clex_en_status_t clex_en_status;
@@ -56,6 +56,7 @@ static bool en_packet(unsigned peer,uint8_t kind,uint8_t result,uint64_t source,
  if(err!=ESP_OK){snprintf(clex_en_status.error,sizeof(clex_en_status.error),"ESP-NOW send: %s",esp_err_to_name(err));en_dirty=true;return false;}
  if(kind==EN_MESSAGE||kind==EN_COMMAND){clex_en_status.sent++;en_dirty=true;}return true;
 }
+@PEER_HEALTH@
 static bool en_ack(unsigned peer,uint64_t challenge,uint64_t source,uint32_t seq,bool ok){return en_packet(peer,EN_ACK,ok?1:2,challenge,source,seq,"","");}
 static void en_receive(const esp_now_recv_info_t*info,const uint8_t*bytes,int length){
  if(!info||!info->src_addr||!info->des_addr||!bytes||length<32||length>250||memcmp(info->des_addr,en_local_mac,6))return;
@@ -97,7 +98,8 @@ static void en_handle(const en_raw_t*raw){
  bool protected=clex_en_config[peer].encrypted;
  if(memcmp(p,"CLNW",4)||p[4]!=1||p[7]!=(protected?1:0)||p[30]||p[31]||a>32||b>160||raw->length!=n+(protected?16:0))return;
  if(protected){uint8_t tag[32],difference=0;if(!en_tag(peer,p,n,tag))return;for(int i=0;i<16;i++)difference|=tag[i]^p[n+i];if(difference)return;}
- uint8_t kind=p[5];uint64_t source=en_get64(p+8),dest=en_get64(p+16);uint32_t seq=en_get32(p+24);if(!source||!seq||kind<EN_HELLO||kind>EN_ACK)return;
+ uint8_t kind=p[5];uint64_t source=en_get64(p+8),dest=en_get64(p+16);uint32_t seq=en_get32(p+24);if(!source||!seq||kind<EN_HELLO||kind>EN_PONG)return;
+ if(kind==EN_PING||kind==EN_PONG){if(p[6]||a||(b&&b!=(kind==EN_PING?24:33)))return;en_health_handle(peer,kind,source,dest,seq,raw->rssi,p+32,b);return;}
  if((kind==EN_HELLO||kind==EN_ACK)&&(a||b))return;
  if(kind==EN_HELLO_ACK&&(a||b!=16))return;
  en_peer_t*state=&en_peers[peer];
@@ -109,9 +111,10 @@ static void en_handle(const en_raw_t*raw){
   char boot[17];snprintf(boot,sizeof(boot),"%016llx",(unsigned long long)en_boot);en_packet(peer,EN_HELLO_ACK,0,state->challenge,source,seq,"",boot);return;
  }
  if(kind==EN_HELLO_ACK){if(p[6]||dest!=en_boot||!en_tx.active||en_tx.phase!=1||en_tx.peer!=peer||en_tx.seq!=seq)return;char boot[17];memcpy(boot,p+32,16);boot[16]=0;for(unsigned i=0;i<16;i++)if(!((boot[i]>='0'&&boot[i]<='9')||(boot[i]>='a'&&boot[i]<='f')))return;uint64_t receiver_boot=strtoull(boot,NULL,16);if(!receiver_boot)return;
+  en_health_reply(peer,raw->rssi);
   if(en_tx.kind==EN_COMMAND&&en_tx.receiver_boot&&en_tx.receiver_boot!=receiver_boot){en_tx_end(false,false,"Плата перезапустилась; результат команды неизвестен");return;}
   en_tx.receiver_boot=receiver_boot;en_tx.phase=2;en_tx.challenge=source;en_tx.due=esp_timer_get_time()+EN_TIMEOUT_US;en_packet(peer,en_tx.kind,0,en_boot,source,seq,en_tx.command,en_tx.text);return;}
- if(kind==EN_ACK){if((p[6]!=1&&p[6]!=2)||!en_tx.active||en_tx.phase!=2||peer!=en_tx.peer||seq!=en_tx.seq||dest!=en_boot||source!=en_tx.challenge)return;en_tx_end(p[6]==1,false,"Получатель сообщил об ошибке выполнения");return;}
+ if(kind==EN_ACK){if((p[6]!=1&&p[6]!=2)||!en_tx.active||en_tx.phase!=2||peer!=en_tx.peer||seq!=en_tx.seq||dest!=en_boot||source!=en_tx.challenge)return;en_health_reply(peer,raw->rssi);en_tx_end(p[6]==1,false,"Получатель сообщил об ошибке выполнения");return;}
  if(p[6]||source!=state->source||dest!=state->challenge||seq!=state->hello_seq||!en_utf8(p+32,a)||!en_utf8(p+32+a,b)||(kind==EN_MESSAGE&&a)||(kind==EN_COMMAND&&(!a||!protected)))return;
  if(seq==state->last_seq){if(state->complete)en_ack(peer,state->challenge,source,seq,state->ok);return;}
  if(seq<state->last_seq)return;
@@ -133,6 +136,7 @@ static void __attribute__((unused)) clex_en_poll(void){
  atomic_exchange(&en_mac_failures,0); // MAC delivery is deliberately not application completion.
  if(!en_tx.active&&en_wait_count){en_tx=en_waiting[en_wait_head];en_wait_head=(en_wait_head+1)%8;en_wait_count--;en_hello();}
  if(en_dirty){en_dirty=false;clex_en_notify(EN_STATUS,0);}
+ en_health_poll();
 }
 static bool en_initial_rate(int mode){for(unsigned i=0;i<en_count();i++)if(en_rate(i,mode)!=ESP_OK)return false;return true;}
 static void clex_en_initialize(void){
@@ -161,6 +165,8 @@ static void clex_en_initialize(void){
  if(!en_initial_rate(mode)){clex_en_status.mode=2;en_error("Не удалось установить начальную скорость передачи");}
  finish:
  #undef EN_INIT
+ memset(en_health,0,sizeof(en_health));en_health_started=esp_timer_get_time();en_next_probe=en_health_started;en_probe_cursor=0;
+ memset(en_stats_tx,0,sizeof(en_stats_tx));memset(en_stats_rx,0,sizeof(en_stats_rx));
  en_dirty=true;atomic_store(&en_initialized,true);
 }
 `;

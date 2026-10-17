@@ -3,7 +3,7 @@ import {createProject} from '../src/projects/model.js';
 import {addHardware,connectTerminal} from '../src/assembly/model.js';
 import {addNode,connectNodes,withLogic,updateNode} from '../src/logic/model.js';
 export const testKey='0123456789abcdef0123456789abcdef';
-export function espNowProject({combined=false,zeroPeers=false,receiver=true,rememberMode=false}={}){
+export function espNowProject({combined=false,zeroPeers=false,receiver=true,rememberMode=false,peerHealth=false}={}){
  let p=createProject('ESP-NOW: '+(zeroPeers?'MAC':receiver?'приемник':'отправитель'),'','waveshare-esp32-s3-eth',{camera:'disconnected'});
  p=addHardware(p,catalog.modules.find(m=>m.id==='clex.hardware.espnow'),catalog);const component=p.components[0];
  component.parameters.rememberMode=rememberMode;component.parameters.pmk=testKey;component.parameters.peers=JSON.stringify(zeroPeers?[]:[{id:'12345678-1234-4234-8234-123456789abc',name:'Вторая плата',mac:'02:11:22:33:44:55',encrypted:true,lmk:testKey}]);
@@ -13,6 +13,7 @@ export function espNowProject({combined=false,zeroPeers=false,receiver=true,reme
  function connect(s,sh,t,th){graph=connectNodes(graph,catalog,{source:nodes[s].id,sourceHandle:sh,target:nodes[t].id,targetHandle:th},{...p,logic:graph});}
  radio('status','control',{action:'status'});add('serial','clex.logic.serial');connect('status','changed','serial','trigger');connect('status','mac','serial','text');
  if(!zeroPeers){
+  if(peerHealth)radio('peer','control',{action:'peer',peerId:'12345678-1234-4234-8234-123456789abc'});
   radio('message','receive',{transferType:'message'});
   if(receiver||combined){radio('command','receive',{transferType:'command'});radio('mode','control',{action:'mode'});radio('ack','ack');connect('command','commandReceived','mode','trigger');connect('mode','done','ack','trigger');connect('mode','failed','ack','reject');radio('normalCommand','receive',{transferType:'command',command:'SET_NORMAL'});radio('normalMode','control',{action:'mode',mode:'normal'});radio('normalAck','ack');connect('normalCommand','commandReceived','normalMode','trigger');connect('normalMode','done','normalAck','trigger');connect('normalMode','failed','normalAck','reject');}
   if(!receiver||combined){add('timer','clex.logic.timer',{intervalMs:5000});radio('send','send',{transferType:'command',peerId:'12345678-1234-4234-8234-123456789abc'});radio('senderMode','control',{action:'mode'});connect('timer','tick','send','trigger');connect('send','completed','senderMode','trigger');}

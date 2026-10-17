@@ -1,3 +1,4 @@
+import {moduleIsEventSource} from '../catalog/compatibility.js';
 export const ESPNOW_MODULE='clex.hardware.espnow';
 export const MAX_PEERS=20;
 export const MAX_ENCRYPTED_PEERS=6;
@@ -32,8 +33,9 @@ export function espNowLogicIssues(node,project,board=null){
  if(!node.moduleId.startsWith('clex.logic.espnow-'))return [];
  const component=project.components.find(c=>c.id===node.parameters.componentId&&c.moduleId===ESPNOW_MODULE);if(!component)return ['Выберите ESP-NOW из монтажа.'];
  const p=node.parameters,issues=[],peer=readPeers(component).find(peer=>peer.id===p.peerId);
- if(node.moduleId==='clex.logic.espnow-send'&&!peer)issues.push('Выберите удаленное устройство.');
+ if((node.moduleId==='clex.logic.espnow-send'||node.moduleId==='clex.logic.espnow-control'&&p.action==='peer')&&!peer)issues.push('Выберите удаленное устройство.');
  if(['clex.logic.espnow-send','clex.logic.espnow-receive'].includes(node.moduleId)&&p.transferType==='command'&&(!p.command?.trim()||new TextEncoder().encode(p.command).length>32))issues.push('Имя команды должно занимать 1-32 байта UTF-8.');
+ if(node.moduleId==='clex.logic.espnow-control'&&p.action==='peer'&&p.offlineTimeoutMs<p.probeIntervalMs*3)issues.push('Таймаут устройства должен быть не меньше трех периодов проверки.');
  if(p.message!==undefined&&(p.message.includes('\0')||new TextEncoder().encode(p.message).length>MAX_TEXT_BYTES))issues.push('Сообщение должно занимать не более 160 байт UTF-8 без нулевых символов.');
  if(node.moduleId==='clex.logic.espnow-receive'&&p.transferType==='command'&&(!component.parameters.encryption||!readPeers(component).some(peer=>peer.encrypted)))issues.push('Для приема команд добавьте устройство и включите у него «Шифровать соединение».');
  if(node.moduleId==='clex.logic.espnow-control'&&p.action==='mode'&&p.mode==='lr'&&board&&!board.radio?.longRange)issues.push('На выбранной плате нет поддерживаемого Long Range.');
@@ -53,7 +55,7 @@ export function espNowAckIssues(node,project,catalog){
  }else{
   const ancestors=graph.nodes.filter(n=>n.id!==node.id&&seen.has(n.id)),roots=ancestors.filter(n=>n.moduleId==='clex.logic.espnow-receive'&&n.parameters.transferType==='command'&&n.parameters.componentId===node.parameters.componentId);
   if(!roots.length)problems.push('Подключите подтверждение к цепочке обработки входящей команды этого ESP-NOW.');
-  if(ancestors.some(n=>{const m=catalog.modules.find(m=>m.id===n.moduleId);return (m?.firmware.eventSource&&(!m.firmware.eventSourceWhen||n.parameters[m.firmware.eventSourceWhen.field]===m.firmware.eventSourceWhen.value)&&!roots.includes(n))||['clex.logic.espnow-send','clex.logic.tone','clex.logic.camera-capture'].includes(n.moduleId);}))problems.push('Подтверждение команды должно завершать ее непосредственную обработку: режим радио, GPIO, счетчик, текст или Serial. Отложенные и независимые события требуют отдельной команды.');
+  if(ancestors.some(n=>{const m=catalog.modules.find(m=>m.id===n.moduleId);return (moduleIsEventSource(m,n)&&!roots.includes(n))||['clex.logic.espnow-send','clex.logic.tone','clex.logic.camera-capture'].includes(n.moduleId);}))problems.push('Подтверждение команды должно завершать ее непосредственную обработку: режим радио, GPIO, счетчик, текст или Serial. Отложенные и независимые события требуют отдельной команды.');
  }
  return problems;
 }

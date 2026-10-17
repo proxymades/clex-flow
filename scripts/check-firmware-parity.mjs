@@ -39,7 +39,7 @@ const cases = [
   ['p4-touch-low',touchButtonProject('waveshare-esp32-p4-nano','low').project,'uart'],
   ['nano-touch-low',touchButtonProject('arduino-nano-atmega328p-ch340','low').project,'uart'],
   ['s3-espnow-mac',espNowProject({zeroPeers:true}).project,'usb'],
-  ['s3-espnow-receiver',espNowProject().project,'usb'],
+  ['s3-espnow-receiver',espNowProject({peerHealth:true}).project,'usb'],
   ['s3-espnow-persistence',espNowProject({rememberMode:true}).project,'usb'],
   ['s3-espnow-button',espNowButtonProject().project,'usb'],
   ['nano-counter',nanoProject(),'uart'],
@@ -57,6 +57,11 @@ const cases = [
   ['p4-camera', mediaProject('camera'), 'uart'],
   ['p4-combined', peripheralProject(), 'uart'],
 ];
+{
+ const {project,nodes}=espNowProject({receiver:false,peerHealth:true});
+ project.logic=connectNodes(project.logic,catalog,{source:nodes.senderMode.id,sourceHandle:'done',target:nodes.peer.id,targetHandle:'resetStatistics'},project);
+ cases.push(['s3-espnow-loss-reset',project,'usb']);
+}
 const root = fileURLToPath(new URL('../', import.meta.url));
 const temporary = mkdtempSync(join(tmpdir(), 'clex-firmware-parity-'));
 try {

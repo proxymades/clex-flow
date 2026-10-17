@@ -73,7 +73,7 @@ export function generateFirmware(project, catalog, consoleMode = 'usb') {
   }
   const runtimeTextSizes = new Map([...network.textSizes, ...media.textSizes, ...stopwatch.textSizes,...espnow.textSizes]);
   const runtimeTextGlyphs = '0123456789.:_-/ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz ';
-  const runtimeGlyphsFor = id => stopwatch.textGlyphs.get(id) || runtimeTextGlyphs;
+  const runtimeGlyphsFor = id => stopwatch.textGlyphs.get(id) || runtimeTextGlyphs+(espnow.textGlyphs.get(id)||'');
   const textLengths = new Map();
   const producerTextLength = edge => runtimeTextSizes.get(edge.source)?.[edge.sourceHandle] || textLength(nodes[index.get(edge.source)]);
   function textLength(node) {
@@ -125,7 +125,7 @@ export function generateFirmware(project, catalog, consoleMode = 'usb') {
   const eventCall = edge => {
     const target = nodes[index.get(edge.target)];
     const element = displayElements(target).findIndex(item => elementUpdatePort(item.id) === edge.targetHandle);
-    const suffix = target.moduleId==='clex.logic.espnow-ack'&&edge.targetHandle==='reject'?'_reject':target.moduleId === 'clex.logic.counter' && edge.targetHandle === 'reset' ? '_reset' : target.moduleId === 'clex.logic.stopwatch' && ['pause','reset'].includes(edge.targetHandle) ? '_' + edge.targetHandle : element >= 0 ? '_element_' + element : '';
+    const suffix = target.moduleId==='clex.logic.espnow-control'&&edge.targetHandle==='resetStatistics'?'_resetStatistics':target.moduleId==='clex.logic.espnow-ack'&&edge.targetHandle==='reject'?'_reject':target.moduleId === 'clex.logic.counter' && edge.targetHandle === 'reset' ? '_reset' : target.moduleId === 'clex.logic.stopwatch' && ['pause','reset'].includes(edge.targetHandle) ? '_' + edge.targetHandle : element >= 0 ? '_element_' + element : '';
     return `node_${index.get(edge.target)}${suffix}();`;
   };
   const functions=nodes.map((node,i)=>{
@@ -185,6 +185,7 @@ ${declarations.join('\n')}
 ${network.source}${espnow.source?'\n'+espnow.source:''}${gpioEdge.source?'\n'+gpioEdge.source:''}
 ${media.source}
 ${stopwatch.source ? stopwatch.source+'\n' : ''}${nodes.map((node,i)=>`static void node_${i}(void) __attribute__((unused));${node.moduleId === 'clex.logic.espnow-ack' ? `\nstatic void node_${i}_reject(void) __attribute__((unused));` : ''}${node.moduleId === 'clex.logic.counter' ? `\nstatic void node_${i}_reset(void) __attribute__((unused));` : ''}${node.moduleId === 'clex.logic.stopwatch' ? `\nstatic void node_${i}_pause(void) __attribute__((unused));\nstatic void node_${i}_reset(void) __attribute__((unused));` : ''}${displayElements(node).map((_, j) => `\nstatic void node_${i}_element_${j}(void) __attribute__((unused));`).join('')}${eventModules.has(node.moduleId)?nodePorts(node,catalog,project).outputs.filter(port=>port.type==='event').map(port=>`\nstatic void node_${i}_emit_${port.id}(void) __attribute__((unused));`).join(''):''}`).join('\n')}
+${nodes.filter(node=>node.moduleId==='clex.logic.espnow-control'&&node.parameters.action==='peer').map(node=>`static void node_${index.get(node.id)}_resetStatistics(void) __attribute__((unused));`).join('\n')}
 static void update_inputs(void) {
 ${inputUpdates.length?'  int64_t now = esp_timer_get_time();\n'+inputUpdates.join('\n'):'  /* No buttons in this project. */'}
 }

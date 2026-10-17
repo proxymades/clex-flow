@@ -6,6 +6,7 @@ import { generateFirmware, firmwareFingerprint } from '../firmware/generator.js'
 import { sdkRequirement } from './sdkRequirements.js';
 import { catalog, getBoard } from '../catalog/index.js';
 import { choosePort } from './ports.js';
+import {appendProcessEvent} from './processEvents.js';
 
 const terminal = ['success','failed','cancelled'];
 export default function useIdf(project) {
@@ -69,7 +70,7 @@ export default function useIdf(project) {
     received.current.sequences.add(event.sequence);
     received.current.max=Math.max(received.current.max,event.sequence);
     if(received.current.sequences.size>3000)received.current.sequences=new Set([...received.current.sequences].filter(sequence=>sequence>=received.current.max-3000));
-    setEvents(items=>[...items,event].slice(-1200));
+    setEvents(items=>appendProcessEvent(items,event));
     if(event.status==='success'&&current.current.operation==='sdk_prepare_all'){localStorage.setItem('clex-flow:tools-prepared','yes');setToolsPrepared(true);}
     if(terminal.includes(event.status)){setJob(value=>value?.id===event.jobId?{...value,status:event.status}:value);flight.current=false;if(event.build)setBuild(event.build);if(event.status==='failed')setError(event.text);if(event.operation.startsWith('sdk_'))refreshSdk().catch(error=>setError(String(error)));}
     if(event.status==='connected')setJob(value=>value?.id===event.jobId && !terminal.includes(value.status)?{...value,status:'connected'}:value);
