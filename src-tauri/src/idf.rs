@@ -421,7 +421,10 @@ pub fn shutdown(service: &Service) {
     }
 }
 // Preserve incomplete UTF-8 between reads and emit serial bytes without waiting for a newline.
-fn serial_chunks(mut pipe: impl Read, mut emit: impl FnMut(&str)) -> std::io::Result<()> {
+pub(crate) fn serial_chunks(
+    mut pipe: impl Read,
+    mut emit: impl FnMut(&str),
+) -> std::io::Result<()> {
     let mut pending = Vec::new();
     let mut buffer = [0u8; 2048];
     loop {
@@ -901,6 +904,16 @@ pub fn idf_build(
     });
     Ok(())
 }
+// Reserve immediately, but keep all device discovery and file I/O off the UI thread.
+fn spawn_device_job(
+    inner: &Arc<Inner>,
+    id: &str,
+    work: impl FnOnce(Arc<AtomicBool>) + Send + 'static,
+) -> Result<(), String> {
+    let cancel = reserve(inner, id)?;
+    thread::spawn(move || work(cancel));
+    Ok(())
+}
 fn validated_port(environment: &Environment, path: &str) -> Result<(), String> {
     if !idf_environment::ports(environment)?
         .iter()
@@ -935,7 +948,6 @@ pub fn idf_flash(
     port: String,
 ) -> Result<(), String> {
     let environment = env_from(&state)?;
-    validated_port(&environment, &port)?;
     let build = state
         .0
         .builds
@@ -944,13 +956,10 @@ pub fn idf_flash(
         .get(&build_id)
         .cloned()
         .ok_or("Сначала выполните успешную сборку")?;
-    verify_build(&build, &fingerprint, &environment.root)?;
-    if build.environment_identity != environment.identity {
-        return Err("Окружение SDK изменилось; выполните новую сборку".into());
-    }
-    let inner = state.0.clone();
-    let cancel = reserve(&inner, &id)?;
-    thread::spawn(move || {
+    let service = state.0.clone();
+    let inner = service.clone();
+    let operation_id = id.clone();
+    spawn_device_job(&service, &operation_id, move |cancel| {
         publish(
             &app,
             &inner,
@@ -958,39 +967,63 @@ pub fn idf_flash(
             "flash",
             "running",
             "system",
-            &format!("Прошивка выбранного порта {port}"),
+            "Проверка порта и файлов прошивки",
             None,
         );
-        let mut cmd = if let Some(a) = &environment.arduino {
-            match crate::arduino::upload_command(a, &build, &port) {
-                Ok(c) => c,
-                Err(e) => {
-                    finish(&app, &inner, &id, "flash", Err(e), &cancel);
-                    return;
-                }
+        let result = (|| {
+            if cancel.load(Ordering::SeqCst) {
+                return Ok(None);
             }
+            validated_port(&environment, &port)?;
+            if cancel.load(Ordering::SeqCst) {
+                return Ok(None);
+            }
+            verify_build(&build, &fingerprint, &environment.root)?;
+            if build.environment_identity != environment.identity {
+                return Err("Окружение SDK изменилось; выполните новую сборку".into());
+            }
+            if cancel.load(Ordering::SeqCst) {
+                return Ok(None);
+            }
+            publish(
+                &app,
+                &inner,
+                &id,
+                "flash",
+                "running",
+                "system",
+                &format!("Прошивка выбранного порта {port}"),
+                None,
+            );
+            let mut cmd = if let Some(a) = &environment.arduino {
+                crate::arduino::upload_command(a, &build, &port)?
+            } else {
+                command(&environment)
+            };
+            if environment.arduino.is_none() {
+                cmd.current_dir(PathBuf::from(&build.project_dir).join("build"))
+                    .args([
+                        "-m",
+                        "esptool",
+                        "--chip",
+                        &build.target,
+                        "--port",
+                        &port,
+                        "--baud",
+                        "460800",
+                        "write_flash",
+                        "@flash_args",
+                    ]);
+            }
+            execute(&app, &inner, &id, "flash", cmd, &cancel).map(|_| None)
+        })();
+        let result = if cancel.load(Ordering::SeqCst) {
+            Ok(None)
         } else {
-            command(&environment)
+            result
         };
-        if environment.arduino.is_none() {
-            cmd.current_dir(PathBuf::from(&build.project_dir).join("build"))
-                .args([
-                    "-m",
-                    "esptool",
-                    "--chip",
-                    &build.target,
-                    "--port",
-                    &port,
-                    "--baud",
-                    "460800",
-                    "write_flash",
-                    "@flash_args",
-                ]);
-        }
-        let result = execute(&app, &inner, &id, "flash", cmd, &cancel).map(|_| None);
         finish(&app, &inner, &id, "flash", result, &cancel);
-    });
-    Ok(())
+    })
 }
 const MONITOR: &str = r#"import sys, serial
 p=serial.Serial()
@@ -1016,10 +1049,10 @@ pub fn idf_monitor(
     port: String,
 ) -> Result<(), String> {
     let environment = env_from(&state)?;
-    validated_port(&environment, &port)?;
-    let inner = state.0.clone();
-    let cancel = reserve(&inner, &id)?;
-    thread::spawn(move || {
+    let service = state.0.clone();
+    let inner = service.clone();
+    let operation_id = id.clone();
+    spawn_device_job(&service, &operation_id, move |cancel| {
         publish(
             &app,
             &inner,
@@ -1027,21 +1060,58 @@ pub fn idf_monitor(
             "monitor",
             "running",
             "system",
-            &format!("Открываем монитор {port}, 115200 бод"),
+            "Проверка выбранного порта",
             None,
         );
-        let mut cmd = if let Some(a) = &environment.arduino {
-            crate::arduino::monitor_command(a, &port)
-        } else {
-            command(&environment)
-        };
-        if environment.arduino.is_none() {
+        let result = (|| {
+            if cancel.load(Ordering::SeqCst) {
+                return Ok(None);
+            }
+            validated_port(&environment, &port)?;
+            if cancel.load(Ordering::SeqCst) {
+                return Ok(None);
+            }
+            publish(
+                &app,
+                &inner,
+                &id,
+                "monitor",
+                "running",
+                "system",
+                &format!("Открываем монитор {port}, 115200 бод"),
+                None,
+            );
+            if environment.arduino.is_some() {
+                return crate::arduino::monitor(
+                    &port,
+                    &cancel,
+                    || {
+                        publish(
+                            &app,
+                            &inner,
+                            &id,
+                            "monitor",
+                            "connected",
+                            "system",
+                            "Последовательный порт открыт",
+                            None,
+                        )
+                    },
+                    |text| publish(&app, &inner, &id, "monitor", "output", "stdout", text, None),
+                )
+                .map(|_| None);
+            }
+            let mut cmd = command(&environment);
             cmd.args(["-u", "-c", MONITOR, &port]);
-        }
-        let result = execute(&app, &inner, &id, "monitor", cmd, &cancel).map(|_| None);
+            execute(&app, &inner, &id, "monitor", cmd, &cancel).map(|_| None)
+        })();
+        let result = if cancel.load(Ordering::SeqCst) {
+            Ok(None)
+        } else {
+            result
+        };
         finish(&app, &inner, &id, "monitor", result, &cancel);
-    });
-    Ok(())
+    })
 }
 #[tauri::command]
 pub fn idf_cancel(state: tauri::State<'_, Service>, id: String) -> Result<(), String> {
@@ -1297,6 +1367,49 @@ mod tests {
             hash(&bytes),
             "e24bfa3a8c79933995fb954fd954318a92557c1400697de9747cc5088b38bd95"
         );
+    }
+    #[test]
+    fn device_preparation_returns_without_blocking_and_reserves_before_work() {
+        use std::sync::mpsc;
+        let inner = Arc::new(Inner::default());
+        let worker_inner = inner.clone();
+        let caller = thread::current().id();
+        let id = "00000000-0000-4000-8000-000000000003";
+        let (started_tx, started_rx) = mpsc::channel();
+        let (continue_tx, continue_rx) = mpsc::channel();
+        let (done_tx, done_rx) = mpsc::channel();
+        let launched = Arc::new(AtomicBool::new(false));
+        let worker_launched = launched.clone();
+        spawn_device_job(&inner, id, move |cancel| {
+            started_tx.send(thread::current().id()).unwrap();
+            // Model a blocked discovery subprocess without opening a device.
+            continue_rx.recv().unwrap();
+            if !cancel.load(Ordering::SeqCst) {
+                worker_launched.store(true, Ordering::SeqCst);
+            }
+            release(&worker_inner, id);
+            done_tx.send(()).unwrap();
+        })
+        .unwrap();
+        assert_ne!(
+            started_rx.recv_timeout(Duration::from_secs(2)).unwrap(),
+            caller
+        );
+        assert!(busy(&inner));
+        assert!(reserve(&inner, "00000000-0000-4000-8000-000000000004").is_err());
+        // Cancellation is already available while discovery is still pending.
+        inner
+            .active
+            .lock()
+            .unwrap()
+            .as_ref()
+            .unwrap()
+            .cancel
+            .store(true, Ordering::SeqCst);
+        continue_tx.send(()).unwrap();
+        done_rx.recv_timeout(Duration::from_secs(2)).unwrap();
+        assert!(!launched.load(Ordering::SeqCst));
+        assert!(!busy(&inner));
     }
     #[test]
     fn flash_gate_rejects_stale_sources_environment_and_modified_files() {

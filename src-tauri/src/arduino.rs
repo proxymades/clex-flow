@@ -8,9 +8,13 @@ use sha2::{Digest, Sha256};
 use std::{
     collections::BTreeMap,
     fs,
+    io::{self, Read},
     path::{Path, PathBuf},
     process::Command,
-    sync::{atomic::AtomicBool, Arc},
+    sync::{
+        atomic::{AtomicBool, Ordering},
+        Arc,
+    },
     time::Duration,
 };
 use tauri::Manager;
@@ -432,18 +436,61 @@ pub fn upload_command(
     ]);
     Ok(cmd)
 }
-pub fn monitor_command(a: &ArduinoEnvironment, port: &str) -> Command {
-    let mut cmd = command(a);
-    cmd.args([
-        "monitor",
-        "--port",
-        port,
-        "--config",
-        "baudrate=115200",
-        "--raw",
-        "--quiet",
-    ]);
-    cmd
+// Open once at the application baud rate and discard bytes from the previous
+// session (e.g. AVRDUDE at 57600). Arduino CLI's monitor does not clear them.
+pub fn monitor(
+    path: &str,
+    cancel: &AtomicBool,
+    connected: impl FnOnce(),
+    emit: impl FnMut(&str),
+) -> Result<(), String> {
+    if cancel.load(Ordering::SeqCst) {
+        return Ok(());
+    }
+    let mut port = serialport::new(path, 115200)
+        .data_bits(serialport::DataBits::Eight)
+        .parity(serialport::Parity::None)
+        .stop_bits(serialport::StopBits::One)
+        .flow_control(serialport::FlowControl::None)
+        .timeout(Duration::from_millis(100))
+        .dtr_on_open(false)
+        .open()
+        .map_err(|e| format!("Не удалось открыть порт {path}: {e}"))?;
+    port.write_request_to_send(false)
+        .map_err(|e| format!("Не удалось настроить RTS порта {path}: {e}"))?;
+    port.clear(serialport::ClearBuffer::Input)
+        .map_err(|e| format!("Не удалось очистить входной буфер {path}: {e}"))?;
+    if cancel.load(Ordering::SeqCst) {
+        return Ok(());
+    }
+    connected();
+    monitor_input(port, cancel, emit).map_err(|e| format!("Ошибка чтения порта {path}: {e}"))
+}
+
+fn monitor_input(port: impl Read, cancel: &AtomicBool, emit: impl FnMut(&str)) -> io::Result<()> {
+    struct CancellableReader<'a, R> {
+        port: R,
+        cancel: &'a AtomicBool,
+    }
+    impl<R: Read> Read for CancellableReader<'_, R> {
+        fn read(&mut self, buffer: &mut [u8]) -> io::Result<usize> {
+            while !self.cancel.load(Ordering::SeqCst) {
+                match self.port.read(buffer) {
+                    Err(error)
+                        if matches!(
+                            error.kind(),
+                            io::ErrorKind::TimedOut | io::ErrorKind::Interrupted
+                        ) =>
+                    {
+                        continue
+                    }
+                    result => return result,
+                }
+            }
+            Ok(0)
+        }
+    }
+    idf::serial_chunks(CancellableReader { port, cancel }, emit)
 }
 
 // Official Arduino CLI 1.5.1 release archives. Core/tools are verified by CLI
@@ -720,6 +767,86 @@ mod tests {
             serde_json::from_slice(&fs::read(&env.config).unwrap()).unwrap();
         assert_eq!(contents["directories"]["data"], text(&data));
         assert_eq!(contents["board_manager"]["enable_unsafe_install"], false);
+    }
+    #[test]
+    fn monitor_keeps_split_utf8_across_idle_reads() {
+        struct InterruptedSerial(Vec<u8>, usize);
+        impl Read for InterruptedSerial {
+            fn read(&mut self, buffer: &mut [u8]) -> io::Result<usize> {
+                self.1 += 1;
+                if self.1 % 3 == 1 {
+                    return Err(io::ErrorKind::TimedOut.into());
+                }
+                if self.1 % 3 == 2 {
+                    return Err(io::ErrorKind::Interrupted.into());
+                }
+                if self.0.is_empty() {
+                    return Ok(0);
+                }
+                buffer[0] = self.0.remove(0);
+                Ok(1)
+            }
+        }
+        let expected = "Счетчик: 1\r\nСчетчик: 2\r\n";
+        let mut output = String::new();
+        monitor_input(
+            InterruptedSerial(expected.as_bytes().to_vec(), 0),
+            &AtomicBool::new(false),
+            |text| output.push_str(text),
+        )
+        .unwrap();
+        assert_eq!(output, expected);
+    }
+    #[test]
+    fn idle_monitor_can_be_cancelled_without_more_serial_data() {
+        struct IdleSerial<'a>(&'a AtomicBool);
+        impl Read for IdleSerial<'_> {
+            fn read(&mut self, _: &mut [u8]) -> io::Result<usize> {
+                self.0.store(true, Ordering::SeqCst);
+                Err(io::ErrorKind::TimedOut.into())
+            }
+        }
+        let cancel = AtomicBool::new(false);
+        monitor_input(IdleSerial(&cancel), &cancel, |_| panic!("No received data")).unwrap();
+        monitor(
+            "nonexistent-port",
+            &cancel,
+            || panic!("Must not open"),
+            |_| {},
+        )
+        .unwrap();
+    }
+    #[test]
+    #[ignore = "Hardware: explicitly selected Nano already running the counter example; never flashes"]
+    fn monitor_counter_on_connected_nano() {
+        let path = std::env::var("CLEX_TEST_NANO_PORT").expect("Explicit port is required");
+        let cancel = Arc::new(AtomicBool::new(false));
+        let stop = cancel.clone();
+        let timer = std::thread::spawn(move || {
+            std::thread::sleep(Duration::from_secs(6));
+            stop.store(true, Ordering::SeqCst);
+        });
+        let mut output = String::new();
+        let result = monitor(
+            &path,
+            &cancel,
+            || println!("Port opened"),
+            |text| output.push_str(text),
+        );
+        timer.join().unwrap();
+        result.unwrap();
+        println!("Received: {output:?}");
+        assert!(
+            output.contains("Счетчик: 1\r\n"),
+            "Counter startup was not received"
+        );
+        assert!(!output.contains('�'), "Invalid UTF-8 bytes: {output:?}");
+        assert!(
+            output
+                .chars()
+                .all(|c| !c.is_control() || "\r\n\t".contains(c)),
+            "Unexpected control bytes: {output:?}"
+        );
     }
     #[test]
     #[ignore = "Uses explicitly supplied existing Arduino tools without downloading or flashing"]
