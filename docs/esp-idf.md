@@ -41,7 +41,7 @@ Python: ~/.espressif/tools/python/v5.4.4/venv/bin/python
 
 Для профилей S3 консоль firmware по умолчанию **USB Serial/JTAG**; для USB-UART bridge выберите **UART0** и пересоберите. На ESP32-P4-NANO доступна консоль **UART0** через USB-C/CH343. Подключите соответствующий разъем платы; S3 резервирует USB GPIO19/20 и UART GPIO43/44, P4 – UART GPIO37/38. Неправильный выбор разъёма может дать пустой монитор. Возможности IDF Monitor GDB, декодирование backtrace, ввод команд и автоподключение не реализованы.
 
-Перед первым Blink проверьте модель/ревизию, монтаж LED с резистором на GPIO17 и соответствующий USB-порт. Пользователь подтвердил запись прошивки на Waveshare ESP32-S3-ETH и работу дисплея ST7789; проверка Blink выполняется отдельно. Прошивка P4 с DSI, аудио, камерой и Ethernet прошла предыдущую локальную компиляцию; аппаратная работа этих драйверов еще не подтверждена. Подробнее: [ESP32-P4-NANO](esp32-p4-nano.md).
+Перед первым Blink проверьте модель/ревизию, монтаж LED с резистором на GPIO17 и соответствующий USB-порт. Драйверы P4 DSI/touch, ES8311 и OV5647 требуют аппаратной проверки. Подключение и ограничения: [ESP32-P4-NANO](esp32-p4-nano.md).
 
 [Официальная установка ESP-IDF 5.4.4](https://docs.espressif.com/projects/esp-idf/en/v5.4.4/esp32s3/get-started/index.html), [esp_timer](https://docs.espressif.com/projects/esp-idf/en/v5.4.4/esp32s3/api-reference/system/esp_timer.html), [возможности IDF Monitor](https://docs.espressif.com/projects/esp-idf/en/v5.4.4/esp32s3/api-guides/tools/idf-monitor.html).
 
