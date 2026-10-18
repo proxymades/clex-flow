@@ -1,0 +1,30 @@
+{
+  "id": "clex.logic.temperature",
+  "version": "1.0.0",
+  "kind": "logic",
+  "name": "Температура микроконтроллера",
+  "description": "Встроенный датчик температуры кристалла ESP32-S3 / ESP32-P4. Не требует проводов. Показывает нагрев чипа, а не температуру воздуха; показания имеют погрешность и сами по себе не определяют допустимость нагрева.",
+  "category": "diagnostics",
+  "categoryName": "Диагностика",
+  "icon": "Thermometer",
+  "color": "#fb923c",
+  "inputs": [
+    { "id": "trigger", "name": "Измерить", "type": "event", "required": false, "description": "Считывает датчик по сигналу независимо от автоматического опроса." }
+  ],
+  "outputs": [
+    { "id": "changed", "name": "Измерение завершено", "type": "event", "description": "После каждой попытки обновляет текст, достоверность и ошибку, включая неудачные измерения." },
+    { "id": "done", "name": "Температура получена", "type": "event", "additional": true, "description": "Только после успешного измерения; используйте для обработки числовой температуры." },
+    { "id": "failed", "name": "Ошибка измерения", "type": "event", "additional": true },
+    { "id": "text", "name": "Температура с единицей", "type": "text", "readyOn": "changed", "bindingLabel": "Показывать температуру чипа", "description": "Градусы Цельсия с одним знаком после запятой. При ошибке передает «Нет данных» вместо последней температуры." },
+    { "id": "value", "name": "Температура, °C", "type": "number", "readyOn": "done", "description": "Измеренная температура кристалла. При ошибке значение недействительно (NaN); событие «Температура получена» не отправляется." },
+    { "id": "valid", "name": "Показание достоверно?", "type": "boolean", "readyOn": "changed", "additional": true },
+    { "id": "error", "name": "Ошибка датчика", "type": "text", "readyOn": "changed", "additional": true }
+  ],
+  "parameters": {
+    "autoRead": { "label": "Измерять автоматически", "type": "boolean", "default": true, "description": "Первое измерение при запуске, затем через выбранный интервал." },
+    "intervalMs": { "label": "Период измерения, мс", "type": "integer", "default": 1000, "min": 250, "max": 3600000, "step": 250, "when": { "field": "autoRead", "value": true } }
+  },
+  "constraints": {},
+  "compatibility": { "projectFormat": 3, "targets": ["esp32s3", "esp32p4"], "espIdf": "5.4.4" },
+  "firmware": { "status": "implemented", "generatorKey": "temperature", "eventSource": true, "eventSourceWhen": { "field": "autoRead", "value": true }, "dependencies": ["esp_driver_tsens"] }
+}

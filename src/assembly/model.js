@@ -1,3 +1,6 @@
+import {parseContact,wireSource,touches,normalizedContact,componentWireProblem} from './endpoints.js';
+import {stepperIssues} from '../stepper/model.js';
+import {ROUTER_MODULE,routerCapabilities,routerIssues} from '../router/model.js';
 import {ESPNOW_MODULE,espNowSupported,espNowIssues,newKey} from '../espnow/model.js';
 import { moduleSupportsBoard } from '../catalog/compatibility.js';
 import { terminalLayout } from './terminalLayout.js';
@@ -14,9 +17,11 @@ export function transformAssembly(project,catalog,transform){
  const previous=project.assembly.positions,positions={...previous,...transform.positions},board=boardFor(project,catalog);
  const connections=project.assembly.connections.map(wire=>{
   if(!wire.route?.length)return wire;
-  const oldSource=previous.board,newSource=positions.board,oldTarget=previous[wire.componentId],newTarget=positions[wire.componentId];
+  const sourceId=wire.sourceComponentId||'board';
+  const oldSource=previous[sourceId],newSource=positions[sourceId],oldTarget=previous[wire.componentId],newTarget=positions[wire.componentId];
   if(!oldSource || !newSource || !oldTarget || !newTarget || oldSource.x===newSource.x && oldSource.y===newSource.y && oldTarget.x===newTarget.x && oldTarget.y===newTarget.y)return wire;
-  const pin=board?.pins.find(pin=>pin.id===wire.boardPinId),component=project.components.find(component=>component.id===wire.componentId);
+  const source=wire.sourceComponentId&&project.components.find(c=>c.id===wire.sourceComponentId);
+  const pin=source?terminalLayout(moduleFor(source,catalog),project.assembly.portSides?.[source.id]).terminals.find(t=>t.id===wire.sourceTerminalId):board?.pins.find(pin=>pin.id===wire.boardPinId),component=project.components.find(component=>component.id===wire.componentId);
   const terminal=component && terminalLayout(moduleFor(component,catalog),project.assembly.portSides?.[component.id]).terminals.find(terminal=>terminal.id===wire.terminalId);
   if(!pin || !terminal)return wire;
   const anchor=(position,contact)=>[position.x+contact.x,position.y+contact.y];
@@ -51,6 +56,8 @@ export function pinProblem(project, pin, board) {
 }
 
 export function connectionProblem(project, catalog, componentId, terminalId, pinId) {
+  const normalized=normalizedContact(project,catalog,componentId,terminalId,pinId);componentId=normalized.componentId;terminalId=normalized.terminalId;pinId=normalized.value;
+  if(parseContact(pinId))return componentWireProblem(project,catalog,componentId,terminalId,pinId);
   const board = boardFor(project, catalog);
   if (!board?.pins.length) return 'Сначала выберите конкретную плату с документированными контактами.';
   const component = lookup(project.components, componentId);
@@ -96,16 +103,18 @@ function withConnections(project, connections, catalog) {
 }
 
 export function connectTerminal(project, catalog, componentId, terminalId, boardPinId) {
+  const normalized=normalizedContact(project,catalog,componentId,terminalId,boardPinId);componentId=normalized.componentId;terminalId=normalized.terminalId;boardPinId=normalized.value;
   const problem = connectionProblem(project, catalog, componentId, terminalId, boardPinId);
   if (problem) throw new Error(problem);
   const previous = project.assembly.connections.find(w => w.componentId === componentId && w.terminalId === terminalId);
-  if (previous?.boardPinId === boardPinId) return project;
+  if (previous&&wireSource(previous) === boardPinId) return project;
   const connections = project.assembly.connections.filter(w => !(w.componentId === componentId && w.terminalId === terminalId));
-  return withConnections(project, [...connections, { id: previous?.id || crypto.randomUUID(), componentId, terminalId, boardPinId }], catalog);
+  const source=parseContact(boardPinId);
+  return withConnections(project, [...connections, { id: previous?.id || crypto.randomUUID(), componentId, terminalId, ...(source?{sourceComponentId:source.componentId,sourceTerminalId:source.terminalId}:{boardPinId}) }], catalog);
 }
 
 export function disconnectTerminal(project, catalog, componentId, terminalId) {
-  return withConnections(project, project.assembly.connections.filter(w => !(w.componentId === componentId && w.terminalId === terminalId)), catalog);
+  return withConnections(project, project.assembly.connections.filter(w => !touches(w,componentId,terminalId)), catalog);
 }
 
 export function removeWire(project, catalog, id) {
@@ -121,6 +130,7 @@ export function addHardware(project, module, catalog = null) {
   while (project.components.some(component => component.name === instanceName(number) || component.name === `${module.name} ${number}`)) number++;
   const name = instanceName(number);
   const parameters=Object.fromEntries(Object.entries(module.parameters).map(([key,parameter])=>[key,parameter.default]));
+  if(module.id===ROUTER_MODULE){if(!catalog||!routerCapabilities(boardFor(project,catalog)).available)throw new Error('У платы нет совместимого Wi-Fi STA/SoftAP-интерфейса.');if(project.components.some(c=>c.moduleId===ROUTER_MODULE))throw new Error('Маршрутизатор уже добавлен.');parameters.otaEnabled=boardFor(project,catalog).firmware.flashSizeMb>=8;parameters.adminPassword=newKey().slice(0,24);parameters.apPassword=newKey().slice(0,16);parameters.ethernetId=project.components.find(c=>c.moduleId==='clex.hardware.ethernet')?.id||'';}
   if(module.softwareInterface==='espnow'){if(!catalog||!espNowSupported(boardFor(project,catalog)))throw new Error('Для платы нет ESP-NOW-радиоинтерфейса.');if(project.components.some(c=>c.moduleId===ESPNOW_MODULE))throw new Error('ESP-NOW уже добавлен: плата использует одно радио.');parameters.pmk=newKey();}
   if(module.hardwareInterface&&catalog){const provider=boardFor(project,catalog)?.peripherals?.find(provider=>provider.family===module.hardwareInterface.family && provider.interface===module.hardwareInterface.interface);parameters.interfaceId=provider?.id || '';}
   if(module.network&&catalog){const board=boardFor(project,catalog),provider=board.networkInterfaces?.find(provider=>provider.family===module.network.family);if(!provider)throw new Error('На этой плате нет описанного сетевого интерфейса.');if(project.components.some(component=>networkProvider(component,board,module)?.id===provider.id))throw new Error('Этот встроенный интерфейс уже добавлен.');parameters.providerId=provider.id;}
@@ -158,7 +168,7 @@ export function removeHardware(project, catalog, id) {
   const components = project.components.filter(component => component.id !== id);
   const positions = Object.fromEntries(Object.entries(project.assembly.positions).filter(([key]) => key !== id));
   const moduleVersions = Object.fromEntries(Object.entries(project.moduleVersions).filter(([key]) => [...components, ...project.logic.nodes].some(component => component.moduleId === key)));
-  return withConnections({ ...project, components, moduleVersions, ...(project.screens ? { screens: Object.fromEntries(Object.entries(project.screens).filter(([key]) => key !== id)) } : {}), assembly: { ...project.assembly, positions, ...(project.assembly.portSides ? { portSides: Object.fromEntries(Object.entries(project.assembly.portSides).filter(([key]) => key !== id)) } : {}) } }, project.assembly.connections.filter(wire => wire.componentId !== id), catalog);
+  return withConnections({ ...project, components, moduleVersions, ...(project.screens ? { screens: Object.fromEntries(Object.entries(project.screens).filter(([key]) => key !== id)) } : {}), assembly: { ...project.assembly, positions, ...(project.assembly.portSides ? { portSides: Object.fromEntries(Object.entries(project.assembly.portSides).filter(([key]) => key !== id)) } : {}) } }, project.assembly.connections.filter(wire => !touches(wire,id)), catalog);
 }
 
 export function selectBoard(project, board) {
@@ -169,7 +179,7 @@ export function validateAssembly(project, catalog) {
   const issues = [];
   const issue = (severity, code, message, fields = {}) => issues.push({ severity, code, message, ...fields });
   const board = boardFor(project, catalog);
-  issues.push(...resourceIssues(project,catalog));
+  issues.push(...resourceIssues(project,catalog),...stepperIssues(project));
   if(project.components.filter(c=>c.moduleId===ESPNOW_MODULE).length>1)issue('error','espnow-duplicate','В проекте поддерживается один ESP-NOW-интерфейс платы.');
   if (!board) { issue('error', 'board-missing', 'Плата отсутствует в каталоге.'); return issues; }
   if (!board.pins.length) issue('error', 'board-generic', 'Выберите конкретную плату. Общая ESP32-S3 не имеет распиновки.');
@@ -192,6 +202,7 @@ export function validateAssembly(project, catalog) {
     }
     if (module.constraints.signalVoltageParameter && Number(component.parameters[module.constraints.signalVoltageParameter]) > Number(component.parameters[module.constraints.supplyVoltageParameter])) issue('error','input-voltage',`${component.name}: напряжение OUT не может превышать выбранное питание VCC.`,fields);
     if(module.softwareInterface==='espnow')for(const message of espNowIssues(component,board))issue('error','espnow-config',component.name+': '+message,fields);
+    if(module.softwareInterface==='router')for(const message of routerIssues(component,project,catalog))issue('error','router-config',component.name+': '+message,fields);
     if(module.network)for(const message of networkIssues(component,board,module))issue('error','network-config',component.name+': '+message,fields);
     if(module.parameters.spiHost&&(!module.network||networkProvider(component,board,module)?.interface==='spi')&&!board.interfaces?.spi?.hosts.includes(Number(component.parameters.spiHost)))issue('error','spi-host',component.name+': выберите доступный SPI.',fields);
     if (module.constraints.requiresSeriesResistor) {
@@ -200,12 +211,12 @@ export function validateAssembly(project, catalog) {
       if (Number.isFinite(currentMa) && currentMa > module.constraints.maxCurrentMa) issue('error', 'led-current', `${component.name}: расчетный ток ${currentMa.toFixed(1)} мА превышает предел модуля ${module.constraints.maxCurrentMa} мА. Увеличьте резистор.`, fields);
     }
     for (const terminal of module.terminals) {
-      if (!project.assembly.connections.some(wire => wire.componentId === component.id && wire.terminalId === terminal.id)) issue('error', 'terminal-unconnected', `${component.name}: подключите «${terminal.label}».`, fields);
+      if (!terminal.optional&&!project.assembly.connections.some(wire => touches(wire,component.id,terminal.id))) issue('error', 'terminal-unconnected', `${component.name}: подключите «${terminal.label}».`, fields);
     }
   }
   for(const claim of spiUsage(project,catalog))if(spiUsage(project,catalog).some(other=>other.componentId!==claim.componentId&&other.host===claim.host))issue('error','spi-conflict',`SPI${claim.host} занят несколькими компонентами; выберите свободный SPI.`,{componentId:claim.componentId});
   for (const wire of project.assembly.connections) {
-    const problem = connectionProblem(project, catalog, wire.componentId, wire.terminalId, wire.boardPinId);
+    const problem = connectionProblem(project, catalog, wire.componentId, wire.terminalId, wireSource(wire));
     if (problem) issue('error', 'connection-invalid', problem, { componentId: wire.componentId, wireId: wire.id, pinId: wire.boardPinId });
   }
   if (JSON.stringify(project.gpioAssignments) !== JSON.stringify(gpioAssignments(project, catalog))) issue('error', 'gpio-cache', 'Назначения GPIO не совпадают с физическими соединениями. Переназначьте контакты в редакторе.');

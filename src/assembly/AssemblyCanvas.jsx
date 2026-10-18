@@ -1,3 +1,4 @@
+import {componentContact,wireSource,touches,connectionLabel} from './endpoints.js';
 import { formatCount } from '../utils/plural.js';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ReactFlow, Background, BackgroundVariant, ConnectionMode } from '@xyflow/react';
@@ -128,10 +129,10 @@ export default function AssemblyCanvas({ project, board, catalog, selection, set
       const module = moduleFor(component, catalog), layout = terminalLayout(module, project.assembly.portSides?.[component.id]), { width, height } = layout;
       const selected = selection?.type === 'component' && selection.id === component.id;
       const terminals = layout.terminals.map(terminal => {
-        const wire = project.assembly.connections.find(wire => wire.componentId === component.id && wire.terminalId === terminal.id);
-        return { terminal, connected: Boolean(wire), pin: wire && board.pins.find(pin => pin.id === wire.boardPinId),
+        const wire = project.assembly.connections.find(wire => touches(wire,component.id,terminal.id));
+        return { terminal, connected: Boolean(wire), pin: wire && {label:connectionLabel(project,catalog,wire,component.id)},
           active: connectionSource?.componentId === component.id && connectionSource.terminalId === terminal.id,
-          candidate: Boolean(connectionSource?.boardPinId && !connectionProblem(project, catalog, component.id, terminal.id, connectionSource.boardPinId)),
+          candidate: Boolean((connectionSource?.boardPinId||connectionSource?.componentId&&connectionSource.componentId!==component.id)&&!connectionProblem(project,catalog,component.id,terminal.id,connectionSource.boardPinId||componentContact(connectionSource.componentId,connectionSource.terminalId))),
           color: colors[wire?.id] || (terminal.kind === 'ground' ? GROUND_COLOR : module.color) };
       });
       nodes.push({
@@ -148,13 +149,13 @@ export default function AssemblyCanvas({ project, board, catalog, selection, set
   const projectedEdges = useMemo(() => allocateWireLanes(physicalEdges(project).map(edge => {
     const wire = project.assembly.connections.find(wire => wire.id === edge.id);
     const component = project.components.find(component => component.id === wire.componentId), module = component && moduleFor(component, catalog);
-    const terminal = module?.terminals.find(terminal => terminal.id === wire.terminalId), targetLayout = terminalLayout(module, project.assembly.portSides?.[wire.componentId]), targetTerminal = targetLayout.terminals.find(item => item.id === wire.terminalId), pin = board.pins.find(pin => pin.id === wire.boardPinId);
-    const diagnostic = connectionProblem(project, catalog, wire.componentId, wire.terminalId, wire.boardPinId);
+    const terminal = module?.terminals.find(terminal => terminal.id === wire.terminalId), targetLayout = terminalLayout(module, project.assembly.portSides?.[wire.componentId]), targetTerminal = targetLayout.terminals.find(item => item.id === wire.terminalId), sourceComponent=wire.sourceComponentId&&project.components.find(c=>c.id===wire.sourceComponentId),sourceLayout=sourceComponent&&terminalLayout(moduleFor(sourceComponent,catalog),project.assembly.portSides?.[sourceComponent.id]),pin=sourceComponent?sourceLayout.terminals.find(t=>t.id===wire.sourceTerminalId):board.pins.find(pin=>pin.id===wire.boardPinId),sourcePosition=project.assembly.positions[wire.sourceComponentId||'board'];
+    const diagnostic = connectionProblem(project, catalog, wire.componentId, wire.terminalId, wireSource(wire));
     const selected = selection?.type === 'wire' && selection.id === wire.id;
-    const label = 'Соединение ' + (component?.name || wire.componentId) + ': ' + (terminal?.label || wire.terminalId) + ' → ' + (pin?.label || wire.boardPinId);
-    return { ...edge, selected, ariaLabel: label, data: { label, diagnostic, selected, manualRoute: wire.route, manualSourceAnchor: pin && [project.assembly.positions.board.x+pin.x,project.assembly.positions.board.y+pin.y], manualTargetAnchor: targetTerminal && [project.assembly.positions[wire.componentId].x+targetTerminal.x,project.assembly.positions[wire.componentId].y+targetTerminal.y], editable: !busy && !spaceHeld, onRouteChange, onRouteInteraction: routeInteraction, sourcePin: pin, targetTerminal, targetWidth: targetLayout.width, targetHeight: targetLayout.height, boardWidth: board.width, boardHeight: board.height, ground: terminal?.kind === 'ground',
+    const label = 'Соединение ' + (component?.name || wire.componentId) + ': ' + (terminal?.label || wire.terminalId) + ' → ' + connectionLabel(project,catalog,wire);
+    return { ...edge, selected, ariaLabel: label, data: { label, diagnostic, selected, manualRoute: wire.route, manualSourceAnchor: pin && [sourcePosition.x+pin.x,sourcePosition.y+pin.y], manualTargetAnchor: targetTerminal && [project.assembly.positions[wire.componentId].x+targetTerminal.x,project.assembly.positions[wire.componentId].y+targetTerminal.y], editable: !busy && !spaceHeld, onRouteChange, onRouteInteraction: routeInteraction, sourcePin: pin, targetTerminal, targetWidth: targetLayout.width, targetHeight: targetLayout.height, boardWidth: sourceComponent?0:board.width, boardHeight: sourceComponent?0:board.height, sourceComponentId: wire.sourceComponentId, sourceWidth:sourceLayout?.width,sourceHeight:sourceLayout?.height, ground: terminal?.kind === 'ground',
       color: diagnostic ? '#fb7185' : colors[wire.id],
-      highlighted: selected || (selection?.type === 'component' && selection.id === wire.componentId), dimmed: (selection?.type === 'wire' || selection?.type === 'component') && !selected && selection.id !== wire.componentId, onSelect: selectWire } };
+      highlighted: selected || (selection?.type === 'component' && (selection.id === wire.componentId||selection.id===wire.sourceComponentId)), dimmed: (selection?.type === 'wire' || selection?.type === 'component') && !selected && selection.id !== wire.componentId&&selection.id!==wire.sourceComponentId, onSelect: selectWire } };
   })), [project, board, catalog, colors, selection, selectWire, busy, spaceHeld, onRouteChange, routeInteraction]);
   const edges=useMemo(()=>routeAssemblyEdges(projectedEdges,nodes,board),[projectedEdges,nodes,board]);
 
@@ -234,7 +235,7 @@ export default function AssemblyCanvas({ project, board, catalog, selection, set
 
   return <div className={['assembly-canvas', busy ? 'canvas-busy' : '', spaceHeld ? 'canvas-space-pan' : ''].join(' ')}>
     <div className="canvas-top"><span className="badge purple"><MousePointer2 size={12} />МОНТАЖ / {formatCount(project.components.length, ['компонент', 'компонента', 'компонентов'])}</span><span className="canvas-scale">{Math.round(zoom * 100)}%</span></div>
-    {pending && <div className="connection-prompt"><span className="dot green-dot" />{pending.componentId ? 'Выберите контакт платы для соединения' : 'Выберите контакт компонента'}<button aria-label="Отменить соединение" className="icon-button" onClick={() => setPending(null)}><Unplug size={15} /></button></div>}
+    {pending && <div className="connection-prompt"><span className="dot green-dot" />{pending.componentId ? 'Выберите совместимый контакт платы или компонента' : 'Выберите контакт компонента'}<button aria-label="Отменить соединение" className="icon-button" onClick={() => setPending(null)}><Unplug size={15} /></button></div>}
     <div ref={root} className="assembly-flow-region" data-ready={ready} aria-label="Холст монтажа">
       {/* Fix node styles as well as routing layers: React Flow resets its selection elevation during Strict Mode initialization. */}
       <ReactFlow zIndexMode="manual" elevateNodesOnSelect={false} nodes={nodes} edges={edges} nodeTypes={nodeTypes} edgeTypes={edgeTypes} defaultViewport={project.assembly.viewport}

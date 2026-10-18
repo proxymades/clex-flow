@@ -18,6 +18,7 @@ export function wireColors(project, catalog) {
     const terminal = catalog.modules.find(module => module.id === component?.moduleId)?.terminals.find(terminal => terminal.id === wire.terminalId);
     if (terminal?.kind === 'ground') colors[wire.id] = GROUND_COLOR;
     else if (terminal?.kind === 'power') colors[wire.id] = POWER_COLOR;
+    else if(terminal?.kind==='winding-input')colors[wire.id]=terminal.phase==='A'?'#fbbf24':'#38bdf8';
     else signals.push(wire);
   }
   signals.sort((a,b)=>compare(a.id,b.id)).forEach((wire,index)=>{colors[wire.id]=signalColor(index);});

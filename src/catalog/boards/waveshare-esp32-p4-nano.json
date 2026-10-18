@@ -1455,5 +1455,28 @@
         "height": 58
       }
     ]
+  },
+  "wifi": {
+    "driverKey": "hosted",
+    "sta": true,
+    "softap": true,
+    "authModes": [
+      "wpa2"
+    ],
+    "maxClients": 4,
+    "coprocessor": "esp32c6",
+    "transport": "sdio",
+    "signals": {
+      "cmd": 19,
+      "clk": 18,
+      "d0": 14,
+      "d1": 15,
+      "d2": 16,
+      "d3": 17,
+      "reset": 54
+    },
+    "profileKey": "wifi-hosted-p4",
+    "config": "CONFIG_ESP_HOSTED_PRIV_SDIO_PIN_CMD_SLOT_1=19\nCONFIG_ESP_HOSTED_PRIV_SDIO_PIN_CLK_SLOT_1=18\nCONFIG_ESP_HOSTED_PRIV_SDIO_PIN_D0_SLOT_1=14\nCONFIG_ESP_HOSTED_PRIV_SDIO_PIN_D1_4BIT_BUS_SLOT_1=15\nCONFIG_ESP_HOSTED_PRIV_SDIO_PIN_D2_4BIT_BUS_SLOT_1=16\nCONFIG_ESP_HOSTED_PRIV_SDIO_PIN_D3_4BIT_BUS_SLOT_1=17\nCONFIG_ESP_HOSTED_SDIO_GPIO_RESET_SLAVE=54\n",
+    "limitation": "SoftAP/AP+STA через ESP-Hosted 2.12.3. Требуется совместимая прошивка C6. WPA3 не включена до проверки сопроцессора."
   }
 }

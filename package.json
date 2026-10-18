@@ -1,7 +1,7 @@
 {
   "name": "clex-flow",
   "private": true,
-  "version": "0.1.6",
+  "version": "0.1.7",
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
@@ -53,7 +53,11 @@
     "test:espnow-mac-ui": "node tests/espnow-mac-ui.cjs",
     "test:espnow-blocks-ui": "node tests/espnow-blocks-ui.cjs",
     "test:touch-button-ui": "node tests/touch-button-ui.cjs",
-    "test:board-picker-ui": "node tests/board-picker-ui.cjs"
+    "test:board-picker-ui": "node tests/board-picker-ui.cjs",
+    "test:stepper-ui": "node tests/stepper-ui.cjs",
+    "test:router-ui": "node tests/router-ui.cjs",
+    "test:router-admin-ui": "node tests/router-admin-ui.cjs",
+    "test:router-builds": "node scripts/check-router-builds.mjs"
   },
   "dependencies": {
     "@tauri-apps/api": "2.10.1",

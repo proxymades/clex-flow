@@ -54,5 +54,100 @@
       "mbedtls"
     ],
     "config": "CONFIG_ESP_WIFI_ESPNOW_MAX_ENCRYPT_NUM=6\nCONFIG_PARTITION_TABLE_CUSTOM=y\nCONFIG_PARTITION_TABLE_CUSTOM_FILENAME=\"partitions.csv\"\n"
+  },
+  "stepper-esp32s3": {
+    "target": "esp32s3",
+    "config": "",
+    "requires": [
+      "esp_driver_gptimer"
+    ],
+    "dependencies": {}
+  },
+  "stepper-esp32p4": {
+    "target": "esp32p4",
+    "config": "",
+    "requires": [
+      "esp_driver_gptimer"
+    ],
+    "dependencies": {}
+  },
+  "temperature-esp32s3": {
+    "target": "esp32s3",
+    "dependencies": {},
+    "requires": ["esp_driver_tsens"],
+    "config": ""
+  },
+  "temperature-esp32p4": {
+    "target": "esp32p4",
+    "dependencies": {},
+    "requires": ["esp_driver_tsens"],
+    "config": ""
+  },
+  "router-esp32s3": {
+    "target": "esp32s3",
+    "dependencies": {},
+    "requires": [
+      "esp_wifi",
+      "esp_event",
+      "esp_netif",
+      "esp_eth",
+      "esp_http_client",
+      "esp_http_server",
+      "app_update",
+      "nvs_flash",
+      "mbedtls",
+      "json",
+      "lwip",
+      "http_parser"
+    ],
+    "config": "CONFIG_LWIP_IP_FORWARD=y\nCONFIG_LWIP_IPV4_NAPT=y\nCONFIG_LWIP_IPV4_NAPT_PORTMAP=y\nCONFIG_LWIP_TCPIP_CORE_LOCKING=y\nCONFIG_LWIP_DHCPS=y\nCONFIG_LWIP_DHCPS_ADD_DNS=y\nCONFIG_LWIP_DHCPS_MAX_STATION_NUM=10\nCONFIG_ESP_WIFI_SOFTAP_SUPPORT=y\nCONFIG_ESP_WIFI_SOFTAP_SAE_SUPPORT=y\nCONFIG_ESP_WIFI_ENABLE_WPA3_SAE=y\nCONFIG_MBEDTLS_CERTIFICATE_BUNDLE=y\nCONFIG_MBEDTLS_CERTIFICATE_BUNDLE_DEFAULT_FULL=y\nCONFIG_PARTITION_TABLE_CUSTOM=y\nCONFIG_PARTITION_TABLE_CUSTOM_FILENAME=\"partitions.csv\"\nCONFIG_HTTPD_MAX_REQ_HDR_LEN=1024\nCONFIG_HTTPD_MAX_URI_LEN=128\nCONFIG_ESP_NETIF_SET_DNS_PER_DEFAULT_NETIF=y\n",
+    "partitions": "nvs,data,nvs,0x9000,0x6000\nphy_init,data,phy,0xf000,0x1000\nfactory,app,factory,0x10000,0x300000\n"
+  },
+  "router-esp32p4": {
+    "target": "esp32p4",
+    "dependencies": {},
+    "requires": [
+      "esp_wifi",
+      "esp_event",
+      "esp_netif",
+      "esp_eth",
+      "esp_http_client",
+      "esp_http_server",
+      "app_update",
+      "nvs_flash",
+      "mbedtls",
+      "json",
+      "lwip",
+      "http_parser"
+    ],
+    "config": "CONFIG_LWIP_IP_FORWARD=y\nCONFIG_LWIP_IPV4_NAPT=y\nCONFIG_LWIP_IPV4_NAPT_PORTMAP=y\nCONFIG_LWIP_TCPIP_CORE_LOCKING=y\nCONFIG_LWIP_DHCPS=y\nCONFIG_LWIP_DHCPS_ADD_DNS=y\nCONFIG_LWIP_DHCPS_MAX_STATION_NUM=10\nCONFIG_ESP_WIFI_SOFTAP_SUPPORT=y\nCONFIG_ESP_WIFI_SOFTAP_SAE_SUPPORT=y\nCONFIG_ESP_WIFI_ENABLE_WPA3_SAE=y\nCONFIG_MBEDTLS_CERTIFICATE_BUNDLE=y\nCONFIG_MBEDTLS_CERTIFICATE_BUNDLE_DEFAULT_FULL=y\nCONFIG_PARTITION_TABLE_CUSTOM=y\nCONFIG_PARTITION_TABLE_CUSTOM_FILENAME=\"partitions.csv\"\nCONFIG_HTTPD_MAX_REQ_HDR_LEN=1024\nCONFIG_HTTPD_MAX_URI_LEN=128\nCONFIG_ESP_NETIF_SET_DNS_PER_DEFAULT_NETIF=y\n",
+    "partitions": "nvs,data,nvs,0x9000,0x6000\nphy_init,data,phy,0xf000,0x1000\nfactory,app,factory,0x10000,0x300000\n"
+  },
+  "wifi-hosted-p4": {
+    "target": "esp32p4",
+    "dependencies": {
+      "espressif/esp_hosted": "2.12.3",
+      "espressif/esp_wifi_remote": "1.4.2"
+    },
+    "requires": [
+      "esp_hosted",
+      "esp_wifi_remote"
+    ],
+    "config": "CONFIG_ESP_WIFI_REMOTE_ENABLED=y\nCONFIG_ESP_WIFI_REMOTE_LIBRARY_HOSTED=y\nCONFIG_SLAVE_IDF_TARGET_ESP32C6=y\nCONFIG_ESP_HOSTED_SDIO_HOST_INTERFACE=y\nCONFIG_ESP_HOSTED_SDIO_SLOT_1=y\nCONFIG_ESP_HOSTED_SDIO_4_BIT_BUS=y\n",
+    "cmakePrelude": "set(ENV{ESP_IDF_VERSION} \"5.4\")\n"
+  },
+  "router-ota-esp32s3": {
+    "target": "esp32s3",
+    "dependencies": {},
+    "requires": [],
+    "config": "",
+    "partitions": "nvs,data,nvs,0x9000,0x5000\notadata,data,ota,0xe000,0x2000\nphy_init,data,phy,0x10000,0x1000\nota_0,app,ota_0,0x20000,0x300000\nota_1,app,ota_1,0x320000,0x300000\n"
+  },
+  "router-ota-esp32p4": {
+    "target": "esp32p4",
+    "dependencies": {},
+    "requires": [],
+    "config": "",
+    "partitions": "nvs,data,nvs,0x9000,0x5000\notadata,data,ota,0xe000,0x2000\nphy_init,data,phy,0x10000,0x1000\nota_0,app,ota_0,0x20000,0x300000\nota_1,app,ota_1,0x320000,0x300000\n"
   }
 }

@@ -15,7 +15,7 @@ test('physical React Flow handles resolve board-to-component and reverse drags t
   assert.match(connectionProblem(project, catalog, componentId, 'anode', 'P36'), /питанию/);
 });
 
-test('physical connection adapter rejects board-to-board and component-to-component links', () => {
+test('physical connection adapter rejects board-to-board and links without contacts', () => {
   assert.throws(() => physicalConnection({ source: 'board', target: 'board' }), /контакт платы/);
   assert.throws(() => physicalConnection({ source: 'component-a', target: 'component-b' }), /контакт платы/);
 });

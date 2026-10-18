@@ -1,3 +1,4 @@
+import {stepperLogicIssues} from '../stepper/model.js';
 import {ESPNOW_MODULE,espNowSupported,espNowLogicIssues,espNowAckIssues} from '../espnow/model.js';
 import { moduleSupportsBoard,moduleIsEventSource } from '../catalog/compatibility.js';
 import { formatCount } from '../utils/plural.js';
@@ -37,7 +38,7 @@ export function hardwareMatches(component,requirement,catalog){
  if(!component||!requirement)return false;
  const definition=catalog?.modules.find(module=>module.id===component.moduleId);
  if(requirement.kind==='display')return Boolean(definition?.display);
- if(requirement.kind==='gpio')return Boolean(definition?.terminals?.some(terminal=>terminal.kind===(requirement.mode==='input'?'gpio-input':'gpio-output')));
+ if(requirement.kind==='gpio')return !definition?.stepper&&Boolean(definition?.terminals?.some(terminal=>terminal.kind===(requirement.mode==='input'?'gpio-input':'gpio-output')));
  return Boolean(requirement.modules?.includes(component.moduleId));
 }
 
@@ -53,7 +54,7 @@ export function logicAdditionProblem(module, project, catalog) {
       : requirement.modules.map(id => '«' + (catalog.modules.find(item => item.id === id)?.name || id) + '»').join(' или ');
     return `Сначала добавьте ${name} во вкладке «Монтаж».`;
   }
-  if (module.constraints.network && !components.some(component => catalog.modules.find(item => item.id === component.moduleId)?.network)) {
+  if (module.constraints.network && !components.some(component => (catalog.modules.find(item => item.id === component.moduleId)?.network||component.moduleId==='clex.hardware.router'))) {
     return 'Сначала добавьте сетевой интерфейс во вкладке «Монтаж».';
   }
   return null;
@@ -152,6 +153,7 @@ export function connectNodes(graph, catalog, connection, project = null) {
 
 export function hardwareBinding(node, project, catalog) {
   const module = graphModule(node, catalog), requirement = module?.constraints.hardware;
+  if(requirement?.kind==='stepper'||requirement?.kind==='router'){const component=project.components.find(c=>c.id===node.parameters.componentId);return {component,gpio:null,error:hardwareMatches(component,requirement,catalog)?null:'Выберите совместимый компонент из монтажа.'};}
   if (requirement?.kind === 'peripheral') {
     const component=project.components.find(component=>component.id===node.parameters.componentId),definition=catalog.modules.find(module=>module.id===component?.moduleId);
     return {component,gpio:null,error:component && requirement.modules.includes(component.moduleId) && hardwareProvider(component,definition,boardFor(project,catalog)) ? null : 'Выберите аппаратный компонент и его интерфейс в монтаже.'};
@@ -199,8 +201,9 @@ export function validateGraph(project, catalog) {
       if (parameter.type === 'text' && (typeof value !== 'string' || value.length > parameter.maxLength)) add('error', 'logic-parameter', `${node.name}: текст не должен превышать ${formatCount(parameter.maxLength, ['символ', 'символа', 'символов'])}.`, fields);
     }
     if (module.id === 'clex.logic.select-number' && node.parameters.firstValue === node.parameters.secondValue) add('error', 'logic-parameter', node.name + ': укажите два разных значения для выбора.', fields);
+    for(const message of stepperLogicIssues(node,project))add('error','stepper-logic',node.name+': '+message,fields);
     for(const message of [...espNowLogicIssues(node,project,boardFor(project,catalog)),...espNowAckIssues(node,project,catalog)])add('error','espnow-logic',node.name+': '+message,fields);
-    if(module.constraints.network){if(!project.components.some(component=>catalog.modules.find(module=>module.id===component.moduleId)?.network))add('error','probe-network',node.name+': добавьте сетевой интерфейс в монтаж.',fields);if(!probeUrl(node.parameters.url))add('error','probe-url',node.name+': укажите HTTP/HTTPS-адрес без логина, пароля и фрагмента.',fields);}
+    if(module.constraints.network){if(!project.components.some(component=>(catalog.modules.find(module=>module.id===component.moduleId)?.network||component.moduleId==='clex.hardware.router')))add('error','probe-network',node.name+': добавьте сетевой интерфейс в монтаж.',fields);if(!probeUrl(node.parameters.url))add('error','probe-url',node.name+': укажите HTTP/HTTPS-адрес без логина, пароля и фрагмента.',fields);}
     const binding = hardwareBinding(node, project, catalog);
     if (module.editor === 'screen' && binding.component) {
       if (!project.screens?.[binding.component.id]) add('error', 'display-interface', node.name + ': создайте и сохраните интерфейс экрана.', fields);

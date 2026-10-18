@@ -1,3 +1,4 @@
+import {componentContact} from '../assembly/endpoints.js';
 import { formatCount, pluralForm } from '../utils/plural.js';
 import { lazy, Suspense, useCallback, useEffect, useState } from 'react';
 import { CircuitBoard, Layers, Settings2, Terminal, Download, TriangleAlert, CheckCircle2, Cpu, Info } from 'lucide-react';
@@ -133,6 +134,7 @@ export default function Workspace({ project, setProject, dirty, busy, onExport, 
   function terminalClick(component, terminal) {
     setSelection({ type: 'component', id: component.id });
     if (pending?.boardPinId) connect(component.id, terminal.id, pending.boardPinId);
+    else if(pending?.componentId&&pending.componentId!==component.id)connect(component.id,terminal.id,componentContact(pending.componentId,pending.terminalId));
     else { setPending({ componentId: component.id, terminalId: terminal.id }); setError(''); }
   }
   const inspectIssue = issue => { if (issue.nodeId || issue.edgeId || issue.code.startsWith('logic-') || issue.code.startsWith('timer-')) { setTab('logic'); setLogicSelection({ nodes: issue.nodeId ? [issue.nodeId] : [], edges: issue.edgeId ? [issue.edgeId] : [] }); return; } setTab('assembly'); setPending(null); if (issue.componentId) setSelection({ type: 'component', id: issue.componentId }); else setSelection({ type: 'board', id: 'board' }); };

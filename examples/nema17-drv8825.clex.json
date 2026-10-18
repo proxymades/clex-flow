@@ -1,0 +1,202 @@
+{
+  "id": "90b42fd4-0214-4a9f-b43a-17dcac9afbae",
+  "name": "NEMA 17 – DRV8825",
+  "description": "ESP32-S3-ETH: 200 импульсов STEP каждые 5 секунд. Проверьте подключение обмоток A/B, GPIO, микрошаг и полярность ENABLE. Силовое питание подключите вручную, ограничение тока настройте на драйвере.",
+  "formatVersion": 3,
+  "createdAt": "2026-10-17T15:24:12.671Z",
+  "updatedAt": "2026-10-17T15:24:12.671Z",
+  "boardId": "waveshare-esp32-s3-eth",
+  "boardSettings": {
+    "camera": "disconnected"
+  },
+  "components": [
+    {
+      "id": "19098921-9bb9-4571-984f-b72c51574a35",
+      "moduleId": "clex.hardware.nema17",
+      "moduleVersion": "1.0.0",
+      "name": "NEMA 17 1",
+      "parameters": {
+        "stepsPerRevolution": 200
+      }
+    },
+    {
+      "id": "698634da-3236-40f9-8cb6-fc3980c69ef8",
+      "moduleId": "clex.hardware.drv8825",
+      "moduleVersion": "1.0.0",
+      "name": "DRV8825 1",
+      "parameters": {
+        "microsteps": "1",
+        "enableLevel": "low",
+        "invertDirection": "no",
+        "pulseUs": 10
+      }
+    }
+  ],
+  "gpioAssignments": [
+    {
+      "componentId": "698634da-3236-40f9-8cb6-fc3980c69ef8",
+      "terminalId": "step",
+      "pinId": "P4",
+      "gpio": 48,
+      "mode": "output"
+    },
+    {
+      "componentId": "698634da-3236-40f9-8cb6-fc3980c69ef8",
+      "terminalId": "dir",
+      "pinId": "P5",
+      "gpio": 47,
+      "mode": "output"
+    },
+    {
+      "componentId": "698634da-3236-40f9-8cb6-fc3980c69ef8",
+      "terminalId": "enable",
+      "pinId": "P9",
+      "gpio": 42,
+      "mode": "output"
+    }
+  ],
+  "logic": {
+    "nodes": [
+      {
+        "id": "eeeaedd9-6efc-4fc3-b210-e8062dbc0049",
+        "moduleId": "clex.logic.timer",
+        "moduleVersion": "1.0.0",
+        "name": "Таймер 1",
+        "position": {
+          "x": 60,
+          "y": 100
+        },
+        "parameters": {
+          "intervalMs": 5000
+        }
+      },
+      {
+        "id": "76f5d7a5-de2e-4730-b057-50effbeabd52",
+        "moduleId": "clex.logic.stepper",
+        "moduleVersion": "1.0.0",
+        "name": "Шаговый двигатель 1",
+        "position": {
+          "x": 390,
+          "y": 100
+        },
+        "parameters": {
+          "componentId": "698634da-3236-40f9-8cb6-fc3980c69ef8",
+          "motion": "steps",
+          "steps": 200,
+          "revolutions": 1,
+          "direction": "forward",
+          "speed": 400,
+          "acceleration": 400
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "abb1b095-785c-41ab-90d9-176b864ab079",
+        "source": "eeeaedd9-6efc-4fc3-b210-e8062dbc0049",
+        "target": "76f5d7a5-de2e-4730-b057-50effbeabd52",
+        "sourceHandle": "tick",
+        "targetHandle": "trigger",
+        "dataType": "event"
+      }
+    ],
+    "viewport": {
+      "x": 0,
+      "y": 0,
+      "zoom": 1
+    }
+  },
+  "assembly": {
+    "positions": {
+      "board": {
+        "x": 100,
+        "y": 40
+      },
+      "19098921-9bb9-4571-984f-b72c51574a35": {
+        "x": 1030,
+        "y": 120
+      },
+      "698634da-3236-40f9-8cb6-fc3980c69ef8": {
+        "x": 630,
+        "y": 120
+      }
+    },
+    "connections": [
+      {
+        "id": "f01e36d2-551e-4eef-8bc2-9c34211cf0f0",
+        "componentId": "698634da-3236-40f9-8cb6-fc3980c69ef8",
+        "terminalId": "step",
+        "boardPinId": "P4"
+      },
+      {
+        "id": "056e540b-171a-4803-8d28-d05cefab86f5",
+        "componentId": "698634da-3236-40f9-8cb6-fc3980c69ef8",
+        "terminalId": "dir",
+        "boardPinId": "P5"
+      },
+      {
+        "id": "abc1c860-ab9f-48a2-b5e3-f913323df453",
+        "componentId": "698634da-3236-40f9-8cb6-fc3980c69ef8",
+        "terminalId": "enable",
+        "boardPinId": "P9"
+      },
+      {
+        "id": "d8fcebce-6000-4abc-9f52-dacb7fa3233f",
+        "componentId": "698634da-3236-40f9-8cb6-fc3980c69ef8",
+        "terminalId": "logic-ground",
+        "boardPinId": "P3"
+      },
+      {
+        "id": "f817ba35-903b-4639-8f10-4076fbb18d77",
+        "componentId": "698634da-3236-40f9-8cb6-fc3980c69ef8",
+        "terminalId": "reset",
+        "boardPinId": "P36"
+      },
+      {
+        "id": "8971a3ee-2362-401f-9e08-6932f9333edd",
+        "componentId": "698634da-3236-40f9-8cb6-fc3980c69ef8",
+        "terminalId": "sleep",
+        "boardPinId": "P36"
+      },
+      {
+        "id": "83c11cd4-2dea-47c7-917a-31a15e5661a0",
+        "componentId": "19098921-9bb9-4571-984f-b72c51574a35",
+        "terminalId": "a1",
+        "sourceComponentId": "698634da-3236-40f9-8cb6-fc3980c69ef8",
+        "sourceTerminalId": "a1"
+      },
+      {
+        "id": "d29d7f8c-37aa-4a60-8cf4-c98fe07b7537",
+        "componentId": "19098921-9bb9-4571-984f-b72c51574a35",
+        "terminalId": "a2",
+        "sourceComponentId": "698634da-3236-40f9-8cb6-fc3980c69ef8",
+        "sourceTerminalId": "a2"
+      },
+      {
+        "id": "efc09af1-9699-41ee-9db4-cdc4e35bcc72",
+        "componentId": "19098921-9bb9-4571-984f-b72c51574a35",
+        "terminalId": "b1",
+        "sourceComponentId": "698634da-3236-40f9-8cb6-fc3980c69ef8",
+        "sourceTerminalId": "b1"
+      },
+      {
+        "id": "4117eb0a-c9f8-4870-86d5-e1e4646f7faa",
+        "componentId": "19098921-9bb9-4571-984f-b72c51574a35",
+        "terminalId": "b2",
+        "sourceComponentId": "698634da-3236-40f9-8cb6-fc3980c69ef8",
+        "sourceTerminalId": "b2"
+      }
+    ],
+    "viewport": {
+      "x": 0,
+      "y": 0,
+      "zoom": 1
+    }
+  },
+  "moduleVersions": {
+    "clex.hardware.nema17": "1.0.0",
+    "clex.hardware.drv8825": "1.0.0",
+    "clex.logic.timer": "1.0.0",
+    "clex.logic.stepper": "1.0.0"
+  }
+}

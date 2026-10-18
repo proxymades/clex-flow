@@ -771,5 +771,16 @@
     "espNow": true,
     "longRange": true,
     "interface": "station"
+  },
+  "wifi": {
+    "driverKey": "native",
+    "sta": true,
+    "softap": true,
+    "authModes": [
+      "wpa2",
+      "wpa3",
+      "mixed"
+    ],
+    "maxClients": 10
   }
 }

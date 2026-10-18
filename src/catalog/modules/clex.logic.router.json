@@ -1,0 +1,256 @@
+{
+  "version": "1.0.0",
+  "category": "network",
+  "categoryName": "Сеть",
+  "icon": "Network",
+  "color": "#38bdf8",
+  "compatibility": {
+    "projectFormat": 3,
+    "targets": [
+      "esp32",
+      "esp32s2",
+      "esp32s3",
+      "esp32c3",
+      "esp32c6",
+      "esp32p4"
+    ],
+    "espIdf": "5.4.4"
+  },
+  "constraints": {
+    "hardware": {
+      "kind": "router",
+      "modules": [
+        "clex.hardware.router"
+      ]
+    }
+  },
+  "id": "clex.logic.router",
+  "kind": "logic",
+  "name": "Маршрутизатор",
+  "description": "Состояние, реальные проверки интернета, клиенты и управление маршрутизатором. События выполняются в задаче графа.",
+  "inputs": [
+    {
+      "id": "trigger",
+      "name": "Запросить состояние",
+      "type": "event"
+    },
+    {
+      "id": "start",
+      "name": "Запустить",
+      "type": "event"
+    },
+    {
+      "id": "stop",
+      "name": "Остановить",
+      "type": "event"
+    },
+    {
+      "id": "apOn",
+      "name": "Включить SoftAP",
+      "type": "event"
+    },
+    {
+      "id": "apOff",
+      "name": "Выключить SoftAP",
+      "type": "event"
+    },
+    {
+      "id": "reconnect",
+      "name": "Переподключить WAN",
+      "type": "event"
+    },
+    {
+      "id": "clients",
+      "name": "Обновить список клиентов",
+      "type": "event"
+    },
+    {
+      "id": "applyAp",
+      "name": "Применить SSID/пароль SoftAP",
+      "type": "event"
+    },
+    {
+      "id": "applyWan",
+      "name": "Применить SSID/пароль WAN",
+      "type": "event"
+    },
+    {
+      "id": "ssid",
+      "name": "Новый SSID",
+      "type": "text",
+      "required": false
+    },
+    {
+      "id": "password",
+      "name": "Новый пароль",
+      "type": "text",
+      "required": false
+    }
+  ],
+  "outputs": [
+    {
+      "id": "changed",
+      "name": "Состояние обновлено",
+      "type": "event"
+    },
+    {
+      "id": "started",
+      "name": "Маршрутизатор запущен",
+      "type": "event"
+    },
+    {
+      "id": "wanConnected",
+      "name": "WAN подключен",
+      "type": "event"
+    },
+    {
+      "id": "wanDisconnected",
+      "name": "WAN отключен",
+      "type": "event"
+    },
+    {
+      "id": "ipChanged",
+      "name": "WAN IP изменен",
+      "type": "event"
+    },
+    {
+      "id": "internetUp",
+      "name": "Интернет доступен",
+      "type": "event"
+    },
+    {
+      "id": "internetDown",
+      "name": "Интернет недоступен",
+      "type": "event"
+    },
+    {
+      "id": "clientConnected",
+      "name": "Wi-Fi-клиент подключился",
+      "type": "event"
+    },
+    {
+      "id": "clientDisconnected",
+      "name": "Wi-Fi-клиент отключился",
+      "type": "event"
+    },
+    {
+      "id": "failed",
+      "name": "Ошибка маршрутизатора",
+      "type": "event"
+    },
+    {
+      "id": "running",
+      "name": "Запущен?",
+      "type": "boolean",
+      "readyOn": "changed"
+    },
+    {
+      "id": "wanUp",
+      "name": "WAN имеет IP?",
+      "type": "boolean",
+      "readyOn": "changed"
+    },
+    {
+      "id": "internet",
+      "name": "Интернет доступен?",
+      "type": "boolean",
+      "readyOn": "changed"
+    },
+    {
+      "id": "apEnabled",
+      "name": "SoftAP включен?",
+      "type": "boolean",
+      "readyOn": "changed"
+    },
+    {
+      "id": "wanIp",
+      "name": "WAN IP",
+      "type": "text",
+      "readyOn": "changed"
+    },
+    {
+      "id": "lanIp",
+      "name": "LAN IP",
+      "type": "text",
+      "readyOn": "changed"
+    },
+    {
+      "id": "gateway",
+      "name": "Шлюз WAN",
+      "type": "text",
+      "readyOn": "changed"
+    },
+    {
+      "id": "dns",
+      "name": "DNS WAN",
+      "type": "text",
+      "readyOn": "changed"
+    },
+    {
+      "id": "wanMac",
+      "name": "MAC WAN",
+      "type": "text",
+      "readyOn": "changed"
+    },
+    {
+      "id": "lanMac",
+      "name": "MAC LAN",
+      "type": "text",
+      "readyOn": "changed"
+    },
+    {
+      "id": "activeWan",
+      "name": "Активный WAN",
+      "type": "text",
+      "readyOn": "changed"
+    },
+    {
+      "id": "clientCount",
+      "name": "Wi-Fi-клиентов",
+      "type": "number",
+      "readyOn": "changed"
+    },
+    {
+      "id": "clients",
+      "name": "Список Wi-Fi-клиентов",
+      "type": "text",
+      "readyOn": "changed"
+    },
+    {
+      "id": "uptime",
+      "name": "Время работы, с",
+      "type": "number",
+      "readyOn": "changed"
+    },
+    {
+      "id": "error",
+      "name": "Ошибка",
+      "type": "text",
+      "readyOn": "changed"
+    }
+  ],
+  "parameters": {
+    "componentId": {
+      "label": "Маршрутизатор из монтажа",
+      "type": "component",
+      "default": ""
+    },
+    "ssid": {
+      "label": "Новый SSID",
+      "type": "text",
+      "default": "CLEX Flow",
+      "maxLength": 32
+    },
+    "password": {
+      "label": "Новый пароль",
+      "type": "text",
+      "default": "",
+      "maxLength": 63
+    }
+  },
+  "firmware": {
+    "status": "implemented",
+    "generatorKey": "router",
+    "eventSource": true
+  }
+}

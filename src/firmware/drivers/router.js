@@ -1,0 +1,33 @@
+import {routerComponent,routerEthernet,routerCapabilities,routerPorts} from '../../router/model.js';
+import {ipv4} from '../../network/model.js';
+import {ROUTER_RUNTIME} from './esp-idf/router-runtime.js';
+import {ROUTER_DNS} from './esp-idf/router-dns.js';
+import {ROUTER_WEB} from './esp-idf/router-web.js';
+import {ROUTER_ADMIN_PAGE} from '../../router/admin-page.js';
+
+export const ROUTER_PARTITIONS='nvs,data,nvs,0x9000,0x5000\notadata,data,ota,0xe000,0x2000\nphy_init,data,phy,0x10000,0x1000\nota_0,app,ota_0,0x20000,0x300000\nota_1,app,ota_1,0x320000,0x300000\n';
+export const ROUTER_FACTORY_PARTITIONS='nvs,data,nvs,0x9000,0x6000\nphy_init,data,phy,0xf000,0x1000\nfactory,app,factory,0x10000,0x300000\n';
+export function routerFirmware(project,catalog,nodes,index,cString){
+ const empty={enabled:false,headers:'',source:'',notify:'',poll:'',start:'',expressions:new Map(),textSizes:new Map(),operations:new Map(),extraFunctions:new Map(),features:[]};
+ const component=routerComponent(project);if(!component)return empty;
+ const p=component.parameters,board=catalog.boards.find(b=>b.id===project.boardId),cap=routerCapabilities(board),ethernet=routerEthernet(project),ethSlot=project.components.filter(c=>catalog.modules.find(m=>m.id===c.moduleId)?.network).findIndex(c=>c.id===ethernet?.id);
+ const config={version:1,wan:p.wanSource==='wifi'?1:2,backup:p.backupWan==='none'?0:p.backupWan==='wifi'?1:2,lan:p.lanSource==='softap'?1:2,auth:{wpa2:0,wpa3:1,mixed:2}[p.apAuth],channel:p.channel,max_clients:p.maxClients,lease_minutes:p.leaseMinutes,probe_interval:p.probeInterval,probe_timeout:p.probeTimeout,nat:p.natEnabled,dhcp:p.dhcpEnabled,autostart:p.autoStart,hidden:p.hidden,ota:p.otaEnabled,sta_static:p.staAddressMode==='static',eth_static:ethernet?.parameters.addressMode==='static'};
+ for(const [key,value] of Object.entries({sta_ssid:p.staSsid,sta_password:p.staPassword,ap_ssid:p.apSsid,ap_password:p.apPassword,admin_user:p.adminUser,admin_password:p.adminPassword,lan_ip:p.lanIp,lan_mask:p.lanMask,dhcp_start:p.dhcpStart,dhcp_end:p.dhcpEnd,lan_dns:p.lanDns,probe_url:p.probeUrl,sta_ip:p.staIp,sta_mask:p.staMask,sta_gateway:p.staGateway,sta_dns:p.staDns,eth_ip:ethernet?.parameters.staticIp||'',eth_mask:ethernet?.parameters.netmask||'',eth_gateway:ethernet?.parameters.gateway||'',eth_dns:ethernet?.parameters.dns||''}))config[key]=cString(value);
+ const ports=routerPorts(p.portMappings);config.port_count=ports.length;
+ const literal='{'+Object.entries(config).map(([k,v])=>'.'+k+'='+v).join(',')+',.ports={'+ports.map(r=>'{.protocol='+ (r.protocol==='tcp'?'IPPROTO_TCP':'IPPROTO_UDP')+',.external='+r.externalPort+',.internal='+r.internalPort+',.host=PP_HTONL('+ipv4(r.host)+'u)}').join(',')+'}}';
+ let baseline=2166136261;for(const char of literal)baseline=Math.imul(baseline^char.charCodeAt(0),16777619);
+ const values={'@HAS_OTA@':String(p.otaEnabled),'@NETWORK_CHANGED@':project.components.some(c=>c.moduleId==='clex.hardware.ethernet')||nodes.some(n=>n.moduleId==='clex.logic.internet-check')?'clex_network_changed();':'','@BASELINE@':String(baseline>>>0),'@CONFIG@':literal,'@LAN_ROLE@':String(config.lan),'@NAMESPACE@':'rt'+component.id.replaceAll('-','').slice(0,12),'@PAGE@':cString(ROUTER_ADMIN_PAGE),'@HAS_ETH@':String(Boolean(ethernet)),'@MAX_CLIENTS@':String(cap.wifi.maxClients),'@MAX_AUTH@':String(cap.wifi.authModes.includes('mixed')?2:0),'@ETH_NETIF@':ethernet?'return clex_ethernet_'+ethSlot+'.netif;':'return NULL;','@ETH_HANDLE@':ethernet?'return clex_ethernet_'+ethSlot+'.handle;':'return NULL;'};
+ let source=(cap.wifi.driverKey==='hosted'?'/* Wi-Fi transport GPIO: '+JSON.stringify(cap.wifi.signals)+' */\n':'')+ROUTER_RUNTIME+'\n'+ROUTER_WEB+'\n'+ROUTER_DNS;for(const [key,value] of Object.entries(values))source=source.replaceAll(key,value);
+ const expressions=new Map(),textSizes=new Map(),operations=new Map(),extraFunctions=new Map();let notify='static void clex_rt_notify(unsigned flags,clex_rt_snapshot_t value){(void)flags;(void)value;\n';
+ for(const node of nodes.filter(n=>n.moduleId==='clex.logic.router')){
+  const i=index.get(node.id),name='router_value_'+i;source+='\nstatic clex_rt_snapshot_t '+name+';\n';
+  const fields={running:'running',wanUp:'wan_up',internet:'internet',apEnabled:'ap_enabled',wanIp:'wan_ip',lanIp:'lan_ip',gateway:'gateway',dns:'dns',wanMac:'wan_mac',lanMac:'lan_mac',activeWan:'active_wan',clientCount:'client_count',clients:'clients',uptime:'uptime',error:'error'};
+  expressions.set(node.id,Object.fromEntries(Object.entries(fields).map(([id,field])=>[id,name+'.'+field])));textSizes.set(node.id,{wanIp:16,lanIp:16,gateway:16,dns:48,wanMac:18,lanMac:18,activeWan:12,clients:1536,error:128});
+  operations.set(node.id,`  clex_rt_request(RT_STATUS);`);
+  extraFunctions.set(node.id,({inputEdge,dataExpression,cString})=>Object.entries({start:'RT_START',stop:'RT_STOP',apOn:'RT_AP_ON',apOff:'RT_AP_OFF',reconnect:'RT_RECONNECT',clients:'RT_CLIENTS'}).map(([action,command])=>`static void node_${i}_${action}(void){clex_rt_request(${command});}`).join('\n')+['applyAp','applyWan'].map(action=>`\nstatic void node_${i}_${action}(void){clex_rt_change_wifi(${action==='applyWan'},${inputEdge(node,'ssid')?dataExpression(inputEdge(node,'ssid')):cString(node.parameters.ssid)},${inputEdge(node,'password')?dataExpression(inputEdge(node,'password')):cString(node.parameters.password)});}`).join(''));
+  notify+=`${name}=value;node_${i}_emit_changed();`+Object.entries({started:'RT_STARTED',wanConnected:'RT_WAN_UP',wanDisconnected:'RT_WAN_DOWN',ipChanged:'RT_IP',internetUp:'RT_INTERNET_UP',internetDown:'RT_INTERNET_DOWN',clientConnected:'RT_CLIENT_UP',clientDisconnected:'RT_CLIENT_DOWN',failed:'RT_ERROR'}).map(([id,flag])=>`if(flags&${flag})node_${i}_emit_${id}();`).join('')+'\n';
+ }
+ notify+='}\n';
+ const headers=['<stddef.h>','<sys/socket.h>','<sys/select.h>','<unistd.h>','<net/if.h>','"esp_wifi.h"','"esp_wifi_default.h"','"esp_netif.h"','"esp_sntp.h"','"http_parser.h"','"esp_random.h"','"esp_eth.h"','"esp_mac.h"','"esp_event.h"','"esp_http_client.h"','"esp_crt_bundle.h"','"esp_http_server.h"','"esp_ota_ops.h"','"esp_system.h"','"nvs_flash.h"','"nvs.h"','"cJSON.h"','"mbedtls/base64.h"','"freertos/semphr.h"','"lwip/inet.h"','"lwip/lwip_napt.h"','"lwip/tcpip.h"','"dhcpserver/dhcpserver.h"'].map(h=>'#include '+h).join('\n');
+ return {...empty,enabled:true,boardConfig:cap.wifi.config||'',partitions:p.otaEnabled?ROUTER_PARTITIONS:ROUTER_FACTORY_PARTITIONS,headers,source,notify,poll:'    clex_rt_poll();',start:'  clex_rt_initialize();',expressions,textSizes,operations,extraFunctions,features:['router-'+board.target,...(p.otaEnabled?['router-ota-'+board.target]:[]),...(cap.wifi.driverKey==='hosted'?[cap.wifi.profileKey]:[])]};
+}

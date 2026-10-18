@@ -1,0 +1,181 @@
+{
+  "id": "clex.hardware.tmc2208",
+  "version": "1.0.0",
+  "kind": "hardware",
+  "name": "MKS TMC2208 V2",
+  "description": "Управление STEP/DIR/ENABLE. Ток и микрошаги выставляются вручную на модуле. Режим standalone, UART не используется.",
+  "category": "motor-drivers",
+  "categoryName": "Драйверы двигателей",
+  "icon": "RotateCw",
+  "color": "#f59e0b",
+  "visual": {
+    "svg": "stepper-driver.svg",
+    "width": 290,
+    "height": 335
+  },
+  "terminals": [
+    {
+      "id": "step",
+      "label": "STEP",
+      "kind": "gpio-output",
+      "x": 0,
+      "y": 125
+    },
+    {
+      "id": "dir",
+      "label": "DIR",
+      "kind": "gpio-output",
+      "x": 0,
+      "y": 160
+    },
+    {
+      "id": "enable",
+      "label": "EN / ENABLE",
+      "kind": "gpio-output",
+      "x": 0,
+      "y": 195
+    },
+    {
+      "id": "logic-ground",
+      "label": "GND логики",
+      "kind": "ground",
+      "x": 0,
+      "y": 230
+    },
+    {
+      "id": "vio",
+      "label": "VIO / 3,3 В",
+      "kind": "power",
+      "x": 0,
+      "y": 265,
+      "voltage": 3.3
+    },
+    {
+      "id": "a1",
+      "label": "A1",
+      "kind": "winding-output",
+      "x": 290,
+      "y": 125,
+      "phase": "A",
+      "right": true
+    },
+    {
+      "id": "a2",
+      "label": "A2",
+      "kind": "winding-output",
+      "x": 290,
+      "y": 160,
+      "phase": "A",
+      "right": true
+    },
+    {
+      "id": "b1",
+      "label": "B1",
+      "kind": "winding-output",
+      "x": 290,
+      "y": 195,
+      "phase": "B",
+      "right": true
+    },
+    {
+      "id": "b2",
+      "label": "B2",
+      "kind": "winding-output",
+      "x": 290,
+      "y": 230,
+      "phase": "B",
+      "right": true
+    }
+  ],
+  "parameters": {
+    "microsteps": {
+      "label": "Микрошаги на драйвере",
+      "type": "select",
+      "default": "16",
+      "options": [
+        {
+          "value": "2",
+          "label": "1/2"
+        },
+        {
+          "value": "4",
+          "label": "1/4"
+        },
+        {
+          "value": "8",
+          "label": "1/8"
+        },
+        {
+          "value": "16",
+          "label": "1/16"
+        }
+      ],
+      "description": "Укажите режим, который установлен вручную на драйвере. Настройка используется для расчета оборотов, она не переключает DIP/MS/UART."
+    },
+    "enableLevel": {
+      "label": "ENABLE: уровень разрешения",
+      "type": "select",
+      "default": "low",
+      "options": [
+        {
+          "value": "low",
+          "label": "LOW"
+        },
+        {
+          "value": "high",
+          "label": "HIGH"
+        }
+      ],
+      "description": "Уровень управляющего GPIO, при котором ваш драйвер включает обмотки. Сверьте работу ENA своего модуля."
+    },
+    "invertDirection": {
+      "label": "Инверсия направления",
+      "type": "select",
+      "default": "no",
+      "options": [
+        {
+          "value": "no",
+          "label": "Нет"
+        },
+        {
+          "value": "yes",
+          "label": "Да"
+        }
+      ]
+    },
+    "pulseUs": {
+      "label": "Длительность STEP, мкс",
+      "type": "number",
+      "default": 10,
+      "min": 5,
+      "max": 100,
+      "step": 1
+    }
+  },
+  "constraints": {},
+  "inputs": [],
+  "outputs": [],
+  "compatibility": {
+    "projectFormat": 3,
+    "targets": [
+      "esp32s3",
+      "esp32p4"
+    ],
+    "espIdf": "5.4.4"
+  },
+  "firmware": {
+    "status": "implemented",
+    "generatorKey": "stepper",
+    "dependencies": [
+      "esp_driver_gpio",
+      "esp_driver_gptimer"
+    ]
+  },
+  "stepper": {
+    "model": "tmc2208"
+  },
+  "manualWiring": [
+    "Силовое питание подключается вручную: плюс к VMOT, минус к GND питания, по маркировке вашего модуля. Не от GPIO.",
+    "Ток выставляется вручную на драйвере. Пары проводов обмоток определяются пользователем."
+  ]
+}

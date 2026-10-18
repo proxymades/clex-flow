@@ -1,0 +1,15 @@
+const assert=require('node:assert/strict');
+const fs=require('node:fs/promises');
+const {chromium}=require('playwright');
+(async()=>{
+ const {ROUTER_ADMIN_PAGE}=await import('../src/router/admin-page.js');
+ const browser=await chromium.launch({headless:true,executablePath:process.env.CLEX_BROWSER_EXECUTABLE}),page=await browser.newPage({viewport:{width:1200,height:1000}}),writes=[],errors=[];
+ page.on('pageerror',e=>errors.push(e.message));
+ const config={wan:1,backup:0,lan:1,auth:0,channel:6,maxClients:4,leaseMinutes:120,probeInterval:10000,probeTimeout:3000,dhcp:true,nat:true,autostart:true,ota:true,staSsid:'WAN',apSsid:'LAN',lanIp:'192.168.50.1',lanMask:'255.255.255.0',dhcpStart:'192.168.50.10',dhcpEnd:'192.168.50.100',adminUser:'admin',portMappings:[],capabilities:{ethernet:false,maxAuth:0,maxClients:4}};
+ await page.route('http://router.test/**',async route=>{const path=new URL(route.request().url()).pathname;if(route.request().method()==='POST'){writes.push({path,body:route.request().postDataJSON()});return route.fulfill({status:202,body:'Configuration queued'});}if(path==='/')return route.fulfill({contentType:'text/html',body:ROUTER_ADMIN_PAGE});return route.fulfill({contentType:'application/json',body:JSON.stringify(path==='/api/config'?config:{running:true,wanUp:true,internet:true,wanIp:'10.0.0.5',lanIp:'192.168.50.1',gateway:'10.0.0.1',dns:'1.1.1.1',wanMac:'02:00:00:00:00:01',lanMac:'02:00:00:00:00:02',activeWan:'Wi-Fi',uptime:25,error:'',clients:[{mac:'02:11:22:33:44:55',ip:'192.168.50.10',rssi:-55}]})});});
+ try{await page.goto('http://router.test/');await page.getByRole('button',{name:'Сохранить и применить',exact:true}).waitFor();assert.equal(await page.locator('[name="adminPassword"]').inputValue(),'');assert.equal(await page.locator('[name="lan"]').isDisabled(),true,'LAN role must be fixed');assert.equal(await page.locator('[name="auth"] option[value="1"]').getAttribute('disabled'),'','unsupported WPA3 must be disabled');await page.getByText('02:11:22:33:44:55',{exact:true}).waitFor();
+  await page.locator('[name="apSsid"]').fill('<script>alert(1)</script>');await page.getByRole('button',{name:'Добавить правило',exact:true}).click();await page.getByRole('button',{name:'Сохранить и применить',exact:true}).click();await page.getByText('Configuration queued',{exact:true}).waitFor();assert.equal(writes[0].path,'/api/config');assert.equal(writes[0].body.apSsid,'<script>alert(1)</script>');assert.equal(writes[0].body.portMappings.length,1);assert.equal(writes[0].body.adminPassword,'');
+  await Promise.all([page.waitForResponse(r=>r.url().endsWith('/api/command')),page.getByRole('button',{name:'Переподключить WAN',exact:true}).click()]);
+  assert.ok(writes.some(w=>w.path==='/api/command'&&w.body.action==='reconnect'));assert.deepEqual(errors,[]);await fs.mkdir('.artifacts/router-ui',{recursive:true});await page.screenshot({path:'.artifacts/router-ui/admin.png'});console.log('PASS admin UI: live status/client list, write-only passwords, platform limits, editable config/port forwards and command requests.');
+ }finally{await browser.close();}
+})().catch(e=>{console.error(e);process.exitCode=1;});

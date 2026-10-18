@@ -268,7 +268,15 @@ fn write_project(dir: &PathBuf, spec: &Specification) -> Result<(), String> {
         return crate::arduino::write_project(dir, spec);
     }
     fs::create_dir_all(dir.join("main")).map_err(|e| e.to_string())?;
-    write_source(&dir.join("CMakeLists.txt"),"cmake_minimum_required(VERSION 3.16)\nset(COMPONENTS main)\ninclude($ENV{IDF_PATH}/tools/cmake/project.cmake)\nproject(clex_flow_firmware)\n")?;
+    let runtime_profiles: serde_json::Value =
+        serde_json::from_str(include_str!("../../src/firmware/runtime-profiles.json"))
+            .map_err(|e| e.to_string())?;
+    let cmake_prelude: String = spec
+        .feature_runtimes
+        .iter()
+        .filter_map(|feature| runtime_profiles[feature]["cmakePrelude"].as_str())
+        .collect();
+    write_source(&dir.join("CMakeLists.txt"),&format!("cmake_minimum_required(VERSION 3.16)\nset(COMPONENTS main)\n{cmake_prelude}include($ENV{{IDF_PATH}}/tools/cmake/project.cmake)\nproject(clex_flow_firmware)\n"))?;
     let dependencies = if spec.network_runtime.is_some() {
         if spec.graphics_runtime.is_some() {
             "esp_driver_gpio esp_timer freertos log esp_lcd esp_driver_spi lvgl__lvgl esp_eth esp_netif esp_event esp_http_client mbedtls lwip esp_hw_support"
@@ -329,7 +337,11 @@ fn write_project(dir: &PathBuf, spec: &Specification) -> Result<(), String> {
     }
     if !spec.feature_runtimes.is_empty() {
         let path = dir.join("main/idf_component.yml");
-        let mut manifest = fs::read_to_string(&path).unwrap_or_else(|_| "dependencies:\n".into());
+        let mut manifest = if spec.graphics_runtime.is_some() {
+            "dependencies:\n  lvgl/lvgl: \"=9.2.2\"\n".to_string()
+        } else {
+            "dependencies:\n".to_string()
+        };
         let mut managed = std::collections::HashSet::new();
         for feature in &spec.feature_runtimes {
             for (name, version) in profiles[feature]["dependencies"]
@@ -422,7 +434,23 @@ fn write_project(dir: &PathBuf, spec: &Specification) -> Result<(), String> {
         }
         contents.push_str(&lines.join("\n"));
         contents.push('\n');
+        if spec
+            .feature_runtimes
+            .iter()
+            .any(|feature| feature == "wifi-hosted-p4")
+        {
+            contents.push_str(
+                board["wifi"]["config"]
+                    .as_str()
+                    .ok_or("Нет настроек Wi-Fi адаптера платы")?,
+            );
+        }
         write_source(&path, &contents)?;
+    }
+    for feature in &spec.feature_runtimes {
+        if let Some(partitions) = profiles[feature]["partitions"].as_str() {
+            write_source(&dir.join("partitions.csv"), partitions)?;
+        }
     }
     Ok(())
 }

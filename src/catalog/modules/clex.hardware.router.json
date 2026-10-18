@@ -1,0 +1,300 @@
+{
+  "version": "1.0.0",
+  "category": "network",
+  "categoryName": "Сеть",
+  "icon": "Network",
+  "color": "#38bdf8",
+  "compatibility": {
+    "projectFormat": 3,
+    "targets": [
+      "esp32",
+      "esp32s2",
+      "esp32s3",
+      "esp32c3",
+      "esp32c6",
+      "esp32p4"
+    ],
+    "espIdf": "5.4.4"
+  },
+  "constraints": {},
+  "id": "clex.hardware.router",
+  "kind": "hardware",
+  "name": "Wi-Fi маршрутизатор",
+  "description": "IPv4-маршрутизация между WAN и LAN: NAT, DHCP, DNS, резервный WAN и защищенное локальное управление. Использует сетевые интерфейсы выбранной платы.",
+  "visual": {
+    "svg": "router.svg",
+    "width": 260,
+    "height": 185
+  },
+  "terminals": [],
+  "inputs": [],
+  "outputs": [],
+  "parameters": {
+    "wanSource": {
+      "label": "Основной WAN",
+      "type": "select",
+      "default": "wifi",
+      "options": [
+        {
+          "value": "wifi",
+          "label": "Wi-Fi Station"
+        },
+        {
+          "value": "ethernet",
+          "label": "Ethernet"
+        }
+      ]
+    },
+    "backupWan": {
+      "label": "Резервный WAN",
+      "type": "select",
+      "default": "none",
+      "options": [
+        {
+          "value": "none",
+          "label": "Нет"
+        },
+        {
+          "value": "wifi",
+          "label": "Wi-Fi Station"
+        },
+        {
+          "value": "ethernet",
+          "label": "Ethernet"
+        }
+      ]
+    },
+    "ethernetId": {
+      "label": "Ethernet-компонент",
+      "type": "text",
+      "default": "",
+      "maxLength": 100
+    },
+    "staSsid": {
+      "label": "SSID WAN",
+      "type": "text",
+      "default": "",
+      "maxLength": 32
+    },
+    "staPassword": {
+      "label": "Пароль WAN",
+      "type": "text",
+      "default": "",
+      "maxLength": 63
+    },
+    "staAddressMode": {
+      "label": "IPv4 Wi-Fi WAN",
+      "type": "select",
+      "default": "dhcp",
+      "options": [
+        {
+          "value": "dhcp",
+          "label": "DHCP"
+        },
+        {
+          "value": "static",
+          "label": "Статический IP"
+        }
+      ]
+    },
+    "staIp": {
+      "label": "IP Wi-Fi WAN",
+      "type": "text",
+      "default": "",
+      "maxLength": 15
+    },
+    "staMask": {
+      "label": "Маска Wi-Fi WAN",
+      "type": "text",
+      "default": "",
+      "maxLength": 15
+    },
+    "staGateway": {
+      "label": "Шлюз Wi-Fi WAN",
+      "type": "text",
+      "default": "",
+      "maxLength": 15
+    },
+    "staDns": {
+      "label": "DNS Wi-Fi WAN",
+      "type": "text",
+      "default": "",
+      "maxLength": 15
+    },
+    "lanSource": {
+      "label": "LAN-интерфейс",
+      "type": "select",
+      "default": "softap",
+      "options": [
+        {
+          "value": "softap",
+          "label": "Wi-Fi SoftAP"
+        },
+        {
+          "value": "ethernet",
+          "label": "Ethernet"
+        }
+      ]
+    },
+    "apSsid": {
+      "label": "SSID локальной сети",
+      "type": "text",
+      "default": "CLEX Flow",
+      "maxLength": 32
+    },
+    "apPassword": {
+      "label": "Пароль локальной сети",
+      "type": "text",
+      "default": "",
+      "maxLength": 63
+    },
+    "apAuth": {
+      "label": "Защита SoftAP",
+      "type": "select",
+      "default": "wpa2",
+      "options": [
+        {
+          "value": "wpa2",
+          "label": "WPA2-Personal"
+        },
+        {
+          "value": "wpa3",
+          "label": "WPA3-Personal"
+        },
+        {
+          "value": "mixed",
+          "label": "WPA2/WPA3-Personal"
+        }
+      ]
+    },
+    "channel": {
+      "label": "Канал SoftAP",
+      "type": "number",
+      "default": 6,
+      "min": 1,
+      "max": 11,
+      "step": 1
+    },
+    "maxClients": {
+      "label": "Максимум Wi-Fi-клиентов",
+      "type": "number",
+      "default": 4,
+      "min": 1,
+      "max": 10,
+      "step": 1
+    },
+    "hidden": {
+      "label": "Скрыть SSID",
+      "type": "boolean",
+      "default": false
+    },
+    "lanIp": {
+      "label": "Адрес LAN-шлюза",
+      "type": "text",
+      "default": "192.168.50.1",
+      "maxLength": 15
+    },
+    "lanMask": {
+      "label": "Маска LAN",
+      "type": "text",
+      "default": "255.255.255.0",
+      "maxLength": 15
+    },
+    "dhcpEnabled": {
+      "label": "DHCP-сервер",
+      "type": "boolean",
+      "default": true
+    },
+    "dhcpStart": {
+      "label": "Первый адрес DHCP",
+      "type": "text",
+      "default": "192.168.50.10",
+      "maxLength": 15
+    },
+    "dhcpEnd": {
+      "label": "Последний адрес DHCP",
+      "type": "text",
+      "default": "192.168.50.100",
+      "maxLength": 15
+    },
+    "leaseMinutes": {
+      "label": "Аренда DHCP, минут",
+      "type": "number",
+      "default": 120,
+      "min": 1,
+      "max": 10080,
+      "step": 1
+    },
+    "lanDns": {
+      "label": "DNS клиентов (пусто – DNS WAN)",
+      "type": "text",
+      "default": "",
+      "maxLength": 15
+    },
+    "natEnabled": {
+      "label": "NAT/NAPT",
+      "type": "boolean",
+      "default": true
+    },
+    "autoStart": {
+      "label": "Запускать при включении",
+      "type": "boolean",
+      "default": true
+    },
+    "probeUrl": {
+      "label": "URL проверки интернета",
+      "type": "text",
+      "default": "https://www.espressif.com/",
+      "maxLength": 500
+    },
+    "probeInterval": {
+      "label": "Интервал проверки, мс",
+      "type": "number",
+      "default": 10000,
+      "min": 3000,
+      "max": 300000,
+      "step": 1
+    },
+    "probeTimeout": {
+      "label": "Таймаут проверки, мс",
+      "type": "number",
+      "default": 3000,
+      "min": 500,
+      "max": 15000,
+      "step": 1
+    },
+    "adminUser": {
+      "label": "Администратор",
+      "type": "text",
+      "default": "admin",
+      "maxLength": 24
+    },
+    "adminPassword": {
+      "label": "Пароль администратора",
+      "type": "text",
+      "default": "",
+      "maxLength": 63
+    },
+    "otaEnabled": {
+      "label": "OTA-обновление",
+      "type": "boolean",
+      "default": true
+    },
+    "portMappings": {
+      "label": "Проброс портов",
+      "type": "text",
+      "default": "[]",
+      "maxLength": 4000
+    }
+  },
+  "softwareInterface": "router",
+  "firmware": {
+    "status": "implemented",
+    "generatorKey": "router",
+    "dependencies": [
+      "esp_netif",
+      "esp_wifi",
+      "lwip"
+    ]
+  }
+}

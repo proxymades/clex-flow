@@ -61,10 +61,13 @@ ${driver.initialize}
   if ((result = esp_eth_ioctl(${stem}.handle, ETH_CMD_S_MAC_ADDR, mac)) != ESP_OK) goto failure;
   esp_netif_config_t net_config = ESP_NETIF_DEFAULT_ETH();
   esp_netif_inherent_config_t base = *net_config.base; base.if_key = ${cString(component.id)}; base.if_desc = "clex_ethernet"; net_config.base = &base;
+${component.routerLan?`  base.flags = (base.flags & ~ESP_NETIF_DHCP_CLIENT) | ESP_NETIF_DHCP_SERVER; base.route_prio = 1;
+  esp_netif_ip_info_t lan_info={.ip.addr=0,.netmask.addr=0,.gw.addr=0};
+  esp_netif_str_to_ip4(${cString(component.routerLan.lanIp)},&lan_info.ip);esp_netif_str_to_ip4(${cString(component.routerLan.lanMask)},&lan_info.netmask);lan_info.gw=lan_info.ip;base.ip_info=&lan_info;`:""}
   ${stem}.netif = esp_netif_new(&net_config); if (!${stem}.netif) { result = ESP_ERR_NO_MEM; goto failure; }
   ${stem}.glue = esp_eth_new_netif_glue(${stem}.handle); if (!${stem}.glue) { result = ESP_ERR_NO_MEM; goto failure; }
   if ((result = esp_netif_attach(${stem}.netif, ${stem}.glue)) != ESP_OK) goto failure;
-${config.addressMode==='static'?`  if ((result = esp_netif_dhcpc_stop(${stem}.netif)) != ESP_OK && result != ESP_ERR_ESP_NETIF_DHCP_ALREADY_STOPPED) goto failure;
+${config.addressMode==='static'&&!component.routerLan?`  if ((result = esp_netif_dhcpc_stop(${stem}.netif)) != ESP_OK && result != ESP_ERR_ESP_NETIF_DHCP_ALREADY_STOPPED) goto failure;
   esp_netif_ip_info_t info; memset(&info, 0, sizeof(info));
   if ((result = esp_netif_str_to_ip4(${ipLiteral(config.staticIp)}, &info.ip)) != ESP_OK || (result = esp_netif_str_to_ip4(${ipLiteral(config.netmask)}, &info.netmask)) != ESP_OK || (result = esp_netif_str_to_ip4(${ipLiteral(config.gateway)}, &info.gw)) != ESP_OK) goto failure;
   if ((result = esp_netif_set_ip_info(${stem}.netif, &info)) != ESP_OK) goto failure;

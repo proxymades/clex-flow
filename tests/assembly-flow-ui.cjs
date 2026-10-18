@@ -65,7 +65,7 @@ const { chromium } = require('playwright');
     assert.deepEqual(await stored(), beforeInvalid); assert.equal(await page.evaluate(() => window.__writes), beforeInvalidWrites);
     await page.getByRole('button', { name: 'Закрыть', exact: true }).click();
     await drag(componentPort(led.id, 'anode'), componentPort(project.components[1].id, 'signal'));
-    await page.getByRole('alert').filter({ hasText: 'контакт платы' }).waitFor();
+    await page.getByRole('alert').filter({ hasText: 'Соединение несовместимо' }).waitFor();
     assert.deepEqual(await stored(), beforeInvalid);
     await page.getByRole('button', { name: 'Закрыть', exact: true }).click();
 

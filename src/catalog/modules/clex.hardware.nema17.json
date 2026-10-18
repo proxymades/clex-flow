@@ -1,0 +1,78 @@
+{
+  "id": "clex.hardware.nema17",
+  "version": "1.0.0",
+  "kind": "hardware",
+  "name": "NEMA 17",
+  "description": "Двухфазный биполярный шаговый двигатель. A1/A2 – первая обмотка, B1/B2 – вторая. Определите пары проводов мультиметром или по паспорту. Подключение только через шаговый драйвер. Ток задается вручную на драйвере.",
+  "category": "motors",
+  "categoryName": "Двигатели",
+  "icon": "RotateCw",
+  "color": "#f59e0b",
+  "visual": {
+    "svg": "nema17.svg",
+    "width": 290,
+    "height": 265
+  },
+  "terminals": [
+    {
+      "id": "a1",
+      "label": "A1",
+      "kind": "winding-input",
+      "x": 0,
+      "y": 125,
+      "phase": "A"
+    },
+    {
+      "id": "a2",
+      "label": "A2",
+      "kind": "winding-input",
+      "x": 0,
+      "y": 160,
+      "phase": "A"
+    },
+    {
+      "id": "b1",
+      "label": "B1",
+      "kind": "winding-input",
+      "x": 0,
+      "y": 195,
+      "phase": "B"
+    },
+    {
+      "id": "b2",
+      "label": "B2",
+      "kind": "winding-input",
+      "x": 0,
+      "y": 230,
+      "phase": "B"
+    }
+  ],
+  "parameters": {
+    "stepsPerRevolution": {
+      "label": "Полных шагов на оборот",
+      "type": "number",
+      "default": 200,
+      "min": 1,
+      "max": 10000,
+      "step": 1,
+      "description": "Из паспорта двигателя: 1,8° = 200 шагов; 0,9° = 400. Пары проводов обмоток определяются отдельно."
+    }
+  },
+  "constraints": {},
+  "inputs": [],
+  "outputs": [],
+  "compatibility": {
+    "projectFormat": 3,
+    "targets": [
+      "esp32s3",
+      "esp32p4"
+    ],
+    "espIdf": "5.4.4"
+  },
+  "firmware": {
+    "status": "implemented",
+    "generatorKey": "stepper",
+    "dependencies": []
+  },
+  "passive": true
+}

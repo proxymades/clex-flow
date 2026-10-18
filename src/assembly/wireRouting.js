@@ -45,7 +45,7 @@ export function wireObstacles(data){
   return [inflate(labelRect,2),...(!chosen?[inflate({x:x-6,y:y-6,width:12,height:12},2)]:[])];
  });
  for(const rectangle of data.boardKeepOut || [])obstacles.push(inflate({x:board.x+rectangle.x,y:board.y+rectangle.y,width:rectangle.width,height:rectangle.height},2));
- for(const node of data.sceneNodes || [])if(node.id!=='board')obstacles.push(inflate({x:node.position.x,y:node.position.y,width:node.width || node.measured?.width || 0,height:node.height || node.measured?.height || 0},8));
+ for(const node of data.sceneNodes || [])if(node.id!=='board'||data.sourceComponentId)obstacles.push(inflate({x:node.position.x,y:node.position.y,width:node.width || node.measured?.width || 0,height:node.height || node.measured?.height || 0},8));
  return obstacles;
 }
 const inside=(p,r)=>p[0]>r.left && p[0]<r.right && p[1]>r.top && p[1]<r.bottom;
@@ -172,7 +172,9 @@ export function orthogonalWireRoute({sourceX,sourceY,targetX,targetY,targetPosit
  const start=data.sourceAnchor || [sourceX,sourceY],end=data.targetAnchor || [targetX,targetY];
  if(data.manualRoute?.length){const points=reanchorManualRoute(data.manualSourceAnchor || start,data.manualTargetAnchor || end,data.manualRoute,start,end);return {points,path:roundedWirePath(points),manual:true,spacing:12};}
  const obstacles=wireObstacles(data),normal={left:[-1,0],right:[1,0],top:[0,-1],bottom:[0,1]}[targetPosition] || [-1,0];
- const escape=data.sourcePin && data.boardWidth && data.boardHeight?boardExit(start,data,obstacles,previous):null;
+ const sourceNormal={left:[-1,0],right:[1,0],top:[0,-1],bottom:[0,1]}[data.sourcePin?.side]||[1,0];
+ const componentPortal=[start[0]+sourceNormal[0]*(18+(data.laneIndex||0)*12),start[1]+sourceNormal[1]*(18+(data.laneIndex||0)*12)];
+ const escape=data.sourceComponentId?{body:inflate({x:data.sourcePosition.x,y:data.sourcePosition.y,width:data.sourceWidth,height:data.sourceHeight},8),portal:componentPortal,exit:[start,componentPortal]}:data.sourcePin && data.boardWidth && data.boardHeight?boardExit(start,data,obstacles,previous):null;
  const exterior=escape?[escape.body,...obstacles.filter(r=>r.left<escape.body.left || r.right>escape.body.right || r.top<escape.body.top || r.bottom>escape.body.bottom)]:obstacles;
  const preferred=18+(data.laneIndex||0)*12;
  const gap=[preferred,18,10].find(value=>!exterior.some(o=>inside([end[0]+normal[0]*value,end[1]+normal[1]*value],o))) || 10;
@@ -197,7 +199,7 @@ export function routeAssemblyEdges(edges,nodes,board){
  const sorted=[...edges].sort((a,b)=>(a.data.sourcePin?.y ?? Infinity)-(b.data.sourcePin?.y ?? Infinity) || compare(a.id,b.id));
  for(const edge of sorted){
   const target=byId.get(edge.target),pin=edge.data.sourcePin,terminal=edge.data.targetTerminal;if(!target || !pin || !terminal)continue;
-  const data={...edge.data,sourceAnchor:[origin.x+pin.x,origin.y+pin.y],targetAnchor:[target.position.x+terminal.x,target.position.y+terminal.y],boardPosition:origin,boardPins:board.pins,boardKeepOut:board.routing?.keepOutAreas || [],sceneNodes:nodes};
+  const data={...edge.data,sourceAnchor:[(byId.get(edge.source)?.position.x||0)+pin.x,(byId.get(edge.source)?.position.y||0)+pin.y],sourcePosition:byId.get(edge.source)?.position,targetAnchor:[target.position.x+terminal.x,target.position.y+terminal.y],boardPosition:origin,boardPins:board.pins,boardKeepOut:board.routing?.keepOutAreas || [],sceneNodes:nodes};
   const route=orthogonalWireRoute({data,targetPosition:terminal.side},routes);routes.push(route.points);result.set(edge.id,{...edge,zIndex:edge.selected?12:edge.data.highlighted?8:4,data:{...data,route}});
  }
  return edges.map(edge=>result.get(edge.id) || edge);

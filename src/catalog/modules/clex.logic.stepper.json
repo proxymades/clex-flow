@@ -1,0 +1,196 @@
+{
+  "id": "clex.logic.stepper",
+  "version": "1.0.0",
+  "kind": "logic",
+  "name": "Шаговый двигатель",
+  "description": "Управляет выбранным STEP/DIR-драйвером: конечное движение или непрерывное вращение, остановка и отключение обмоток. Позиция расчетная, по выданным импульсам, без датчика.",
+  "category": "motion",
+  "categoryName": "Движение",
+  "icon": "RotateCw",
+  "color": "#f59e0b",
+  "inputs": [
+    {
+      "id": "trigger",
+      "name": "Запустить движение",
+      "type": "event",
+      "required": false
+    },
+    {
+      "id": "stop",
+      "name": "Остановить",
+      "type": "event",
+      "required": false,
+      "description": "Прекращает импульсы, сохраняя удержание двигателя. Короткий начатый импульс завершается."
+    },
+    {
+      "id": "release",
+      "name": "Отключить обмотки",
+      "type": "event",
+      "required": false,
+      "description": "Останавливает движение и выключает ENABLE. Расчетная позиция больше не подтверждает положение вала."
+    }
+  ],
+  "outputs": [
+    {
+      "id": "changed",
+      "name": "Состояние обновлено",
+      "type": "event"
+    },
+    {
+      "id": "started",
+      "name": "Движение запущено",
+      "type": "event"
+    },
+    {
+      "id": "completed",
+      "name": "Импульсы выданы",
+      "type": "event",
+      "description": "Выдано заданное количество STEP. Не является подтверждением физического поворота вала."
+    },
+    {
+      "id": "stopped",
+      "name": "Движение остановлено",
+      "type": "event"
+    },
+    {
+      "id": "failed",
+      "name": "Ошибка движения",
+      "type": "event"
+    },
+    {
+      "id": "moving",
+      "name": "Движение выполняется?",
+      "type": "boolean",
+      "readyOn": "changed"
+    },
+    {
+      "id": "enabled",
+      "name": "Обмотки включены?",
+      "type": "boolean",
+      "readyOn": "changed"
+    },
+    {
+      "id": "position",
+      "name": "Расчетная позиция, импульсы",
+      "type": "number",
+      "readyOn": "changed"
+    },
+    {
+      "id": "emitted",
+      "name": "Выдано импульсов в движении",
+      "type": "number",
+      "readyOn": "changed"
+    },
+    {
+      "id": "error",
+      "name": "Причина ошибки",
+      "type": "text",
+      "readyOn": "changed"
+    }
+  ],
+  "parameters": {
+    "componentId": {
+      "label": "Шаговый драйвер",
+      "type": "component",
+      "default": ""
+    },
+    "motion": {
+      "label": "Движение",
+      "type": "select",
+      "default": "steps",
+      "options": [
+        {
+          "value": "steps",
+          "label": "Заданное количество шагов"
+        },
+        {
+          "value": "revolutions",
+          "label": "Заданное количество оборотов"
+        },
+        {
+          "value": "continuous",
+          "label": "Непрерывное вращение"
+        }
+      ]
+    },
+    "steps": {
+      "label": "Количество импульсов STEP",
+      "type": "integer",
+      "default": 200,
+      "min": 1,
+      "max": 10000000,
+      "when": {
+        "field": "motion",
+        "value": "steps"
+      }
+    },
+    "revolutions": {
+      "label": "Количество оборотов",
+      "type": "number",
+      "default": 1,
+      "min": 0.001,
+      "max": 10000,
+      "step": 0.1,
+      "when": {
+        "field": "motion",
+        "value": "revolutions"
+      }
+    },
+    "direction": {
+      "label": "Направление",
+      "type": "select",
+      "default": "forward",
+      "options": [
+        {
+          "value": "forward",
+          "label": "Вперед"
+        },
+        {
+          "value": "reverse",
+          "label": "Назад"
+        }
+      ]
+    },
+    "speed": {
+      "label": "Скорость, импульсов/с",
+      "type": "integer",
+      "default": 400,
+      "min": 1,
+      "max": 2000
+    },
+    "acceleration": {
+      "label": "Разгон, импульсов/с²",
+      "type": "integer",
+      "default": 400,
+      "min": 0,
+      "max": 20000,
+      "description": "0 – сразу заданная скорость; больше 0 – разгон и торможение перед концом конечного движения."
+    }
+  },
+  "constraints": {
+    "hardware": {
+      "kind": "stepper",
+      "modules": [
+        "clex.hardware.tb6600",
+        "clex.hardware.tmc2208",
+        "clex.hardware.drv8825"
+      ]
+    }
+  },
+  "compatibility": {
+    "projectFormat": 3,
+    "targets": [
+      "esp32s3",
+      "esp32p4"
+    ],
+    "espIdf": "5.4.4"
+  },
+  "firmware": {
+    "status": "implemented",
+    "generatorKey": "stepper",
+    "eventSource": true,
+    "dependencies": [
+      "esp_driver_gptimer"
+    ]
+  }
+}

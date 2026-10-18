@@ -1,0 +1,123 @@
+{
+  "id": "f73d9ac5-5ab7-48fe-80be-2b05ea5a9650",
+  "name": "Wi-Fi маршрутизатор – P4 IP101 и SoftAP",
+  "description": "Заполните собственные пароли SoftAP и администратора, а для Wi-Fi WAN также SSID и пароль внешней сети. Подключение Ethernet и микроконтроллер заданы профилем платы. Настройки: docs/router.md.",
+  "formatVersion": 3,
+  "createdAt": "2026-10-18T06:17:08.261Z",
+  "updatedAt": "2026-10-18T06:17:08.261Z",
+  "boardId": "waveshare-esp32-p4-nano",
+  "boardSettings": {
+    "chipRevision": "pre-v3"
+  },
+  "components": [
+    {
+      "id": "627f3cb8-df2c-47c4-abc1-3a4226b55795",
+      "moduleId": "clex.hardware.ethernet",
+      "moduleVersion": "1.0.0",
+      "name": "Ethernet 1",
+      "parameters": {
+        "providerId": "onboard-ethernet",
+        "spiHost": "",
+        "addressMode": "dhcp",
+        "staticIp": "",
+        "netmask": "",
+        "gateway": "",
+        "dns": ""
+      }
+    },
+    {
+      "id": "a8ebcf9b-9f04-4863-9116-4415e5ef35fc",
+      "moduleId": "clex.hardware.router",
+      "moduleVersion": "1.0.0",
+      "name": "Wi-Fi маршрутизатор 1",
+      "parameters": {
+        "wanSource": "ethernet",
+        "backupWan": "none",
+        "ethernetId": "627f3cb8-df2c-47c4-abc1-3a4226b55795",
+        "staSsid": "",
+        "staPassword": "",
+        "staAddressMode": "dhcp",
+        "staIp": "",
+        "staMask": "",
+        "staGateway": "",
+        "staDns": "",
+        "lanSource": "softap",
+        "apSsid": "CLEX Flow",
+        "apPassword": "",
+        "apAuth": "wpa2",
+        "channel": 6,
+        "maxClients": 4,
+        "hidden": false,
+        "lanIp": "192.168.50.1",
+        "lanMask": "255.255.255.0",
+        "dhcpEnabled": true,
+        "dhcpStart": "192.168.50.10",
+        "dhcpEnd": "192.168.50.100",
+        "leaseMinutes": 120,
+        "lanDns": "",
+        "natEnabled": true,
+        "autoStart": true,
+        "probeUrl": "https://www.espressif.com/",
+        "probeInterval": 10000,
+        "probeTimeout": 3000,
+        "adminUser": "admin",
+        "adminPassword": "",
+        "otaEnabled": true,
+        "portMappings": "[]"
+      }
+    }
+  ],
+  "gpioAssignments": [],
+  "logic": {
+    "nodes": [
+      {
+        "id": "0371c39a-75c8-4eb6-b956-2758be92e618",
+        "moduleId": "clex.logic.router",
+        "moduleVersion": "1.0.0",
+        "name": "Маршрутизатор 1",
+        "position": {
+          "x": 60,
+          "y": 100
+        },
+        "parameters": {
+          "componentId": "a8ebcf9b-9f04-4863-9116-4415e5ef35fc",
+          "ssid": "CLEX Flow",
+          "password": ""
+        }
+      }
+    ],
+    "edges": [],
+    "viewport": {
+      "x": 0,
+      "y": 0,
+      "zoom": 1
+    }
+  },
+  "assembly": {
+    "positions": {
+      "board": {
+        "x": 100,
+        "y": 40
+      },
+      "627f3cb8-df2c-47c4-abc1-3a4226b55795": {
+        "x": 1188,
+        "y": 120
+      },
+      "a8ebcf9b-9f04-4863-9116-4415e5ef35fc": {
+        "x": 1188,
+        "y": 329
+      }
+    },
+    "connections": [],
+    "viewport": {
+      "x": 0,
+      "y": 0,
+      "zoom": 1
+    }
+  },
+  "moduleVersions": {
+    "clex.hardware.ethernet": "1.0.0",
+    "clex.hardware.router": "1.0.0",
+    "clex.logic.router": "1.0.0"
+  }
+}

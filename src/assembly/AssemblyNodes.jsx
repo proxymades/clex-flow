@@ -41,6 +41,7 @@ function HardwareNode({ id, data }) {
   const updateInternals = useUpdateNodeInternals();
   useEffect(() => { updateInternals(id); }, [id, module, layout, updateInternals]);
   const { width, height, headerOffset } = layout;
+  const splitSides=terminals.some(({terminal})=>terminal.side==='left')&&terminals.some(({terminal})=>terminal.side==='right');
   return <div className={'hardware-node assembly-hardware-node ' + (selected ? 'hardware-selected' : '')} style={{ width, height }} role="button" tabIndex={0} aria-label={'Компонент ' + component.name} onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onSelect(component.id); } }}>
     <svg width={width} height={height} viewBox={'0 0 ' + width + ' ' + height}>
       <rect width={width} height={height} rx="12" fill="#151c2a" stroke={selected ? module?.color || '#8b5cf6' : '#344158'} strokeWidth={selected ? 2 : 1} />
@@ -50,14 +51,16 @@ function HardwareNode({ id, data }) {
       {module && <image href={getAsset(module.visual.svg)} x={(width - 180) / 2} y={57 + headerOffset} width="180" height="56" />}
       {terminals.map(({ terminal, pin, active, candidate, color, connected }) => {
         const vertical = terminal.side === 'top' || terminal.side === 'bottom';
-        const labelY = terminal.side === 'top' ? 14 : terminal.side === 'bottom' ? height - 24 : terminal.y + 3;
+        const labelY = terminal.side === 'top' ? 14 : terminal.side === 'bottom' ? height - 24 : terminal.y + (splitSides?-3:3);
         const pinY = terminal.side === 'top' ? 29 : height - 10;
         const label = vertical && terminal.label.length > 13 ? terminal.label.slice(0, 12) + '…' : terminal.label;
+        const right=terminal.side==='right',columnX=right?width-16:16,columnAnchor=right?'end':'start';
+        const maxLabel=Math.max(10,Math.floor((splitSides?width/2-32:width-100)/5.5)),connection=pin?.label||'–',connectionText=connection.length>maxLabel?connection.slice(0,maxLabel-1)+'…':connection;
         return <g key={terminal.id} data-terminal={terminal.id} className={['component-terminal nodrag nopan', candidate ? 'terminal-candidate' : '', active ? 'terminal-active' : '', hoveredTerminal === terminal.id ? 'terminal-hovered' : ''].join(' ')} onPointerEnter={() => setHoveredTerminal(terminal.id)} onPointerLeave={() => setHoveredTerminal(null)} onFocus={() => setHoveredTerminal(terminal.id)} onBlur={() => setHoveredTerminal(null)} role="button" tabIndex={0} aria-label={component.name + ': ' + terminal.label} onClick={event => { event.stopPropagation(); if (!busy) onTerminal(component, terminal); }} onKeyDown={activate(() => { if (!busy) onTerminal(component, terminal); })}>
-          <rect x={vertical ? terminal.x - 39 : -12} y={vertical ? (terminal.side === 'top' ? 0 : height - 38) : terminal.y - 13} width={vertical ? 78 : width + 4} height={vertical ? 38 : 26} rx="4" fill={active ? '#8b5cf619' : 'transparent'} />
+          <rect x={vertical ? terminal.x - 39 : splitSides&&right?width/2:-12} y={vertical ? (terminal.side === 'top' ? 0 : height - 38) : terminal.y - 13} width={vertical ? 78 : splitSides?width/2+12:width+4} height={vertical ? 38 : 26} rx="4" fill={active ? '#8b5cf619' : 'transparent'} />
           <circle cx={terminal.x} cy={terminal.y} r="6" fill={connected || active || candidate || hoveredTerminal === terminal.id ? color : '#151c2a'} stroke={color} strokeWidth={active || candidate ? 3 : 1.7} />
-          <text x={vertical ? terminal.x : 16} y={labelY} textAnchor={vertical ? 'middle' : 'start'} fill="#a8b8cb" fontSize={vertical ? 9 : 10}>{label}</text>
-          <text x={vertical ? terminal.x : width - 16} y={vertical ? pinY : terminal.y + 3} textAnchor={vertical ? 'middle' : 'end'} fill={pin ? color : '#5b6c86'} fontSize="9" fontFamily="monospace">{pin?.label || '–'}</text>
+          <text x={vertical ? terminal.x : splitSides?columnX:16} y={labelY} textAnchor={vertical ? 'middle' : splitSides?columnAnchor:'start'} fill="#a8b8cb" fontSize={vertical ? 9 : 10}>{label}</text>
+          <text x={vertical ? terminal.x : splitSides?columnX:width-16} y={vertical ? pinY : terminal.y+(splitSides?11:3)} textAnchor={vertical ? 'middle' : splitSides?columnAnchor:'end'} fill={pin ? color : '#5b6c86'} fontSize="9" fontFamily="monospace">{connectionText}</text>
           <title>{terminal.label + ' · ' + (pin?.label || 'Не подключен')}</title>
         </g>;
       })}

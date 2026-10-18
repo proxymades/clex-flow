@@ -103,7 +103,7 @@ export function validateProject(project) {
   const wireIds = new Set(), endpoints = new Set();
   for (const wire of assembly.connections) {
     const key = `${wire?.componentId}/${wire?.terminalId}`;
-    if (!isObject(wire) || !validKey(wire.id) || wireIds.has(wire.id) || !ids.has(wire.componentId) || !validKey(wire.terminalId) || !validKey(wire.boardPinId) || endpoints.has(key)) throw new Error('Некорректное, повторяющееся или осиротевшее соединение.');
+    if (!isObject(wire) || !validKey(wire.id) || wireIds.has(wire.id) || !ids.has(wire.componentId) || !validKey(wire.terminalId) || (wire.sourceComponentId!==undefined ? (!ids.has(wire.sourceComponentId)||wire.sourceComponentId===wire.componentId||!validKey(wire.sourceTerminalId)||wire.boardPinId!==undefined) : (!validKey(wire.boardPinId)||wire.sourceTerminalId!==undefined)) || endpoints.has(key)) throw new Error('Некорректное, повторяющееся или осиротевшее соединение.');
     if (wire.route !== undefined && (!Array.isArray(wire.route) || wire.route.length<1 || wire.route.length>32 || wire.route.some(p=>!isObject(p) || ![p.x,p.y].every(value=>Number.isFinite(value) && Math.abs(value)<=50000)))) throw new Error('Некорректные точки маршрута соединения.');
     wireIds.add(wire.id); endpoints.add(key);
   }
