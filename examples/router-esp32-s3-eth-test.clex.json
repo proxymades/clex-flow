@@ -1,0 +1,795 @@
+{
+  "id": "9eb35324-6c55-496b-b4ec-b5910b0a1ba3",
+  "name": "Тест роутера ESP32-S3-ETH",
+  "description": "Ethernet W5500 → Wi-Fi SoftAP на ESP32-S3-ETH. Дисплей ST7789 показывает состояние сети, WAN/LAN IP, число клиентов, время работы и температуру кристалла. Перед сборкой задайте собственные пароли SoftAP и администратора. Подключение и запуск: docs/router.md.",
+  "formatVersion": 3,
+  "createdAt": "2026-10-18T19:13:54.985Z",
+  "updatedAt": "2026-10-18T19:13:54.985Z",
+  "boardId": "waveshare-esp32-s3-eth",
+  "boardSettings": {
+    "camera": "disconnected"
+  },
+  "components": [
+    {
+      "id": "96b46354-f4d3-49d0-9206-0332443ba659",
+      "moduleId": "clex.hardware.ethernet",
+      "moduleVersion": "1.0.0",
+      "name": "Ethernet 1",
+      "parameters": {
+        "providerId": "onboard-ethernet",
+        "spiHost": "2",
+        "addressMode": "dhcp",
+        "staticIp": "",
+        "netmask": "",
+        "gateway": "",
+        "dns": ""
+      }
+    },
+    {
+      "id": "d127789e-50e0-451b-a0ef-71bb06ae9980",
+      "moduleId": "clex.hardware.router",
+      "moduleVersion": "1.0.0",
+      "name": "Wi-Fi маршрутизатор 1",
+      "parameters": {
+        "wanSource": "ethernet",
+        "backupWan": "none",
+        "ethernetId": "96b46354-f4d3-49d0-9206-0332443ba659",
+        "staSsid": "",
+        "staPassword": "",
+        "staAddressMode": "dhcp",
+        "staIp": "",
+        "staMask": "",
+        "staGateway": "",
+        "staDns": "",
+        "lanSource": "softap",
+        "apSsid": "CLEX-ROUTER",
+        "apPassword": "",
+        "apAuth": "wpa2",
+        "channel": 6,
+        "maxClients": 4,
+        "hidden": false,
+        "lanIp": "192.168.50.1",
+        "lanMask": "255.255.255.0",
+        "dhcpEnabled": true,
+        "dhcpStart": "192.168.50.10",
+        "dhcpEnd": "192.168.50.100",
+        "leaseMinutes": 120,
+        "lanDns": "",
+        "natEnabled": true,
+        "autoStart": true,
+        "probeUrl": "https://www.espressif.com/",
+        "probeInterval": 10000,
+        "probeTimeout": 3000,
+        "adminUser": "admin",
+        "adminPassword": "",
+        "otaEnabled": true,
+        "portMappings": "[]"
+      }
+    },
+    {
+      "id": "38651204-dc2b-4bf7-95c4-a085046aa343",
+      "moduleId": "clex.display.spi-240x320",
+      "moduleVersion": "1.0.0",
+      "name": "ST7789 – состояние роутера",
+      "parameters": {
+        "spiHost": "3"
+      }
+    }
+  ],
+  "gpioAssignments": [
+    {
+      "componentId": "38651204-dc2b-4bf7-95c4-a085046aa343",
+      "terminalId": "sclk",
+      "pinId": "P32",
+      "gpio": 16,
+      "mode": "output"
+    },
+    {
+      "componentId": "38651204-dc2b-4bf7-95c4-a085046aa343",
+      "terminalId": "mosi",
+      "pinId": "P34",
+      "gpio": 17,
+      "mode": "output"
+    },
+    {
+      "componentId": "38651204-dc2b-4bf7-95c4-a085046aa343",
+      "terminalId": "cs",
+      "pinId": "P31",
+      "gpio": 18,
+      "mode": "output"
+    },
+    {
+      "componentId": "38651204-dc2b-4bf7-95c4-a085046aa343",
+      "terminalId": "dc",
+      "pinId": "P29",
+      "gpio": 15,
+      "mode": "output"
+    },
+    {
+      "componentId": "38651204-dc2b-4bf7-95c4-a085046aa343",
+      "terminalId": "reset",
+      "pinId": "P14",
+      "gpio": 38,
+      "mode": "output"
+    }
+  ],
+  "logic": {
+    "nodes": [
+      {
+        "id": "e526714e-9d7b-4b25-ad5b-c38e2f7f3b15",
+        "moduleId": "clex.logic.router",
+        "moduleVersion": "1.0.0",
+        "name": "Маршрутизатор 1",
+        "position": {
+          "x": 60,
+          "y": 100
+        },
+        "parameters": {
+          "componentId": "d127789e-50e0-451b-a0ef-71bb06ae9980",
+          "ssid": "CLEX-ROUTER",
+          "password": ""
+        }
+      },
+      {
+        "id": "b99ff6ab-09cf-44d6-bb57-ee05457816c9",
+        "moduleId": "clex.logic.serial",
+        "moduleVersion": "1.0.0",
+        "name": "Маршрутизатор запущен",
+        "position": {
+          "x": 650,
+          "y": 100
+        },
+        "parameters": {
+          "message": "Маршрутизатор запущен. LAN: http://192.168.50.1"
+        }
+      },
+      {
+        "id": "8403c2f3-7465-450c-815e-8b1050c730ae",
+        "moduleId": "clex.logic.serial",
+        "moduleVersion": "1.0.0",
+        "name": "WAN подключён",
+        "position": {
+          "x": 650,
+          "y": 420
+        },
+        "parameters": {
+          "message": "Ethernet WAN получил адрес"
+        }
+      },
+      {
+        "id": "28a69b75-5051-4a28-849e-446d79624a53",
+        "moduleId": "clex.logic.serial",
+        "moduleVersion": "1.0.0",
+        "name": "Адрес WAN",
+        "position": {
+          "x": 650,
+          "y": 740
+        },
+        "parameters": {
+          "message": ""
+        }
+      },
+      {
+        "id": "8526d8c4-8282-4438-9f7f-1e54116448bf",
+        "moduleId": "clex.logic.serial",
+        "moduleVersion": "1.0.0",
+        "name": "WAN отключён",
+        "position": {
+          "x": 650,
+          "y": 1060
+        },
+        "parameters": {
+          "message": "Ethernet WAN недоступен; локальная Wi-Fi-сеть продолжает работать"
+        }
+      },
+      {
+        "id": "b55d4514-43d4-4b12-8a46-0a5947ca6cd3",
+        "moduleId": "clex.logic.serial",
+        "moduleVersion": "1.0.0",
+        "name": "Интернет доступен",
+        "position": {
+          "x": 650,
+          "y": 1380
+        },
+        "parameters": {
+          "message": "Проверка соединения: интернет доступен"
+        }
+      },
+      {
+        "id": "2580a221-0fe6-479a-9d5b-859ccf095b40",
+        "moduleId": "clex.logic.serial",
+        "moduleVersion": "1.0.0",
+        "name": "Интернет недоступен",
+        "position": {
+          "x": 650,
+          "y": 1700
+        },
+        "parameters": {
+          "message": "Проверка соединения: интернет недоступен"
+        }
+      },
+      {
+        "id": "26995cef-e3cb-4ade-bee6-749ce78a00eb",
+        "moduleId": "clex.logic.serial",
+        "moduleVersion": "1.0.0",
+        "name": "Клиент подключился",
+        "position": {
+          "x": 650,
+          "y": 2020
+        },
+        "parameters": {
+          "message": "Клиент подключился. Всего клиентов:"
+        }
+      },
+      {
+        "id": "f488b3a4-85cc-4003-befe-264f9945645b",
+        "moduleId": "clex.logic.serial",
+        "moduleVersion": "1.0.0",
+        "name": "Клиент отключился",
+        "position": {
+          "x": 650,
+          "y": 2340
+        },
+        "parameters": {
+          "message": "Клиент отключился. Всего клиентов:"
+        }
+      },
+      {
+        "id": "5d53605d-4c2b-4897-89e6-b67c3bf2af4b",
+        "moduleId": "clex.logic.serial",
+        "moduleVersion": "1.0.0",
+        "name": "Ошибка маршрутизатора",
+        "position": {
+          "x": 650,
+          "y": 2660
+        },
+        "parameters": {
+          "message": ""
+        }
+      },
+      {
+        "id": "2873cfc6-0b1d-4ac1-92b3-2e636d39907a",
+        "moduleId": "clex.logic.display",
+        "moduleVersion": "1.0.0",
+        "name": "Экран роутера",
+        "position": {
+          "x": -370,
+          "y": 100
+        },
+        "parameters": {
+          "componentId": "38651204-dc2b-4bf7-95c4-a085046aa343"
+        }
+      },
+      {
+        "id": "b2c911d4-ac9b-4699-84ce-32d6cbd7bfe5",
+        "moduleId": "clex.logic.temperature",
+        "moduleVersion": "1.0.0",
+        "name": "Температура микроконтроллера 1",
+        "position": {
+          "x": -370,
+          "y": 1700
+        },
+        "parameters": {
+          "autoRead": true,
+          "intervalMs": 1000
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "29711111-7a0f-46c3-8e92-6d97e85576f2",
+        "source": "e526714e-9d7b-4b25-ad5b-c38e2f7f3b15",
+        "target": "b99ff6ab-09cf-44d6-bb57-ee05457816c9",
+        "sourceHandle": "started",
+        "targetHandle": "trigger",
+        "dataType": "event"
+      },
+      {
+        "id": "7f577b48-a976-4ac8-8e96-455306786399",
+        "source": "e526714e-9d7b-4b25-ad5b-c38e2f7f3b15",
+        "target": "8403c2f3-7465-450c-815e-8b1050c730ae",
+        "sourceHandle": "wanConnected",
+        "targetHandle": "trigger",
+        "dataType": "event"
+      },
+      {
+        "id": "8c86f3e9-7f61-4bc7-9f17-ae0d77bb75c3",
+        "source": "e526714e-9d7b-4b25-ad5b-c38e2f7f3b15",
+        "target": "28a69b75-5051-4a28-849e-446d79624a53",
+        "sourceHandle": "ipChanged",
+        "targetHandle": "trigger",
+        "dataType": "event"
+      },
+      {
+        "id": "7d2730e0-6e4a-4abe-812c-f54512fab134",
+        "source": "e526714e-9d7b-4b25-ad5b-c38e2f7f3b15",
+        "target": "28a69b75-5051-4a28-849e-446d79624a53",
+        "sourceHandle": "wanIp",
+        "targetHandle": "text",
+        "dataType": "text"
+      },
+      {
+        "id": "58a41cc7-9518-45da-a5dc-e604e25b7112",
+        "source": "e526714e-9d7b-4b25-ad5b-c38e2f7f3b15",
+        "target": "8526d8c4-8282-4438-9f7f-1e54116448bf",
+        "sourceHandle": "wanDisconnected",
+        "targetHandle": "trigger",
+        "dataType": "event"
+      },
+      {
+        "id": "60a355d3-5472-4e08-aa1b-8c9bed44a64b",
+        "source": "e526714e-9d7b-4b25-ad5b-c38e2f7f3b15",
+        "target": "b55d4514-43d4-4b12-8a46-0a5947ca6cd3",
+        "sourceHandle": "internetUp",
+        "targetHandle": "trigger",
+        "dataType": "event"
+      },
+      {
+        "id": "6a8683c8-e8c7-4f4b-b9fe-c0058f754deb",
+        "source": "e526714e-9d7b-4b25-ad5b-c38e2f7f3b15",
+        "target": "2580a221-0fe6-479a-9d5b-859ccf095b40",
+        "sourceHandle": "internetDown",
+        "targetHandle": "trigger",
+        "dataType": "event"
+      },
+      {
+        "id": "683715fb-93cb-42d5-a745-e69dcf8ba0be",
+        "source": "e526714e-9d7b-4b25-ad5b-c38e2f7f3b15",
+        "target": "26995cef-e3cb-4ade-bee6-749ce78a00eb",
+        "sourceHandle": "clientConnected",
+        "targetHandle": "trigger",
+        "dataType": "event"
+      },
+      {
+        "id": "ca84f86b-0d57-4ba7-84ca-004987f1f0aa",
+        "source": "e526714e-9d7b-4b25-ad5b-c38e2f7f3b15",
+        "target": "26995cef-e3cb-4ade-bee6-749ce78a00eb",
+        "sourceHandle": "clientCount",
+        "targetHandle": "number",
+        "dataType": "number"
+      },
+      {
+        "id": "de3b2e86-d1b4-47b4-8f0b-bcaf26690096",
+        "source": "e526714e-9d7b-4b25-ad5b-c38e2f7f3b15",
+        "target": "f488b3a4-85cc-4003-befe-264f9945645b",
+        "sourceHandle": "clientDisconnected",
+        "targetHandle": "trigger",
+        "dataType": "event"
+      },
+      {
+        "id": "4b3f7ec5-ca89-41cd-a828-7c3305781037",
+        "source": "e526714e-9d7b-4b25-ad5b-c38e2f7f3b15",
+        "target": "f488b3a4-85cc-4003-befe-264f9945645b",
+        "sourceHandle": "clientCount",
+        "targetHandle": "number",
+        "dataType": "number"
+      },
+      {
+        "id": "aaa64c43-ce05-4737-bd2e-722ecad4f7ec",
+        "source": "e526714e-9d7b-4b25-ad5b-c38e2f7f3b15",
+        "target": "5d53605d-4c2b-4897-89e6-b67c3bf2af4b",
+        "sourceHandle": "failed",
+        "targetHandle": "trigger",
+        "dataType": "event"
+      },
+      {
+        "id": "7bfc1987-1c2b-4ecd-8835-167af16d8a2d",
+        "source": "e526714e-9d7b-4b25-ad5b-c38e2f7f3b15",
+        "target": "5d53605d-4c2b-4897-89e6-b67c3bf2af4b",
+        "sourceHandle": "error",
+        "targetHandle": "text",
+        "dataType": "text"
+      },
+      {
+        "id": "51433dd9-420d-49b7-a946-bc63abc5e8d1",
+        "source": "e526714e-9d7b-4b25-ad5b-c38e2f7f3b15",
+        "target": "2873cfc6-0b1d-4ac1-92b3-2e636d39907a",
+        "sourceHandle": "changed",
+        "targetHandle": "trigger",
+        "dataType": "event"
+      },
+      {
+        "id": "47a67731-be47-4cfc-99a2-7cf497e5acbe",
+        "source": "e526714e-9d7b-4b25-ad5b-c38e2f7f3b15",
+        "target": "2873cfc6-0b1d-4ac1-92b3-2e636d39907a",
+        "sourceHandle": "wanUp",
+        "targetHandle": "wan-state",
+        "dataType": "boolean"
+      },
+      {
+        "id": "a8b882e8-6e86-4de9-9a7d-815f70016804",
+        "source": "e526714e-9d7b-4b25-ad5b-c38e2f7f3b15",
+        "target": "2873cfc6-0b1d-4ac1-92b3-2e636d39907a",
+        "sourceHandle": "wanIp",
+        "targetHandle": "wan-ip",
+        "dataType": "text"
+      },
+      {
+        "id": "5f06092a-f2cf-4007-90ad-a594b7b483a8",
+        "source": "e526714e-9d7b-4b25-ad5b-c38e2f7f3b15",
+        "target": "2873cfc6-0b1d-4ac1-92b3-2e636d39907a",
+        "sourceHandle": "internet",
+        "targetHandle": "internet-state",
+        "dataType": "boolean"
+      },
+      {
+        "id": "224aac7e-8766-4228-9f77-efcf7d66f396",
+        "source": "e526714e-9d7b-4b25-ad5b-c38e2f7f3b15",
+        "target": "2873cfc6-0b1d-4ac1-92b3-2e636d39907a",
+        "sourceHandle": "apEnabled",
+        "targetHandle": "softap-state",
+        "dataType": "boolean"
+      },
+      {
+        "id": "83f26663-f88d-410d-9ac4-0114a66c8497",
+        "source": "e526714e-9d7b-4b25-ad5b-c38e2f7f3b15",
+        "target": "2873cfc6-0b1d-4ac1-92b3-2e636d39907a",
+        "sourceHandle": "lanIp",
+        "targetHandle": "lan-ip",
+        "dataType": "text"
+      },
+      {
+        "id": "eb0b6b51-61d9-4009-a105-21945c56a980",
+        "source": "e526714e-9d7b-4b25-ad5b-c38e2f7f3b15",
+        "target": "2873cfc6-0b1d-4ac1-92b3-2e636d39907a",
+        "sourceHandle": "clientCount",
+        "targetHandle": "client-count",
+        "dataType": "number"
+      },
+      {
+        "id": "f3d8edc7-9701-4a4d-a69a-2485af50e84e",
+        "source": "e526714e-9d7b-4b25-ad5b-c38e2f7f3b15",
+        "target": "2873cfc6-0b1d-4ac1-92b3-2e636d39907a",
+        "sourceHandle": "uptime",
+        "targetHandle": "uptime",
+        "dataType": "number"
+      },
+      {
+        "id": "6fd70097-6780-4e44-8047-8813c9acf41b",
+        "source": "b2c911d4-ac9b-4699-84ce-32d6cbd7bfe5",
+        "target": "2873cfc6-0b1d-4ac1-92b3-2e636d39907a",
+        "sourceHandle": "text",
+        "targetHandle": "chip-temperature",
+        "dataType": "text"
+      },
+      {
+        "id": "e7714fb1-080e-4bb2-9e60-c57d2dee3cb6",
+        "source": "b2c911d4-ac9b-4699-84ce-32d6cbd7bfe5",
+        "target": "2873cfc6-0b1d-4ac1-92b3-2e636d39907a",
+        "sourceHandle": "changed",
+        "targetHandle": "update.chip-temperature",
+        "dataType": "event"
+      }
+    ],
+    "viewport": {
+      "x": 384.99342022669873,
+      "y": 27.693739977059295,
+      "zoom": 0.6480027789056418
+    }
+  },
+  "assembly": {
+    "positions": {
+      "board": {
+        "x": 100,
+        "y": 40
+      },
+      "96b46354-f4d3-49d0-9206-0332443ba659": {
+        "x": 528,
+        "y": 120
+      },
+      "d127789e-50e0-451b-a0ef-71bb06ae9980": {
+        "x": 528,
+        "y": 329
+      },
+      "38651204-dc2b-4bf7-95c4-a085046aa343": {
+        "x": 850,
+        "y": 40
+      }
+    },
+    "connections": [
+      {
+        "id": "c7df6bc8-081a-4282-8d07-ce3a3e7835eb",
+        "componentId": "38651204-dc2b-4bf7-95c4-a085046aa343",
+        "terminalId": "sclk",
+        "boardPinId": "P32"
+      },
+      {
+        "id": "fc5e844b-a116-4a5c-96ff-b7dc8feab64b",
+        "componentId": "38651204-dc2b-4bf7-95c4-a085046aa343",
+        "terminalId": "mosi",
+        "boardPinId": "P34"
+      },
+      {
+        "id": "2f57ac91-7a4b-4c73-8909-a6a414620b8a",
+        "componentId": "38651204-dc2b-4bf7-95c4-a085046aa343",
+        "terminalId": "cs",
+        "boardPinId": "P31"
+      },
+      {
+        "id": "e2a36763-2149-49bf-a55b-1f69fa0d766c",
+        "componentId": "38651204-dc2b-4bf7-95c4-a085046aa343",
+        "terminalId": "dc",
+        "boardPinId": "P29"
+      },
+      {
+        "id": "2b50cfd2-95cf-4b02-bf1a-4b4075658f9a",
+        "componentId": "38651204-dc2b-4bf7-95c4-a085046aa343",
+        "terminalId": "reset",
+        "boardPinId": "P14"
+      },
+      {
+        "id": "d733392a-c494-4548-8b49-71050baf00bc",
+        "componentId": "38651204-dc2b-4bf7-95c4-a085046aa343",
+        "terminalId": "vcc",
+        "boardPinId": "P36"
+      },
+      {
+        "id": "a17ddf3d-0bcc-4d9b-91c3-e5094052933c",
+        "componentId": "38651204-dc2b-4bf7-95c4-a085046aa343",
+        "terminalId": "gnd",
+        "boardPinId": "P38"
+      }
+    ],
+    "viewport": {
+      "x": 34.40364466115631,
+      "y": 30.288725773269164,
+      "zoom": 0.5175878993459135
+    }
+  },
+  "moduleVersions": {
+    "clex.hardware.ethernet": "1.0.0",
+    "clex.hardware.router": "1.0.0",
+    "clex.display.spi-240x320": "1.0.0",
+    "clex.logic.router": "1.0.0",
+    "clex.logic.serial": "1.0.0",
+    "clex.logic.display": "1.0.0",
+    "clex.logic.temperature": "1.0.0"
+  },
+  "screens": {
+    "38651204-dc2b-4bf7-95c4-a085046aa343": {
+      "formatVersion": 1,
+      "background": "#0b1220",
+      "elements": [
+        {
+          "id": "router-title",
+          "name": "Название",
+          "type": "text",
+          "text": "CLEX ROUTER",
+          "x": 12,
+          "y": 12,
+          "fontId": "montserrat_20",
+          "color": "#38bdf8"
+        },
+        {
+          "id": "wan-state",
+          "name": "Состояние WAN",
+          "type": "indicator",
+          "text": "",
+          "x": 12,
+          "y": 48,
+          "width": 216,
+          "height": 32,
+          "radius": 7,
+          "padding": 7,
+          "gap": 7,
+          "dotVisible": true,
+          "dotSize": 8,
+          "dotPosition": "left",
+          "align": "left",
+          "mode": "dynamic",
+          "valueType": "boolean",
+          "initialValue": false,
+          "prefix": "",
+          "suffix": "",
+          "captionDynamic": false,
+          "initialCaption": "",
+          "fontId": "montserrat_14",
+          "color": "#ffffff",
+          "states": [
+            {
+              "id": "wan-state-off",
+              "name": "WAN: нет IP",
+              "value": false,
+              "text": "WAN: нет IP",
+              "background": "#251e2d",
+              "color": "#fecaca",
+              "dotColor": "#f87171"
+            },
+            {
+              "id": "wan-state-on",
+              "name": "WAN: IP получен",
+              "value": true,
+              "text": "WAN: IP получен",
+              "background": "#10352c",
+              "color": "#a7f3d0",
+              "dotColor": "#34d399"
+            }
+          ],
+          "staticStateId": "wan-state-off",
+          "fallbackStateId": "wan-state-off"
+        },
+        {
+          "id": "wan-ip",
+          "name": "WAN IP",
+          "type": "text",
+          "text": "",
+          "x": 12,
+          "y": 87,
+          "fontId": "montserrat_14",
+          "color": "#cbd5e1",
+          "mode": "dynamic",
+          "valueType": "text",
+          "initialValue": "",
+          "prefix": "IP: ",
+          "suffix": ""
+        },
+        {
+          "id": "internet-state",
+          "name": "Доступность интернета",
+          "type": "indicator",
+          "text": "",
+          "x": 12,
+          "y": 114,
+          "width": 216,
+          "height": 32,
+          "radius": 7,
+          "padding": 7,
+          "gap": 7,
+          "dotVisible": true,
+          "dotSize": 8,
+          "dotPosition": "left",
+          "align": "left",
+          "mode": "dynamic",
+          "valueType": "boolean",
+          "initialValue": false,
+          "prefix": "",
+          "suffix": "",
+          "captionDynamic": false,
+          "initialCaption": "",
+          "fontId": "montserrat_14",
+          "color": "#ffffff",
+          "states": [
+            {
+              "id": "internet-state-off",
+              "name": "Интернет: недоступен",
+              "value": false,
+              "text": "Интернет: недоступен",
+              "background": "#251e2d",
+              "color": "#fecaca",
+              "dotColor": "#f87171"
+            },
+            {
+              "id": "internet-state-on",
+              "name": "Интернет: доступен",
+              "value": true,
+              "text": "Интернет: доступен",
+              "background": "#10352c",
+              "color": "#a7f3d0",
+              "dotColor": "#34d399"
+            }
+          ],
+          "staticStateId": "internet-state-off",
+          "fallbackStateId": "internet-state-off"
+        },
+        {
+          "id": "softap-state",
+          "name": "Локальная Wi-Fi-сеть",
+          "type": "indicator",
+          "text": "",
+          "x": 12,
+          "y": 156,
+          "width": 216,
+          "height": 32,
+          "radius": 7,
+          "padding": 7,
+          "gap": 7,
+          "dotVisible": true,
+          "dotSize": 8,
+          "dotPosition": "left",
+          "align": "left",
+          "mode": "dynamic",
+          "valueType": "boolean",
+          "initialValue": false,
+          "prefix": "",
+          "suffix": "",
+          "captionDynamic": false,
+          "initialCaption": "",
+          "fontId": "montserrat_14",
+          "color": "#ffffff",
+          "states": [
+            {
+              "id": "softap-state-off",
+              "name": "Wi-Fi: выключен",
+              "value": false,
+              "text": "Wi-Fi: выключен",
+              "background": "#251e2d",
+              "color": "#fecaca",
+              "dotColor": "#f87171"
+            },
+            {
+              "id": "softap-state-on",
+              "name": "Wi-Fi: включен",
+              "value": true,
+              "text": "Wi-Fi: включен",
+              "background": "#10352c",
+              "color": "#a7f3d0",
+              "dotColor": "#34d399"
+            }
+          ],
+          "staticStateId": "softap-state-off",
+          "fallbackStateId": "softap-state-off"
+        },
+        {
+          "id": "ssid",
+          "name": "SSID из проекта",
+          "type": "text",
+          "text": "SSID: CLEX-ROUTER",
+          "x": 12,
+          "y": 198,
+          "fontId": "montserrat_14",
+          "color": "#93c5fd"
+        },
+        {
+          "id": "lan-ip",
+          "name": "Адрес панели",
+          "type": "text",
+          "text": "",
+          "x": 12,
+          "y": 220,
+          "fontId": "montserrat_14",
+          "color": "#cbd5e1",
+          "mode": "dynamic",
+          "valueType": "text",
+          "initialValue": "192.168.50.1",
+          "prefix": "LAN: ",
+          "suffix": ""
+        },
+        {
+          "id": "client-count",
+          "name": "Число клиентов",
+          "type": "text",
+          "text": "",
+          "x": 12,
+          "y": 242,
+          "fontId": "montserrat_14",
+          "color": "#cbd5e1",
+          "mode": "dynamic",
+          "valueType": "number",
+          "initialValue": 0,
+          "prefix": "Клиентов: ",
+          "suffix": ""
+        },
+        {
+          "id": "uptime",
+          "name": "Время работы",
+          "type": "text",
+          "text": "",
+          "x": 12,
+          "y": 264,
+          "fontId": "montserrat_14",
+          "color": "#cbd5e1",
+          "mode": "dynamic",
+          "valueType": "number",
+          "initialValue": 0,
+          "prefix": "Работает: ",
+          "suffix": " с"
+        },
+        {
+          "id": "chip-temperature",
+          "name": "Температура кристалла",
+          "type": "text",
+          "text": "",
+          "mode": "dynamic",
+          "valueType": "text",
+          "initialValue": "Нет данных",
+          "prefix": "Чип: ",
+          "suffix": "",
+          "x": 12,
+          "y": 288,
+          "fontId": "montserrat_20",
+          "color": "#fbbf24"
+        }
+      ]
+    }
+  }
+}
