@@ -202,6 +202,7 @@
   "compatibility": {
     "projectFormat": 3,
     "targets": [
+      "esp32",
       "esp32s3",
       "esp32p4"
     ],

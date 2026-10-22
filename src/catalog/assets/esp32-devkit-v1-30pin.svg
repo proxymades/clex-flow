@@ -1,0 +1,201 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="520" height="650" viewBox="0 0 520 650" role="img" aria-label="ESP32 DevKit V1 на 30 контактов, модуль ESP32-WROOM-32, USB-C снизу">
+  <title>ESP32 DevKit V1 · 30 pin · USB-C</title>
+  <desc>Упрощённый вид со стороны компонентов по фотографии: четыре крепёжных отверстия, модуль с антенной, CH340C USB-UART, стабилизатор 3,3 В, индикаторы PWR и D2, кнопки EN и BOOT. Пропорции изображения приблизительные.</desc>
+  <defs>
+    <linearGradient id="devkit-pcb" x2="1" y2="1"><stop stop-color="#1d2425"/><stop offset=".45" stop-color="#101718"/><stop offset="1" stop-color="#202727"/></linearGradient>
+    <linearGradient id="devkit-shield" x2="1" y2=".35"><stop stop-color="#a5b1ad"/><stop offset=".18" stop-color="#d2d7ce"/><stop offset=".52" stop-color="#a6b3ab"/><stop offset=".82" stop-color="#c1c9bd"/><stop offset="1" stop-color="#8e9e96"/></linearGradient>
+    <linearGradient id="devkit-usb" x2="1" y2="0"><stop stop-color="#6f7774"/><stop offset=".13" stop-color="#c6c6b1"/><stop offset=".5" stop-color="#a3a48d"/><stop offset=".87" stop-color="#d1d1bb"/><stop offset="1" stop-color="#6e7774"/></linearGradient>
+    <linearGradient id="devkit-solder" x2=".7" y2="1"><stop stop-color="#e1e6df"/><stop offset=".5" stop-color="#9ca9a8"/><stop offset="1" stop-color="#677576"/></linearGradient>
+    <pattern id="devkit-brush" width="5" height="3" patternUnits="userSpaceOnUse"><path d="M0 .5H5" stroke="#e6e9dd" stroke-opacity=".14" stroke-width=".6"/></pattern>
+    <g id="devkit-resistor"><rect width="17" height="8" rx="1" fill="#b6c0ba"/><rect x="3" y=".5" width="11" height="7" fill="#283330"/><path d="M6 3h5M6 5h5" stroke="#aab3a6" stroke-width=".6"/></g>
+    <g id="devkit-capacitor"><rect width="19" height="10" rx="1.3" fill="url(#devkit-solder)"/><rect x="3.5" y="1" width="12" height="8" rx="1" fill="#b8b6a0"/></g>
+    <g id="devkit-pin"><circle r="7.7" fill="#1d2426" stroke="#6a7876" stroke-width="1.2"/><circle r="5.8" fill="url(#devkit-solder)"/><circle r="2.3" fill="#4f6061"/></g>
+  </defs>
+  <!-- Black PCB; the four holes remain transparent. -->
+  <path d="M122 28H398L410 40V570L398 582H122L110 570V40Z M150 52a18 18 0 1 0-36 0a18 18 0 1 0 36 0 M406 52a18 18 0 1 0-36 0a18 18 0 1 0 36 0 M150 554a18 18 0 1 0-36 0a18 18 0 1 0 36 0 M406 554a18 18 0 1 0-36 0a18 18 0 1 0 36 0" fill="url(#devkit-pcb)" fill-rule="evenodd" stroke="#52605b" stroke-width="1.5"/>
+  <g fill="none" stroke="#a0aaa0" stroke-width="2" opacity=".6"><circle cx="132" cy="52" r="19"/><circle cx="388" cy="52" r="19"/><circle cx="132" cy="554" r="19"/><circle cx="388" cy="554" r="19"/></g>
+  <!-- A few visible traces, rather than every route and passive. -->
+  <g fill="none" stroke="#32403a" stroke-width="1.4"><path d="M170 315h52l22 22v170M347 317v38l-22 22v104M177 449v34h37v27M335 491h25v-61M233 358v45l22 22v83M150 510h41v-34"/><path d="M322 338h38v-25M230 451h19v45h-21M159 307v28h30"/></g>
+  <!-- ESP32-WROOM-32: antenna above its metal RF shield. -->
+  <rect x="164" y="30" width="192" height="273" rx="2" fill="#293336" stroke="#929e90" stroke-width="1"/>
+  <rect x="166" y="31" width="188" height="70" fill="#2f393e"/>
+  <path d="M177 83V40h17v19h18V40h18v30h18V40h18v30h18V40h18v19h18V40h19v43" fill="none" stroke="#233035" stroke-width="3"/>
+  <path d="M174 94H347" stroke="#727e75" stroke-width=".8"/>
+  <g fill="#c4c4a2"><circle cx="306" cy="91" r="2.5"/><circle cx="330" cy="91" r="2.5"/></g>
+  <rect x="159" y="104" width="7" height="7.2" rx=".8" fill="url(#devkit-solder)" stroke="#b3ac76" stroke-width=".8"/>
+  <rect x="354" y="104" width="7" height="7.2" rx=".8" fill="url(#devkit-solder)" stroke="#b3ac76" stroke-width=".8"/>
+  <rect x="159" y="115.2" width="7" height="7.2" rx=".8" fill="url(#devkit-solder)" stroke="#b3ac76" stroke-width=".8"/>
+  <rect x="354" y="115.2" width="7" height="7.2" rx=".8" fill="url(#devkit-solder)" stroke="#b3ac76" stroke-width=".8"/>
+  <rect x="159" y="126.4" width="7" height="7.2" rx=".8" fill="url(#devkit-solder)" stroke="#b3ac76" stroke-width=".8"/>
+  <rect x="354" y="126.4" width="7" height="7.2" rx=".8" fill="url(#devkit-solder)" stroke="#b3ac76" stroke-width=".8"/>
+  <rect x="159" y="137.6" width="7" height="7.2" rx=".8" fill="url(#devkit-solder)" stroke="#b3ac76" stroke-width=".8"/>
+  <rect x="354" y="137.6" width="7" height="7.2" rx=".8" fill="url(#devkit-solder)" stroke="#b3ac76" stroke-width=".8"/>
+  <rect x="159" y="148.8" width="7" height="7.2" rx=".8" fill="url(#devkit-solder)" stroke="#b3ac76" stroke-width=".8"/>
+  <rect x="354" y="148.8" width="7" height="7.2" rx=".8" fill="url(#devkit-solder)" stroke="#b3ac76" stroke-width=".8"/>
+  <rect x="159" y="160" width="7" height="7.2" rx=".8" fill="url(#devkit-solder)" stroke="#b3ac76" stroke-width=".8"/>
+  <rect x="354" y="160" width="7" height="7.2" rx=".8" fill="url(#devkit-solder)" stroke="#b3ac76" stroke-width=".8"/>
+  <rect x="159" y="171.2" width="7" height="7.2" rx=".8" fill="url(#devkit-solder)" stroke="#b3ac76" stroke-width=".8"/>
+  <rect x="354" y="171.2" width="7" height="7.2" rx=".8" fill="url(#devkit-solder)" stroke="#b3ac76" stroke-width=".8"/>
+  <rect x="159" y="182.4" width="7" height="7.2" rx=".8" fill="url(#devkit-solder)" stroke="#b3ac76" stroke-width=".8"/>
+  <rect x="354" y="182.4" width="7" height="7.2" rx=".8" fill="url(#devkit-solder)" stroke="#b3ac76" stroke-width=".8"/>
+  <rect x="159" y="193.6" width="7" height="7.2" rx=".8" fill="url(#devkit-solder)" stroke="#b3ac76" stroke-width=".8"/>
+  <rect x="354" y="193.6" width="7" height="7.2" rx=".8" fill="url(#devkit-solder)" stroke="#b3ac76" stroke-width=".8"/>
+  <rect x="159" y="204.8" width="7" height="7.2" rx=".8" fill="url(#devkit-solder)" stroke="#b3ac76" stroke-width=".8"/>
+  <rect x="354" y="204.8" width="7" height="7.2" rx=".8" fill="url(#devkit-solder)" stroke="#b3ac76" stroke-width=".8"/>
+  <rect x="159" y="216" width="7" height="7.2" rx=".8" fill="url(#devkit-solder)" stroke="#b3ac76" stroke-width=".8"/>
+  <rect x="354" y="216" width="7" height="7.2" rx=".8" fill="url(#devkit-solder)" stroke="#b3ac76" stroke-width=".8"/>
+  <rect x="159" y="227.2" width="7" height="7.2" rx=".8" fill="url(#devkit-solder)" stroke="#b3ac76" stroke-width=".8"/>
+  <rect x="354" y="227.2" width="7" height="7.2" rx=".8" fill="url(#devkit-solder)" stroke="#b3ac76" stroke-width=".8"/>
+  <rect x="159" y="238.4" width="7" height="7.2" rx=".8" fill="url(#devkit-solder)" stroke="#b3ac76" stroke-width=".8"/>
+  <rect x="354" y="238.4" width="7" height="7.2" rx=".8" fill="url(#devkit-solder)" stroke="#b3ac76" stroke-width=".8"/>
+  <rect x="159" y="249.6" width="7" height="7.2" rx=".8" fill="url(#devkit-solder)" stroke="#b3ac76" stroke-width=".8"/>
+  <rect x="354" y="249.6" width="7" height="7.2" rx=".8" fill="url(#devkit-solder)" stroke="#b3ac76" stroke-width=".8"/>
+  <rect x="159" y="260.8" width="7" height="7.2" rx=".8" fill="url(#devkit-solder)" stroke="#b3ac76" stroke-width=".8"/>
+  <rect x="354" y="260.8" width="7" height="7.2" rx=".8" fill="url(#devkit-solder)" stroke="#b3ac76" stroke-width=".8"/>
+  <rect x="159" y="272" width="7" height="7.2" rx=".8" fill="url(#devkit-solder)" stroke="#b3ac76" stroke-width=".8"/>
+  <rect x="354" y="272" width="7" height="7.2" rx=".8" fill="url(#devkit-solder)" stroke="#b3ac76" stroke-width=".8"/>
+  <rect x="159" y="283.2" width="7" height="7.2" rx=".8" fill="url(#devkit-solder)" stroke="#b3ac76" stroke-width=".8"/>
+  <rect x="354" y="283.2" width="7" height="7.2" rx=".8" fill="url(#devkit-solder)" stroke="#b3ac76" stroke-width=".8"/>
+  <rect x="180" y="299" width="8" height="9" rx=".7" fill="url(#devkit-solder)" stroke="#b3ac76" stroke-width=".8"/>
+  <rect x="195" y="299" width="8" height="9" rx=".7" fill="url(#devkit-solder)" stroke="#b3ac76" stroke-width=".8"/>
+  <rect x="210" y="299" width="8" height="9" rx=".7" fill="url(#devkit-solder)" stroke="#b3ac76" stroke-width=".8"/>
+  <rect x="225" y="299" width="8" height="9" rx=".7" fill="url(#devkit-solder)" stroke="#b3ac76" stroke-width=".8"/>
+  <rect x="240" y="299" width="8" height="9" rx=".7" fill="url(#devkit-solder)" stroke="#b3ac76" stroke-width=".8"/>
+  <rect x="255" y="299" width="8" height="9" rx=".7" fill="url(#devkit-solder)" stroke="#b3ac76" stroke-width=".8"/>
+  <rect x="270" y="299" width="8" height="9" rx=".7" fill="url(#devkit-solder)" stroke="#b3ac76" stroke-width=".8"/>
+  <rect x="285" y="299" width="8" height="9" rx=".7" fill="url(#devkit-solder)" stroke="#b3ac76" stroke-width=".8"/>
+  <rect x="300" y="299" width="8" height="9" rx=".7" fill="url(#devkit-solder)" stroke="#b3ac76" stroke-width=".8"/>
+  <rect x="315" y="299" width="8" height="9" rx=".7" fill="url(#devkit-solder)" stroke="#b3ac76" stroke-width=".8"/>
+  <rect x="173" y="102" width="174" height="191" rx="5" fill="url(#devkit-shield)" stroke="#d0d4b7" stroke-width="1.6"/>
+  <rect x="176" y="105" width="168" height="185" rx="3" fill="url(#devkit-brush)" stroke="#71847c" stroke-width=".8"/>
+  <g text-anchor="middle" font-family="Arial, sans-serif" fill="#e8ebe0"><text x="260" y="159" font-size="29" letter-spacing="1">ESP-32</text><text x="260" y="190" font-size="13" letter-spacing="1.7">WROOM-32</text><text x="260" y="224" font-size="10">Wi-Fi 2.4 GHz · 802.11 b/g/n</text><text x="260" y="241" font-size="8.5">ESP32 · 4 MB FLASH</text></g>
+  <circle cx="197" cy="271" r="4" fill="#0c1414" stroke="#95a79d" stroke-width="1.2"/>
+  <!-- Indicator LEDs and a small selection of passives. -->
+  <g fill="#d6ded5" font-family="Arial, sans-serif" font-size="11" text-anchor="middle"><text x="252" y="323">PWR</text><text x="316" y="323">D2</text></g>
+  <g stroke="#bec9bc" stroke-width="1"><rect x="241" y="329" width="23" height="12" rx="1" fill="#b7c6a7"/><rect x="305" y="329" width="23" height="12" rx="1" fill="#c1c8b2"/></g>
+  <g fill="#e3e9da"><rect x="249" y="331" width="7" height="8" rx="1"/><rect x="313" y="331" width="7" height="8" rx="1"/></g>
+  <use href="#devkit-capacitor" x="166" y="325"/><use href="#devkit-capacitor" x="193" y="325"/>
+  <use href="#devkit-resistor" x="268" y="330"/><use href="#devkit-resistor" x="285" y="330"/>
+  <use href="#devkit-resistor" x="337" y="330"/><use href="#devkit-resistor" x="359" y="330"/>
+  <use href="#devkit-capacitor" x="332" y="362"/><use href="#devkit-resistor" x="335" y="418"/>
+  <use href="#devkit-resistor" x="351" y="418"/><use href="#devkit-capacitor" x="220" y="453"/>
+  <use href="#devkit-capacitor" x="187" y="492"/><use href="#devkit-capacitor" x="210" y="492"/>
+  <use href="#devkit-resistor" x="167" y="494"/><use href="#devkit-resistor" x="337" y="496"/>
+  <!-- 3.3 V regulator and nearby capacitors. -->
+  <g fill="url(#devkit-solder)"><rect x="176" y="357" width="36" height="29" rx="2"/><rect x="169" y="420" width="10" height="19" rx="1"/><rect x="190" y="420" width="10" height="19" rx="1"/><rect x="211" y="420" width="10" height="19" rx="1"/></g>
+  <rect x="160" y="380" width="69" height="42" rx="2" fill="#273338" stroke="#7e8d89" stroke-width="1.2"/>
+  <g fill="#adb9b3" text-anchor="middle" font-family="monospace"><text x="194" y="397" font-size="9">AMS1117</text><text x="194" y="411" font-size="9">3.3 V</text></g>
+  <g fill="url(#devkit-solder)"><rect x="175" y="340" width="37" height="15" rx="2"/><rect x="175" y="449" width="37" height="15" rx="2"/></g>
+  <g fill="#243e4b"><rect x="182" y="341" width="25" height="13"/><rect x="182" y="450" width="25" height="13"/></g>
+  <g fill="#bfcfd0" text-anchor="middle" font-size="9" font-family="monospace"><text x="194" y="351">106</text><text x="194" y="460">106</text></g>
+  <rect x="213" y="472" width="21" height="13" rx="1" fill="#273532" stroke="#a8b3a6"/><text x="224" y="481" text-anchor="middle" fill="#9ca9a3" font-size="6" font-family="monospace">SL</text>
+  <!-- USB-UART bridge; the photo uses a CH340C. -->
+  <rect x="266" y="364" width="11" height="4.5" rx="1" fill="url(#devkit-solder)"/>
+  <rect x="314" y="364" width="11" height="4.5" rx="1" fill="url(#devkit-solder)"/>
+  <rect x="266" y="377" width="11" height="4.5" rx="1" fill="url(#devkit-solder)"/>
+  <rect x="314" y="377" width="11" height="4.5" rx="1" fill="url(#devkit-solder)"/>
+  <rect x="266" y="390" width="11" height="4.5" rx="1" fill="url(#devkit-solder)"/>
+  <rect x="314" y="390" width="11" height="4.5" rx="1" fill="url(#devkit-solder)"/>
+  <rect x="266" y="403" width="11" height="4.5" rx="1" fill="url(#devkit-solder)"/>
+  <rect x="314" y="403" width="11" height="4.5" rx="1" fill="url(#devkit-solder)"/>
+  <rect x="266" y="416" width="11" height="4.5" rx="1" fill="url(#devkit-solder)"/>
+  <rect x="314" y="416" width="11" height="4.5" rx="1" fill="url(#devkit-solder)"/>
+  <rect x="266" y="429" width="11" height="4.5" rx="1" fill="url(#devkit-solder)"/>
+  <rect x="314" y="429" width="11" height="4.5" rx="1" fill="url(#devkit-solder)"/>
+  <rect x="266" y="442" width="11" height="4.5" rx="1" fill="url(#devkit-solder)"/>
+  <rect x="314" y="442" width="11" height="4.5" rx="1" fill="url(#devkit-solder)"/>
+  <rect x="266" y="455" width="11" height="4.5" rx="1" fill="url(#devkit-solder)"/>
+  <rect x="314" y="455" width="11" height="4.5" rx="1" fill="url(#devkit-solder)"/>
+  <rect x="276" y="357" width="39" height="116" rx="2.5" fill="#202a2a" stroke="#596861"/>
+  <circle cx="281" cy="363" r="2" fill="#111a19"/>
+  <g transform="translate(295 415) rotate(90)" text-anchor="middle" fill="#a4b0a6" font-family="monospace"><text y="-2" font-size="12">CH340C</text><text y="9" font-size="6.5">USB-UART</text></g>
+  <g fill="#293b35" stroke="#abb9a5" stroke-width=".6"><rect x="343" y="382" width="12" height="22" rx="1"/><rect x="343" y="446" width="12" height="22" rx="1"/></g>
+  <g fill="url(#devkit-solder)"><rect x="339" y="384" width="5" height="4"/><rect x="339" y="399" width="5" height="4"/><rect x="355" y="392" width="5" height="4"/><rect x="339" y="448" width="5" height="4"/><rect x="339" y="463" width="5" height="4"/><rect x="355" y="456" width="5" height="4"/></g>
+  <use href="#devkit-resistor" x="284" y="485"/><use href="#devkit-resistor" x="284" y="499"/>
+  <!-- EN / BOOT tactile switches beside the connector. -->
+  <g fill="url(#devkit-solder)"><rect x="160" y="518" width="28" height="9" rx="1"/><rect x="160" y="560" width="28" height="9" rx="1"/><rect x="332" y="518" width="28" height="9" rx="1"/><rect x="332" y="560" width="28" height="9" rx="1"/></g>
+  <g fill="#c5c7b5" stroke="#778478" stroke-width="1.2"><rect x="157" y="526" width="35" height="35" rx="3"/><rect x="329" y="526" width="35" height="35" rx="3"/></g>
+  <g fill="#606f6d" stroke="#d8dac5" stroke-width="1.2"><circle cx="174.5" cy="543.5" r="10"/><circle cx="346.5" cy="543.5" r="10"/></g>
+  <g fill="#e4e9dc" font-family="Arial, sans-serif" font-size="8" text-anchor="middle"><text x="174" y="576">EN</text><text x="347" y="576">BOOT</text></g>
+  <!-- USB-C receptacle: contact tail, mounting tabs, metal shell and opening. -->
+  <rect x="226" y="510" width="2.5" height="18" rx=".7" fill="url(#devkit-solder)"/>
+  <rect x="232" y="510" width="2.5" height="18" rx=".7" fill="url(#devkit-solder)"/>
+  <rect x="238" y="510" width="2.5" height="18" rx=".7" fill="url(#devkit-solder)"/>
+  <rect x="244" y="510" width="2.5" height="18" rx=".7" fill="url(#devkit-solder)"/>
+  <rect x="250" y="510" width="2.5" height="18" rx=".7" fill="url(#devkit-solder)"/>
+  <rect x="256" y="510" width="2.5" height="18" rx=".7" fill="url(#devkit-solder)"/>
+  <rect x="262" y="510" width="2.5" height="18" rx=".7" fill="url(#devkit-solder)"/>
+  <rect x="268" y="510" width="2.5" height="18" rx=".7" fill="url(#devkit-solder)"/>
+  <rect x="274" y="510" width="2.5" height="18" rx=".7" fill="url(#devkit-solder)"/>
+  <rect x="280" y="510" width="2.5" height="18" rx=".7" fill="url(#devkit-solder)"/>
+  <rect x="286" y="510" width="2.5" height="18" rx=".7" fill="url(#devkit-solder)"/>
+  <rect x="292" y="510" width="2.5" height="18" rx=".7" fill="url(#devkit-solder)"/>
+  <g fill="url(#devkit-solder)" stroke="#6d7e76" stroke-width="1"><rect x="207" y="526" width="12" height="34" rx="4"/><rect x="301" y="526" width="12" height="34" rx="4"/></g>
+  <path d="M218 523H302L307 534V601Q307 610 298 610H222Q213 610 213 601V534Z" fill="url(#devkit-usb)" stroke="#c4c9b9" stroke-width="1.4"/>
+  <path d="M221 531H299M221 536l10 11h58l10-11M227 552v26M293 552v26" fill="none" stroke="#737e77" stroke-width="1.7"/>
+  <g fill="#707c72" stroke="#d7d9c6" stroke-width=".7"><circle cx="239" cy="562" r="3"/><circle cx="281" cy="562" r="3"/></g>
+  <rect x="222" y="588" width="76" height="15" rx="7" fill="#25332f" stroke="#c0c8b6" stroke-width="1.5"/>
+  <rect x="231" y="593" width="58" height="4.5" rx="2" fill="#8b9688"/>
+  <text x="260" y="639" fill="#8a9c9b" text-anchor="middle" font-size="10" font-family="monospace">ESP32 DEVKIT V1 · 30 PIN · USB-C</text>
+  <!-- Header pads and their compact silkscreen labels. -->
+  <use href="#devkit-pin" x="128" y="98"/>
+  <text x="145" y="98" transform="rotate(-90 145 98)" text-anchor="middle" fill="#d4ded5" font-size="7.5" font-family="Arial, sans-serif">EN</text>
+  <use href="#devkit-pin" x="128" y="125.5"/>
+  <text x="145" y="125.5" transform="rotate(-90 145 125.5)" text-anchor="middle" fill="#d4ded5" font-size="7.5" font-family="Arial, sans-serif">VP</text>
+  <use href="#devkit-pin" x="128" y="153"/>
+  <text x="145" y="153" transform="rotate(-90 145 153)" text-anchor="middle" fill="#d4ded5" font-size="7.5" font-family="Arial, sans-serif">VN</text>
+  <use href="#devkit-pin" x="128" y="180.5"/>
+  <text x="145" y="180.5" transform="rotate(-90 145 180.5)" text-anchor="middle" fill="#d4ded5" font-size="7.5" font-family="Arial, sans-serif">D34</text>
+  <use href="#devkit-pin" x="128" y="208"/>
+  <text x="145" y="208" transform="rotate(-90 145 208)" text-anchor="middle" fill="#d4ded5" font-size="7.5" font-family="Arial, sans-serif">D35</text>
+  <use href="#devkit-pin" x="128" y="235.5"/>
+  <text x="145" y="235.5" transform="rotate(-90 145 235.5)" text-anchor="middle" fill="#d4ded5" font-size="7.5" font-family="Arial, sans-serif">D32</text>
+  <use href="#devkit-pin" x="128" y="263"/>
+  <text x="145" y="263" transform="rotate(-90 145 263)" text-anchor="middle" fill="#d4ded5" font-size="7.5" font-family="Arial, sans-serif">D33</text>
+  <use href="#devkit-pin" x="128" y="290.5"/>
+  <text x="145" y="290.5" transform="rotate(-90 145 290.5)" text-anchor="middle" fill="#d4ded5" font-size="7.5" font-family="Arial, sans-serif">D25</text>
+  <use href="#devkit-pin" x="128" y="318"/>
+  <text x="145" y="318" transform="rotate(-90 145 318)" text-anchor="middle" fill="#d4ded5" font-size="7.5" font-family="Arial, sans-serif">D26</text>
+  <use href="#devkit-pin" x="128" y="345.5"/>
+  <text x="145" y="345.5" transform="rotate(-90 145 345.5)" text-anchor="middle" fill="#d4ded5" font-size="7.5" font-family="Arial, sans-serif">D27</text>
+  <use href="#devkit-pin" x="128" y="373"/>
+  <text x="145" y="373" transform="rotate(-90 145 373)" text-anchor="middle" fill="#d4ded5" font-size="7.5" font-family="Arial, sans-serif">D14</text>
+  <use href="#devkit-pin" x="128" y="400.5"/>
+  <text x="145" y="400.5" transform="rotate(-90 145 400.5)" text-anchor="middle" fill="#d4ded5" font-size="7.5" font-family="Arial, sans-serif">D12</text>
+  <use href="#devkit-pin" x="128" y="428"/>
+  <text x="145" y="428" transform="rotate(-90 145 428)" text-anchor="middle" fill="#d4ded5" font-size="7.5" font-family="Arial, sans-serif">D13</text>
+  <use href="#devkit-pin" x="128" y="455.5"/>
+  <text x="145" y="455.5" transform="rotate(-90 145 455.5)" text-anchor="middle" fill="#d4ded5" font-size="7.5" font-family="Arial, sans-serif">GND</text>
+  <use href="#devkit-pin" x="128" y="483"/>
+  <text x="145" y="483" transform="rotate(-90 145 483)" text-anchor="middle" fill="#d4ded5" font-size="7.5" font-family="Arial, sans-serif">VIN</text>
+  <use href="#devkit-pin" x="392" y="98"/>
+  <text x="375" y="98" transform="rotate(-90 375 98)" text-anchor="middle" fill="#d4ded5" font-size="7.5" font-family="Arial, sans-serif">D23</text>
+  <use href="#devkit-pin" x="392" y="125.5"/>
+  <text x="375" y="125.5" transform="rotate(-90 375 125.5)" text-anchor="middle" fill="#d4ded5" font-size="7.5" font-family="Arial, sans-serif">D22</text>
+  <use href="#devkit-pin" x="392" y="153"/>
+  <text x="375" y="153" transform="rotate(-90 375 153)" text-anchor="middle" fill="#d4ded5" font-size="7.5" font-family="Arial, sans-serif">TX0</text>
+  <use href="#devkit-pin" x="392" y="180.5"/>
+  <text x="375" y="180.5" transform="rotate(-90 375 180.5)" text-anchor="middle" fill="#d4ded5" font-size="7.5" font-family="Arial, sans-serif">RX0</text>
+  <use href="#devkit-pin" x="392" y="208"/>
+  <text x="375" y="208" transform="rotate(-90 375 208)" text-anchor="middle" fill="#d4ded5" font-size="7.5" font-family="Arial, sans-serif">D21</text>
+  <use href="#devkit-pin" x="392" y="235.5"/>
+  <text x="375" y="235.5" transform="rotate(-90 375 235.5)" text-anchor="middle" fill="#d4ded5" font-size="7.5" font-family="Arial, sans-serif">D19</text>
+  <use href="#devkit-pin" x="392" y="263"/>
+  <text x="375" y="263" transform="rotate(-90 375 263)" text-anchor="middle" fill="#d4ded5" font-size="7.5" font-family="Arial, sans-serif">D18</text>
+  <use href="#devkit-pin" x="392" y="290.5"/>
+  <text x="375" y="290.5" transform="rotate(-90 375 290.5)" text-anchor="middle" fill="#d4ded5" font-size="7.5" font-family="Arial, sans-serif">D5</text>
+  <use href="#devkit-pin" x="392" y="318"/>
+  <text x="375" y="318" transform="rotate(-90 375 318)" text-anchor="middle" fill="#d4ded5" font-size="7.5" font-family="Arial, sans-serif">D17</text>
+  <use href="#devkit-pin" x="392" y="345.5"/>
+  <text x="375" y="345.5" transform="rotate(-90 375 345.5)" text-anchor="middle" fill="#d4ded5" font-size="7.5" font-family="Arial, sans-serif">D16</text>
+  <use href="#devkit-pin" x="392" y="373"/>
+  <text x="375" y="373" transform="rotate(-90 375 373)" text-anchor="middle" fill="#d4ded5" font-size="7.5" font-family="Arial, sans-serif">D4</text>
+  <use href="#devkit-pin" x="392" y="400.5"/>
+  <text x="375" y="400.5" transform="rotate(-90 375 400.5)" text-anchor="middle" fill="#d4ded5" font-size="7.5" font-family="Arial, sans-serif">D2</text>
+  <use href="#devkit-pin" x="392" y="428"/>
+  <text x="375" y="428" transform="rotate(-90 375 428)" text-anchor="middle" fill="#d4ded5" font-size="7.5" font-family="Arial, sans-serif">D15</text>
+  <use href="#devkit-pin" x="392" y="455.5"/>
+  <text x="375" y="455.5" transform="rotate(-90 375 455.5)" text-anchor="middle" fill="#d4ded5" font-size="7.5" font-family="Arial, sans-serif">GND</text>
+  <use href="#devkit-pin" x="392" y="483"/>
+  <text x="375" y="483" transform="rotate(-90 375 483)" text-anchor="middle" fill="#d4ded5" font-size="7.5" font-family="Arial, sans-serif">3V3</text>
+</svg>

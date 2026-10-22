@@ -5,6 +5,7 @@ pub fn default_target() -> String {
 }
 pub fn compiler(target: &str) -> Result<&'static str, String> {
     match target {
+        "esp32" => Ok("xtensa-esp32-elf-gcc"),
         "esp32s3" => Ok("xtensa-esp32s3-elf-gcc"),
         "esp32p4" => Ok("riscv32-esp-elf-gcc"),
         "atmega328p" => Ok("avr-gcc"),
@@ -18,6 +19,9 @@ pub fn target(value: Option<String>) -> Result<String, String> {
 }
 pub fn profile(id: &str) -> Result<Value, String> {
     let source = match id {
+        "doit-esp32-devkit-v1-30pin" => {
+            include_str!("../../src/catalog/boards/doit-esp32-devkit-v1-30pin.json")
+        }
         "arduino-nano-atmega328p-ch340" => {
             include_str!("../../src/catalog/boards/arduino-nano-atmega328p-ch340.json")
         }
@@ -33,4 +37,24 @@ pub fn profile(id: &str) -> Result<Value, String> {
         _ => return Err("Нет реализованного профиля прошивки этой платы".into()),
     };
     serde_json::from_str(source).map_err(|e| e.to_string())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn classic_esp32_profile_selects_its_toolchain_and_uart_console() {
+        let board = profile("doit-esp32-devkit-v1-30pin").unwrap();
+        assert_eq!(board["target"], "esp32");
+        assert_eq!(board["espIdfVersion"], "5.4.4");
+        assert_eq!(
+            board["firmware"]["consoleModes"],
+            serde_json::json!(["uart"])
+        );
+        assert_eq!(board["firmware"]["flashSizeMb"], 4);
+        assert_eq!(target(Some("esp32".into())).unwrap(), "esp32");
+        assert_eq!(compiler("esp32").unwrap(), "xtensa-esp32-elf-gcc");
+        assert!(compiler("esp32;echo unsafe").is_err());
+    }
 }

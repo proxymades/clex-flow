@@ -15,6 +15,7 @@ import {touchButtonProject} from '../tests/touch-button-fixture.js';
 import {stepperProject} from '../tests/stepper-fixture.js';
 import {routerProject,routerDisplayProject} from '../tests/router-fixture.js';
 import {temperatureProject} from '../tests/temperature-fixture.js';
+import {ESP32_BOARD,esp32GpioProject,esp32DisplayProject,esp32EspNowProject,esp32PeripheralProject,esp32RouterProject} from '../tests/esp32-firmware-fixture.js';
 import { peripheralProject } from '../tests/peripheral-fixture.js';
 import { createProject } from '../src/projects/model.js';
 import { addHardware } from '../src/assembly/model.js';
@@ -35,6 +36,12 @@ function mediaProject(family) {
 }
 
 const cases = [
+  ['esp32-gpio',esp32GpioProject(),'uart'],
+  ['esp32-display-spi2',esp32DisplayProject(),'uart'],
+  ['esp32-display-spi3',esp32DisplayProject(undefined,'3'),'uart'],
+  ['esp32-espnow-persistence-health',esp32EspNowProject({combined:true,rememberMode:true,peerHealth:true}),'uart'],
+  ['esp32-peripherals',esp32PeripheralProject(),'uart'],
+  ['esp32-router-probe-display',esp32RouterProject({probe:true,display:true}),'uart'],
   ['s3-temperature',temperatureProject(),'usb'],
   ['p4-temperature',temperatureProject('waveshare-esp32-p4-nano'),'uart'],
   ['s3-select-number',selectNumberProject().project,'usb'],
@@ -70,7 +77,7 @@ const cases = [
 const root = fileURLToPath(new URL('../', import.meta.url));
 cases.push(['s3-router-no-ota',routerProject({ota:false}).project,'usb'],['s3-router-display',routerDisplayProject().project,'usb']);
 for(const boardId of ['waveshare-esp32-s3-eth','waveshare-esp32-p4-nano'])for(const mode of [{},{wan:'ethernet',backup:'wifi',staticWan:true},{lan:'ethernet'}])cases.push([boardId+'-router-'+(mode.lan?'lan-'+mode.lan:'wan-'+(mode.wan||'wifi')),routerProject({boardId,...mode}).project,boardId.includes('s3')?'usb':'uart']);
-for(const board of ['waveshare-esp32-s3-eth','waveshare-esp32-p4-nano']) {
+for(const board of [ESP32_BOARD,'waveshare-esp32-s3-eth','waveshare-esp32-p4-nano']) {
   for(const driver of ['tb6600','tmc2208','drv8825']) {
     cases.push([board+'-'+driver,stepperProject(driver,board).project,board.includes('s3')?'usb':'uart']);
   }

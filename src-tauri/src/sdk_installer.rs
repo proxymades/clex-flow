@@ -656,7 +656,10 @@ pub fn install(
         app,
         inner,
         id,
-        "SDK установлен, проверен компиляцией и выбран для ESP32-S3",
+        &format!(
+            "SDK установлен, проверен компиляцией и выбран для {}",
+            sdk.target
+        ),
     );
     Ok(())
 }
@@ -665,8 +668,9 @@ pub fn install(
 mod tests {
     use super::*;
     #[test]
-    fn p4_plan_and_eim_include_only_the_selected_target() {
+    fn esp32_targets_plan_and_eim_include_only_the_selected_target() {
         let manifest = serde_json::json!({"tools":[
+            {"install":"always","supported_targets":["esp32"],"versions":[{"status":"recommended","win64":{"size":300}}]},
             {"install":"always","supported_targets":["esp32s3"],"versions":[{"status":"recommended","win64":{"size":100}}]},
             {"install":"always","supported_targets":["esp32p4"],"versions":[{"status":"recommended","win64":{"size":200}}]},
             {"install":"always","supported_targets":["all"],"versions":[{"status":"recommended","win64":{"size":10}}]}
@@ -679,13 +683,19 @@ mod tests {
             estimate_tools_for(&manifest, "win64", "esp32s3").unwrap(),
             110
         );
-        let d = tempfile::tempdir().unwrap();
-        let value: toml::Value =
-            toml::from_str(&eim_config_for(d.path(), "5.4.4", false, "esp32p4")).unwrap();
         assert_eq!(
-            value["target"].as_array().unwrap(),
-            &vec![toml::Value::String("esp32p4".into())]
+            estimate_tools_for(&manifest, "win64", "esp32").unwrap(),
+            310
         );
+        let d = tempfile::tempdir().unwrap();
+        for target in ["esp32", "esp32s3", "esp32p4"] {
+            let value: toml::Value =
+                toml::from_str(&eim_config_for(d.path(), "5.4.4", false, target)).unwrap();
+            assert_eq!(
+                value["target"].as_array().unwrap(),
+                &vec![toml::Value::String(target.into())]
+            );
+        }
     }
     #[test]
     fn assets_cover_supported_architectures() {

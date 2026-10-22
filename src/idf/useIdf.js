@@ -118,7 +118,7 @@ export default function useIdf(project) {
     catch(error){flight.current=false;setJob({id,operation,status:'failed'});setError(String(error));return false;}
   };
   const readMac=useCallback(async()=>{
-    if(!desktop||!compatible||target!=='esp32s3'||!port||flight.current||checking||sdkLoading)return false;
+    if(!desktop||!compatible||!['esp32','esp32s3'].includes(target)||!port||flight.current||checking||sdkLoading)return false;
     const key=macKey,selectedPort=port;
     flight.current=true;setReadingMac(true);setMacError(null);
     try{
@@ -130,7 +130,7 @@ export default function useIdf(project) {
   },[compatible,target,port,checking,sdkLoading,macKey]);
   const running=job&&['running','connected','stopping'].includes(job.status);
   useEffect(()=>{
-    if(!desktop||!hasEspNow||!compatible||target!=='esp32s3'||!ready||checking||sdkLoading||readingMac||running||!ports.some(item=>item.path===port&&item.usb))return;
+    if(!desktop||!hasEspNow||!compatible||!['esp32','esp32s3'].includes(target)||!ready||checking||sdkLoading||readingMac||running||!ports.some(item=>item.path===port&&item.usb))return;
     if(macAttempts.current.has(macKey))return;
     const timer=setTimeout(()=>{
       if(flight.current||probing.current)return;

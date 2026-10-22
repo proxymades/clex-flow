@@ -1,0 +1,609 @@
+{
+  "id": "doit-esp32-devkit-v1-30pin",
+  "name": "ESP32 DevKit V1 (30 pin)",
+  "manufacturer": "DOIT / совместимые платы",
+  "mcu": "ESP32-WROOM-32",
+  "revision": null,
+  "espIdfVersion": "5.4.4",
+  "target": "esp32",
+  "platform": "esp-idf",
+  "logicVoltage": 3.3,
+  "pinoutVerified": false,
+  "documentationVerified": true,
+  "verificationNote": "Профиль 30-контактной компоновки DOIT с ESP32-WROOM-32. Сверьте подписи контактов со своей платой; клоны и платы на 36/38 контактов отличаются. Пользователь подтвердил успешную физическую прошивку своей ESP32 DevKit; это не означает аппаратную проверку всех контактов и периферийных сценариев.",
+  "description": "ESP32-WROOM-32, 4 МБ Flash без PSRAM. Прошивка и монитор через USB-UART; GPIO34/35/36/39 работают только на вход без внутренних подтяжек.",
+  "svg": "esp32-devkit-v1-30pin.svg",
+  "width": 520,
+  "height": 650,
+  "orientation": "Вид со стороны компонентов: антенна сверху, USB снизу. Левый и правый ряды по 15 контактов, нумерация L1–L15 и R1–R15 сверху вниз служит для обозначений в CLEX Flow.",
+  "sources": [
+    {
+      "title": "Micro Robotics: ESP32-DEV, плата на 30 контактов и схема выводов",
+      "url": "https://www.robotics.org.za/ESP32-DEV"
+    },
+    {
+      "title": "CIRCUITSTATE: авторская схема выводов DOIT ESP32 DEVKIT V1, r0.1",
+      "url": "https://circuitstate.com/wp-content/uploads/2022/12/ESP32-DevKit-V1-Pinout-r0.1-CIRCUITSTATE-Electronics.pdf"
+    },
+    {
+      "title": "Espressif: ESP32-WROOM-32 Datasheet",
+      "url": "https://www.espressif.com/sites/default/files/documentation/esp32-wroom-32_datasheet_en.pdf"
+    },
+    {
+      "title": "Espressif: ESP32 GPIO, ESP-IDF 5.4.4",
+      "url": "https://docs.espressif.com/projects/esp-idf/en/v5.4.4/esp32/api-reference/peripherals/gpio.html"
+    },
+    {
+      "title": "PlatformIO: профиль DOIT ESP32 DEVKIT V1",
+      "url": "https://github.com/platformio/platform-espressif32/blob/develop/boards/esp32doit-devkit-v1.json"
+    }
+  ],
+  "options": {},
+  "reservedGpios": {
+    "0": "Загрузочный strapping-контакт",
+    "1": "UART0: USB-UART, прошивка и монитор",
+    "2": "Загрузочный strapping-контакт",
+    "3": "UART0: USB-UART, прошивка и монитор",
+    "5": "Загрузочный strapping-контакт",
+    "6": "SPI Flash ESP32-WROOM-32",
+    "7": "SPI Flash ESP32-WROOM-32",
+    "8": "SPI Flash ESP32-WROOM-32",
+    "9": "SPI Flash ESP32-WROOM-32",
+    "10": "SPI Flash ESP32-WROOM-32",
+    "11": "SPI Flash ESP32-WROOM-32",
+    "12": "Загрузочный strapping-контакт",
+    "15": "Загрузочный strapping-контакт"
+  },
+  "pins": [
+    {
+      "id": "L1",
+      "label": "EN",
+      "physicalNumber": 1,
+      "header": "L",
+      "side": "left",
+      "kind": "control",
+      "gpio": null,
+      "x": 128,
+      "y": 98.0,
+      "functions": [],
+      "capabilities": []
+    },
+    {
+      "id": "L2",
+      "label": "VP / GPIO36",
+      "physicalNumber": 2,
+      "header": "L",
+      "side": "left",
+      "kind": "gpio",
+      "gpio": 36,
+      "x": 128,
+      "y": 125.5,
+      "functions": [],
+      "capabilities": [
+        "digital-input"
+      ],
+      "internalPulls": false
+    },
+    {
+      "id": "L3",
+      "label": "VN / GPIO39",
+      "physicalNumber": 3,
+      "header": "L",
+      "side": "left",
+      "kind": "gpio",
+      "gpio": 39,
+      "x": 128,
+      "y": 153.0,
+      "functions": [],
+      "capabilities": [
+        "digital-input"
+      ],
+      "internalPulls": false
+    },
+    {
+      "id": "L4",
+      "label": "GPIO34",
+      "physicalNumber": 4,
+      "header": "L",
+      "side": "left",
+      "kind": "gpio",
+      "gpio": 34,
+      "x": 128,
+      "y": 180.5,
+      "functions": [],
+      "capabilities": [
+        "digital-input"
+      ],
+      "internalPulls": false
+    },
+    {
+      "id": "L5",
+      "label": "GPIO35",
+      "physicalNumber": 5,
+      "header": "L",
+      "side": "left",
+      "kind": "gpio",
+      "gpio": 35,
+      "x": 128,
+      "y": 208.0,
+      "functions": [],
+      "capabilities": [
+        "digital-input"
+      ],
+      "internalPulls": false
+    },
+    {
+      "id": "L6",
+      "label": "GPIO32",
+      "physicalNumber": 6,
+      "header": "L",
+      "side": "left",
+      "kind": "gpio",
+      "gpio": 32,
+      "x": 128,
+      "y": 235.5,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ]
+    },
+    {
+      "id": "L7",
+      "label": "GPIO33",
+      "physicalNumber": 7,
+      "header": "L",
+      "side": "left",
+      "kind": "gpio",
+      "gpio": 33,
+      "x": 128,
+      "y": 263.0,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ]
+    },
+    {
+      "id": "L8",
+      "label": "GPIO25",
+      "physicalNumber": 8,
+      "header": "L",
+      "side": "left",
+      "kind": "gpio",
+      "gpio": 25,
+      "x": 128,
+      "y": 290.5,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ]
+    },
+    {
+      "id": "L9",
+      "label": "GPIO26",
+      "physicalNumber": 9,
+      "header": "L",
+      "side": "left",
+      "kind": "gpio",
+      "gpio": 26,
+      "x": 128,
+      "y": 318.0,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ]
+    },
+    {
+      "id": "L10",
+      "label": "GPIO27",
+      "physicalNumber": 10,
+      "header": "L",
+      "side": "left",
+      "kind": "gpio",
+      "gpio": 27,
+      "x": 128,
+      "y": 345.5,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ]
+    },
+    {
+      "id": "L11",
+      "label": "GPIO14",
+      "physicalNumber": 11,
+      "header": "L",
+      "side": "left",
+      "kind": "gpio",
+      "gpio": 14,
+      "x": 128,
+      "y": 373.0,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ]
+    },
+    {
+      "id": "L12",
+      "label": "GPIO12",
+      "physicalNumber": 12,
+      "header": "L",
+      "side": "left",
+      "kind": "gpio",
+      "gpio": 12,
+      "x": 128,
+      "y": 400.5,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "reservedReason": "Загрузочный strapping-контакт; внешние сигналы могут нарушить запуск платы."
+    },
+    {
+      "id": "L13",
+      "label": "GPIO13",
+      "physicalNumber": 13,
+      "header": "L",
+      "side": "left",
+      "kind": "gpio",
+      "gpio": 13,
+      "x": 128,
+      "y": 428.0,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ]
+    },
+    {
+      "id": "L14",
+      "label": "GND",
+      "physicalNumber": 14,
+      "header": "L",
+      "side": "left",
+      "kind": "ground",
+      "gpio": null,
+      "x": 128,
+      "y": 455.5,
+      "functions": [],
+      "capabilities": []
+    },
+    {
+      "id": "L15",
+      "label": "VIN",
+      "physicalNumber": 15,
+      "header": "L",
+      "side": "left",
+      "kind": "power",
+      "gpio": null,
+      "x": 128,
+      "y": 483.0,
+      "functions": [],
+      "capabilities": [],
+      "voltage": 5
+    },
+    {
+      "id": "R1",
+      "label": "GPIO23",
+      "physicalNumber": 1,
+      "header": "R",
+      "side": "right",
+      "kind": "gpio",
+      "gpio": 23,
+      "x": 392,
+      "y": 98.0,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ]
+    },
+    {
+      "id": "R2",
+      "label": "GPIO22",
+      "physicalNumber": 2,
+      "header": "R",
+      "side": "right",
+      "kind": "gpio",
+      "gpio": 22,
+      "x": 392,
+      "y": 125.5,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ]
+    },
+    {
+      "id": "R3",
+      "label": "TX0 / GPIO1",
+      "physicalNumber": 3,
+      "header": "R",
+      "side": "right",
+      "kind": "gpio",
+      "gpio": 1,
+      "x": 392,
+      "y": 153.0,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "reservedReason": "UART0 подключен к USB-UART-мосту и используется для прошивки и монитора."
+    },
+    {
+      "id": "R4",
+      "label": "RX0 / GPIO3",
+      "physicalNumber": 4,
+      "header": "R",
+      "side": "right",
+      "kind": "gpio",
+      "gpio": 3,
+      "x": 392,
+      "y": 180.5,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "reservedReason": "UART0 подключен к USB-UART-мосту и используется для прошивки и монитора."
+    },
+    {
+      "id": "R5",
+      "label": "GPIO21",
+      "physicalNumber": 5,
+      "header": "R",
+      "side": "right",
+      "kind": "gpio",
+      "gpio": 21,
+      "x": 392,
+      "y": 208.0,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ]
+    },
+    {
+      "id": "R6",
+      "label": "GPIO19",
+      "physicalNumber": 6,
+      "header": "R",
+      "side": "right",
+      "kind": "gpio",
+      "gpio": 19,
+      "x": 392,
+      "y": 235.5,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ]
+    },
+    {
+      "id": "R7",
+      "label": "GPIO18",
+      "physicalNumber": 7,
+      "header": "R",
+      "side": "right",
+      "kind": "gpio",
+      "gpio": 18,
+      "x": 392,
+      "y": 263.0,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ]
+    },
+    {
+      "id": "R8",
+      "label": "GPIO5",
+      "physicalNumber": 8,
+      "header": "R",
+      "side": "right",
+      "kind": "gpio",
+      "gpio": 5,
+      "x": 392,
+      "y": 290.5,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "reservedReason": "Загрузочный strapping-контакт; внешние сигналы могут нарушить запуск платы."
+    },
+    {
+      "id": "R9",
+      "label": "TX2 / GPIO17",
+      "physicalNumber": 9,
+      "header": "R",
+      "side": "right",
+      "kind": "gpio",
+      "gpio": 17,
+      "x": 392,
+      "y": 318.0,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ]
+    },
+    {
+      "id": "R10",
+      "label": "RX2 / GPIO16",
+      "physicalNumber": 10,
+      "header": "R",
+      "side": "right",
+      "kind": "gpio",
+      "gpio": 16,
+      "x": 392,
+      "y": 345.5,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ]
+    },
+    {
+      "id": "R11",
+      "label": "GPIO4",
+      "physicalNumber": 11,
+      "header": "R",
+      "side": "right",
+      "kind": "gpio",
+      "gpio": 4,
+      "x": 392,
+      "y": 373.0,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ]
+    },
+    {
+      "id": "R12",
+      "label": "GPIO2",
+      "physicalNumber": 12,
+      "header": "R",
+      "side": "right",
+      "kind": "gpio",
+      "gpio": 2,
+      "x": 392,
+      "y": 400.5,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "reservedReason": "Загрузочный strapping-контакт; внешние сигналы могут нарушить запуск платы."
+    },
+    {
+      "id": "R13",
+      "label": "GPIO15",
+      "physicalNumber": 13,
+      "header": "R",
+      "side": "right",
+      "kind": "gpio",
+      "gpio": 15,
+      "x": 392,
+      "y": 428.0,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "reservedReason": "Загрузочный strapping-контакт; внешние сигналы могут нарушить запуск платы."
+    },
+    {
+      "id": "R14",
+      "label": "GND",
+      "physicalNumber": 14,
+      "header": "R",
+      "side": "right",
+      "kind": "ground",
+      "gpio": null,
+      "x": 392,
+      "y": 455.5,
+      "functions": [],
+      "capabilities": []
+    },
+    {
+      "id": "R15",
+      "label": "3V3",
+      "physicalNumber": 15,
+      "header": "R",
+      "side": "right",
+      "kind": "power",
+      "gpio": null,
+      "x": 392,
+      "y": 483.0,
+      "functions": [],
+      "capabilities": [],
+      "voltage": 3.3
+    }
+  ],
+  "interfaces": {
+    "spi": {
+      "hosts": [
+        2,
+        3
+      ]
+    }
+  },
+  "componentDefaults": {
+    "clex.hardware.router": {
+      "wanSource": "wifi"
+    }
+  },
+  "firmware": {
+    "flashSizeMb": 4,
+    "psramMb": 0,
+    "consoleModes": [
+      "uart"
+    ],
+    "compiler": "Xtensa ESP32 GCC"
+  },
+  "routing": {
+    "keepOutAreas": [
+      {
+        "x": 160,
+        "y": 30,
+        "width": 200,
+        "height": 279
+      },
+      {
+        "x": 157,
+        "y": 350,
+        "width": 73,
+        "height": 94
+      },
+      {
+        "x": 266,
+        "y": 356,
+        "width": 59,
+        "height": 123
+      },
+      {
+        "x": 209,
+        "y": 510,
+        "width": 102,
+        "height": 101
+      },
+      {
+        "x": 156,
+        "y": 521,
+        "width": 39,
+        "height": 45
+      },
+      {
+        "x": 326,
+        "y": 521,
+        "width": 39,
+        "height": 45
+      }
+    ]
+  },
+  "radio": {
+    "espNow": true,
+    "longRange": true,
+    "interface": "station"
+  },
+  "wifi": {
+    "driverKey": "native",
+    "sta": true,
+    "softap": true,
+    "authModes": [
+      "wpa2",
+      "wpa3",
+      "mixed"
+    ],
+    "maxClients": 4
+  }
+}

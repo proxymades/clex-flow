@@ -3,7 +3,7 @@ import { formatCount } from '../utils/plural.js';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ReactFlow, Background, BackgroundVariant, ConnectionMode } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import { Unplug, Move, MousePointer2 } from 'lucide-react';
+import { Unplug, Move, MousePointer2, Undo2, Redo2 } from 'lucide-react';
 import CanvasControls from '../components/CanvasControls.jsx';
 import useCanvasKeys from '../components/useCanvasKeys.js';
 import { moduleFor, pinProblem, connectionProblem } from './model.js';
@@ -23,7 +23,7 @@ const viewportData = viewport => ({
   x: clamp(viewport.x, -50000, 50000), y: clamp(viewport.y, -50000, 50000), zoom: clamp(viewport.zoom, 0.2, 3),
 });
 
-export default function AssemblyCanvas({ project, board, catalog, selection, setSelection, pending, setPending, onTerminal, onPin, onConnect, onError, onTransform, onInteraction, onRouteChange, focusComponentId, onFocusDone, busy }) {
+export default function AssemblyCanvas({ project, board, catalog, selection, setSelection, pending, setPending, onTerminal, onPin, onConnect, onError, onTransform, onInteraction, onRouteChange, focusComponentId, onFocusDone, history, busy }) {
   const root = useRef(null);
   const [instance, setInstance] = useState(null), [measurements, setMeasurements] = useState({}), [ready, setReady] = useState(false);
   const [positions, setPositions] = useState({}), [zoom, setZoom] = useState(project.assembly.viewport.zoom);
@@ -234,7 +234,7 @@ export default function AssemblyCanvas({ project, board, catalog, selection, set
   }, [focusComponentId, ready, instance, busy, nodes, size, interaction, onTransform, onFocusDone]);
 
   return <div className={['assembly-canvas', busy ? 'canvas-busy' : '', spaceHeld ? 'canvas-space-pan' : ''].join(' ')}>
-    <div className="canvas-top"><span className="badge purple"><MousePointer2 size={12} />МОНТАЖ / {formatCount(project.components.length, ['компонент', 'компонента', 'компонентов'])}</span><span className="canvas-scale">{Math.round(zoom * 100)}%</span></div>
+    <div className="canvas-top"><span className="badge purple"><MousePointer2 size={12} />МОНТАЖ / {formatCount(project.components.length, ['компонент', 'компонента', 'компонентов'])}</span><div className="assembly-history-controls"><button className="icon-button" title="Отменить · ⌘/Ctrl Z" aria-label="Отменить изменение монтажа" disabled={busy || !history.canUndo} onClick={history.undo}><Undo2 size={16} /></button><button className="icon-button" title="Повторить · ⌘/Ctrl Shift Z" aria-label="Повторить изменение монтажа" disabled={busy || !history.canRedo} onClick={history.redo}><Redo2 size={16} /></button><span className="canvas-scale">{Math.round(zoom * 100)}%</span></div></div>
     {pending && <div className="connection-prompt"><span className="dot green-dot" />{pending.componentId ? 'Выберите совместимый контакт платы или компонента' : 'Выберите контакт компонента'}<button aria-label="Отменить соединение" className="icon-button" onClick={() => setPending(null)}><Unplug size={15} /></button></div>}
     <div ref={root} className="assembly-flow-region" data-ready={ready} aria-label="Холст монтажа">
       {/* Fix node styles as well as routing layers: React Flow resets its selection elevation during Strict Mode initialization. */}

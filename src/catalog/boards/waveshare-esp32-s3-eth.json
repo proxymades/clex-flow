@@ -10,9 +10,9 @@
   "verificationNote": "Разводка сверена с официальной схемой от 21.12.2024. Ревизия вашей платы не подтверждена. Не для ESP32-S3-ETH-M.",
   "description": "W5500 · 16 МБ Flash · 8 МБ PSRAM. Профиль базовой ESP32-S3-ETH.",
   "svg": "esp32-s3-eth.svg",
-  "width": 380,
-  "height": 700,
-  "orientation": "Вид сверху: USB сверху, TF / microSD снизу. RJ45 на обратной стороне. Контакт 1 справа вверху, 40 слева вверху.",
+  "width": 400,
+  "height": 728,
+  "orientation": "Вид снизу: USB-C сверху, TF / microSD снизу; RJ45, ESP32-S3 и разъем камеры на обратной стороне. Контакт 1 справа вверху, 40 слева вверху.",
   "sources": [
     {
       "title": "Waveshare: плата и распиновка",
@@ -21,6 +21,10 @@
     {
       "title": "Официальное изображение контактов",
       "url": "https://docs.waveshare.com/assets/images/ESP32-S3-ETH-details-15-b9d2e97a5122db37da6be5bac19e29b4.webp"
+    },
+    {
+      "title": "Waveshare: размеры платы 21 × 72,8 мм",
+      "url": "https://docs.waveshare.com/assets/images/ESP32-S3-ETH-details-size-e17a2432fc60e98e2ed27afcdbea08cc.webp"
     },
     {
       "title": "Схема, 21.12.2024",
@@ -84,8 +88,8 @@
       "side": "right",
       "kind": "gpio",
       "gpio": 20,
-      "x": 282,
-      "y": 160,
+      "x": 284,
+      "y": 197.748,
       "functions": [],
       "capabilities": [
         "digital-input",
@@ -100,8 +104,8 @@
       "side": "right",
       "kind": "gpio",
       "gpio": 19,
-      "x": 282,
-      "y": 184,
+      "x": 284,
+      "y": 221.748,
       "functions": [],
       "capabilities": [
         "digital-input",
@@ -116,8 +120,8 @@
       "side": "right",
       "kind": "ground",
       "gpio": null,
-      "x": 282,
-      "y": 208,
+      "x": 284,
+      "y": 245.748,
       "functions": [],
       "capabilities": []
     },
@@ -128,8 +132,8 @@
       "side": "right",
       "kind": "gpio",
       "gpio": 48,
-      "x": 282,
-      "y": 232,
+      "x": 284,
+      "y": 269.748,
       "functions": [
         "SDA"
       ],
@@ -146,8 +150,8 @@
       "side": "right",
       "kind": "gpio",
       "gpio": 47,
-      "x": 282,
-      "y": 256,
+      "x": 284,
+      "y": 293.748,
       "functions": [
         "SCL"
       ],
@@ -164,8 +168,8 @@
       "side": "right",
       "kind": "gpio",
       "gpio": 46,
-      "x": 282,
-      "y": 280,
+      "x": 284,
+      "y": 317.748,
       "functions": [
         "D2"
       ],
@@ -182,8 +186,8 @@
       "side": "right",
       "kind": "gpio",
       "gpio": 45,
-      "x": 282,
-      "y": 304,
+      "x": 284,
+      "y": 341.748,
       "functions": [
         "D1"
       ],
@@ -201,8 +205,8 @@
       "side": "right",
       "kind": "ground",
       "gpio": null,
-      "x": 282,
-      "y": 328,
+      "x": 284,
+      "y": 365.748,
       "functions": [],
       "capabilities": []
     },
@@ -213,8 +217,8 @@
       "side": "right",
       "kind": "gpio",
       "gpio": 42,
-      "x": 282,
-      "y": 352,
+      "x": 284,
+      "y": 389.748,
       "functions": [
         "D3"
       ],
@@ -231,8 +235,8 @@
       "side": "right",
       "kind": "gpio",
       "gpio": 41,
-      "x": 282,
-      "y": 376,
+      "x": 284,
+      "y": 413.748,
       "functions": [
         "D0"
       ],
@@ -249,8 +253,8 @@
       "side": "right",
       "kind": "gpio",
       "gpio": 40,
-      "x": 282,
-      "y": 400,
+      "x": 284,
+      "y": 437.748,
       "functions": [
         "D4"
       ],
@@ -267,8 +271,8 @@
       "side": "right",
       "kind": "gpio",
       "gpio": 39,
-      "x": 282,
-      "y": 424,
+      "x": 284,
+      "y": 461.748,
       "functions": [
         "PCLK"
       ],
@@ -285,8 +289,8 @@
       "side": "right",
       "kind": "ground",
       "gpio": null,
-      "x": 282,
-      "y": 448,
+      "x": 284,
+      "y": 485.748,
       "functions": [],
       "capabilities": []
     },
@@ -297,8 +301,8 @@
       "side": "right",
       "kind": "gpio",
       "gpio": 38,
-      "x": 282,
-      "y": 472,
+      "x": 284,
+      "y": 509.748,
       "functions": [
         "D5"
       ],
@@ -315,8 +319,8 @@
       "side": "right",
       "kind": "gpio",
       "gpio": 37,
-      "x": 282,
-      "y": 496,
+      "x": 284,
+      "y": 533.748,
       "functions": [],
       "capabilities": [
         "digital-input",
@@ -331,8 +335,8 @@
       "side": "right",
       "kind": "gpio",
       "gpio": 36,
-      "x": 282,
-      "y": 520,
+      "x": 284,
+      "y": 557.748,
       "functions": [],
       "capabilities": [
         "digital-input",
@@ -347,8 +351,8 @@
       "side": "right",
       "kind": "gpio",
       "gpio": 35,
-      "x": 282,
-      "y": 544,
+      "x": 284,
+      "y": 581.748,
       "functions": [],
       "capabilities": [
         "digital-input",
@@ -363,8 +367,8 @@
       "side": "right",
       "kind": "ground",
       "gpio": null,
-      "x": 282,
-      "y": 568,
+      "x": 284,
+      "y": 605.748,
       "functions": [],
       "capabilities": []
     },
@@ -375,8 +379,8 @@
       "side": "right",
       "kind": "gpio",
       "gpio": 34,
-      "x": 282,
-      "y": 592,
+      "x": 284,
+      "y": 629.748,
       "functions": [],
       "capabilities": [
         "digital-input",
@@ -391,8 +395,8 @@
       "side": "right",
       "kind": "gpio",
       "gpio": 33,
-      "x": 282,
-      "y": 616,
+      "x": 284,
+      "y": 653.748,
       "functions": [],
       "capabilities": [
         "digital-input",
@@ -407,8 +411,8 @@
       "side": "left",
       "kind": "gpio",
       "gpio": 43,
-      "x": 98,
-      "y": 616,
+      "x": 116,
+      "y": 653.748,
       "functions": [],
       "capabilities": [
         "digital-input",
@@ -423,8 +427,8 @@
       "side": "left",
       "kind": "gpio",
       "gpio": 44,
-      "x": 98,
-      "y": 592,
+      "x": 116,
+      "y": 629.748,
       "functions": [],
       "capabilities": [
         "digital-input",
@@ -439,8 +443,8 @@
       "side": "left",
       "kind": "ground",
       "gpio": null,
-      "x": 98,
-      "y": 568,
+      "x": 116,
+      "y": 605.748,
       "functions": [],
       "capabilities": []
     },
@@ -451,8 +455,8 @@
       "side": "left",
       "kind": "gpio",
       "gpio": 0,
-      "x": 98,
-      "y": 544,
+      "x": 116,
+      "y": 581.748,
       "functions": [],
       "capabilities": [
         "digital-input",
@@ -467,8 +471,8 @@
       "side": "left",
       "kind": "gpio",
       "gpio": 1,
-      "x": 98,
-      "y": 520,
+      "x": 116,
+      "y": 557.748,
       "functions": [
         "VSYNC"
       ],
@@ -485,8 +489,8 @@
       "side": "left",
       "kind": "gpio",
       "gpio": 2,
-      "x": 98,
-      "y": 496,
+      "x": 116,
+      "y": 533.748,
       "functions": [
         "HREF"
       ],
@@ -503,8 +507,8 @@
       "side": "left",
       "kind": "gpio",
       "gpio": 3,
-      "x": 98,
-      "y": 472,
+      "x": 116,
+      "y": 509.748,
       "functions": [
         "XCLK"
       ],
@@ -522,8 +526,8 @@
       "side": "left",
       "kind": "ground",
       "gpio": null,
-      "x": 98,
-      "y": 448,
+      "x": 116,
+      "y": 485.748,
       "functions": [],
       "capabilities": []
     },
@@ -534,8 +538,8 @@
       "side": "left",
       "kind": "gpio",
       "gpio": 15,
-      "x": 98,
-      "y": 424,
+      "x": 116,
+      "y": 461.748,
       "functions": [
         "D6"
       ],
@@ -552,8 +556,8 @@
       "side": "left",
       "kind": "control",
       "gpio": null,
-      "x": 98,
-      "y": 400,
+      "x": 116,
+      "y": 437.748,
       "functions": [],
       "capabilities": []
     },
@@ -564,8 +568,8 @@
       "side": "left",
       "kind": "gpio",
       "gpio": 18,
-      "x": 98,
-      "y": 376,
+      "x": 116,
+      "y": 413.748,
       "functions": [
         "D7"
       ],
@@ -582,8 +586,8 @@
       "side": "left",
       "kind": "gpio",
       "gpio": 16,
-      "x": 98,
-      "y": 352,
+      "x": 116,
+      "y": 389.748,
       "functions": [
         "Возможный VSYNC jumper"
       ],
@@ -600,8 +604,8 @@
       "side": "left",
       "kind": "ground",
       "gpio": null,
-      "x": 98,
-      "y": 328,
+      "x": 116,
+      "y": 365.748,
       "functions": [],
       "capabilities": []
     },
@@ -612,8 +616,8 @@
       "side": "left",
       "kind": "gpio",
       "gpio": 17,
-      "x": 98,
-      "y": 304,
+      "x": 116,
+      "y": 341.748,
       "functions": [],
       "capabilities": [
         "digital-input",
@@ -627,8 +631,8 @@
       "side": "left",
       "kind": "gpio",
       "gpio": 21,
-      "x": 98,
-      "y": 280,
+      "x": 116,
+      "y": 317.748,
       "functions": [],
       "capabilities": [
         "digital-input",
@@ -643,8 +647,8 @@
       "side": "left",
       "kind": "power",
       "gpio": null,
-      "x": 98,
-      "y": 256,
+      "x": 116,
+      "y": 293.748,
       "functions": [],
       "capabilities": [],
       "voltage": 3.3
@@ -656,8 +660,8 @@
       "side": "left",
       "kind": "control",
       "gpio": null,
-      "x": 98,
-      "y": 232,
+      "x": 116,
+      "y": 269.748,
       "functions": [],
       "capabilities": []
     },
@@ -668,8 +672,8 @@
       "side": "left",
       "kind": "ground",
       "gpio": null,
-      "x": 98,
-      "y": 208,
+      "x": 116,
+      "y": 245.748,
       "functions": [],
       "capabilities": []
     },
@@ -680,8 +684,8 @@
       "side": "left",
       "kind": "power",
       "gpio": null,
-      "x": 98,
-      "y": 184,
+      "x": 116,
+      "y": 221.748,
       "functions": [],
       "capabilities": [],
       "voltage": 5
@@ -693,8 +697,8 @@
       "side": "left",
       "kind": "power",
       "gpio": null,
-      "x": 98,
-      "y": 160,
+      "x": 116,
+      "y": 197.748,
       "functions": [],
       "capabilities": [],
       "voltage": 5
@@ -742,28 +746,22 @@
   "routing": {
     "keepOutAreas": [
       {
-        "x": 153,
-        "y": 22,
-        "width": 74,
-        "height": 70
+        "x": 158.425,
+        "y": 8,
+        "width": 83.15,
+        "height": 82.205
       },
       {
-        "x": 132,
-        "y": 175,
-        "width": 116,
-        "height": 99
+        "x": 156.535,
+        "y": 310.472,
+        "width": 88.819,
+        "height": 88.819
       },
       {
-        "x": 149,
-        "y": 321,
-        "width": 82,
-        "height": 84
-      },
-      {
-        "x": 140,
-        "y": 500,
-        "width": 100,
-        "height": 118
+        "x": 141.417,
+        "y": 548.583,
+        "width": 117.165,
+        "height": 64.252
       }
     ]
   },

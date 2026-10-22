@@ -1,6 +1,6 @@
 [package]
 name = "clex-flow"
-version = "0.1.7"
+version = "0.1.8"
 description = "CLEX Flow – Visual Microcontroller Studio"
 edition = "2021"
 license = "MIT"

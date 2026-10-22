@@ -91,6 +91,7 @@
   "compatibility": {
     "projectFormat": 3,
     "targets": [
+      "esp32",
       "esp32s3"
     ],
     "espIdf": "5.4.4"

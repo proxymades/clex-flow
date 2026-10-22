@@ -10,7 +10,7 @@
   "verificationNote": "Документированный профиль v1.1 N8R8. Сверьте маркировку своей платы; другие ревизии имеют отличия.",
   "description": "Два разъема J1/J3. Octal PSRAM: GPIO35-37 заняты; RGB: GPIO38.",
   "svg": "esp32-s3-devkitc-1.svg",
-  "width": 380,
+  "width": 440,
   "height": 750,
   "orientation": "Вид со стороны компонентов: антенна сверху, USB снизу. J1 слева, J3 справа; нумерация сверху вниз.",
   "sources": [
@@ -46,7 +46,7 @@
       "side": "left",
       "kind": "power",
       "gpio": null,
-      "x": 98,
+      "x": 116,
       "y": 120,
       "functions": [],
       "capabilities": [],
@@ -60,7 +60,7 @@
       "side": "left",
       "kind": "power",
       "gpio": null,
-      "x": 98,
+      "x": 116,
       "y": 144,
       "functions": [],
       "capabilities": [],
@@ -74,7 +74,7 @@
       "side": "left",
       "kind": "control",
       "gpio": null,
-      "x": 98,
+      "x": 116,
       "y": 168,
       "functions": [],
       "capabilities": [],
@@ -87,7 +87,7 @@
       "side": "left",
       "kind": "gpio",
       "gpio": 4,
-      "x": 98,
+      "x": 116,
       "y": 192,
       "functions": [],
       "capabilities": [
@@ -103,7 +103,7 @@
       "side": "left",
       "kind": "gpio",
       "gpio": 5,
-      "x": 98,
+      "x": 116,
       "y": 216,
       "functions": [],
       "capabilities": [
@@ -119,7 +119,7 @@
       "side": "left",
       "kind": "gpio",
       "gpio": 6,
-      "x": 98,
+      "x": 116,
       "y": 240,
       "functions": [],
       "capabilities": [
@@ -135,7 +135,7 @@
       "side": "left",
       "kind": "gpio",
       "gpio": 7,
-      "x": 98,
+      "x": 116,
       "y": 264,
       "functions": [],
       "capabilities": [
@@ -151,7 +151,7 @@
       "side": "left",
       "kind": "gpio",
       "gpio": 15,
-      "x": 98,
+      "x": 116,
       "y": 288,
       "functions": [],
       "capabilities": [
@@ -167,7 +167,7 @@
       "side": "left",
       "kind": "gpio",
       "gpio": 16,
-      "x": 98,
+      "x": 116,
       "y": 312,
       "functions": [],
       "capabilities": [
@@ -183,7 +183,7 @@
       "side": "left",
       "kind": "gpio",
       "gpio": 17,
-      "x": 98,
+      "x": 116,
       "y": 336,
       "functions": [],
       "capabilities": [
@@ -199,7 +199,7 @@
       "side": "left",
       "kind": "gpio",
       "gpio": 18,
-      "x": 98,
+      "x": 116,
       "y": 360,
       "functions": [],
       "capabilities": [
@@ -215,7 +215,7 @@
       "side": "left",
       "kind": "gpio",
       "gpio": 8,
-      "x": 98,
+      "x": 116,
       "y": 384,
       "functions": [],
       "capabilities": [
@@ -231,7 +231,7 @@
       "side": "left",
       "kind": "gpio",
       "gpio": 3,
-      "x": 98,
+      "x": 116,
       "y": 408,
       "functions": [],
       "capabilities": [
@@ -248,7 +248,7 @@
       "side": "left",
       "kind": "gpio",
       "gpio": 46,
-      "x": 98,
+      "x": 116,
       "y": 432,
       "functions": [],
       "capabilities": [
@@ -264,7 +264,7 @@
       "side": "left",
       "kind": "gpio",
       "gpio": 9,
-      "x": 98,
+      "x": 116,
       "y": 456,
       "functions": [],
       "capabilities": [
@@ -280,7 +280,7 @@
       "side": "left",
       "kind": "gpio",
       "gpio": 10,
-      "x": 98,
+      "x": 116,
       "y": 480,
       "functions": [],
       "capabilities": [
@@ -296,7 +296,7 @@
       "side": "left",
       "kind": "gpio",
       "gpio": 11,
-      "x": 98,
+      "x": 116,
       "y": 504,
       "functions": [],
       "capabilities": [
@@ -312,7 +312,7 @@
       "side": "left",
       "kind": "gpio",
       "gpio": 12,
-      "x": 98,
+      "x": 116,
       "y": 528,
       "functions": [],
       "capabilities": [
@@ -328,7 +328,7 @@
       "side": "left",
       "kind": "gpio",
       "gpio": 13,
-      "x": 98,
+      "x": 116,
       "y": 552,
       "functions": [],
       "capabilities": [
@@ -344,7 +344,7 @@
       "side": "left",
       "kind": "gpio",
       "gpio": 14,
-      "x": 98,
+      "x": 116,
       "y": 576,
       "functions": [],
       "capabilities": [
@@ -360,7 +360,7 @@
       "side": "left",
       "kind": "power",
       "gpio": null,
-      "x": 98,
+      "x": 116,
       "y": 600,
       "functions": [],
       "capabilities": [],
@@ -374,7 +374,7 @@
       "side": "left",
       "kind": "ground",
       "gpio": null,
-      "x": 98,
+      "x": 116,
       "y": 624,
       "functions": [],
       "capabilities": [],
@@ -387,7 +387,7 @@
       "side": "right",
       "kind": "ground",
       "gpio": null,
-      "x": 282,
+      "x": 324,
       "y": 120,
       "functions": [],
       "capabilities": [],
@@ -400,7 +400,7 @@
       "side": "right",
       "kind": "gpio",
       "gpio": 43,
-      "x": 282,
+      "x": 324,
       "y": 144,
       "functions": [],
       "capabilities": [
@@ -417,7 +417,7 @@
       "side": "right",
       "kind": "gpio",
       "gpio": 44,
-      "x": 282,
+      "x": 324,
       "y": 168,
       "functions": [],
       "capabilities": [
@@ -434,7 +434,7 @@
       "side": "right",
       "kind": "gpio",
       "gpio": 1,
-      "x": 282,
+      "x": 324,
       "y": 192,
       "functions": [],
       "capabilities": [
@@ -450,7 +450,7 @@
       "side": "right",
       "kind": "gpio",
       "gpio": 2,
-      "x": 282,
+      "x": 324,
       "y": 216,
       "functions": [],
       "capabilities": [
@@ -466,7 +466,7 @@
       "side": "right",
       "kind": "gpio",
       "gpio": 42,
-      "x": 282,
+      "x": 324,
       "y": 240,
       "functions": [],
       "capabilities": [
@@ -482,7 +482,7 @@
       "side": "right",
       "kind": "gpio",
       "gpio": 41,
-      "x": 282,
+      "x": 324,
       "y": 264,
       "functions": [],
       "capabilities": [
@@ -498,7 +498,7 @@
       "side": "right",
       "kind": "gpio",
       "gpio": 40,
-      "x": 282,
+      "x": 324,
       "y": 288,
       "functions": [],
       "capabilities": [
@@ -514,7 +514,7 @@
       "side": "right",
       "kind": "gpio",
       "gpio": 39,
-      "x": 282,
+      "x": 324,
       "y": 312,
       "functions": [],
       "capabilities": [
@@ -530,7 +530,7 @@
       "side": "right",
       "kind": "gpio",
       "gpio": 38,
-      "x": 282,
+      "x": 324,
       "y": 336,
       "functions": [],
       "capabilities": [
@@ -547,7 +547,7 @@
       "side": "right",
       "kind": "gpio",
       "gpio": 37,
-      "x": 282,
+      "x": 324,
       "y": 360,
       "functions": [],
       "capabilities": [
@@ -564,7 +564,7 @@
       "side": "right",
       "kind": "gpio",
       "gpio": 36,
-      "x": 282,
+      "x": 324,
       "y": 384,
       "functions": [],
       "capabilities": [
@@ -581,7 +581,7 @@
       "side": "right",
       "kind": "gpio",
       "gpio": 35,
-      "x": 282,
+      "x": 324,
       "y": 408,
       "functions": [],
       "capabilities": [
@@ -598,7 +598,7 @@
       "side": "right",
       "kind": "gpio",
       "gpio": 0,
-      "x": 282,
+      "x": 324,
       "y": 432,
       "functions": [],
       "capabilities": [
@@ -615,7 +615,7 @@
       "side": "right",
       "kind": "gpio",
       "gpio": 45,
-      "x": 282,
+      "x": 324,
       "y": 456,
       "functions": [],
       "capabilities": [
@@ -632,7 +632,7 @@
       "side": "right",
       "kind": "gpio",
       "gpio": 48,
-      "x": 282,
+      "x": 324,
       "y": 480,
       "functions": [],
       "capabilities": [
@@ -648,7 +648,7 @@
       "side": "right",
       "kind": "gpio",
       "gpio": 47,
-      "x": 282,
+      "x": 324,
       "y": 504,
       "functions": [],
       "capabilities": [
@@ -664,7 +664,7 @@
       "side": "right",
       "kind": "gpio",
       "gpio": 21,
-      "x": 282,
+      "x": 324,
       "y": 528,
       "functions": [],
       "capabilities": [
@@ -680,7 +680,7 @@
       "side": "right",
       "kind": "gpio",
       "gpio": 20,
-      "x": 282,
+      "x": 324,
       "y": 552,
       "functions": [],
       "capabilities": [
@@ -697,7 +697,7 @@
       "side": "right",
       "kind": "gpio",
       "gpio": 19,
-      "x": 282,
+      "x": 324,
       "y": 576,
       "functions": [],
       "capabilities": [
@@ -714,7 +714,7 @@
       "side": "right",
       "kind": "ground",
       "gpio": null,
-      "x": 282,
+      "x": 324,
       "y": 600,
       "functions": [],
       "capabilities": [],
@@ -727,7 +727,7 @@
       "side": "right",
       "kind": "ground",
       "gpio": null,
-      "x": 282,
+      "x": 324,
       "y": 624,
       "functions": [],
       "capabilities": [],
@@ -755,28 +755,34 @@
   "routing": {
     "keepOutAreas": [
       {
-        "x": 126,
-        "y": 105,
-        "width": 128,
-        "height": 165
+        "x": 136,
+        "y": 44,
+        "width": 168,
+        "height": 236
       },
       {
-        "x": 146,
-        "y": 390,
-        "width": 86,
-        "height": 71
+        "x": 197,
+        "y": 325,
+        "width": 66,
+        "height": 53
       },
       {
-        "x": 117,
-        "y": 639,
-        "width": 60,
-        "height": 81
+        "x": 205,
+        "y": 495,
+        "width": 39,
+        "height": 38
       },
       {
-        "x": 203,
-        "y": 639,
-        "width": 60,
-        "height": 81
+        "x": 128,
+        "y": 636,
+        "width": 66,
+        "height": 68
+      },
+      {
+        "x": 252,
+        "y": 636,
+        "width": 66,
+        "height": 68
       }
     ]
   },

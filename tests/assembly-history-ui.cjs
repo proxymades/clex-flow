@@ -1,0 +1,147 @@
+/* global document */
+const assert = require('node:assert/strict');
+const fs = require('node:fs/promises');
+const { chromium } = require('playwright');
+(async () => {
+  const { displayProject } = await import('./display-fixture.js');
+  const { catalog, led, timer } = await import('./catalog-fixture.js');
+  const { addHardware } = await import('../src/assembly/model.js');
+  const { serializeProject } = await import('../src/projects/model.js');
+  const project = addHardware(displayProject(), led, catalog);
+  const display = project.components[0], lamp = project.components[1], wireId = project.assembly.connections[0].id;
+  const browser = await chromium.launch({ headless: true, executablePath: process.env.CLEX_BROWSER_EXECUTABLE });
+  const page = await browser.newPage({ viewport: { width: 1600, height: 1100 } });
+  const errors = [];
+  page.on('pageerror', error => errors.push(error.message));
+  const undo = page.getByRole('button', { name: 'Отменить изменение монтажа', exact: true });
+  const redo = page.getByRole('button', { name: 'Повторить изменение монтажа', exact: true });
+  const node = id => page.locator('.react-flow__node[data-id="' + id + '"]');
+  const wire = id => page.locator('.physical-wire[data-wire="' + id + '"]');
+  const select = async id => { await node(id).locator('.assembly-hardware-node').focus(); await page.keyboard.press('Enter'); };
+  const blur = () => page.evaluate(() => document.activeElement?.blur());
+  const save = async () => {
+    const button = page.getByRole('button', { name: 'Сохранить', exact: true });
+    if (!(await button.isDisabled())) await button.click();
+    await page.waitForFunction(() => [...document.querySelectorAll('button')].some(button => button.textContent === 'Сохранить' && button.disabled));
+    const value = await page.evaluate(() => JSON.parse(Object.values(JSON.parse(localStorage.getItem('clex-flow:projects:v1')))[0]));
+    serializeProject(value);
+    return value;
+  };
+  try {
+    await fs.mkdir('.artifacts', { recursive: true });
+    await page.addInitScript(p => {
+      if (!localStorage.getItem('clex-flow:projects:v1')) localStorage.setItem('clex-flow:projects:v1', JSON.stringify({ [p.id]: JSON.stringify(p) }));
+    }, project);
+    await page.goto(process.env.CLEX_PREVIEW_URL || 'http://127.0.0.1:1434');
+    await page.locator('.project-open').click();
+    await page.getByRole('button', { name: 'Монтаж', exact: true }).click();
+    await page.locator('.assembly-flow-region[data-ready="true"]').waitFor();
+    assert.equal(await undo.isDisabled(), true);
+
+    await select(display.id);
+    await blur(); await page.keyboard.press('Backspace');
+    assert.equal(await node(display.id).count(), 0);
+    let value = await save();
+    assert.equal(value.screens[display.id], undefined);
+    assert.equal(value.assembly.connections.length, 0);
+    await select(lamp.id);
+    await page.getByRole('textbox', { name: 'Название компонента', exact: true }).focus();
+    await page.keyboard.press('Meta+z');
+    assert.equal(await node(display.id).count(), 0, 'input focus protects project history');
+    await blur(); await page.keyboard.press('Meta+z');
+    await node(display.id).waitFor();
+    value = await save();
+    assert.deepEqual(value.screens[display.id], project.screens[display.id]);
+    assert.deepEqual(value.gpioAssignments, project.gpioAssignments);
+    await blur(); await page.keyboard.press('Meta+Shift+z');
+    assert.equal(await node(display.id).count(), 0);
+    await undo.click(); await node(display.id).waitFor();
+    value = await save();
+    assert.deepEqual(value.assembly.connections, project.assembly.connections);
+
+    await wire(wireId).focus(); await page.keyboard.press('Enter');
+    const handle = wire(wireId).locator('.wire-bend-control').first();
+    await handle.waitFor();
+    const vertical = await handle.evaluate(element => element.style.cursor === 'ns-resize');
+    await handle.focus(); await page.keyboard.press(vertical ? 'ArrowDown' : 'ArrowRight');
+    value = await save();
+    assert.ok(value.assembly.connections.find(item => item.id === wireId).route?.length);
+    await blur(); await page.keyboard.press('Control+z');
+    value = await save();
+    assert.equal(value.assembly.connections.find(item => item.id === wireId).route, undefined);
+    await blur(); await page.keyboard.press('Control+y');
+    value = await save();
+    const manualRoute = value.assembly.connections.find(item => item.id === wireId).route;
+    assert.ok(manualRoute?.length);
+
+    await wire(wireId).focus(); await page.keyboard.press('Enter'); await page.keyboard.press('Delete');
+    assert.equal(await wire(wireId).count(), 0);
+    await undo.click(); await wire(wireId).waitFor();
+    value = await save();
+    assert.deepEqual(value.assembly.connections.find(item => item.id === wireId).route, manualRoute);
+
+    await wire(wireId).focus(); await page.keyboard.press('Enter');
+    await page.getByRole('button', { name: 'Автоматический маршрут', exact: true }).click();
+    value = await save();
+    assert.equal(value.assembly.connections.find(item => item.id === wireId).route, undefined);
+    await undo.click();
+    value = await save();
+    assert.deepEqual(value.assembly.connections.find(item => item.id === wireId).route, manualRoute);
+
+    const before = await save(), box = await node(display.id).boundingBox();
+    await page.mouse.move(box.x + 70, box.y + 30);
+    await page.mouse.down(); await page.mouse.move(box.x + 150, box.y + 75, { steps: 12 }); await page.mouse.up();
+    const moved = await save();
+    assert.notDeepEqual(moved.assembly.positions[display.id], before.assembly.positions[display.id]);
+    await page.getByRole('button', { name: 'Уменьшить монтаж', exact: true }).click();
+    const zoomed = await save();
+    await undo.click();
+    value = await save();
+    assert.deepEqual(value.assembly.positions, before.assembly.positions, 'drag is one history step');
+    assert.deepEqual(value.assembly.connections, before.assembly.connections, 'routes undo with movement');
+    assert.deepEqual(value.assembly.viewport, zoomed.assembly.viewport, 'zoom remains after undo');
+    await redo.click();
+    value = await save();
+    assert.deepEqual(value.assembly.positions, moved.assembly.positions);
+
+    await page.getByRole('button', { name: 'Добавить: ' + led.name, exact: true }).click();
+    const added = await save();
+    assert.equal(added.components.length, project.components.length + 1);
+    await page.getByRole('button', { name: 'Логика', exact: true }).click();
+    await page.getByRole('button', { name: 'Добавить блок: ' + timer.name, exact: true }).click();
+    const logic = (await save()).logic;
+    await page.getByRole('button', { name: 'Монтаж', exact: true }).click();
+    await undo.click();
+    value = await save();
+    assert.deepEqual(value.logic, logic, 'assembly undo preserves later logic changes');
+    assert.equal(value.components.length, project.components.length);
+    await page.getByRole('button', { name: 'Логика', exact: true }).click();
+    await blur(); await page.keyboard.press('Control+z');
+    value = await save();
+    assert.equal(value.logic.nodes.length, project.logic.nodes.length, 'logic history still works');
+    await page.getByRole('button', { name: 'Монтаж', exact: true }).click();
+    assert.equal(await redo.isEnabled(), true);
+    await redo.click();
+    await page.getByRole('button', { name: 'Добавить: ' + led.name, exact: true }).click();
+    assert.equal(await redo.isDisabled(), true);
+    const latest = await save(), latestId = latest.components.at(-1).id;
+    await select(latestId);
+    await page.getByRole('textbox', { name: 'Название компонента', exact: true }).fill('Свет в кадре');
+    await blur(); await page.keyboard.press('Control+z');
+    value = await save();
+    assert.equal(value.components.find(item => item.id === latestId).name, latest.components.at(-1).name);
+    await select(latestId);
+    await page.getByRole('combobox', { name: 'Сторона контакта: Анод через R', exact: true }).selectOption('right');
+    value = await save();
+    assert.equal(value.assembly.portSides[latestId].anode, 'right');
+    await blur(); await page.keyboard.press('Meta+z');
+    value = await save();
+    assert.deepEqual(value.assembly.portSides, latest.assembly.portSides);
+    await page.screenshot({ path: '.artifacts/assembly-history.png' });
+    assert.deepEqual(errors, []);
+    console.log('Assembly Undo/Redo UI passed: deletion/screens/GPIO, wire routing, drag, zoom, shortcuts, input focus, independent logic history.');
+  } catch (error) {
+    await page.screenshot({ path: '.artifacts/assembly-history-failure.png' });
+    throw error;
+  } finally { await browser.close(); }
+})().catch(error => { console.error(error); process.exitCode = 1; });

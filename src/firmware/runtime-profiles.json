@@ -149,5 +149,47 @@
     "requires": [],
     "config": "",
     "partitions": "nvs,data,nvs,0x9000,0x5000\notadata,data,ota,0xe000,0x2000\nphy_init,data,phy,0x10000,0x1000\nota_0,app,ota_0,0x20000,0x300000\nota_1,app,ota_1,0x320000,0x300000\n"
+  },
+  "espnow-esp32": {
+    "target": "esp32",
+    "dependencies": {},
+    "requires": [
+      "esp_wifi",
+      "esp_event",
+      "esp_netif",
+      "nvs_flash",
+      "esp_hw_support",
+      "mbedtls"
+    ],
+    "config": "CONFIG_ESP_WIFI_ESPNOW_MAX_ENCRYPT_NUM=6\nCONFIG_PARTITION_TABLE_CUSTOM=y\nCONFIG_PARTITION_TABLE_CUSTOM_FILENAME=\"partitions.csv\"\n",
+    "partitions": "nvs,data,nvs,0x9000,0x6000\nphy_init,data,phy,0xf000,0x1000\nfactory,app,factory,0x10000,0x300000\n"
+  },
+  "stepper-esp32": {
+    "target": "esp32",
+    "config": "",
+    "requires": [
+      "esp_driver_gptimer"
+    ],
+    "dependencies": {}
+  },
+  "router-esp32": {
+    "target": "esp32",
+    "dependencies": {},
+    "requires": [
+      "esp_wifi",
+      "esp_event",
+      "esp_netif",
+      "esp_eth",
+      "esp_http_client",
+      "esp_http_server",
+      "app_update",
+      "nvs_flash",
+      "mbedtls",
+      "json",
+      "lwip",
+      "http_parser"
+    ],
+    "config": "CONFIG_LWIP_IP_FORWARD=y\nCONFIG_LWIP_IPV4_NAPT=y\nCONFIG_LWIP_IPV4_NAPT_PORTMAP=y\nCONFIG_LWIP_TCPIP_CORE_LOCKING=y\nCONFIG_LWIP_DHCPS=y\nCONFIG_LWIP_DHCPS_ADD_DNS=y\nCONFIG_LWIP_DHCPS_MAX_STATION_NUM=10\nCONFIG_ESP_WIFI_SOFTAP_SUPPORT=y\nCONFIG_ESP_WIFI_SOFTAP_SAE_SUPPORT=y\nCONFIG_ESP_WIFI_ENABLE_WPA3_SAE=y\nCONFIG_MBEDTLS_CERTIFICATE_BUNDLE=y\nCONFIG_MBEDTLS_CERTIFICATE_BUNDLE_DEFAULT_FULL=y\nCONFIG_PARTITION_TABLE_CUSTOM=y\nCONFIG_PARTITION_TABLE_CUSTOM_FILENAME=\"partitions.csv\"\nCONFIG_HTTPD_MAX_REQ_HDR_LEN=1024\nCONFIG_HTTPD_MAX_URI_LEN=128\nCONFIG_ESP_NETIF_SET_DNS_PER_DEFAULT_NETIF=y\n",
+    "partitions": "nvs,data,nvs,0x9000,0x6000\nphy_init,data,phy,0xf000,0x1000\nfactory,app,factory,0x10000,0x300000\n"
   }
 }

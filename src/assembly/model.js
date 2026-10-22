@@ -79,6 +79,7 @@ export function connectionProblem(project, catalog, componentId, terminalId, pin
   if (restriction) return restriction;
   const capability = terminal.kind === 'gpio-output' ? 'digital-output' : terminal.kind === 'gpio-input' ? 'digital-input' : null;
   if (!capability || !pin.capabilities.includes(capability)) return 'GPIO не поддерживает требуемое направление цифрового интерфейса.';
+  if (capability==='digital-input' && pin.internalPulls===false && ['up','down'].includes(component.parameters.pull)) return 'У этого GPIO нет внутренней подтяжки. Выберите другой вход для компонента с внутренней подтяжкой.';
   const conflict = project.assembly.connections.find(wire => {
     if (wire.componentId === componentId && wire.terminalId === terminalId) return false;
     return lookup(board.pins, wire.boardPinId)?.gpio === pin.gpio;
@@ -183,7 +184,7 @@ export function validateAssembly(project, catalog) {
   if(project.components.filter(c=>c.moduleId===ESPNOW_MODULE).length>1)issue('error','espnow-duplicate','В проекте поддерживается один ESP-NOW-интерфейс платы.');
   if (!board) { issue('error', 'board-missing', 'Плата отсутствует в каталоге.'); return issues; }
   if (!board.pins.length) issue('error', 'board-generic', 'Выберите конкретную плату. Общая ESP32-S3 не имеет распиновки.');
-  else if (!board.pinoutVerified) issue('warning', 'revision-unconfirmed', 'Ревизия ESP32-S3-ETH не подтверждена. Сверьте физическую плату с документацией профиля.');
+  else if (!board.pinoutVerified) issue('warning', 'revision-unconfirmed', `Ревизия ${board.name} не подтверждена. Сверьте физическую плату с документацией профиля.`);
   for (const [key, option] of Object.entries(board.options || {})) {
     const value = project.boardSettings?.[key] || option.default;
     if (!option.values.some(item => item.value === value)) issue('error', 'board-option', `Неизвестное значение настройки «${option.label}».`);

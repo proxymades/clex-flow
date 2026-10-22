@@ -43,7 +43,7 @@ export function generateFirmware(project, catalog, consoleMode = 'usb') {
   if (errors.length) throw new Error(`Исправьте схему перед сборкой:\n${errors.map(issue=>issue.message).join('\n')}`);
   const board = boardFor(project,catalog);
   if(board.platform==='arduino-avr')return generateArduinoAvr(project,catalog,board,cString,issues);
-  if (board.platform !== 'esp-idf' || !board.firmware || !['esp32s3','esp32p4'].includes(board.target)) throw new Error('Для платы нет реализованного профиля генератора.');
+  if (board.platform !== 'esp-idf' || !board.firmware || !['esp32','esp32s3','esp32p4'].includes(board.target)) throw new Error('Для платы нет реализованного профиля генератора.');
   const modes = board.firmware.consoleModes;
   if (!modes.includes(consoleMode)) consoleMode = modes[0];
   const boardRevision = board.firmware.revisionConfigs ? project.boardSettings.chipRevision || board.options.chipRevision.default : null;
@@ -55,7 +55,7 @@ export function generateFirmware(project, catalog, consoleMode = 'usb') {
   const network=networkFirmware(project,catalog,nodes,index,cString);
   const router=routerFirmware(project,catalog,nodes,index,cString);
   const temperature=temperatureFirmware(nodes,index,board.target);
-  const espnow=espNowFirmware(project,nodes,index,cString,Boolean(network.runtime));
+  const espnow=espNowFirmware(project,nodes,index,cString,Boolean(network.runtime),board.target);
   const stepper=stepperFirmware(project,nodes,index);
   const media=mediaFirmware(project,catalog,nodes,index);
   const stopwatch=stopwatchFirmware(nodes,index);

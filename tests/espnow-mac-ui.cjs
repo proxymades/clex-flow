@@ -3,16 +3,20 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs/promises');
 const { chromium } = require('playwright');
 (async () => {
+ const boardId=process.env.CLEX_TEST_BOARD||null;
+ const {catalog}=await import('./catalog-fixture.js');
+ const target=boardId?catalog.boards.find(board=>board.id===boardId)?.target:'esp32s3';
+ assert.ok(target,'requested board must have a target');
  const stem='espnow-mac-'+Date.now();
  await fs.mkdir('.artifacts/espnow-work',{recursive:true});
  await fs.writeFile('.artifacts/'+stem+'.html',`<html><body><div id="fixture"></div><script type="module" src="/.artifacts/${stem}.jsx"></script></body></html>`);
- await fs.writeFile('.artifacts/'+stem+'.jsx',`import React,{useState}from'react';import{createRoot}from'react-dom/client';import useIdf from'../src/idf/useIdf.js';import EspNowSettings from'../src/espnow/EspNowSettings.jsx';import initialProject from'../examples/espnow-button.clex.json';import'../src/styles.css';function Fixture(){const[project,setProject]=useState(initialProject);const idf=useIdf(project);window.macHook=idf;window.macSetProject=setProject;const[component,setComponent]=useState(project.components[0]),[show,setShow]=useState(true);window.macShowSettings=setShow;return <main style={{padding:24}}><label>Порт платы<select aria-label="Порт платы" value={idf.port} disabled={idf.busy} onChange={event=>idf.setPort(event.target.value)}><option value="">Выберите порт</option>{idf.ports.map(port=><option key={port.path} value={port.path}>{port.path}</option>)}</select></label><div role="alert">{idf.error}</div>{show&&<aside className="workspace-properties" style={{width:320,marginTop:20,border:'1px solid #334158',borderRadius:10}}><EspNowSettings component={component} busy={false} onChange={(id,patch)=>setComponent(value=>({...value,...patch}))} events={idf.events} idf={idf}/></aside>}</main>;}createRoot(document.getElementById('fixture')).render(<Fixture/>);`);
+ await fs.writeFile('.artifacts/'+stem+'.jsx',`import React,{useState}from'react';import{createRoot}from'react-dom/client';import useIdf from'../src/idf/useIdf.js';import EspNowSettings from'../src/espnow/EspNowSettings.jsx';import sourceProject from'../examples/espnow-button.clex.json';import'../src/styles.css';const initialProject=${JSON.stringify(boardId)}?{...sourceProject,boardId:${JSON.stringify(boardId)}}:sourceProject;function Fixture(){const[project,setProject]=useState(initialProject);const idf=useIdf(project);window.macHook=idf;window.macSetProject=setProject;const[component,setComponent]=useState(project.components[0]),[show,setShow]=useState(true);window.macShowSettings=setShow;return <main style={{padding:24}}><label>Порт платы<select aria-label="Порт платы" value={idf.port} disabled={idf.busy} onChange={event=>idf.setPort(event.target.value)}><option value="">Выберите порт</option>{idf.ports.map(port=><option key={port.path} value={port.path}>{port.path}</option>)}</select></label><div role="alert">{idf.error}</div>{show&&<aside className="workspace-properties" style={{width:320,marginTop:20,border:'1px solid #334158',borderRadius:10}}><EspNowSettings component={component} busy={false} onChange={(id,patch)=>setComponent(value=>({...value,...patch}))} events={idf.events} idf={idf}/></aside>}</main>;}createRoot(document.getElementById('fixture')).render(<Fixture/>);`);
  const browser=await chromium.launch({headless:true,executablePath:process.env.CLEX_BROWSER_EXECUTABLE});
  const page=await browser.newPage({viewport:{width:900,height:1000}}),errors=[];
  page.on('pageerror',error=>errors.push(error.message));
- await page.addInitScript(()=>{
+ await page.addInitScript(target=>{
   window.isTauri=true;window.__TAURI_EVENT_PLUGIN_INTERNALS__={unregisterListener:()=>{}};
-  const callbacks=new Map(),listeners=new Map(),environment={target:'esp32s3',sdkVersion:'5.4.4',identity:'mac-test-sdk'};let next=1,sequence=0,job;
+  const callbacks=new Map(),listeners=new Map(),environment={target,sdkVersion:'5.4.4',identity:'mac-test-sdk'};let next=1,sequence=0,job;
   window.macFixture={items:[],reads:[],failure:'',pending:null,monitorCalls:0,copied:'',copyFailure:false};
   Object.defineProperty(navigator,'clipboard',{value:{writeText:async value=>{if(window.macFixture.copyFailure)throw Error('clipboard unavailable');window.macFixture.copied=value;}}});
   const emit=status=>{for(const [id,listener]of listeners)callbacks.get(listener.handler)?.({event:'idf-event',id,payload:{jobId:job.id,sequence:sequence++,operation:'monitor',status,stream:'stdout',text:'fixture'}});};
@@ -25,7 +29,7 @@ const { chromium } = require('playwright');
    if(command==='idf_events')return [];if(command==='idf_cancel'){emit('cancelled');return null;}
    throw Error('Unexpected RPC '+command);
   }};
- });
+ },target);
  try{
   await page.goto((process.env.CLEX_PREVIEW_URL||'http://127.0.0.1:1431')+'/.artifacts/'+stem+'.html');
   await page.waitForFunction(()=>window.macHook?.ready&&window.macHook.compatible&&!window.macHook.checking);

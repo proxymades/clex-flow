@@ -24,7 +24,7 @@
   "constraints": {},
   "compatibility": {
     "projectFormat": 3,
-    "targets": ["esp32s3", "esp32p4", "atmega328p"],
+    "targets": ["esp32","esp32s3", "esp32p4", "atmega328p"],
     "espIdf": "5.4.4",
     "platforms": { "arduino-avr": "1.8.6" }
   },

@@ -118,7 +118,8 @@ pub struct Plan {
     estimated_min: u64,
     estimated_max: u64,
 }
-const TARGETS: [(&str, &str); 3] = [
+const TARGETS: [(&str, &str); 4] = [
+    ("esp32", "ESP32 · ESP-IDF 5.4.4"),
     ("esp32s3", "ESP32-S3 · ESP-IDF 5.4.4"),
     ("esp32p4", "ESP32-P4 · ESP-IDF 5.4.4"),
     (arduino::TARGET, "Arduino Nano · AVR Boards 1.8.6"),
@@ -278,7 +279,8 @@ pub fn sdk_prepare_all(
     if !confirmed {
         return Err("Сначала подтвердите объем загрузки инструментов".into());
     }
-    if targets.len() > 3 || targets.iter().any(|t| !TARGETS.iter().any(|(v, _)| t == v)) {
+    if targets.len() > TARGETS.len() || targets.iter().any(|t| !TARGETS.iter().any(|(v, _)| t == v))
+    {
         return Err("Неизвестная платформа инструментов".into());
     }
     let selected = crate::boards::target(target)?;
@@ -339,7 +341,10 @@ mod tests {
     use super::*;
     #[test]
     fn separate_platform_names() {
-        assert_eq!(TARGETS.len(), 3);
+        assert_eq!(TARGETS.len(), 4);
+        for (target, _) in TARGETS {
+            assert!(crate::boards::compiler(target).is_ok());
+        }
         assert!(!TARGETS.iter().any(|(t, _)| *t == "rp2040"));
     }
     #[test]

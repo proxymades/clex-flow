@@ -131,7 +131,7 @@ impl Paths {
         Ok(())
     }
     pub fn slot_for(&self, version: &str, target: &str) -> Result<PathBuf, String> {
-        if !["esp32s3", "esp32p4"].contains(&target) {
+        if !["esp32", "esp32s3", "esp32p4"].contains(&target) {
             return Err("Для этой платформы используется отдельный установщик".into());
         }
         let slot = self.slot(version)?;
@@ -1007,17 +1007,22 @@ mod tests {
         }
     }
     #[test]
-    fn target_slots_keep_s3_and_p4_owned_and_independent() {
+    fn target_slots_keep_esp32_s3_and_p4_owned_and_independent() {
         let d = tempfile::tempdir().unwrap();
         let p = paths(d.path());
         let s3 = managed_sdk(&p.slot("5.4.4").unwrap(), "5.4.4");
         let p4 = managed_sdk_for(&p.slot_for("5.4.4", "esp32p4").unwrap(), "5.4.4", "esp32p4");
+        let esp32 = managed_sdk_for(&p.slot_for("5.4.4", "esp32").unwrap(), "5.4.4", "esp32");
         let s3_slot = claim_slot(&p, &s3).unwrap();
         let p4_slot = claim_slot(&p, &p4).unwrap();
+        let esp32_slot = claim_slot(&p, &esp32).unwrap();
         assert_ne!(s3_slot, p4_slot);
+        assert_ne!(esp32_slot, s3_slot);
+        assert_ne!(esp32_slot, p4_slot);
         fs::write(s3_slot.join("sentinel"), b"existing S3").unwrap();
         assert_eq!(assert_owned(&p, &s3).unwrap(), s3_slot);
         assert_eq!(assert_owned(&p, &p4).unwrap(), p4_slot);
+        assert_eq!(assert_owned(&p, &esp32).unwrap(), esp32_slot);
         let mut wrong = p4.clone();
         wrong.target = "esp32s3".into();
         assert!(assert_owned(&p, &wrong).is_err());
@@ -1025,6 +1030,7 @@ mod tests {
         fs::remove_dir_all(assert_owned(&p, &p4).unwrap()).unwrap();
         assert_eq!(fs::read(s3_slot.join("sentinel")).unwrap(), b"existing S3");
         assert!(assert_owned(&p, &s3).is_ok());
+        assert!(assert_owned(&p, &esp32).is_ok());
     }
     #[test]
     fn changing_tools_folder_preserves_old_ownership_without_claiming_external_dirs() {

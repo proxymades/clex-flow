@@ -1,0 +1,118 @@
+{
+  "id": "b0561018-f515-4a8d-bcf8-29a492b10fba",
+  "name": "Тест Blink – ESP32 DevKit V1",
+  "description": "Внешний светодиод: GPIO25 → резистор 330 Ом → анод LED; катод → GND. Таймер переключает светодиод каждые 500 мс: 0,5 с включён, 0,5 с выключен. Питание и прошивка платы через USB.",
+  "formatVersion": 3,
+  "createdAt": "2026-10-21T10:34:42.255Z",
+  "updatedAt": "2026-10-21T10:34:42.255Z",
+  "boardId": "doit-esp32-devkit-v1-30pin",
+  "boardSettings": {},
+  "components": [
+    {
+      "id": "8a7208ac-46e1-4d5b-86b1-8c8d27e7ae9c",
+      "moduleId": "clex.hardware.led",
+      "moduleVersion": "1.0.0",
+      "name": "Светодиод GPIO25",
+      "parameters": {
+        "resistorOhms": 330,
+        "forwardVoltage": 2
+      }
+    }
+  ],
+  "gpioAssignments": [
+    {
+      "componentId": "8a7208ac-46e1-4d5b-86b1-8c8d27e7ae9c",
+      "terminalId": "anode",
+      "pinId": "L8",
+      "gpio": 25,
+      "mode": "output"
+    }
+  ],
+  "logic": {
+    "nodes": [
+      {
+        "id": "e7748c79-b3ef-443f-a59d-9b98c898abf9",
+        "moduleId": "clex.logic.timer",
+        "moduleVersion": "1.0.0",
+        "name": "Таймер 500 мс",
+        "position": {
+          "x": 60,
+          "y": 100
+        },
+        "parameters": {
+          "intervalMs": 500
+        }
+      },
+      {
+        "id": "e2326323-7212-44f5-8b03-008438600477",
+        "moduleId": "clex.logic.gpio-toggle",
+        "moduleVersion": "1.0.0",
+        "name": "Переключить светодиод",
+        "position": {
+          "x": 430,
+          "y": 100
+        },
+        "parameters": {
+          "componentId": "8a7208ac-46e1-4d5b-86b1-8c8d27e7ae9c"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "28b6e4cc-6635-426e-ab19-ce6b2a76a57b",
+        "source": "e7748c79-b3ef-443f-a59d-9b98c898abf9",
+        "target": "e2326323-7212-44f5-8b03-008438600477",
+        "sourceHandle": "tick",
+        "targetHandle": "trigger",
+        "dataType": "event"
+      }
+    ],
+    "viewport": {
+      "x": 0,
+      "y": 0,
+      "zoom": 1
+    }
+  },
+  "assembly": {
+    "positions": {
+      "board": {
+        "x": 420,
+        "y": 40
+      },
+      "8a7208ac-46e1-4d5b-86b1-8c8d27e7ae9c": {
+        "x": 60,
+        "y": 250
+      }
+    },
+    "connections": [
+      {
+        "id": "0a393c4c-1ff4-447d-acad-f99ea05e8d5c",
+        "componentId": "8a7208ac-46e1-4d5b-86b1-8c8d27e7ae9c",
+        "terminalId": "anode",
+        "boardPinId": "L8"
+      },
+      {
+        "id": "edf09ccf-6307-4052-b708-2387f13850fa",
+        "componentId": "8a7208ac-46e1-4d5b-86b1-8c8d27e7ae9c",
+        "terminalId": "cathode",
+        "boardPinId": "L14"
+      }
+    ],
+    "viewport": {
+      "x": 0,
+      "y": 0,
+      "zoom": 1
+    },
+    "portSides": {
+      "8a7208ac-46e1-4d5b-86b1-8c8d27e7ae9c": {
+        "anode": "right",
+        "cathode": "right"
+      }
+    }
+  },
+  "moduleVersions": {
+    "clex.hardware.led": "1.0.0",
+    "clex.logic.timer": "1.0.0",
+    "clex.logic.gpio-toggle": "1.0.0"
+  }
+}

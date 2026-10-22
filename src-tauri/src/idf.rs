@@ -786,15 +786,16 @@ pub struct DeviceMac {
     port: String,
 }
 fn mac_read_command(environment: &Environment, port: &str) -> Result<Command, String> {
-    if environment.target != "esp32s3" || environment.arduino.is_some() {
-        return Err("Чтение MAC ESP-NOW доступно для ESP32-S3".into());
+    if !["esp32", "esp32s3"].contains(&environment.target.as_str()) || environment.arduino.is_some()
+    {
+        return Err("Чтение MAC ESP-NOW доступно для ESP32 и ESP32-S3".into());
     }
     let mut cmd = command(environment);
     cmd.args([
         "-m",
         "esptool",
         "--chip",
-        "esp32s3",
+        &environment.target,
         "--port",
         port,
         "--baud",
@@ -1260,40 +1261,67 @@ mod tests {
         }
     }
     #[test]
-    fn espnow_profile_is_s3_only_and_needs_no_downloaded_component() {
-        let mut spec = Specification {
-            board_id: "waveshare-esp32-s3-eth".into(),
-            board_revision: None,
-            feature_runtimes: vec!["espnow-s3".into()],
-            console_mode: "usb".into(),
-            main_c: "source".into(),
-            fingerprint: String::new(),
-            graphics_runtime: None,
-            network_runtime: None,
-        };
-        spec.fingerprint = hash(
-            &serde_json::to_vec(&serde_json::json!([
-                spec.board_id,
-                spec.console_mode,
-                spec.main_c,
-                spec.feature_runtimes
-            ]))
-            .unwrap(),
-        );
-        assert!(verify_specification(&spec).is_ok());
-        let dir = tempfile::tempdir().unwrap();
-        write_project(&dir.path().to_path_buf(), &spec).unwrap();
-        assert!(!dir.path().join("main/idf_component.yml").exists());
-        assert!(dir.path().join("partitions.csv").is_file());
-        assert!(fs::read_to_string(dir.path().join("main/CMakeLists.txt"))
-            .unwrap()
-            .contains("esp_wifi"));
-        spec.board_id = "waveshare-esp32-p4-nano".into();
-        spec.console_mode = "uart".into();
-        spec.board_revision = Some("pre-v3".into());
-        assert!(verify_specification(&spec)
-            .unwrap_err()
-            .contains("профиль драйвера"));
+    fn espnow_profiles_match_the_chip_and_need_no_downloaded_component() {
+        for (board, console, target, runtime, wrong_runtime) in [
+            (
+                "waveshare-esp32-s3-eth",
+                "usb",
+                "esp32s3",
+                "espnow-s3",
+                "espnow-esp32",
+            ),
+            (
+                "doit-esp32-devkit-v1-30pin",
+                "uart",
+                "esp32",
+                "espnow-esp32",
+                "espnow-s3",
+            ),
+        ] {
+            let mut spec = Specification {
+                board_id: board.into(),
+                board_revision: None,
+                feature_runtimes: vec![runtime.into()],
+                console_mode: console.into(),
+                main_c: "source".into(),
+                fingerprint: String::new(),
+                graphics_runtime: None,
+                network_runtime: None,
+            };
+            spec.fingerprint = hash(
+                &serde_json::to_vec(&serde_json::json!([
+                    spec.board_id,
+                    spec.console_mode,
+                    spec.main_c,
+                    spec.feature_runtimes
+                ]))
+                .unwrap(),
+            );
+            assert!(verify_specification(&spec).is_ok());
+            let dir = tempfile::tempdir().unwrap();
+            write_project(&dir.path().to_path_buf(), &spec).unwrap();
+            assert!(!dir.path().join("main/idf_component.yml").exists());
+            let config = fs::read_to_string(dir.path().join("sdkconfig.defaults")).unwrap();
+            assert!(config.contains(&format!("CONFIG_IDF_TARGET=\"{target}\"")));
+            assert!(config.contains("CONFIG_PARTITION_TABLE_CUSTOM=y"));
+            assert!(fs::read_to_string(dir.path().join("partitions.csv"))
+                .unwrap()
+                .contains("factory,app,factory,0x10000,0x300000"));
+            assert!(fs::read_to_string(dir.path().join("main/CMakeLists.txt"))
+                .unwrap()
+                .contains("esp_wifi"));
+            spec.feature_runtimes = vec![wrong_runtime.into()];
+            assert!(verify_specification(&spec)
+                .unwrap_err()
+                .contains("профиль драйвера"));
+            spec.feature_runtimes = vec![runtime.into()];
+            spec.board_id = "waveshare-esp32-p4-nano".into();
+            spec.console_mode = "uart".into();
+            spec.board_revision = Some("pre-v3".into());
+            assert!(verify_specification(&spec)
+                .unwrap_err()
+                .contains("профиль драйвера"));
+        }
     }
     #[test]
     fn graphics_runtime_is_allowlisted_and_part_of_source_identity() {
@@ -1399,28 +1427,31 @@ mod tests {
         let mut environment: Environment = serde_json::from_value(serde_json::json!({
             "target":"esp32s3", "root":"sdk", "python":"python", "toolsPath":"tools", "sdkVersion":"5.4.4", "identity":"test", "version":"test", "compilerVersion":"test", "cmakeVersion":"test", "ninjaVersion":"test", "diagnostics":""
         })).unwrap();
-        let cmd = mac_read_command(&environment, "COM42").unwrap();
-        let args = cmd
-            .get_args()
-            .map(|arg| arg.to_str().unwrap())
-            .collect::<Vec<_>>();
-        assert_eq!(
-            args,
-            [
-                "-m",
-                "esptool",
-                "--chip",
-                "esp32s3",
-                "--port",
-                "COM42",
-                "--baud",
-                "115200",
-                "--no-stub",
-                "--connect-attempts",
-                "3",
-                "read_mac"
-            ]
-        );
+        for target in ["esp32", "esp32s3"] {
+            environment.target = target.into();
+            let cmd = mac_read_command(&environment, "COM42").unwrap();
+            let args = cmd
+                .get_args()
+                .map(|arg| arg.to_str().unwrap())
+                .collect::<Vec<_>>();
+            assert_eq!(
+                args,
+                [
+                    "-m",
+                    "esptool",
+                    "--chip",
+                    target,
+                    "--port",
+                    "COM42",
+                    "--baud",
+                    "115200",
+                    "--no-stub",
+                    "--connect-attempts",
+                    "3",
+                    "read_mac"
+                ]
+            );
+        }
         environment.target = "esp32p4".into();
         assert!(mac_read_command(&environment, "COM42").is_err());
         environment.target = "arduino-avr".into();

@@ -1,9 +1,138 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="380" height="700" viewBox="0 0 380 700">
-<defs><linearGradient id="nano-pcb" x2="1" y2="1"><stop stop-color="#204c64"/><stop offset="1" stop-color="#123246"/></linearGradient><linearGradient id="nano-metal" x2="0" y2="1"><stop stop-color="#bbc7d1"/><stop offset="1" stop-color="#485c70"/></linearGradient></defs>
-<rect x="100" y="45" width="180" height="600" rx="14" fill="url(#nano-pcb)" stroke="#5f93ac" stroke-width="2"/>
-<g fill="#0c1821" stroke="#6c8e9e"><circle cx="118" cy="65" r="6"/><circle cx="262" cy="65" r="6"/><circle cx="118" cy="625" r="6"/><circle cx="262" cy="625" r="6"/></g>
-<rect x="151" y="38" width="78" height="58" rx="12" fill="url(#nano-metal)" stroke="#acb8c8"/><rect x="161" y="47" width="58" height="17" rx="8" fill="#101a25"/>
-<g font-family="ui-monospace,monospace" text-anchor="middle"><text x="190" y="120" fill="#b9d5e3" font-size="11">USB-C</text><text x="190" y="190" fill="#edf5fa" font-size="17" font-weight="bold">NANO</text>
-<g transform="translate(190 300) rotate(45)"><rect x="-39" y="-39" width="78" height="78" fill="#14232f" stroke="#9babb2" stroke-width="2"/><path d="M-30-44v-8m12 8v-8m12 8v-8m12 8v-8m12 8v-8m12 8v-8M-30 44v8m12-8v8m12-8v8m12-8v8m12-8v8m12-8v8" stroke="#9babb2" stroke-width="5"/></g>
-<text x="190" y="380" fill="#d3e4ec" font-size="12">ATmega328P</text><text x="190" y="401" fill="#9ebbc9" font-size="10">16 MHz · 5 V</text><rect x="162" y="440" width="56" height="31" rx="3" fill="#121e2b" stroke="#6e8a9c"/><text x="190" y="493" fill="#adcbd9" font-size="11">CH340G</text>
-<rect x="168" y="538" width="44" height="32" rx="4" fill="#a2b1b9" stroke="#d8e4e9"/><text x="190" y="592" fill="#9ebbc9" font-size="10">RESET</text><text x="190" y="679" fill="#82a5b8" font-size="10">NANO · USB ↑</text></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="380" height="700" viewBox="0 0 380 700" role="img" aria-label="Arduino Nano ATmega328P, синяя плата с USB Type-C сверху и ICSP снизу">
+  <title>Arduino Nano · ATmega328P · USB Type-C</title>
+  <desc>Упрощённый вид сверху по фотографии Nano-совместимой платы: Type-C, ATmega328P в корпусе TQFP32 под углом, резонатор, RESET, индикаторы L/PWR/TX/RX и шестиконтактный ICSP. Координаты всех 30 контактов сохранены.</desc>
+  <defs>
+    <linearGradient id="nano-pcb" x2="1" y2="1"><stop stop-color="#08668e"/><stop offset=".45" stop-color="#075477"/><stop offset="1" stop-color="#053b5b"/></linearGradient>
+    <linearGradient id="nano-metal" x2="1" y2=".2"><stop stop-color="#849798"/><stop offset=".18" stop-color="#d4ddd5"/><stop offset=".5" stop-color="#adbdb4"/><stop offset=".84" stop-color="#d0d7ca"/><stop offset="1" stop-color="#7c9090"/></linearGradient>
+    <linearGradient id="nano-solder" x2=".5" y2="1"><stop stop-color="#e1e9df"/><stop offset=".45" stop-color="#a8bbb4"/><stop offset="1" stop-color="#657e7c"/></linearGradient>
+    <g id="nano-pad"><circle r="7.7" fill="#102c39" stroke="#83a49c" stroke-width="1.2"/><circle r="5.8" fill="url(#nano-solder)"/><circle r="2.3" fill="#355653"/></g>
+    <g id="nano-r"><rect width="12" height="22" rx="1.2" fill="url(#nano-solder)"/><rect x="1" y="4" width="10" height="14" rx=".7" fill="#35403b"/><text x="6" y="13" transform="rotate(90 6 11)" fill="#c6d1bf" font-size="5.5" text-anchor="middle" font-family="monospace">102</text></g>
+    <g id="nano-c"><rect width="14" height="8" rx="1" fill="url(#nano-solder)"/><rect x="3" y=".7" width="8" height="6.6" rx=".8" fill="#b8b7a1"/></g>
+    <g id="nano-via"><circle r="2.1" fill="#1c6b86" stroke="#7c9fa7" stroke-width=".7"/><circle r=".9" fill="#173c50"/></g>
+  </defs>
+  <!-- Blue PCB with four open mounting holes. -->
+  <path d="M84 97H296Q298 97 298 99V602Q298 604 296 604H84Q82 604 82 602V99Q82 97 84 97Z M110.5 113a10.5 10.5 0 1 0-21 0a10.5 10.5 0 1 0 21 0 M290.5 113a10.5 10.5 0 1 0-21 0a10.5 10.5 0 1 0 21 0 M110.5 590a10.5 10.5 0 1 0-21 0a10.5 10.5 0 1 0 21 0 M290.5 590a10.5 10.5 0 1 0-21 0a10.5 10.5 0 1 0 21 0" fill="url(#nano-pcb)" fill-rule="evenodd" stroke="#74a1a8" stroke-width="1.4"/>
+  <g fill="none" stroke="#b8c4a0" stroke-width="1.3"><circle cx="100" cy="113" r="11.4"/><circle cx="280" cy="113" r="11.4"/><circle cx="100" cy="590" r="11.4"/><circle cx="280" cy="590" r="11.4"/></g>
+  <!-- Only a selection of the visible copper routes is represented. -->
+  <g fill="none" stroke="#2c7c9d" stroke-width="1.1" opacity=".8">
+    <path d="M112 147h21l21 20h27v32M112 177h29l25 25h15M111 207h22l21 21M112 236h19l15 15M111 267h15l17 17M112 297h18l17-17M112 326h19l23-23M112 356h21l32-32M111 387h18l48-48M111 417h21l45-45v-23M112 447h23l45-45v-32M111 476h28v-32l45-45M112 507h23v-51l43-43M112 537h20v-27l15-15v-43"/>
+    <path d="M267 145h-16l-20 23h-24v31M268 176h-24l-23 26h-15M267 207h-28l-17 21M268 237h-29l-13 14M267 267h-23l-13 13M268 297h-22l-15-15M267 326h-21l-22-21M268 356h-25l-22-22M267 386h-20l-33-33M268 416h-25l-21-21v-26M267 447h-19l-27-30v-34M267 476h-20l-15-15v-28M268 507h-14v-34l-16-18M267 537h-14v-29l-11-13v-25"/>
+    <path d="M176 167v25l10 10M199 167v22l-8 9M155 516v20h17v7M223 519v19h-17v7M189 439v13M141 488h92M137 573v-29"/>
+  </g>
+  <use href="#nano-via" x="173" y="195"/><use href="#nano-via" x="148" y="211"/><use href="#nano-via" x="214" y="193"/>
+  <use href="#nano-via" x="135" y="346"/><use href="#nano-via" x="247" y="447"/><use href="#nano-via" x="257" y="582"/>
+  <!-- USB Type-C: shell, receptacle and the rear contact tail. -->
+  <g fill="url(#nano-solder)" stroke="#708985" stroke-width="1"><rect x="138" y="86" width="13" height="66" rx="4"/><rect x="241" y="86" width="13" height="66" rx="4"/></g>
+  <path d="M150 75H242Q248 75 248 81V154L241 165H151L144 154V81Q144 75 150 75Z" fill="url(#nano-metal)" stroke="#dce2d2" stroke-width="1.4"/>
+  <rect x="151" y="78" width="90" height="13" rx="6" fill="#273f3d" stroke="#c8d3c5" stroke-width="1.2"/>
+  <rect x="161" y="83" width="70" height="3.5" rx="1.7" fill="#a3b5a5"/>
+  <path d="M151 96v52l8 10h74l8-10V96M153 162h86" fill="none" stroke="#7d9690" stroke-width="1.3"/>
+  <g fill="#667f78" stroke="#d8e0cc" stroke-width=".8"><rect x="153" y="139" width="9" height="6" rx="2"/><rect x="230" y="139" width="9" height="6" rx="2"/></g>
+  <rect x="158" y="163" width="2.5" height="10" rx=".5" fill="url(#nano-solder)"/>
+  <rect x="164.2" y="163" width="2.5" height="10" rx=".5" fill="url(#nano-solder)"/>
+  <rect x="170.4" y="163" width="2.5" height="10" rx=".5" fill="url(#nano-solder)"/>
+  <rect x="176.6" y="163" width="2.5" height="10" rx=".5" fill="url(#nano-solder)"/>
+  <rect x="182.8" y="163" width="2.5" height="10" rx=".5" fill="url(#nano-solder)"/>
+  <rect x="189" y="163" width="2.5" height="10" rx=".5" fill="url(#nano-solder)"/>
+  <rect x="195.2" y="163" width="2.5" height="10" rx=".5" fill="url(#nano-solder)"/>
+  <rect x="201.4" y="163" width="2.5" height="10" rx=".5" fill="url(#nano-solder)"/>
+  <rect x="207.6" y="163" width="2.5" height="10" rx=".5" fill="url(#nano-solder)"/>
+  <rect x="213.8" y="163" width="2.5" height="10" rx=".5" fill="url(#nano-solder)"/>
+  <rect x="220" y="163" width="2.5" height="10" rx=".5" fill="url(#nano-solder)"/>
+  <rect x="226.2" y="163" width="2.5" height="10" rx=".5" fill="url(#nano-solder)"/>
+  <use href="#nano-c" x="126" y="180"/><use href="#nano-c" x="144" y="180"/>
+  <!-- The ATmega328P TQFP32 package is rotated like the reference board. -->
+  <g transform="translate(190 279) rotate(45)">
+    <rect x="-34" y="-52" width="3.6" height="10" rx=".7" fill="url(#nano-solder)"/><rect x="-34" y="42" width="3.6" height="10" rx=".7" fill="url(#nano-solder)"/>
+    <rect x="-52" y="-34" width="10" height="3.6" rx=".7" fill="url(#nano-solder)"/><rect x="42" y="-34" width="10" height="3.6" rx=".7" fill="url(#nano-solder)"/>
+    <rect x="-24.3" y="-52" width="3.6" height="10" rx=".7" fill="url(#nano-solder)"/><rect x="-24.3" y="42" width="3.6" height="10" rx=".7" fill="url(#nano-solder)"/>
+    <rect x="-52" y="-24.3" width="10" height="3.6" rx=".7" fill="url(#nano-solder)"/><rect x="42" y="-24.3" width="10" height="3.6" rx=".7" fill="url(#nano-solder)"/>
+    <rect x="-14.6" y="-52" width="3.6" height="10" rx=".7" fill="url(#nano-solder)"/><rect x="-14.6" y="42" width="3.6" height="10" rx=".7" fill="url(#nano-solder)"/>
+    <rect x="-52" y="-14.6" width="10" height="3.6" rx=".7" fill="url(#nano-solder)"/><rect x="42" y="-14.6" width="10" height="3.6" rx=".7" fill="url(#nano-solder)"/>
+    <rect x="-4.9" y="-52" width="3.6" height="10" rx=".7" fill="url(#nano-solder)"/><rect x="-4.9" y="42" width="3.6" height="10" rx=".7" fill="url(#nano-solder)"/>
+    <rect x="-52" y="-4.9" width="10" height="3.6" rx=".7" fill="url(#nano-solder)"/><rect x="42" y="-4.9" width="10" height="3.6" rx=".7" fill="url(#nano-solder)"/>
+    <rect x="4.8" y="-52" width="3.6" height="10" rx=".7" fill="url(#nano-solder)"/><rect x="4.8" y="42" width="3.6" height="10" rx=".7" fill="url(#nano-solder)"/>
+    <rect x="-52" y="4.8" width="10" height="3.6" rx=".7" fill="url(#nano-solder)"/><rect x="42" y="4.8" width="10" height="3.6" rx=".7" fill="url(#nano-solder)"/>
+    <rect x="14.5" y="-52" width="3.6" height="10" rx=".7" fill="url(#nano-solder)"/><rect x="14.5" y="42" width="3.6" height="10" rx=".7" fill="url(#nano-solder)"/>
+    <rect x="-52" y="14.5" width="10" height="3.6" rx=".7" fill="url(#nano-solder)"/><rect x="42" y="14.5" width="10" height="3.6" rx=".7" fill="url(#nano-solder)"/>
+    <rect x="24.2" y="-52" width="3.6" height="10" rx=".7" fill="url(#nano-solder)"/><rect x="24.2" y="42" width="3.6" height="10" rx=".7" fill="url(#nano-solder)"/>
+    <rect x="-52" y="24.2" width="10" height="3.6" rx=".7" fill="url(#nano-solder)"/><rect x="42" y="24.2" width="10" height="3.6" rx=".7" fill="url(#nano-solder)"/>
+    <rect x="33.9" y="-52" width="3.6" height="10" rx=".7" fill="url(#nano-solder)"/><rect x="33.9" y="42" width="3.6" height="10" rx=".7" fill="url(#nano-solder)"/>
+    <rect x="-52" y="33.9" width="10" height="3.6" rx=".7" fill="url(#nano-solder)"/><rect x="42" y="33.9" width="10" height="3.6" rx=".7" fill="url(#nano-solder)"/>
+    <rect x="-43" y="-43" width="86" height="86" rx="3" fill="#293434" stroke="#536868" stroke-width="1.1"/>
+    <path d="M-39-40H37" stroke="#62756e" stroke-width=".8" opacity=".4"/>
+    <circle cx="-32" cy="32" r="4" fill="#142725"/>
+    <g fill="#7d9186" text-anchor="middle" font-family="monospace"><text y="-13" font-size="9">ATMEL</text><text y="3" font-size="8">ATmega328P</text><text y="18" font-size="6">16 MHz</text></g>
+  </g>
+  <g transform="translate(244 347) rotate(-48)"><rect x="-21" y="-8" width="42" height="16" rx="2" fill="url(#nano-solder)" stroke="#a5b7a4"/><rect x="-17" y="-5.5" width="34" height="11" rx="2" fill="#aaa994" stroke="#d6d7bd" stroke-width=".6"/><text y="2.2" fill="#6a796a" text-anchor="middle" font-size="5.5" font-family="monospace">16.000</text></g>
+  <!-- RESET button with its light actuator above the metal case. -->
+  <rect x="162" y="360" width="56" height="17" rx="4" fill="#b6dce3"/>
+  <g fill="url(#nano-solder)"><rect x="138" y="392" width="17" height="9" rx="1"/><rect x="225" y="392" width="17" height="9" rx="1"/></g>
+  <rect x="153" y="378" width="74" height="41" rx="3" fill="url(#nano-metal)" stroke="#d5ddcb" stroke-width="1.4"/>
+  <rect x="159" y="383" width="62" height="31" rx="2" fill="#869e99" stroke="#d9e0cf"/>
+  <rect x="166" y="388" width="48" height="21" rx="2" fill="#d0d4be" stroke="#edf0d7"/>
+  <text x="190" y="433" text-anchor="middle" fill="#d8e6dc" font-size="7" font-family="Arial, sans-serif">RESET</text>
+  <!-- Four resistors and LEDs: L, power, transmit and receive. -->
+  <use href="#nano-r" x="140" y="450"/>
+  <g fill="url(#nano-solder)"><rect x="139" y="482" width="14" height="6" rx="1"/><rect x="139" y="500" width="14" height="6" rx="1"/></g>
+  <rect x="140" y="487" width="12" height="14" rx="1.5" fill="#d4dcc0" stroke="#e3e7cc" stroke-width=".7"/>
+  <rect x="143" y="491" width="6" height="6" rx="1" fill="#eff0d8"/>
+  <text x="146" y="523" transform="rotate(90 146 523)" fill="#d2e6df" text-anchor="middle" font-size="8" font-family="Arial, sans-serif">L</text>
+  <use href="#nano-r" x="166" y="450"/>
+  <g fill="url(#nano-solder)"><rect x="165" y="482" width="14" height="6" rx="1"/><rect x="165" y="500" width="14" height="6" rx="1"/></g>
+  <rect x="166" y="487" width="12" height="14" rx="1.5" fill="#c1dfcf" stroke="#e3e7cc" stroke-width=".7"/>
+  <rect x="169" y="491" width="6" height="6" rx="1" fill="#eff0d8"/>
+  <text x="172" y="523" transform="rotate(90 172 523)" fill="#d2e6df" text-anchor="middle" font-size="8" font-family="Arial, sans-serif">PWR</text>
+  <use href="#nano-r" x="192" y="450"/>
+  <g fill="url(#nano-solder)"><rect x="191" y="482" width="14" height="6" rx="1"/><rect x="191" y="500" width="14" height="6" rx="1"/></g>
+  <rect x="192" y="487" width="12" height="14" rx="1.5" fill="#c1dfcf" stroke="#e3e7cc" stroke-width=".7"/>
+  <rect x="195" y="491" width="6" height="6" rx="1" fill="#eff0d8"/>
+  <text x="198" y="523" transform="rotate(90 198 523)" fill="#d2e6df" text-anchor="middle" font-size="8" font-family="Arial, sans-serif">TX</text>
+  <use href="#nano-r" x="218" y="450"/>
+  <g fill="url(#nano-solder)"><rect x="217" y="482" width="14" height="6" rx="1"/><rect x="217" y="500" width="14" height="6" rx="1"/></g>
+  <rect x="218" y="487" width="12" height="14" rx="1.5" fill="#c1dfcf" stroke="#e3e7cc" stroke-width=".7"/>
+  <rect x="221" y="491" width="6" height="6" rx="1" fill="#eff0d8"/>
+  <text x="224" y="523" transform="rotate(90 224 523)" fill="#d2e6df" text-anchor="middle" font-size="8" font-family="Arial, sans-serif">RX</text>
+  <!-- Six pin ICSP header at the bottom edge. -->
+  <rect x="142" y="543" width="96" height="59" rx="4" fill="#0d1f26" stroke="#92aaa0" stroke-width="1.1"/>
+  <path d="M146 548h88v49h-88z" fill="#132b33" stroke="#203f49" stroke-width="1.2"/>
+  <rect x="147" y="547" width="22" height="22" rx="3" fill="#0b1d23" stroke="#34514e" stroke-width=".7"/><rect x="154" y="554" width="8" height="8" rx=".5" fill="url(#nano-solder)" stroke="#d1d4b3" stroke-width=".7"/>
+  <rect x="179" y="547" width="22" height="22" rx="3" fill="#0b1d23" stroke="#34514e" stroke-width=".7"/><rect x="186" y="554" width="8" height="8" rx=".5" fill="url(#nano-solder)" stroke="#d1d4b3" stroke-width=".7"/>
+  <rect x="211" y="547" width="22" height="22" rx="3" fill="#0b1d23" stroke="#34514e" stroke-width=".7"/><rect x="218" y="554" width="8" height="8" rx=".5" fill="url(#nano-solder)" stroke="#d1d4b3" stroke-width=".7"/>
+  <rect x="147" y="574" width="22" height="22" rx="3" fill="#0b1d23" stroke="#34514e" stroke-width=".7"/><rect x="154" y="581" width="8" height="8" rx=".5" fill="url(#nano-solder)" stroke="#d1d4b3" stroke-width=".7"/>
+  <rect x="179" y="574" width="22" height="22" rx="3" fill="#0b1d23" stroke="#34514e" stroke-width=".7"/><rect x="186" y="581" width="8" height="8" rx=".5" fill="url(#nano-solder)" stroke="#d1d4b3" stroke-width=".7"/>
+  <rect x="211" y="574" width="22" height="22" rx="3" fill="#0b1d23" stroke="#34514e" stroke-width=".7"/><rect x="218" y="581" width="8" height="8" rx=".5" fill="url(#nano-solder)" stroke="#d1d4b3" stroke-width=".7"/>
+  <g fill="#cbe0d8" font-size="7" font-family="Arial, sans-serif"><text x="130" y="594">1</text><text x="244" y="568" transform="rotate(-90 244 568)">ICSP</text></g>
+  <!-- Round contacts have the same dark clearance as the WROOM drawing. -->
+  <use href="#nano-pad" x="98" y="140"/><text x="112" y="140" transform="rotate(-90 112 140)" text-anchor="middle" fill="#d2e6df" font-size="7.5" font-family="Arial, sans-serif">D13</text>
+  <use href="#nano-pad" x="98" y="170"/><text x="112" y="170" transform="rotate(-90 112 170)" text-anchor="middle" fill="#d2e6df" font-size="7.5" font-family="Arial, sans-serif">3V3</text>
+  <use href="#nano-pad" x="98" y="200"/><text x="112" y="200" transform="rotate(-90 112 200)" text-anchor="middle" fill="#d2e6df" font-size="7.5" font-family="Arial, sans-serif">REF</text>
+  <use href="#nano-pad" x="98" y="230"/><text x="112" y="230" transform="rotate(-90 112 230)" text-anchor="middle" fill="#d2e6df" font-size="7.5" font-family="Arial, sans-serif">A0</text>
+  <use href="#nano-pad" x="98" y="260"/><text x="112" y="260" transform="rotate(-90 112 260)" text-anchor="middle" fill="#d2e6df" font-size="7.5" font-family="Arial, sans-serif">A1</text>
+  <use href="#nano-pad" x="98" y="290"/><text x="112" y="290" transform="rotate(-90 112 290)" text-anchor="middle" fill="#d2e6df" font-size="7.5" font-family="Arial, sans-serif">A2</text>
+  <use href="#nano-pad" x="98" y="320"/><text x="112" y="320" transform="rotate(-90 112 320)" text-anchor="middle" fill="#d2e6df" font-size="7.5" font-family="Arial, sans-serif">A3</text>
+  <use href="#nano-pad" x="98" y="350"/><text x="112" y="350" transform="rotate(-90 112 350)" text-anchor="middle" fill="#d2e6df" font-size="7.5" font-family="Arial, sans-serif">A4</text>
+  <use href="#nano-pad" x="98" y="380"/><text x="112" y="380" transform="rotate(-90 112 380)" text-anchor="middle" fill="#d2e6df" font-size="7.5" font-family="Arial, sans-serif">A5</text>
+  <use href="#nano-pad" x="98" y="410"/><text x="112" y="410" transform="rotate(-90 112 410)" text-anchor="middle" fill="#d2e6df" font-size="7.5" font-family="Arial, sans-serif">A6</text>
+  <use href="#nano-pad" x="98" y="440"/><text x="112" y="440" transform="rotate(-90 112 440)" text-anchor="middle" fill="#d2e6df" font-size="7.5" font-family="Arial, sans-serif">A7</text>
+  <use href="#nano-pad" x="98" y="470"/><text x="112" y="470" transform="rotate(-90 112 470)" text-anchor="middle" fill="#d2e6df" font-size="7.5" font-family="Arial, sans-serif">5V</text>
+  <use href="#nano-pad" x="98" y="500"/><text x="112" y="500" transform="rotate(-90 112 500)" text-anchor="middle" fill="#d2e6df" font-size="7.5" font-family="Arial, sans-serif">RST</text>
+  <use href="#nano-pad" x="98" y="530"/><text x="112" y="530" transform="rotate(-90 112 530)" text-anchor="middle" fill="#d2e6df" font-size="7.5" font-family="Arial, sans-serif">GND</text>
+  <use href="#nano-pad" x="98" y="560"/><text x="112" y="560" transform="rotate(-90 112 560)" text-anchor="middle" fill="#d2e6df" font-size="7.5" font-family="Arial, sans-serif">VIN</text>
+  <use href="#nano-pad" x="282" y="140"/><text x="265" y="140" transform="rotate(-90 265 140)" text-anchor="middle" fill="#d2e6df" font-size="7.5" font-family="Arial, sans-serif">D12</text>
+  <use href="#nano-pad" x="282" y="170"/><text x="265" y="170" transform="rotate(-90 265 170)" text-anchor="middle" fill="#d2e6df" font-size="7.5" font-family="Arial, sans-serif">D11</text>
+  <use href="#nano-pad" x="282" y="200"/><text x="265" y="200" transform="rotate(-90 265 200)" text-anchor="middle" fill="#d2e6df" font-size="7.5" font-family="Arial, sans-serif">D10</text>
+  <use href="#nano-pad" x="282" y="230"/><text x="265" y="230" transform="rotate(-90 265 230)" text-anchor="middle" fill="#d2e6df" font-size="7.5" font-family="Arial, sans-serif">D9</text>
+  <use href="#nano-pad" x="282" y="260"/><text x="265" y="260" transform="rotate(-90 265 260)" text-anchor="middle" fill="#d2e6df" font-size="7.5" font-family="Arial, sans-serif">D8</text>
+  <use href="#nano-pad" x="282" y="290"/><text x="265" y="290" transform="rotate(-90 265 290)" text-anchor="middle" fill="#d2e6df" font-size="7.5" font-family="Arial, sans-serif">D7</text>
+  <use href="#nano-pad" x="282" y="320"/><text x="265" y="320" transform="rotate(-90 265 320)" text-anchor="middle" fill="#d2e6df" font-size="7.5" font-family="Arial, sans-serif">D6</text>
+  <use href="#nano-pad" x="282" y="350"/><text x="265" y="350" transform="rotate(-90 265 350)" text-anchor="middle" fill="#d2e6df" font-size="7.5" font-family="Arial, sans-serif">D5</text>
+  <use href="#nano-pad" x="282" y="380"/><text x="265" y="380" transform="rotate(-90 265 380)" text-anchor="middle" fill="#d2e6df" font-size="7.5" font-family="Arial, sans-serif">D4</text>
+  <use href="#nano-pad" x="282" y="410"/><text x="265" y="410" transform="rotate(-90 265 410)" text-anchor="middle" fill="#d2e6df" font-size="7.5" font-family="Arial, sans-serif">D3</text>
+  <use href="#nano-pad" x="282" y="440"/><text x="265" y="440" transform="rotate(-90 265 440)" text-anchor="middle" fill="#d2e6df" font-size="7.5" font-family="Arial, sans-serif">D2</text>
+  <use href="#nano-pad" x="282" y="470"/><text x="265" y="470" transform="rotate(-90 265 470)" text-anchor="middle" fill="#d2e6df" font-size="7.5" font-family="Arial, sans-serif">GND</text>
+  <use href="#nano-pad" x="282" y="500"/><text x="265" y="500" transform="rotate(-90 265 500)" text-anchor="middle" fill="#d2e6df" font-size="7.5" font-family="Arial, sans-serif">RST</text>
+  <use href="#nano-pad" x="282" y="530"/><text x="265" y="530" transform="rotate(-90 265 530)" text-anchor="middle" fill="#d2e6df" font-size="7.5" font-family="Arial, sans-serif">RX0</text>
+  <use href="#nano-pad" x="282" y="560"/><text x="265" y="560" transform="rotate(-90 265 560)" text-anchor="middle" fill="#d2e6df" font-size="7.5" font-family="Arial, sans-serif">TX1</text>
+  <text x="190" y="640" text-anchor="middle" fill="#8caebc" font-size="10" font-family="monospace">NANO · TYPE-C · USB ↑</text>
+</svg>

@@ -3,10 +3,12 @@ import {ESPNOW_RUNTIME} from './esp-idf/espnow-runtime.js';
 import {ESPNOW_HEALTH} from './esp-idf/espnow-health.js';
 import {espNowPersistence} from './esp-idf/espnow-persistence.js';
 const bytes=value=>'{'+(value.match(/../g)||[]).map(part=>'0x'+part).join(',')+'}';
-export function espNowFirmware(project,nodes,index,cString,netifReady){
+export function espNowFirmware(project,nodes,index,cString,netifReady,target='esp32s3'){
  const components=project.components.filter(c=>c.moduleId===ESPNOW_MODULE),blocks=nodes.filter(n=>n.moduleId.startsWith('clex.logic.espnow-'));
  const empty={enabled:false,headers:'',source:'',notify:'',initialize:'',poll:'',features:[],expressions:new Map(),textSizes:new Map(),textGlyphs:new Map(),operations:new Map(),extraFunctions:new Map(),eventModules:new Set()};
  if(!components.length&&!blocks.length)return empty;
+ const profile={esp32:'espnow-esp32',esp32s3:'espnow-s3'}[target];
+ if(!profile)throw new Error('Для платы нет реализованного ESP-NOW-драйвера.');
  if(components.length!==1)throw new Error('Добавьте один ESP-NOW-интерфейс в монтаж.');
  const component=components[0],p=component.parameters,peers=readPeers(component),expressions=new Map(),textSizes=new Map(),textGlyphs=new Map(),operations=new Map(),extraFunctions=new Map();
  const status=node=>node.moduleId==='clex.logic.espnow-control'&&node.parameters.action==='status';
@@ -71,5 +73,5 @@ export function espNowFirmware(project,nodes,index,cString,netifReady){
  const intervals=peers.map(peer=>{const values=blocks.filter(node=>monitor(node)&&node.parameters.peerId===peer.id).map(node=>node.parameters.probeIntervalMs);return values.length?Math.min(...values)*1000:0;});
  replacements.PEER_HEALTH=ESPNOW_HEALTH.replace('@HEALTH_INTERVALS@','{'+(intervals.join(',')||'0')+'}');
  const runtime=ESPNOW_RUNTIME.replace(/@([A-Z_]+)@/g,(_,name)=>String(replacements[name]));
- return {...empty,enabled:true,features:['espnow-s3'],headers:'#include "esp_wifi.h"\n#include "esp_now.h"\n#include "esp_random.h"\n#include "esp_mac.h"\n#include "esp_event.h"\n#include "esp_netif.h"\n#include "nvs_flash.h"\n#include "mbedtls/md.h"'+(p.rememberMode===true?'\n#include "nvs.h"':''),source:runtime+'\n'+declarations,notify,initialize:'  clex_en_initialize();',poll:'    clex_en_poll();',expressions,textSizes,textGlyphs,operations,extraFunctions,eventModules:new Set(blocks.map(node=>node.moduleId))};
+ return {...empty,enabled:true,features:[profile],headers:'#include "esp_wifi.h"\n#include "esp_now.h"\n#include "esp_random.h"\n#include "esp_mac.h"\n#include "esp_event.h"\n#include "esp_netif.h"\n#include "nvs_flash.h"\n#include "mbedtls/md.h"'+(p.rememberMode===true?'\n#include "nvs.h"':''),source:runtime+'\n'+declarations,notify,initialize:'  clex_en_initialize();',poll:'    clex_en_poll();',expressions,textSizes,textGlyphs,operations,extraFunctions,eventModules:new Set(blocks.map(node=>node.moduleId))};
 }

@@ -1,13 +1,211 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="380" height="700" viewBox="0 0 380 700">
- <defs><linearGradient id="pcb" x2="1" y2="1"><stop stop-color="#25343e"/><stop offset="1" stop-color="#10232a"/></linearGradient><linearGradient id="metal" x2="0" y2="1"><stop stop-color="#8894a8"/><stop offset=".5" stop-color="#3b485d"/><stop offset="1" stop-color="#68798e"/></linearGradient></defs>
- <rect x="101" y="20" width="178" height="640" rx="14" fill="url(#pcb)" stroke="#507580" stroke-width="2"/>
- <g fill="#0b1319" stroke="#697c77"><circle cx="116" cy="142" r="8"/><circle cx="264" cy="142" r="8"/><circle cx="116" cy="643" r="8"/><circle cx="264" cy="643" r="8"/></g>
- <rect x="153" y="22" width="74" height="70" rx="9" fill="url(#metal)" stroke="#9ca9bb"/><rect x="163" y="28" width="54" height="16" rx="5" fill="#111b25"/><text x="190" y="112" text-anchor="middle" font-family="monospace" font-size="11" fill="#b7cad3">USB-C</text>
- <g fill="#070e14" stroke="#65737e"><rect x="112" y="72" width="25" height="34" rx="5"/><rect x="243" y="72" width="25" height="34" rx="5"/></g><g fill="#adc2cb" font-size="7" font-family="monospace"><text x="111" y="67">BOOT</text><text x="245" y="67">RST</text></g>
- <rect x="132" y="175" width="116" height="99" rx="5" fill="#263342" stroke="#819293"/><path d="M147 191v-9h14v20h13v-20h14v20h13v-20h14v20h14v-20" fill="none" stroke="#b6a681" stroke-width="3"/><text x="190" y="230" text-anchor="middle" font-family="monospace" font-size="13" fill="#d4dee6">ESP32-S3R8</text><text x="190" y="250" text-anchor="middle" font-family="monospace" font-size="9" fill="#a8bac9">16MB / 8MB</text>
- <rect x="149" y="321" width="82" height="84" rx="3" fill="#0b111c" stroke="#5b6a7d"/><text x="190" y="367" text-anchor="middle" font-family="monospace" font-size="14" fill="#97acb9">W5500</text>
- <g fill="#647784"><rect x="129" y="300" width="20" height="8" rx="2"/><rect x="232" y="300" width="20" height="8" rx="2"/><rect x="129" y="425" width="25" height="10" rx="2"/></g><rect x="157" y="448" width="69" height="12" rx="3" fill="#a39272"/>
- <text x="190" y="438" text-anchor="middle" fill="#c5d2d8" font-size="9" font-family="monospace">WAVESHARE</text>
- <g aria-label="Слот TF / microSD"><rect x="140" y="500" width="100" height="118" rx="5" fill="url(#metal)" stroke="#a2acb8"/><path d="M152 509h76v77h-12v19h-53l-11-11z" fill="#16222e" stroke="#718397"/><path d="M163 590v10m9-10v10m9-10v10m9-10v10m9-10v10m9-10v10" stroke="#b6a681" stroke-width="3"/><text x="190" y="546" text-anchor="middle" fill="#bac9d4" font-size="14" font-family="monospace">TF</text><text x="190" y="564" text-anchor="middle" fill="#97acb9" font-size="9" font-family="monospace">microSD</text></g>
- <text x="190" y="685" text-anchor="middle" fill="#71899c" font-size="10" font-family="monospace">ESP32-S3-ETH · USB ↑</text>
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="728" viewBox="0 0 400 728" role="img" aria-label="Waveshare ESP32-S3-ETH, вид снизу, USB-C сверху, microSD снизу">
+  <title>ESP32-S3-ETH · нижняя сторона</title>
+  <desc>Упрощённый вид снизу. Корпус 21 × 72,8 мм, шаг контактов 2,54 мм, расстояние между рядами 17,78 мм. Показаны USB-C, BOOT и RESET, PoE Power Port, W5500, часть пассивных компонентов и слот microSD. RJ45 и ESP32-S3 находятся на обратной стороне.</desc>
+  <defs>
+    <linearGradient id="s3eth-pcb" x2="1" y2="1"><stop stop-color="#202828"/><stop offset=".45" stop-color="#101717"/><stop offset="1" stop-color="#1c2424"/></linearGradient>
+    <linearGradient id="s3eth-metal" x2="1" y2=".2"><stop stop-color="#8e9b98"/><stop offset=".18" stop-color="#d5d9cc"/><stop offset=".5" stop-color="#aebbb3"/><stop offset=".84" stop-color="#d0d7c8"/><stop offset="1" stop-color="#7c8b86"/></linearGradient>
+    <linearGradient id="s3eth-solder" x2=".5" y2="1"><stop stop-color="#e0e6d8"/><stop offset=".45" stop-color="#aebbb3"/><stop offset="1" stop-color="#697b76"/></linearGradient>
+    <linearGradient id="s3eth-gold" x2="1" y2=".5"><stop stop-color="#d3b971"/><stop offset=".4" stop-color="#f0d99b"/><stop offset="1" stop-color="#af944e"/></linearGradient>
+    <g id="s3eth-r"><rect width="1.4" height=".7" rx=".08" fill="url(#s3eth-solder)"/><rect x=".26" y=".04" width=".88" height=".62" fill="#33443c"/><path d="M.55 .25h.3M.55 .45h.3" stroke="#b6c2b0" stroke-width=".06"/></g>
+    <g id="s3eth-c"><rect width="1.6" height=".8" rx=".1" fill="url(#s3eth-solder)"/><rect x=".3" y=".06" width="1" height=".68" fill="#bab596"/></g>
+    <g id="s3eth-pad"><circle r=".815" fill="#1d2426" stroke="#6a7876" stroke-width=".127"/><circle r=".614" fill="url(#s3eth-gold)"/><circle r=".243" fill="#384843"/></g>
+  </defs>
+  <g transform="translate(100.787402 10) scale(9.448818898)">
+    <!-- Millimetre coordinates follow the manufacturer's bottom-side drawing. -->
+    <path d="M.35 0H20.65L21 .35V72.45L20.65 72.8H.35L0 72.45V.35Z M2.4 17.07a1.03 1.03 0 1 0-2.06 0a1.03 1.03 0 1 0 2.06 0 M20.65 17.07a1.03 1.03 0 1 0-2.06 0a1.03 1.03 0 1 0 2.06 0 M2.4 71.22a1.03 1.03 0 1 0-2.06 0a1.03 1.03 0 1 0 2.06 0 M20.65 71.22a1.03 1.03 0 1 0-2.06 0a1.03 1.03 0 1 0 2.06 0" fill="url(#s3eth-pcb)" fill-rule="evenodd" stroke="#53695e" stroke-width=".13"/>
+    <g fill="none" stroke="#d0ca9c" stroke-width=".17"><circle cx="1.37" cy="17.07" r="1.18"/><circle cx="19.62" cy="17.07" r="1.18"/><circle cx="1.37" cy="71.22" r="1.18"/><circle cx="19.62" cy="71.22" r="1.18"/></g>
+    <!-- A few traces show the PCB without copying its full routing. -->
+    <g fill="none" stroke="#304039" stroke-width=".12"><path d="M3.7 20.3v9.2l2.4 2.4v8.6M17.1 20.8v9.9l-2.1 2.1v8.2M4.1 43.6v10.7h3.6v2.7M16.8 44.1v11.2h-3.5v1.7M7.2 16.1v5.1h4.9M13.5 27.9v3.3M8.1 40.5v1.1M6.2 65v6.5M15.6 64.5v6.9"/></g>
+    <!-- USB Type-C and the two dark RJ45 mounting slots. -->
+    <g fill="#0a1010" stroke="#5b6a62" stroke-width=".15"><rect x="2.6" y="2.6" width="2.15" height="3.4" rx="1.05"/><rect x="16.3" y="2.6" width="2.15" height="3.4" rx="1.05"/></g>
+    <g fill="url(#s3eth-solder)"><rect x="5.7" y=".2" width=".8" height="7.6" rx=".2"/><rect x="14.5" y=".2" width=".8" height="7.6" rx=".2"/></g>
+    <rect x="6.2" y="-.05" width="8.7" height="8.2" rx=".45" fill="url(#s3eth-metal)" stroke="#d8decf" stroke-width=".14"/>
+    <rect x="6.8" y=".4" width="7.5" height="1.3" rx=".6" fill="#33433c" stroke="#c0ccbf" stroke-width=".1"/>
+    <rect x="7.6" y=".9" width="5.9" height=".35" rx=".15" fill="#9cae9f"/>
+    <path d="M7 2.1v4.2l.7.9h5.7l.7-.9V2.1M7.3 7.8h6.4" fill="none" stroke="#879c8e" stroke-width=".14"/>
+    <g fill="#778b7e" stroke="#dfe4d4" stroke-width=".08"><circle cx="8.1" cy="5.3" r=".3"/><circle cx="13" cy="5.3" r=".3"/></g>
+    <rect x="7.05" y="8.0" width=".22" height=".8" rx=".04" fill="url(#s3eth-solder)"/>
+    <rect x="7.66" y="8.0" width=".22" height=".8" rx=".04" fill="url(#s3eth-solder)"/>
+    <rect x="8.27" y="8.0" width=".22" height=".8" rx=".04" fill="url(#s3eth-solder)"/>
+    <rect x="8.88" y="8.0" width=".22" height=".8" rx=".04" fill="url(#s3eth-solder)"/>
+    <rect x="9.49" y="8.0" width=".22" height=".8" rx=".04" fill="url(#s3eth-solder)"/>
+    <rect x="10.10" y="8.0" width=".22" height=".8" rx=".04" fill="url(#s3eth-solder)"/>
+    <rect x="10.71" y="8.0" width=".22" height=".8" rx=".04" fill="url(#s3eth-solder)"/>
+    <rect x="11.32" y="8.0" width=".22" height=".8" rx=".04" fill="url(#s3eth-solder)"/>
+    <rect x="11.93" y="8.0" width=".22" height=".8" rx=".04" fill="url(#s3eth-solder)"/>
+    <rect x="12.54" y="8.0" width=".22" height=".8" rx=".04" fill="url(#s3eth-solder)"/>
+    <rect x="13.15" y="8.0" width=".22" height=".8" rx=".04" fill="url(#s3eth-solder)"/>
+    <rect x="13.76" y="8.0" width=".22" height=".8" rx=".04" fill="url(#s3eth-solder)"/>
+    <!-- ACT / LINK and tactile buttons mounted at the edges. -->
+    <g fill="url(#s3eth-solder)"><rect x="2.15" y=".45" width="1.8" height=".8" rx=".1"/><rect x="17.05" y=".45" width="1.8" height=".8" rx=".1"/></g>
+    <g fill="#b6c4a2"><rect x="2.65" y=".5" width=".8" height=".7"/><rect x="17.55" y=".5" width=".8" height=".7"/></g>
+    <g fill="#c5d2bd" font-family="Arial, sans-serif" font-size=".64"><text x="1.6" y="2.1" transform="rotate(-90 1.6 2.1)">ACT</text><text x="20.1" y="2.4" transform="rotate(-90 20.1 2.4)">LINK</text></g>
+    <use href="#s3eth-r" x="2.35" y="1.55"/><use href="#s3eth-r" x="17.4" y="1.55"/>
+    <g fill="url(#s3eth-solder)" stroke="#7e9182" stroke-width=".12"><rect x=".1" y="9.4" width="2.1" height="4.2" rx=".35"/><rect x="18.8" y="9.4" width="2.1" height="4.2" rx=".35"/></g>
+    <g fill="#333e37"><rect x=".6" y="10.1" width="1.6" height="2.8" rx=".2"/><rect x="18.8" y="10.1" width="1.6" height="2.8" rx=".2"/></g>
+    <g fill="#d3ddc7"><rect x="-.3" y="10.3" width=".9" height="2.4" rx=".18"/><rect x="20.4" y="10.3" width=".9" height="2.4" rx=".18"/></g>
+    <g fill="#d7e0cd" font-size=".76" font-family="Arial, sans-serif" text-anchor="middle"><text x="1.25" y="8.7">BOOT</text><text x="19.8" y="8.7">RESET</text></g>
+    <!-- Power parts, RGB LED and a few nearby passives. -->
+    <rect x="4.0" y="9.45" width="2.0" height="2.45" rx=".18" fill="#434b3d" stroke="#b7bea4" stroke-width=".18"/>
+    <use href="#s3eth-c" x="6.45" y="9.55"/><use href="#s3eth-r" x="8.3" y="9.55"/>
+    <use href="#s3eth-r" x="10.3" y="9.55"/><use href="#s3eth-c" x="12.3" y="9.55"/>
+    <rect x="6.7" y="12.65" width="2.1" height="2.0" rx=".12" fill="#202d27" stroke="#83957e" stroke-width=".1"/>
+    <rect x="6.35" y="12.82" width=".35" height=".2" fill="url(#s3eth-solder)"/>
+    <rect x="8.8" y="12.82" width=".35" height=".2" fill="url(#s3eth-solder)"/>
+    <rect x="6.35" y="13.25" width=".35" height=".2" fill="url(#s3eth-solder)"/>
+    <rect x="8.8" y="13.25" width=".35" height=".2" fill="url(#s3eth-solder)"/>
+    <rect x="6.35" y="13.68" width=".35" height=".2" fill="url(#s3eth-solder)"/>
+    <rect x="8.8" y="13.68" width=".35" height=".2" fill="url(#s3eth-solder)"/>
+    <rect x="6.35" y="14.11" width=".35" height=".2" fill="url(#s3eth-solder)"/>
+    <rect x="8.8" y="14.11" width=".35" height=".2" fill="url(#s3eth-solder)"/>
+    <use href="#s3eth-r" x="4.2" y="13.0"/><use href="#s3eth-r" x="10.1" y="11.45"/>
+    <use href="#s3eth-c" x="10.1" y="12.8"/><use href="#s3eth-r" x="10.1" y="14.15"/>
+    <use href="#s3eth-c" x="12.3" y="14.4"/><use href="#s3eth-c" x="14.5" y="14.4"/>
+    <rect x="14.1" y="12.55" width="2.1" height="2.0" rx=".13" fill="#cad6bf" stroke="#e2e8d6" stroke-width=".12"/>
+    <rect x="14.55" y="12.95" width="1.2" height="1.2" fill="#f0f1da"/>
+    <text x="15.15" y="12.1" text-anchor="middle" fill="#d0dcc6" font-size=".65" font-family="monospace">RGB</text>
+    <use href="#s3eth-r" x="16.9" y="14.25"/>
+    <!-- Six through-hole pads for the PoE power expansion. -->
+    <circle cx="4.20" cy="17.33" r=".53" fill="url(#s3eth-solder)" stroke="#7c8d79" stroke-width=".1"/><circle cx="4.20" cy="17.33" r=".2" fill="#31443a"/><text x="4.20" y="16.5" text-anchor="middle" fill="#d2dcc6" font-size=".64" font-family="Arial, sans-serif">+</text>
+    <circle cx="6.74" cy="17.33" r=".53" fill="url(#s3eth-solder)" stroke="#7c8d79" stroke-width=".1"/><circle cx="6.74" cy="17.33" r=".2" fill="#31443a"/><text x="6.74" y="16.5" text-anchor="middle" fill="#d2dcc6" font-size=".64" font-family="Arial, sans-serif">−</text>
+    <circle cx="9.28" cy="17.33" r=".53" fill="url(#s3eth-solder)" stroke="#7c8d79" stroke-width=".1"/><circle cx="9.28" cy="17.33" r=".2" fill="#31443a"/><text x="9.28" y="16.5" text-anchor="middle" fill="#d2dcc6" font-size=".64" font-family="Arial, sans-serif">4</text>
+    <circle cx="11.82" cy="17.33" r=".53" fill="url(#s3eth-solder)" stroke="#7c8d79" stroke-width=".1"/><circle cx="11.82" cy="17.33" r=".2" fill="#31443a"/><text x="11.82" y="16.5" text-anchor="middle" fill="#d2dcc6" font-size=".64" font-family="Arial, sans-serif">3</text>
+    <circle cx="14.36" cy="17.33" r=".53" fill="url(#s3eth-solder)" stroke="#7c8d79" stroke-width=".1"/><circle cx="14.36" cy="17.33" r=".2" fill="#31443a"/><text x="14.36" y="16.5" text-anchor="middle" fill="#d2dcc6" font-size=".64" font-family="Arial, sans-serif">2</text>
+    <circle cx="16.90" cy="17.33" r=".53" fill="url(#s3eth-solder)" stroke="#7c8d79" stroke-width=".1"/><circle cx="16.90" cy="17.33" r=".2" fill="#31443a"/><text x="16.90" y="16.5" text-anchor="middle" fill="#d2dcc6" font-size=".64" font-family="Arial, sans-serif">1</text>
+    <text x="10.5" y="19.1" text-anchor="middle" fill="#d3dec8" font-size=".77" font-family="Arial, sans-serif">PoE Power Port</text>
+    <!-- Ethernet crystal and passives above the QFP controller. -->
+    <use href="#s3eth-r" transform="translate(5.90 22.0) rotate(90)"/>
+    <use href="#s3eth-r" transform="translate(7.02 22.0) rotate(90)"/>
+    <use href="#s3eth-r" transform="translate(8.14 22.0) rotate(90)"/>
+    <use href="#s3eth-r" transform="translate(9.26 22.0) rotate(90)"/>
+    <use href="#s3eth-r" transform="translate(10.38 22.0) rotate(90)"/>
+    <use href="#s3eth-r" transform="translate(11.50 22.0) rotate(90)"/>
+    <use href="#s3eth-r" transform="translate(12.62 22.0) rotate(90)"/>
+    <use href="#s3eth-r" transform="translate(13.74 22.0) rotate(90)"/>
+    <rect x="8.35" y="24.35" width="4.3" height="1.65" rx=".55" fill="url(#s3eth-metal)" stroke="#cbd2b4" stroke-width=".12"/>
+    <rect x="8.8" y="24.55" width="3.4" height="1.22" rx=".45" fill="#b5baa0"/>
+    <use href="#s3eth-c" transform="translate(6.80 26.4) rotate(90)"/>
+    <use href="#s3eth-c" transform="translate(7.98 26.4) rotate(90)"/>
+    <use href="#s3eth-c" transform="translate(9.16 26.4) rotate(90)"/>
+    <use href="#s3eth-c" transform="translate(10.34 26.4) rotate(90)"/>
+    <use href="#s3eth-c" transform="translate(11.52 26.4) rotate(90)"/>
+    <use href="#s3eth-c" transform="translate(12.70 26.4) rotate(90)"/>
+    <!-- W5500, 48-pin Ethernet controller on the visible lower side. -->
+    <rect x="5.95" y="33.55" width="1.15" height=".24" rx=".05" fill="url(#s3eth-solder)"/>
+    <rect x="14.1" y="33.55" width="1.15" height=".24" rx=".05" fill="url(#s3eth-solder)"/>
+    <rect x="7.70" y="31.9" width=".24" height="1.1" rx=".05" fill="url(#s3eth-solder)"/>
+    <rect x="7.70" y="40.0" width=".24" height="1.1" rx=".05" fill="url(#s3eth-solder)"/>
+    <rect x="5.95" y="34.07" width="1.15" height=".24" rx=".05" fill="url(#s3eth-solder)"/>
+    <rect x="14.1" y="34.07" width="1.15" height=".24" rx=".05" fill="url(#s3eth-solder)"/>
+    <rect x="8.22" y="31.9" width=".24" height="1.1" rx=".05" fill="url(#s3eth-solder)"/>
+    <rect x="8.22" y="40.0" width=".24" height="1.1" rx=".05" fill="url(#s3eth-solder)"/>
+    <rect x="5.95" y="34.59" width="1.15" height=".24" rx=".05" fill="url(#s3eth-solder)"/>
+    <rect x="14.1" y="34.59" width="1.15" height=".24" rx=".05" fill="url(#s3eth-solder)"/>
+    <rect x="8.74" y="31.9" width=".24" height="1.1" rx=".05" fill="url(#s3eth-solder)"/>
+    <rect x="8.74" y="40.0" width=".24" height="1.1" rx=".05" fill="url(#s3eth-solder)"/>
+    <rect x="5.95" y="35.11" width="1.15" height=".24" rx=".05" fill="url(#s3eth-solder)"/>
+    <rect x="14.1" y="35.11" width="1.15" height=".24" rx=".05" fill="url(#s3eth-solder)"/>
+    <rect x="9.26" y="31.9" width=".24" height="1.1" rx=".05" fill="url(#s3eth-solder)"/>
+    <rect x="9.26" y="40.0" width=".24" height="1.1" rx=".05" fill="url(#s3eth-solder)"/>
+    <rect x="5.95" y="35.63" width="1.15" height=".24" rx=".05" fill="url(#s3eth-solder)"/>
+    <rect x="14.1" y="35.63" width="1.15" height=".24" rx=".05" fill="url(#s3eth-solder)"/>
+    <rect x="9.78" y="31.9" width=".24" height="1.1" rx=".05" fill="url(#s3eth-solder)"/>
+    <rect x="9.78" y="40.0" width=".24" height="1.1" rx=".05" fill="url(#s3eth-solder)"/>
+    <rect x="5.95" y="36.15" width="1.15" height=".24" rx=".05" fill="url(#s3eth-solder)"/>
+    <rect x="14.1" y="36.15" width="1.15" height=".24" rx=".05" fill="url(#s3eth-solder)"/>
+    <rect x="10.30" y="31.9" width=".24" height="1.1" rx=".05" fill="url(#s3eth-solder)"/>
+    <rect x="10.30" y="40.0" width=".24" height="1.1" rx=".05" fill="url(#s3eth-solder)"/>
+    <rect x="5.95" y="36.67" width="1.15" height=".24" rx=".05" fill="url(#s3eth-solder)"/>
+    <rect x="14.1" y="36.67" width="1.15" height=".24" rx=".05" fill="url(#s3eth-solder)"/>
+    <rect x="10.82" y="31.9" width=".24" height="1.1" rx=".05" fill="url(#s3eth-solder)"/>
+    <rect x="10.82" y="40.0" width=".24" height="1.1" rx=".05" fill="url(#s3eth-solder)"/>
+    <rect x="5.95" y="37.19" width="1.15" height=".24" rx=".05" fill="url(#s3eth-solder)"/>
+    <rect x="14.1" y="37.19" width="1.15" height=".24" rx=".05" fill="url(#s3eth-solder)"/>
+    <rect x="11.34" y="31.9" width=".24" height="1.1" rx=".05" fill="url(#s3eth-solder)"/>
+    <rect x="11.34" y="40.0" width=".24" height="1.1" rx=".05" fill="url(#s3eth-solder)"/>
+    <rect x="5.95" y="37.71" width="1.15" height=".24" rx=".05" fill="url(#s3eth-solder)"/>
+    <rect x="14.1" y="37.71" width="1.15" height=".24" rx=".05" fill="url(#s3eth-solder)"/>
+    <rect x="11.86" y="31.9" width=".24" height="1.1" rx=".05" fill="url(#s3eth-solder)"/>
+    <rect x="11.86" y="40.0" width=".24" height="1.1" rx=".05" fill="url(#s3eth-solder)"/>
+    <rect x="5.95" y="38.23" width="1.15" height=".24" rx=".05" fill="url(#s3eth-solder)"/>
+    <rect x="14.1" y="38.23" width="1.15" height=".24" rx=".05" fill="url(#s3eth-solder)"/>
+    <rect x="12.38" y="31.9" width=".24" height="1.1" rx=".05" fill="url(#s3eth-solder)"/>
+    <rect x="12.38" y="40.0" width=".24" height="1.1" rx=".05" fill="url(#s3eth-solder)"/>
+    <rect x="5.95" y="38.75" width="1.15" height=".24" rx=".05" fill="url(#s3eth-solder)"/>
+    <rect x="14.1" y="38.75" width="1.15" height=".24" rx=".05" fill="url(#s3eth-solder)"/>
+    <rect x="12.90" y="31.9" width=".24" height="1.1" rx=".05" fill="url(#s3eth-solder)"/>
+    <rect x="12.90" y="40.0" width=".24" height="1.1" rx=".05" fill="url(#s3eth-solder)"/>
+    <rect x="5.95" y="39.27" width="1.15" height=".24" rx=".05" fill="url(#s3eth-solder)"/>
+    <rect x="14.1" y="39.27" width="1.15" height=".24" rx=".05" fill="url(#s3eth-solder)"/>
+    <rect x="13.42" y="31.9" width=".24" height="1.1" rx=".05" fill="url(#s3eth-solder)"/>
+    <rect x="13.42" y="40.0" width=".24" height="1.1" rx=".05" fill="url(#s3eth-solder)"/>
+    <rect x="7.1" y="33.0" width="7.0" height="7.0" rx=".18" fill="#242e2b" stroke="#4b5f50" stroke-width=".12"/>
+    <circle cx="7.65" cy="33.55" r=".2" fill="#111c16"/>
+    <text x="10.6" y="36.8" text-anchor="middle" fill="#8c9f88" font-size="1.0" font-family="monospace">W5500</text>
+    <text x="10.6" y="38.2" text-anchor="middle" fill="#738a73" font-size=".5" font-family="monospace">ETHERNET</text>
+    <use href="#s3eth-r" transform="translate(5.2 32.9) rotate(90)"/><use href="#s3eth-c" transform="translate(5.2 35.2) rotate(90)"/>
+    <use href="#s3eth-c" transform="translate(5.2 37.8) rotate(90)"/>
+    <rect x="8.75" y="42.15" width="2.7" height="1.75" rx=".4" fill="url(#s3eth-metal)" stroke="#c9d0b8" stroke-width=".12"/>
+    <rect x="9.1" y="42.45" width="2.0" height="1.15" rx=".25" fill="#b8bba3"/>
+    <use href="#s3eth-r" x="12.3" y="41.5"/><use href="#s3eth-c" x="14.3" y="41.5"/>
+    <use href="#s3eth-r" x="12.3" y="43.0"/><use href="#s3eth-r" x="14.3" y="43.0"/>
+    <!-- Silkscreen in the same region as the reference board. -->
+    <path d="M8.1 46.4l.7 1.3 1.0-1.6.7 1.3 1.2-1.7" fill="none" stroke="#d4dfcc" stroke-width=".65" stroke-linecap="round" stroke-linejoin="round"/>
+    <g text-anchor="middle" fill="#d3dfc9" font-family="Arial, sans-serif"><text x="10.5" y="49.2" font-size=".9">Waveshare</text><text x="10.5" y="51.3" font-size="1.17" font-weight="bold">ESP32-S3-ETH</text></g>
+    <use href="#s3eth-r" x="9.75" y="53.8"/><use href="#s3eth-c" x="9.65" y="55.2"/>
+    <!-- Metal TF / microSD slot; the dashed silkscreen continues below. -->
+    <path d="M4.6 58.3v-1.0h1.3v-.3h9.3v.3h1.3v6.3H4.6Z" fill="url(#s3eth-metal)" stroke="#d2d9c6" stroke-width=".15"/>
+    <path d="M5.1 58.2H16.0M5.2 63.4h10.7" fill="none" stroke="#7c9181" stroke-width=".13"/>
+    <rect x="6.35" y="59.1" width=".32" height="1.3" rx=".1" fill="#51634f" stroke="#dce1cb" stroke-width=".06"/>
+    <rect x="7.70" y="59.1" width=".32" height="1.3" rx=".1" fill="#51634f" stroke="#dce1cb" stroke-width=".06"/>
+    <rect x="9.05" y="59.1" width=".32" height="1.3" rx=".1" fill="#51634f" stroke="#dce1cb" stroke-width=".06"/>
+    <rect x="10.40" y="59.1" width=".32" height="1.3" rx=".1" fill="#51634f" stroke="#dce1cb" stroke-width=".06"/>
+    <rect x="11.75" y="59.1" width=".32" height="1.3" rx=".1" fill="#51634f" stroke="#dce1cb" stroke-width=".06"/>
+    <rect x="13.10" y="59.1" width=".32" height="1.3" rx=".1" fill="#51634f" stroke="#dce1cb" stroke-width=".06"/>
+    <g fill="#72856e" stroke="#d5ddc4" stroke-width=".08"><rect x="5.4" y="61.0" width=".65" height=".8" rx=".12"/><rect x="15.0" y="61.0" width=".65" height=".8" rx=".12"/></g>
+    <path d="M4.95 63.8v8.8M16.1 63.8v2.8l-.9 1.2v4.8" fill="none" stroke="#bacab1" stroke-width=".12" stroke-dasharray=".35 .22"/>
+    <text x="10.5" y="62.75" text-anchor="middle" fill="#4f6450" font-size=".65" font-family="monospace">TF / microSD</text>
+    <!-- Two 20-contact rows, with original electrical IDs and order. -->
+    <use href="#s3eth-pad" x="19.39" y="19.87"/><text x="17.8" y="19.87" transform="rotate(-90 17.8 19.87)" text-anchor="middle" fill="#d5dfc8" font-size=".66" font-family="Arial, sans-serif">IO20</text>
+    <use href="#s3eth-pad" x="19.39" y="22.41"/><text x="17.8" y="22.41" transform="rotate(-90 17.8 22.41)" text-anchor="middle" fill="#d5dfc8" font-size=".66" font-family="Arial, sans-serif">IO19</text>
+    <use href="#s3eth-pad" x="19.39" y="24.95"/><text x="17.8" y="24.95" transform="rotate(-90 17.8 24.95)" text-anchor="middle" fill="#d5dfc8" font-size=".66" font-family="Arial, sans-serif">GND</text>
+    <use href="#s3eth-pad" x="19.39" y="27.49"/><text x="17.8" y="27.49" transform="rotate(-90 17.8 27.49)" text-anchor="middle" fill="#d5dfc8" font-size=".66" font-family="Arial, sans-serif">IO48</text>
+    <use href="#s3eth-pad" x="19.39" y="30.03"/><text x="17.8" y="30.03" transform="rotate(-90 17.8 30.03)" text-anchor="middle" fill="#d5dfc8" font-size=".66" font-family="Arial, sans-serif">IO47</text>
+    <use href="#s3eth-pad" x="19.39" y="32.57"/><text x="17.8" y="32.57" transform="rotate(-90 17.8 32.57)" text-anchor="middle" fill="#d5dfc8" font-size=".66" font-family="Arial, sans-serif">IO46</text>
+    <use href="#s3eth-pad" x="19.39" y="35.11"/><text x="17.8" y="35.11" transform="rotate(-90 17.8 35.11)" text-anchor="middle" fill="#d5dfc8" font-size=".66" font-family="Arial, sans-serif">IO45</text>
+    <use href="#s3eth-pad" x="19.39" y="37.65"/><text x="17.8" y="37.65" transform="rotate(-90 17.8 37.65)" text-anchor="middle" fill="#d5dfc8" font-size=".66" font-family="Arial, sans-serif">GND</text>
+    <use href="#s3eth-pad" x="19.39" y="40.19"/><text x="17.8" y="40.19" transform="rotate(-90 17.8 40.19)" text-anchor="middle" fill="#d5dfc8" font-size=".66" font-family="Arial, sans-serif">IO42</text>
+    <use href="#s3eth-pad" x="19.39" y="42.73"/><text x="17.8" y="42.73" transform="rotate(-90 17.8 42.73)" text-anchor="middle" fill="#d5dfc8" font-size=".66" font-family="Arial, sans-serif">IO41</text>
+    <use href="#s3eth-pad" x="19.39" y="45.27"/><text x="17.8" y="45.27" transform="rotate(-90 17.8 45.27)" text-anchor="middle" fill="#d5dfc8" font-size=".66" font-family="Arial, sans-serif">IO40</text>
+    <use href="#s3eth-pad" x="19.39" y="47.81"/><text x="17.8" y="47.81" transform="rotate(-90 17.8 47.81)" text-anchor="middle" fill="#d5dfc8" font-size=".66" font-family="Arial, sans-serif">IO39</text>
+    <use href="#s3eth-pad" x="19.39" y="50.35"/><text x="17.8" y="50.35" transform="rotate(-90 17.8 50.35)" text-anchor="middle" fill="#d5dfc8" font-size=".66" font-family="Arial, sans-serif">GND</text>
+    <use href="#s3eth-pad" x="19.39" y="52.89"/><text x="17.8" y="52.89" transform="rotate(-90 17.8 52.89)" text-anchor="middle" fill="#d5dfc8" font-size=".66" font-family="Arial, sans-serif">IO38</text>
+    <use href="#s3eth-pad" x="19.39" y="55.43"/><text x="17.8" y="55.43" transform="rotate(-90 17.8 55.43)" text-anchor="middle" fill="#d5dfc8" font-size=".66" font-family="Arial, sans-serif">IO37</text>
+    <use href="#s3eth-pad" x="19.39" y="57.97"/><text x="17.8" y="57.97" transform="rotate(-90 17.8 57.97)" text-anchor="middle" fill="#d5dfc8" font-size=".66" font-family="Arial, sans-serif">IO36</text>
+    <use href="#s3eth-pad" x="19.39" y="60.51"/><text x="17.8" y="60.51" transform="rotate(-90 17.8 60.51)" text-anchor="middle" fill="#d5dfc8" font-size=".66" font-family="Arial, sans-serif">IO35</text>
+    <use href="#s3eth-pad" x="19.39" y="63.05"/><text x="17.8" y="63.05" transform="rotate(-90 17.8 63.05)" text-anchor="middle" fill="#d5dfc8" font-size=".66" font-family="Arial, sans-serif">GND</text>
+    <use href="#s3eth-pad" x="19.39" y="65.59"/><text x="17.8" y="65.59" transform="rotate(-90 17.8 65.59)" text-anchor="middle" fill="#d5dfc8" font-size=".66" font-family="Arial, sans-serif">IO34</text>
+    <use href="#s3eth-pad" x="19.39" y="68.13"/><text x="17.8" y="68.13" transform="rotate(-90 17.8 68.13)" text-anchor="middle" fill="#d5dfc8" font-size=".66" font-family="Arial, sans-serif">IO33</text>
+    <use href="#s3eth-pad" x="1.61" y="68.13"/><text x="3.2" y="68.13" transform="rotate(-90 3.2 68.13)" text-anchor="middle" fill="#d5dfc8" font-size=".66" font-family="Arial, sans-serif">IO43</text>
+    <use href="#s3eth-pad" x="1.61" y="65.59"/><text x="3.2" y="65.59" transform="rotate(-90 3.2 65.59)" text-anchor="middle" fill="#d5dfc8" font-size=".66" font-family="Arial, sans-serif">IO44</text>
+    <use href="#s3eth-pad" x="1.61" y="63.05"/><text x="3.2" y="63.05" transform="rotate(-90 3.2 63.05)" text-anchor="middle" fill="#d5dfc8" font-size=".66" font-family="Arial, sans-serif">GND</text>
+    <use href="#s3eth-pad" x="1.61" y="60.51"/><text x="3.2" y="60.51" transform="rotate(-90 3.2 60.51)" text-anchor="middle" fill="#d5dfc8" font-size=".66" font-family="Arial, sans-serif">IO0</text>
+    <use href="#s3eth-pad" x="1.61" y="57.97"/><text x="3.2" y="57.97" transform="rotate(-90 3.2 57.97)" text-anchor="middle" fill="#d5dfc8" font-size=".66" font-family="Arial, sans-serif">IO1</text>
+    <use href="#s3eth-pad" x="1.61" y="55.43"/><text x="3.2" y="55.43" transform="rotate(-90 3.2 55.43)" text-anchor="middle" fill="#d5dfc8" font-size=".66" font-family="Arial, sans-serif">IO2</text>
+    <use href="#s3eth-pad" x="1.61" y="52.89"/><text x="3.2" y="52.89" transform="rotate(-90 3.2 52.89)" text-anchor="middle" fill="#d5dfc8" font-size=".66" font-family="Arial, sans-serif">IO3</text>
+    <use href="#s3eth-pad" x="1.61" y="50.35"/><text x="3.2" y="50.35" transform="rotate(-90 3.2 50.35)" text-anchor="middle" fill="#d5dfc8" font-size=".66" font-family="Arial, sans-serif">GND</text>
+    <use href="#s3eth-pad" x="1.61" y="47.81"/><text x="3.2" y="47.81" transform="rotate(-90 3.2 47.81)" text-anchor="middle" fill="#d5dfc8" font-size=".66" font-family="Arial, sans-serif">IO15</text>
+    <use href="#s3eth-pad" x="1.61" y="45.27"/><text x="3.2" y="45.27" transform="rotate(-90 3.2 45.27)" text-anchor="middle" fill="#d5dfc8" font-size=".66" font-family="Arial, sans-serif">CHIP_UP</text>
+    <use href="#s3eth-pad" x="1.61" y="42.73"/><text x="3.2" y="42.73" transform="rotate(-90 3.2 42.73)" text-anchor="middle" fill="#d5dfc8" font-size=".66" font-family="Arial, sans-serif">IO18</text>
+    <use href="#s3eth-pad" x="1.61" y="40.19"/><text x="3.2" y="40.19" transform="rotate(-90 3.2 40.19)" text-anchor="middle" fill="#d5dfc8" font-size=".66" font-family="Arial, sans-serif">IO16</text>
+    <use href="#s3eth-pad" x="1.61" y="37.65"/><text x="3.2" y="37.65" transform="rotate(-90 3.2 37.65)" text-anchor="middle" fill="#d5dfc8" font-size=".66" font-family="Arial, sans-serif">GND</text>
+    <use href="#s3eth-pad" x="1.61" y="35.11"/><text x="3.2" y="35.11" transform="rotate(-90 3.2 35.11)" text-anchor="middle" fill="#d5dfc8" font-size=".66" font-family="Arial, sans-serif">IO17</text>
+    <use href="#s3eth-pad" x="1.61" y="32.57"/><text x="3.2" y="32.57" transform="rotate(-90 3.2 32.57)" text-anchor="middle" fill="#d5dfc8" font-size=".66" font-family="Arial, sans-serif">IO21</text>
+    <use href="#s3eth-pad" x="1.61" y="30.03"/><text x="3.2" y="30.03" transform="rotate(-90 3.2 30.03)" text-anchor="middle" fill="#d5dfc8" font-size=".66" font-family="Arial, sans-serif">3V3</text>
+    <use href="#s3eth-pad" x="1.61" y="27.49"/><text x="3.2" y="27.49" transform="rotate(-90 3.2 27.49)" text-anchor="middle" fill="#d5dfc8" font-size=".66" font-family="Arial, sans-serif">3V3EN</text>
+    <use href="#s3eth-pad" x="1.61" y="24.95"/><text x="3.2" y="24.95" transform="rotate(-90 3.2 24.95)" text-anchor="middle" fill="#d5dfc8" font-size=".66" font-family="Arial, sans-serif">GND</text>
+    <use href="#s3eth-pad" x="1.61" y="22.41"/><text x="3.2" y="22.41" transform="rotate(-90 3.2 22.41)" text-anchor="middle" fill="#d5dfc8" font-size=".66" font-family="Arial, sans-serif">VSYS</text>
+    <use href="#s3eth-pad" x="1.61" y="19.87"/><text x="3.2" y="19.87" transform="rotate(-90 3.2 19.87)" text-anchor="middle" fill="#d5dfc8" font-size=".66" font-family="Arial, sans-serif">VBUS</text>
+  </g>
+  <text x="200" y="717" text-anchor="middle" fill="#8b9f98" font-size="10" font-family="monospace">ESP32-S3-ETH · ВИД СНИЗУ · USB ↑</text>
 </svg>

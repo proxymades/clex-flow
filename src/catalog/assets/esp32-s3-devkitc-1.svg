@@ -1,1 +1,203 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="380" height="750" viewBox="0 0 380 750"><rect x="101" y="20" width="178" height="700" rx="14" fill="#17322e" stroke="#507e74" stroke-width="2"/><rect x="135" y="25" width="110" height="70" fill="#0f2521"/><path d="M145 70v-30h14v30h14V40h14v30h14V40h14v30h15V40" fill="none" stroke="#c7ad77" stroke-width="3"/><rect x="126" y="105" width="128" height="165" rx="5" fill="#54616c" stroke="#9aa3a5"/><text x="190" y="173" text-anchor="middle" font-family="monospace" fill="#e0e7ed" font-size="13">ESP32-S3</text><text x="190" y="198" text-anchor="middle" font-family="monospace" fill="#c4cdd7" font-size="12">WROOM-1</text><text x="190" y="224" text-anchor="middle" font-family="monospace" fill="#c4cdd7" font-size="10">N8R8 / v1.1</text><rect x="146" y="390" width="86" height="71" rx="4" fill="#0e1820" stroke="#5e8076"/><text x="190" y="427" text-anchor="middle" font-family="monospace" fill="#92adab" font-size="9">USB-UART</text><rect x="170" y="320" width="22" height="19" fill="#b6b5a0"/><text x="205" y="333" fill="#9aaead" font-size="8" font-family="monospace">RGB</text><g fill="#1b2836" stroke="#96a4b0"><rect x="117" y="639" width="60" height="81" rx="6"/><rect x="203" y="639" width="60" height="81" rx="6"/></g><text x="147" y="678" text-anchor="middle" fill="#b8c4d1" font-size="9" font-family="monospace">UART</text><text x="233" y="678" text-anchor="middle" fill="#b8c4d1" font-size="9" font-family="monospace">USB</text><text x="190" y="745" text-anchor="middle" fill="#759188" font-size="9" font-family="monospace">DEVKITC-1 · АНТЕННА ↑</text></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="440" height="750" viewBox="0 0 440 750" role="img" aria-label="ESP32-S3-DevKitC-1 v1.1, антенна сверху, два разъёма Micro-USB снизу">
+  <title>ESP32-S3-DevKitC-1 · v1.1 · N8R8</title>
+  <desc>Упрощённый вид со стороны компонентов по официальной фотографии Espressif v1.1: модуль WROOM-1 с антенной, стабилизатор, RGB на GPIO38, USB-UART, BOOT, RESET, два Micro-USB и два ряда по 22 контакта.</desc>
+  <defs>
+    <linearGradient id="devkitc-pcb" x2="1" y2="1"><stop stop-color="#252c2e"/><stop offset=".5" stop-color="#11191c"/><stop offset="1" stop-color="#20282a"/></linearGradient>
+    <linearGradient id="devkitc-metal" x2="1" y2=".3"><stop stop-color="#97a59e"/><stop offset=".17" stop-color="#d6dccf"/><stop offset=".5" stop-color="#a6b5a9"/><stop offset=".83" stop-color="#c6cfbe"/><stop offset="1" stop-color="#84988c"/></linearGradient>
+    <linearGradient id="devkitc-solder" x2=".6" y2="1"><stop stop-color="#e3e9df"/><stop offset=".45" stop-color="#a9b8b3"/><stop offset="1" stop-color="#6a7d79"/></linearGradient>
+    <pattern id="devkitc-brush" width="5" height="3" patternUnits="userSpaceOnUse"><path d="M0 .5H5" stroke="#eef0df" stroke-width=".6" stroke-opacity=".14"/></pattern>
+    <g id="devkitc-pad"><circle r="7.7" fill="#1d2426" stroke="#6a7876" stroke-width="1.2"/><circle r="5.8" fill="url(#devkitc-solder)"/><circle r="2.3" fill="#405651"/></g>
+    <g id="devkitc-r"><rect width="13" height="7" rx="1" fill="url(#devkitc-solder)"/><rect x="3" y=".6" width="7" height="5.8" fill="#30413a"/><path d="M5 2.5h3M5 4.5h3" stroke="#c2cbb8" stroke-width=".6"/></g>
+    <g id="devkitc-c"><rect width="15" height="9" rx="1.3" fill="url(#devkitc-solder)"/><rect x="3.3" y=".8" width="8.4" height="7.4" rx=".8" fill="#b9b5a0"/></g>
+    <g id="devkitc-sot23"><g fill="url(#devkitc-solder)"><rect x="0" y="0" width="4" height="7" rx=".5"/><rect x="13" y="0" width="4" height="7" rx=".5"/><rect x="7" y="14" width="4" height="7" rx=".5"/></g><rect x="0" y="5" width="17" height="11" rx="1.2" fill="#25342e" stroke="#748579" stroke-width=".7"/></g>
+    <g id="devkitc-usb">
+      <g fill="url(#devkitc-solder)" stroke="#6f8279" stroke-width=".7"><rect x="-4" y="8" width="8" height="32" rx="3"/><rect x="58" y="8" width="8" height="32" rx="3"/></g>
+      <path d="M5 0H57L62 7V58L56 64H6L0 58V7Z" fill="url(#devkitc-metal)" stroke="#cbd7c8" stroke-width="1.2"/>
+      <path d="M7 4v12h48V4M8 19h46M9 22v20M53 22v20" fill="none" stroke="#82968a" stroke-width="1.3"/>
+      <g fill="#748a79" stroke="#e0e5ce" stroke-width=".7"><rect x="13" y="27" width="8" height="4" rx="1"/><rect x="41" y="27" width="8" height="4" rx="1"/></g>
+      <path d="M12 48H50L54 54V59H8V54Z" fill="#23362d" stroke="#cbd5bc" stroke-width="1"/>
+      <path d="M17 53H45L47 56H15Z" fill="#9baf93"/>
+    </g>
+  </defs>
+  <!-- PCB and the WROOM module extending past its upper edge. -->
+  <path d="M108 106H332L336 110V688L332 692H108L104 688V110Z" fill="url(#devkitc-pcb)" stroke="#586c65" stroke-width="1.4"/>
+  <g fill="none" stroke="#34443b" stroke-width="1.1"><path d="M141 283v28h32v21M299 283v24h-19v35M145 389h38l15 15v63M291 388v46l-30 30v62M151 464v32l23 23v31M277 536v21M201 537v18h-17M166 588v35M272 588v35M210 291v23M232 291v23"/></g>
+  <rect x="138" y="44" width="164" height="232" rx="2" fill="#2b3537" stroke="#96a093" stroke-width="1"/>
+  <rect x="140" y="45" width="160" height="61" fill="#303a3c"/>
+  <path d="M149 91V54h16v22h18V54h18v22h18V54h18v22h18V54h18v37" fill="none" stroke="#273335" stroke-width="3"/>
+  <g fill="#c8c5a3"><circle cx="272" cy="97" r="2.4"/><circle cx="289" cy="97" r="2.4"/></g>
+  <rect x="133" y="111" width="7" height="6.3" rx=".7" fill="url(#devkitc-solder)" stroke="#aaa77a" stroke-width=".6"/>
+  <rect x="300" y="111" width="7" height="6.3" rx=".7" fill="url(#devkitc-solder)" stroke="#aaa77a" stroke-width=".6"/>
+  <rect x="133" y="120.5" width="7" height="6.3" rx=".7" fill="url(#devkitc-solder)" stroke="#aaa77a" stroke-width=".6"/>
+  <rect x="300" y="120.5" width="7" height="6.3" rx=".7" fill="url(#devkitc-solder)" stroke="#aaa77a" stroke-width=".6"/>
+  <rect x="133" y="130" width="7" height="6.3" rx=".7" fill="url(#devkitc-solder)" stroke="#aaa77a" stroke-width=".6"/>
+  <rect x="300" y="130" width="7" height="6.3" rx=".7" fill="url(#devkitc-solder)" stroke="#aaa77a" stroke-width=".6"/>
+  <rect x="133" y="139.5" width="7" height="6.3" rx=".7" fill="url(#devkitc-solder)" stroke="#aaa77a" stroke-width=".6"/>
+  <rect x="300" y="139.5" width="7" height="6.3" rx=".7" fill="url(#devkitc-solder)" stroke="#aaa77a" stroke-width=".6"/>
+  <rect x="133" y="149" width="7" height="6.3" rx=".7" fill="url(#devkitc-solder)" stroke="#aaa77a" stroke-width=".6"/>
+  <rect x="300" y="149" width="7" height="6.3" rx=".7" fill="url(#devkitc-solder)" stroke="#aaa77a" stroke-width=".6"/>
+  <rect x="133" y="158.5" width="7" height="6.3" rx=".7" fill="url(#devkitc-solder)" stroke="#aaa77a" stroke-width=".6"/>
+  <rect x="300" y="158.5" width="7" height="6.3" rx=".7" fill="url(#devkitc-solder)" stroke="#aaa77a" stroke-width=".6"/>
+  <rect x="133" y="168" width="7" height="6.3" rx=".7" fill="url(#devkitc-solder)" stroke="#aaa77a" stroke-width=".6"/>
+  <rect x="300" y="168" width="7" height="6.3" rx=".7" fill="url(#devkitc-solder)" stroke="#aaa77a" stroke-width=".6"/>
+  <rect x="133" y="177.5" width="7" height="6.3" rx=".7" fill="url(#devkitc-solder)" stroke="#aaa77a" stroke-width=".6"/>
+  <rect x="300" y="177.5" width="7" height="6.3" rx=".7" fill="url(#devkitc-solder)" stroke="#aaa77a" stroke-width=".6"/>
+  <rect x="133" y="187" width="7" height="6.3" rx=".7" fill="url(#devkitc-solder)" stroke="#aaa77a" stroke-width=".6"/>
+  <rect x="300" y="187" width="7" height="6.3" rx=".7" fill="url(#devkitc-solder)" stroke="#aaa77a" stroke-width=".6"/>
+  <rect x="133" y="196.5" width="7" height="6.3" rx=".7" fill="url(#devkitc-solder)" stroke="#aaa77a" stroke-width=".6"/>
+  <rect x="300" y="196.5" width="7" height="6.3" rx=".7" fill="url(#devkitc-solder)" stroke="#aaa77a" stroke-width=".6"/>
+  <rect x="133" y="206" width="7" height="6.3" rx=".7" fill="url(#devkitc-solder)" stroke="#aaa77a" stroke-width=".6"/>
+  <rect x="300" y="206" width="7" height="6.3" rx=".7" fill="url(#devkitc-solder)" stroke="#aaa77a" stroke-width=".6"/>
+  <rect x="133" y="215.5" width="7" height="6.3" rx=".7" fill="url(#devkitc-solder)" stroke="#aaa77a" stroke-width=".6"/>
+  <rect x="300" y="215.5" width="7" height="6.3" rx=".7" fill="url(#devkitc-solder)" stroke="#aaa77a" stroke-width=".6"/>
+  <rect x="133" y="225" width="7" height="6.3" rx=".7" fill="url(#devkitc-solder)" stroke="#aaa77a" stroke-width=".6"/>
+  <rect x="300" y="225" width="7" height="6.3" rx=".7" fill="url(#devkitc-solder)" stroke="#aaa77a" stroke-width=".6"/>
+  <rect x="133" y="234.5" width="7" height="6.3" rx=".7" fill="url(#devkitc-solder)" stroke="#aaa77a" stroke-width=".6"/>
+  <rect x="300" y="234.5" width="7" height="6.3" rx=".7" fill="url(#devkitc-solder)" stroke="#aaa77a" stroke-width=".6"/>
+  <rect x="133" y="244" width="7" height="6.3" rx=".7" fill="url(#devkitc-solder)" stroke="#aaa77a" stroke-width=".6"/>
+  <rect x="300" y="244" width="7" height="6.3" rx=".7" fill="url(#devkitc-solder)" stroke="#aaa77a" stroke-width=".6"/>
+  <rect x="133" y="253.5" width="7" height="6.3" rx=".7" fill="url(#devkitc-solder)" stroke="#aaa77a" stroke-width=".6"/>
+  <rect x="300" y="253.5" width="7" height="6.3" rx=".7" fill="url(#devkitc-solder)" stroke="#aaa77a" stroke-width=".6"/>
+  <rect x="133" y="263" width="7" height="6.3" rx=".7" fill="url(#devkitc-solder)" stroke="#aaa77a" stroke-width=".6"/>
+  <rect x="300" y="263" width="7" height="6.3" rx=".7" fill="url(#devkitc-solder)" stroke="#aaa77a" stroke-width=".6"/>
+  <rect x="148" y="273" width="7" height="8" rx=".6" fill="url(#devkitc-solder)" stroke="#aaa77a" stroke-width=".6"/>
+  <rect x="163" y="273" width="7" height="8" rx=".6" fill="url(#devkitc-solder)" stroke="#aaa77a" stroke-width=".6"/>
+  <rect x="178" y="273" width="7" height="8" rx=".6" fill="url(#devkitc-solder)" stroke="#aaa77a" stroke-width=".6"/>
+  <rect x="193" y="273" width="7" height="8" rx=".6" fill="url(#devkitc-solder)" stroke="#aaa77a" stroke-width=".6"/>
+  <rect x="208" y="273" width="7" height="8" rx=".6" fill="url(#devkitc-solder)" stroke="#aaa77a" stroke-width=".6"/>
+  <rect x="223" y="273" width="7" height="8" rx=".6" fill="url(#devkitc-solder)" stroke="#aaa77a" stroke-width=".6"/>
+  <rect x="238" y="273" width="7" height="8" rx=".6" fill="url(#devkitc-solder)" stroke="#aaa77a" stroke-width=".6"/>
+  <rect x="253" y="273" width="7" height="8" rx=".6" fill="url(#devkitc-solder)" stroke="#aaa77a" stroke-width=".6"/>
+  <rect x="268" y="273" width="7" height="8" rx=".6" fill="url(#devkitc-solder)" stroke="#aaa77a" stroke-width=".6"/>
+  <rect x="283" y="273" width="7" height="8" rx=".6" fill="url(#devkitc-solder)" stroke="#aaa77a" stroke-width=".6"/>
+  <rect x="147" y="106" width="146" height="161" rx="4" fill="url(#devkitc-metal)" stroke="#d1d8bd" stroke-width="1.3"/>
+  <rect x="150" y="109" width="140" height="155" rx="2" fill="url(#devkitc-brush)" stroke="#84968b" stroke-width=".7"/>
+  <g fill="#e4e9dc" text-anchor="middle" font-family="Arial, sans-serif"><text x="220" y="137" font-size="15" font-weight="bold">ESPRESSIF</text><text x="220" y="161" font-size="13">ESP32-S3</text><text x="220" y="181" font-size="12">WROOM-1</text><text x="220" y="218" font-size="9">Wi-Fi 2.4 GHz</text><text x="220" y="233" font-size="8">N8R8</text></g>
+  <circle cx="163" cy="251" r="3.5" fill="#17251e" stroke="#a3b49b" stroke-width=".7"/>
+  <!-- Voltage regulator, capacitors and power indicator. -->
+  <use href="#devkitc-c" transform="translate(165 299) rotate(90)"/><use href="#devkitc-r" transform="translate(182 299) rotate(90)"/>
+  <use href="#devkitc-c" x="190" y="299"/><use href="#devkitc-r" x="208" y="300"/>
+  <use href="#devkitc-r" x="226" y="300"/>
+  <g fill="url(#devkitc-solder)"><rect x="243" y="340" width="20" height="25" rx="2"/><rect x="197" y="333" width="17" height="7" rx="1"/><rect x="197" y="349" width="17" height="7" rx="1"/><rect x="197" y="365" width="17" height="7" rx="1"/></g>
+  <rect x="212" y="326" width="34" height="48" rx="2" fill="#2a3830" stroke="#8f9c88" stroke-width="1"/>
+  <text x="229" y="350" transform="rotate(90 229 350)" text-anchor="middle" fill="#91a18c" font-family="monospace" font-size="7">3.3 V LDO</text>
+  <use href="#devkitc-c" x="169" y="331"/><use href="#devkitc-c" x="169" y="350"/><use href="#devkitc-c" x="170" y="369"/>
+  <use href="#devkitc-r" transform="translate(199 379) rotate(90)"/><use href="#devkitc-c" transform="translate(286 331) rotate(90)"/>
+  <rect x="274" y="356" width="15" height="9" rx="1" fill="#bdd2ad" stroke="#e4ead2" stroke-width=".8"/><rect x="279" y="357" width="5" height="7" fill="#eff0d4"/>
+  <text x="281" y="377" text-anchor="middle" fill="#b8cbb4" font-size="7" font-family="Arial, sans-serif">PWR</text>
+  <!-- v1.1 RGB LED and two small transistor circuits. -->
+  <rect x="158" y="411" width="29" height="29" rx="2" fill="#ced9c3" stroke="#edf0db" stroke-width="1"/>
+  <rect x="165" y="418" width="15" height="15" rx="2" fill="#ebedcd"/>
+  <g fill="#9ba992"><rect x="160" y="421" width="4" height="5"/><rect x="181" y="425" width="4" height="5"/></g>
+  <text x="173" y="404" text-anchor="middle" fill="#c8d7bf" font-size="7" font-family="Arial, sans-serif">RGB · IO38</text>
+  <use href="#devkitc-sot23" x="210" y="415"/><use href="#devkitc-sot23" x="257" y="415"/>
+  <use href="#devkitc-r" x="207" y="447"/><use href="#devkitc-r" x="225" y="447"/><use href="#devkitc-r" x="245" y="447"/>
+  <use href="#devkitc-c" x="263" y="447"/>
+  <use href="#devkitc-r" transform="translate(183 474) rotate(90)"/><use href="#devkitc-c" transform="translate(184 491) rotate(90)"/>
+  <use href="#devkitc-r" transform="translate(183 512) rotate(90)"/>
+  <!-- USB-to-UART bridge, present on this side of the reference board. -->
+  <rect x="211.7" y="494" width="1.8" height="5" rx=".3" fill="url(#devkitc-solder)"/>
+  <rect x="211.7" y="530" width="1.8" height="5" rx=".3" fill="url(#devkitc-solder)"/>
+  <rect x="204" y="501.7" width="5" height="1.8" rx=".3" fill="url(#devkitc-solder)"/>
+  <rect x="240" y="501.7" width="5" height="1.8" rx=".3" fill="url(#devkitc-solder)"/>
+  <rect x="215.2" y="494" width="1.8" height="5" rx=".3" fill="url(#devkitc-solder)"/>
+  <rect x="215.2" y="530" width="1.8" height="5" rx=".3" fill="url(#devkitc-solder)"/>
+  <rect x="204" y="505.2" width="5" height="1.8" rx=".3" fill="url(#devkitc-solder)"/>
+  <rect x="240" y="505.2" width="5" height="1.8" rx=".3" fill="url(#devkitc-solder)"/>
+  <rect x="218.7" y="494" width="1.8" height="5" rx=".3" fill="url(#devkitc-solder)"/>
+  <rect x="218.7" y="530" width="1.8" height="5" rx=".3" fill="url(#devkitc-solder)"/>
+  <rect x="204" y="508.7" width="5" height="1.8" rx=".3" fill="url(#devkitc-solder)"/>
+  <rect x="240" y="508.7" width="5" height="1.8" rx=".3" fill="url(#devkitc-solder)"/>
+  <rect x="222.2" y="494" width="1.8" height="5" rx=".3" fill="url(#devkitc-solder)"/>
+  <rect x="222.2" y="530" width="1.8" height="5" rx=".3" fill="url(#devkitc-solder)"/>
+  <rect x="204" y="512.2" width="5" height="1.8" rx=".3" fill="url(#devkitc-solder)"/>
+  <rect x="240" y="512.2" width="5" height="1.8" rx=".3" fill="url(#devkitc-solder)"/>
+  <rect x="225.7" y="494" width="1.8" height="5" rx=".3" fill="url(#devkitc-solder)"/>
+  <rect x="225.7" y="530" width="1.8" height="5" rx=".3" fill="url(#devkitc-solder)"/>
+  <rect x="204" y="515.7" width="5" height="1.8" rx=".3" fill="url(#devkitc-solder)"/>
+  <rect x="240" y="515.7" width="5" height="1.8" rx=".3" fill="url(#devkitc-solder)"/>
+  <rect x="229.2" y="494" width="1.8" height="5" rx=".3" fill="url(#devkitc-solder)"/>
+  <rect x="229.2" y="530" width="1.8" height="5" rx=".3" fill="url(#devkitc-solder)"/>
+  <rect x="204" y="519.2" width="5" height="1.8" rx=".3" fill="url(#devkitc-solder)"/>
+  <rect x="240" y="519.2" width="5" height="1.8" rx=".3" fill="url(#devkitc-solder)"/>
+  <rect x="232.7" y="494" width="1.8" height="5" rx=".3" fill="url(#devkitc-solder)"/>
+  <rect x="232.7" y="530" width="1.8" height="5" rx=".3" fill="url(#devkitc-solder)"/>
+  <rect x="204" y="522.7" width="5" height="1.8" rx=".3" fill="url(#devkitc-solder)"/>
+  <rect x="240" y="522.7" width="5" height="1.8" rx=".3" fill="url(#devkitc-solder)"/>
+  <rect x="236.2" y="494" width="1.8" height="5" rx=".3" fill="url(#devkitc-solder)"/>
+  <rect x="236.2" y="530" width="1.8" height="5" rx=".3" fill="url(#devkitc-solder)"/>
+  <rect x="204" y="526.2" width="5" height="1.8" rx=".3" fill="url(#devkitc-solder)"/>
+  <rect x="240" y="526.2" width="5" height="1.8" rx=".3" fill="url(#devkitc-solder)"/>
+  <rect x="209" y="499" width="31" height="31" rx="1.8" fill="#26352e" stroke="#596f5b" stroke-width=".8"/>
+  <circle cx="213" cy="503" r="1.5" fill="#13241b"/>
+  <g text-anchor="middle" fill="#8da187" font-family="monospace" font-size="5"><text x="225" y="511">USB</text><text x="225" y="518">UART</text><text x="225" y="525">BRIDGE</text></g>
+  <use href="#devkitc-c" transform="translate(267 502) rotate(90)"/><use href="#devkitc-r" transform="translate(284 502) rotate(90)"/>
+  <!-- BOOT and RESET tactile switches. -->
+  <g fill="url(#devkitc-solder)"><rect x="157" y="544" width="23" height="8" rx="1"/><rect x="157" y="577" width="23" height="8" rx="1"/><rect x="254" y="544" width="23" height="8" rx="1"/><rect x="254" y="577" width="23" height="8" rx="1"/></g>
+  <g fill="#414d45" stroke="#b2bba4" stroke-width="1"><rect x="154" y="550" width="29" height="28" rx="3"/><rect x="251" y="550" width="29" height="28" rx="3"/></g>
+  <g fill="#7c8f84" stroke="#d7decb" stroke-width="1.1"><circle cx="168.5" cy="564" r="9.5"/><circle cx="265.5" cy="564" r="9.5"/></g>
+  <g fill="#c8d8c1" font-family="Arial, sans-serif" font-size="8" text-anchor="middle"><text x="168" y="541">BOOT</text><text x="265" y="541">RESET</text></g>
+  <use href="#devkitc-c" x="205" y="552"/><use href="#devkitc-r" x="205" y="569"/>
+  <use href="#devkitc-c" x="154" y="595"/><use href="#devkitc-r" x="273" y="595"/>
+  <use href="#devkitc-r" x="189" y="596"/><use href="#devkitc-r" x="228" y="596"/>
+  <!-- Two Micro-USB connectors, UART on the left and native USB on the right. -->
+  <rect x="147" y="629" width="3" height="14" rx=".5" fill="url(#devkitc-solder)"/>
+  <rect x="153" y="629" width="3" height="14" rx=".5" fill="url(#devkitc-solder)"/>
+  <rect x="159" y="629" width="3" height="14" rx=".5" fill="url(#devkitc-solder)"/>
+  <rect x="165" y="629" width="3" height="14" rx=".5" fill="url(#devkitc-solder)"/>
+  <rect x="171" y="629" width="3" height="14" rx=".5" fill="url(#devkitc-solder)"/>
+  <use href="#devkitc-usb" x="130" y="640"/>
+  <rect x="271" y="629" width="3" height="14" rx=".5" fill="url(#devkitc-solder)"/>
+  <rect x="277" y="629" width="3" height="14" rx=".5" fill="url(#devkitc-solder)"/>
+  <rect x="283" y="629" width="3" height="14" rx=".5" fill="url(#devkitc-solder)"/>
+  <rect x="289" y="629" width="3" height="14" rx=".5" fill="url(#devkitc-solder)"/>
+  <rect x="295" y="629" width="3" height="14" rx=".5" fill="url(#devkitc-solder)"/>
+  <use href="#devkitc-usb" x="254" y="640"/>
+  <g fill="#a8c0a4" text-anchor="middle" font-size="8" font-family="Arial, sans-serif"><text x="161" y="623">UART</text><text x="285" y="623">USB</text></g>
+  <!-- Round header pads align with the profile's electrical contact IDs. -->
+  <use href="#devkitc-pad" x="116" y="120"/><text x="126" y="120" transform="rotate(-90 126 120)" text-anchor="middle" fill="#d0ddc5" font-size="6.5" font-family="Arial, sans-serif">3V3</text>
+  <use href="#devkitc-pad" x="116" y="144"/><text x="126" y="144" transform="rotate(-90 126 144)" text-anchor="middle" fill="#d0ddc5" font-size="6.5" font-family="Arial, sans-serif">3V3</text>
+  <use href="#devkitc-pad" x="116" y="168"/><text x="126" y="168" transform="rotate(-90 126 168)" text-anchor="middle" fill="#d0ddc5" font-size="6.5" font-family="Arial, sans-serif">RST</text>
+  <use href="#devkitc-pad" x="116" y="192"/><text x="126" y="192" transform="rotate(-90 126 192)" text-anchor="middle" fill="#d0ddc5" font-size="6.5" font-family="Arial, sans-serif">G4</text>
+  <use href="#devkitc-pad" x="116" y="216"/><text x="126" y="216" transform="rotate(-90 126 216)" text-anchor="middle" fill="#d0ddc5" font-size="6.5" font-family="Arial, sans-serif">G5</text>
+  <use href="#devkitc-pad" x="116" y="240"/><text x="126" y="240" transform="rotate(-90 126 240)" text-anchor="middle" fill="#d0ddc5" font-size="6.5" font-family="Arial, sans-serif">G6</text>
+  <use href="#devkitc-pad" x="116" y="264"/><text x="126" y="264" transform="rotate(-90 126 264)" text-anchor="middle" fill="#d0ddc5" font-size="6.5" font-family="Arial, sans-serif">G7</text>
+  <use href="#devkitc-pad" x="116" y="288"/><text x="126" y="288" transform="rotate(-90 126 288)" text-anchor="middle" fill="#d0ddc5" font-size="6.5" font-family="Arial, sans-serif">G15</text>
+  <use href="#devkitc-pad" x="116" y="312"/><text x="126" y="312" transform="rotate(-90 126 312)" text-anchor="middle" fill="#d0ddc5" font-size="6.5" font-family="Arial, sans-serif">G16</text>
+  <use href="#devkitc-pad" x="116" y="336"/><text x="126" y="336" transform="rotate(-90 126 336)" text-anchor="middle" fill="#d0ddc5" font-size="6.5" font-family="Arial, sans-serif">G17</text>
+  <use href="#devkitc-pad" x="116" y="360"/><text x="126" y="360" transform="rotate(-90 126 360)" text-anchor="middle" fill="#d0ddc5" font-size="6.5" font-family="Arial, sans-serif">G18</text>
+  <use href="#devkitc-pad" x="116" y="384"/><text x="126" y="384" transform="rotate(-90 126 384)" text-anchor="middle" fill="#d0ddc5" font-size="6.5" font-family="Arial, sans-serif">G8</text>
+  <use href="#devkitc-pad" x="116" y="408"/><text x="126" y="408" transform="rotate(-90 126 408)" text-anchor="middle" fill="#d0ddc5" font-size="6.5" font-family="Arial, sans-serif">G3</text>
+  <use href="#devkitc-pad" x="116" y="432"/><text x="126" y="432" transform="rotate(-90 126 432)" text-anchor="middle" fill="#d0ddc5" font-size="6.5" font-family="Arial, sans-serif">G46</text>
+  <use href="#devkitc-pad" x="116" y="456"/><text x="126" y="456" transform="rotate(-90 126 456)" text-anchor="middle" fill="#d0ddc5" font-size="6.5" font-family="Arial, sans-serif">G9</text>
+  <use href="#devkitc-pad" x="116" y="480"/><text x="126" y="480" transform="rotate(-90 126 480)" text-anchor="middle" fill="#d0ddc5" font-size="6.5" font-family="Arial, sans-serif">G10</text>
+  <use href="#devkitc-pad" x="116" y="504"/><text x="126" y="504" transform="rotate(-90 126 504)" text-anchor="middle" fill="#d0ddc5" font-size="6.5" font-family="Arial, sans-serif">G11</text>
+  <use href="#devkitc-pad" x="116" y="528"/><text x="126" y="528" transform="rotate(-90 126 528)" text-anchor="middle" fill="#d0ddc5" font-size="6.5" font-family="Arial, sans-serif">G12</text>
+  <use href="#devkitc-pad" x="116" y="552"/><text x="126" y="552" transform="rotate(-90 126 552)" text-anchor="middle" fill="#d0ddc5" font-size="6.5" font-family="Arial, sans-serif">G13</text>
+  <use href="#devkitc-pad" x="116" y="576"/><text x="126" y="576" transform="rotate(-90 126 576)" text-anchor="middle" fill="#d0ddc5" font-size="6.5" font-family="Arial, sans-serif">G14</text>
+  <use href="#devkitc-pad" x="116" y="600"/><text x="126" y="600" transform="rotate(-90 126 600)" text-anchor="middle" fill="#d0ddc5" font-size="6.5" font-family="Arial, sans-serif">5V</text>
+  <use href="#devkitc-pad" x="116" y="624"/><text x="126" y="624" transform="rotate(-90 126 624)" text-anchor="middle" fill="#d0ddc5" font-size="6.5" font-family="Arial, sans-serif">GND</text>
+  <use href="#devkitc-pad" x="324" y="120"/><text x="309" y="120" transform="rotate(-90 309 120)" text-anchor="middle" fill="#d0ddc5" font-size="6.5" font-family="Arial, sans-serif">GND</text>
+  <use href="#devkitc-pad" x="324" y="144"/><text x="309" y="144" transform="rotate(-90 309 144)" text-anchor="middle" fill="#d0ddc5" font-size="6.5" font-family="Arial, sans-serif">TX</text>
+  <use href="#devkitc-pad" x="324" y="168"/><text x="309" y="168" transform="rotate(-90 309 168)" text-anchor="middle" fill="#d0ddc5" font-size="6.5" font-family="Arial, sans-serif">RX</text>
+  <use href="#devkitc-pad" x="324" y="192"/><text x="309" y="192" transform="rotate(-90 309 192)" text-anchor="middle" fill="#d0ddc5" font-size="6.5" font-family="Arial, sans-serif">G1</text>
+  <use href="#devkitc-pad" x="324" y="216"/><text x="309" y="216" transform="rotate(-90 309 216)" text-anchor="middle" fill="#d0ddc5" font-size="6.5" font-family="Arial, sans-serif">G2</text>
+  <use href="#devkitc-pad" x="324" y="240"/><text x="309" y="240" transform="rotate(-90 309 240)" text-anchor="middle" fill="#d0ddc5" font-size="6.5" font-family="Arial, sans-serif">G42</text>
+  <use href="#devkitc-pad" x="324" y="264"/><text x="309" y="264" transform="rotate(-90 309 264)" text-anchor="middle" fill="#d0ddc5" font-size="6.5" font-family="Arial, sans-serif">G41</text>
+  <use href="#devkitc-pad" x="324" y="288"/><text x="309" y="288" transform="rotate(-90 309 288)" text-anchor="middle" fill="#d0ddc5" font-size="6.5" font-family="Arial, sans-serif">G40</text>
+  <use href="#devkitc-pad" x="324" y="312"/><text x="309" y="312" transform="rotate(-90 309 312)" text-anchor="middle" fill="#d0ddc5" font-size="6.5" font-family="Arial, sans-serif">G39</text>
+  <use href="#devkitc-pad" x="324" y="336"/><text x="309" y="336" transform="rotate(-90 309 336)" text-anchor="middle" fill="#d0ddc5" font-size="6.5" font-family="Arial, sans-serif">G38</text>
+  <use href="#devkitc-pad" x="324" y="360"/><text x="309" y="360" transform="rotate(-90 309 360)" text-anchor="middle" fill="#d0ddc5" font-size="6.5" font-family="Arial, sans-serif">G37</text>
+  <use href="#devkitc-pad" x="324" y="384"/><text x="309" y="384" transform="rotate(-90 309 384)" text-anchor="middle" fill="#d0ddc5" font-size="6.5" font-family="Arial, sans-serif">G36</text>
+  <use href="#devkitc-pad" x="324" y="408"/><text x="309" y="408" transform="rotate(-90 309 408)" text-anchor="middle" fill="#d0ddc5" font-size="6.5" font-family="Arial, sans-serif">G35</text>
+  <use href="#devkitc-pad" x="324" y="432"/><text x="309" y="432" transform="rotate(-90 309 432)" text-anchor="middle" fill="#d0ddc5" font-size="6.5" font-family="Arial, sans-serif">G0</text>
+  <use href="#devkitc-pad" x="324" y="456"/><text x="309" y="456" transform="rotate(-90 309 456)" text-anchor="middle" fill="#d0ddc5" font-size="6.5" font-family="Arial, sans-serif">G45</text>
+  <use href="#devkitc-pad" x="324" y="480"/><text x="309" y="480" transform="rotate(-90 309 480)" text-anchor="middle" fill="#d0ddc5" font-size="6.5" font-family="Arial, sans-serif">G48</text>
+  <use href="#devkitc-pad" x="324" y="504"/><text x="309" y="504" transform="rotate(-90 309 504)" text-anchor="middle" fill="#d0ddc5" font-size="6.5" font-family="Arial, sans-serif">G47</text>
+  <use href="#devkitc-pad" x="324" y="528"/><text x="309" y="528" transform="rotate(-90 309 528)" text-anchor="middle" fill="#d0ddc5" font-size="6.5" font-family="Arial, sans-serif">G21</text>
+  <use href="#devkitc-pad" x="324" y="552"/><text x="309" y="552" transform="rotate(-90 309 552)" text-anchor="middle" fill="#d0ddc5" font-size="6.5" font-family="Arial, sans-serif">G20</text>
+  <use href="#devkitc-pad" x="324" y="576"/><text x="309" y="576" transform="rotate(-90 309 576)" text-anchor="middle" fill="#d0ddc5" font-size="6.5" font-family="Arial, sans-serif">G19</text>
+  <use href="#devkitc-pad" x="324" y="600"/><text x="309" y="600" transform="rotate(-90 309 600)" text-anchor="middle" fill="#d0ddc5" font-size="6.5" font-family="Arial, sans-serif">GND</text>
+  <use href="#devkitc-pad" x="324" y="624"/><text x="309" y="624" transform="rotate(-90 309 624)" text-anchor="middle" fill="#d0ddc5" font-size="6.5" font-family="Arial, sans-serif">GND</text>
+  <text x="220" y="741" text-anchor="middle" fill="#8da697" font-size="10" font-family="monospace">DEVKITC-1 · v1.1 · АНТЕННА ↑</text>
+</svg>
