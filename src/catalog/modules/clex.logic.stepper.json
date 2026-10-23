@@ -156,7 +156,8 @@
       "type": "integer",
       "default": 400,
       "min": 1,
-      "max": 2000
+      "max": 2000,
+      "description": "Nano: до 500 импульсов/с на двигатель, суммарно до 1000 при одновременном движении."
     },
     "acceleration": {
       "label": "Разгон, импульсов/с²",
@@ -182,9 +183,11 @@
     "targets": [
       "esp32",
       "esp32s3",
-      "esp32p4"
+      "esp32p4",
+      "atmega328p"
     ],
-    "espIdf": "5.4.4"
+    "espIdf": "5.4.4",
+    "platforms": { "arduino-avr": "1.8.6" }
   },
   "firmware": {
     "status": "implemented",

@@ -69,7 +69,7 @@ export function connectionProblem(project, catalog, componentId, terminalId, pin
   const pin = lookup(board.pins, pinId);
   if (!terminal) return 'Контакт компонента не найден.';
   if (!pin) return 'Контакт платы не найден.';
-  if (terminal.kind === 'power') return pin.kind === 'power' && pin.voltage === (terminal.voltageParameter ? Number(component.parameters[terminal.voltageParameter]) : terminal.voltage) ? null : 'Питание компонента подключается к контакту платы с указанным напряжением.';
+  if (terminal.kind === 'power') return pin.kind === 'power' && pin.voltage === (terminal.voltageFromBoard ? (board.logicVoltage || 3.3) : terminal.voltageParameter ? Number(component.parameters[terminal.voltageParameter]) : terminal.voltage) ? null : 'Питание компонента подключается к контакту платы с указанным напряжением.';
   if (terminal.kind === 'ground') return pin.kind === 'ground' ? null : 'Общий контакт / катод должен быть подключен к GND. Питание и GPIO здесь недопустимы.';
   if (pin.kind !== 'gpio') return 'Сигнальный контакт подключается к GPIO, а не к питанию, GND или управлению.';
   if (module.constraints.signalVoltageParameter && Number(component.parameters[module.constraints.signalVoltageParameter]) > (board.logicVoltage || 3.3)) return `Уровень OUT превышает допустимые ${board.logicVoltage || 3.3} В GPIO платы. Используйте совместимый уровень сигнала.`;

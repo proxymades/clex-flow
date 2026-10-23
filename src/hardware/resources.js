@@ -11,7 +11,9 @@ export function resourceClaims(project, catalog) {
   const configured = (board?.peripherals || []).filter(provider=>provider.occupancySetting && project.boardSettings[provider.occupancySetting]==='connected' && !project.components.some(component=>hardwareProvider(component,catalog.modules.find(module=>module.id===component.moduleId),board)?.id===provider.id)).flatMap(provider=>(provider.resources || []).map(resource=>({...resource,componentId:null,name:provider.name})));
   const router=project.components.find(c=>c.moduleId==='clex.hardware.router');
   const wifi=router&&board?.wifi?.driverKey==='hosted'?[{key:'sdmmc:1',label:'ESP-Hosted SDIO',gpios:Object.values(board.wifi.signals),componentId:router.id,name:router.name}]:[];
-  return [...mounted,...configured,...wifi];
+  const motion=board?.motion?.timerResource&&project.components.find(component=>catalog.modules.find(module=>module.id===component.moduleId)?.stepper);
+  const motionTimers=motion?[{key:board.motion.timerResource,label:'Timer1 движения',componentId:motion.id,name:'Шаговые двигатели'}]:[];
+  return [...mounted,...configured,...wifi,...motionTimers];
 }
 const normalized = value => Array.isArray(value) ? value.map(normalized) : value && typeof value==='object' ? Object.fromEntries(Object.keys(value).sort().map(key=>[key,normalized(value[key])])) : value;
 const canonical = value => JSON.stringify(normalized(value));

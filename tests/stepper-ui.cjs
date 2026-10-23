@@ -2,7 +2,7 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs/promises');
 const {chromium}=require('playwright');
 (async()=>{
- const {stepperProject}=await import('./stepper-fixture.js');const fixture=stepperProject(),p=fixture.project;
+ const {stepperProject}=await import('./stepper-fixture.js');const fixture=stepperProject('drv8825',process.env.CLEX_TEST_BOARD||'waveshare-esp32-s3-eth'),p=fixture.project;
  await fs.mkdir('.artifacts/stepper-work',{recursive:true});
  const browser=await chromium.launch({headless:true,executablePath:process.env.CLEX_BROWSER_EXECUTABLE});const page=await browser.newPage({viewport:{width:1800,height:1200}}),errors=[];
  page.on('pageerror',e=>errors.push(e.message));await page.addInitScript(p=>localStorage.setItem('clex-flow:projects:v1',JSON.stringify({[p.id]:JSON.stringify(p)})),p);
@@ -13,7 +13,7 @@ const {chromium}=require('playwright');
  try{
   await page.goto(process.env.CLEX_PREVIEW_URL||'http://127.0.0.1:1420');await page.locator('.project-open').click();await page.getByRole('button',{name:'Монтаж',exact:true}).click();await page.locator('.assembly-flow-region[data-ready="true"]').waitFor();
   await page.getByRole('button',{name:'Двигатели',exact:true}).click();assert.equal(await page.getByRole('button',{name:'Добавить: NEMA 17',exact:true}).count(),1);assert.equal(await page.getByRole('button',{name:'Добавить: DRV8825',exact:true}).count(),0);
-  await page.getByRole('button',{name:'Драйверы двигателей',exact:true}).click();for(const name of ['DRV8825','TB6600','MKS TMC2208 V2'])assert.equal(await page.getByRole('button',{name:'Добавить: '+name,exact:true}).count(),1);
+  await page.getByRole('button',{name:'Драйверы двигателей',exact:true}).click();for(const name of ['DRV8825','TB6600','MKS TMC2208 V2']){const button=page.getByRole('button',{name:'Добавить: '+name,exact:true});assert.equal(await button.count(),1);assert.equal(await button.isDisabled(),false);}
   assert.equal(await page.getByRole('button',{name:/Добавить: Внешний источник/}).count(),0);
   await page.getByRole('button',{name:/Показать весь/}).click();await select(fixture.motor.id);
   const a1=page.getByRole('combobox',{name:'Подключение: A1',exact:true});assert.equal(await a1.inputValue(),'component:'+fixture.driver.id+':a1');

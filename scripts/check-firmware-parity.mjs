@@ -13,6 +13,7 @@ import {nanoProject} from '../tests/nano-fixture.js';
 import {selectNumberProject} from '../tests/select-number-fixture.js';
 import {touchButtonProject} from '../tests/touch-button-fixture.js';
 import {stepperProject} from '../tests/stepper-fixture.js';
+import {nanoStepperProject} from '../tests/nano-stepper-fixture.js';
 import {routerProject,routerDisplayProject} from '../tests/router-fixture.js';
 import {temperatureProject} from '../tests/temperature-fixture.js';
 import {ESP32_BOARD,esp32GpioProject,esp32DisplayProject,esp32EspNowProject,esp32PeripheralProject,esp32RouterProject} from '../tests/esp32-firmware-fixture.js';
@@ -82,6 +83,8 @@ for(const board of [ESP32_BOARD,'waveshare-esp32-s3-eth','waveshare-esp32-p4-nan
     cases.push([board+'-'+driver,stepperProject(driver,board).project,board.includes('s3')?'usb':'uart']);
   }
 }
+for(const driver of ['tb6600','tmc2208','drv8825'])cases.push(['nano-'+driver,nanoStepperProject({drivers:[driver],serial:true}),'uart']);
+cases.push(['nano-four-steppers',nanoStepperProject({drivers:Array(4).fill('drv8825'),speed:250}),'uart']);
 const temporary = mkdtempSync(join(tmpdir(), 'clex-firmware-parity-'));
 try {
   for (const [name, project, consoleMode] of cases) {

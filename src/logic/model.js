@@ -201,7 +201,7 @@ export function validateGraph(project, catalog) {
       if (parameter.type === 'text' && (typeof value !== 'string' || value.length > parameter.maxLength)) add('error', 'logic-parameter', `${node.name}: текст не должен превышать ${formatCount(parameter.maxLength, ['символ', 'символа', 'символов'])}.`, fields);
     }
     if (module.id === 'clex.logic.select-number' && node.parameters.firstValue === node.parameters.secondValue) add('error', 'logic-parameter', node.name + ': укажите два разных значения для выбора.', fields);
-    for(const message of stepperLogicIssues(node,project))add('error','stepper-logic',node.name+': '+message,fields);
+    for(const message of stepperLogicIssues(node,project,catalog))add('error','stepper-logic',node.name+': '+message,fields);
     for(const message of [...espNowLogicIssues(node,project,boardFor(project,catalog)),...espNowAckIssues(node,project,catalog)])add('error','espnow-logic',node.name+': '+message,fields);
     if(module.constraints.network){if(!project.components.some(component=>(catalog.modules.find(module=>module.id===component.moduleId)?.network||component.moduleId==='clex.hardware.router')))add('error','probe-network',node.name+': добавьте сетевой интерфейс в монтаж.',fields);if(!probeUrl(node.parameters.url))add('error','probe-url',node.name+': укажите HTTP/HTTPS-адрес без логина, пароля и фрагмента.',fields);}
     const binding = hardwareBinding(node, project, catalog);

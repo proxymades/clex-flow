@@ -24,6 +24,7 @@
   "width": 380,
   "height": 700,
   "logicVoltage": 5,
+  "motion": { "maxDrivers": 4, "maxSpeed": 500, "maxTotalSpeed": 1000, "timerResource": "timer:1" },
   "reservedGpios": {},
   "options": {
     "bootloader": {

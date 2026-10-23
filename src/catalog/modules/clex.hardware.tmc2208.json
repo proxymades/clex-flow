@@ -44,11 +44,12 @@
     },
     {
       "id": "vio",
-      "label": "VIO / 3,3 В",
+      "label": "VIO / питание логики",
       "kind": "power",
       "x": 0,
       "y": 265,
-      "voltage": 3.3
+      "voltage": 3.3,
+      "voltageFromBoard": true
     },
     {
       "id": "a1",
@@ -160,9 +161,11 @@
     "targets": [
       "esp32",
       "esp32s3",
-      "esp32p4"
+      "esp32p4",
+      "atmega328p"
     ],
-    "espIdf": "5.4.4"
+    "espIdf": "5.4.4",
+    "platforms": { "arduino-avr": "1.8.6" }
   },
   "firmware": {
     "status": "implemented",

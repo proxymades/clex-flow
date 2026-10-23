@@ -7,7 +7,7 @@ typedef struct {
  uint32_t target,emitted,speed,acceleration,pulse_us,interval_us,events,owner,error;
  int32_t position;
 } clex_sp_core_t;
-static uint32_t clex_sp_sqrt(uint32_t value){uint32_t root=0,bit=1u<<30;while(bit>value)bit>>=2;while(bit){if(value>=root+bit){value-=root+bit;root=(root>>1)+bit;}else root>>=1;bit>>=2;}return root;}
+static uint32_t clex_sp_sqrt(uint32_t value){uint32_t root=0,bit=1UL<<30;while(bit>value)bit>>=2;while(bit){if(value>=root+bit){value-=root+bit;root=(root>>1)+bit;}else root>>=1;bit>>=2;}return root;}
 static uint32_t clex_sp_interval(const clex_sp_core_t*s){
  uint32_t velocity=s->speed;
  if(s->acceleration){uint32_t distance=s->emitted>=10000000?10000000:s->emitted+1;if(s->target&&s->target-s->emitted<distance)distance=s->target-s->emitted;uint64_t squared=2ULL*s->acceleration*distance,limit=(uint64_t)s->speed*s->speed;velocity=clex_sp_sqrt((uint32_t)(squared<limit?squared:limit));if(!velocity)velocity=1;}
