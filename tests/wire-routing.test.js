@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {allocateWireLanes,orthogonalWireRoute,routeAssemblyEdges,wireFitPadding,wireObstacles,segmentCrossesObstacle,manualWirePoints,reanchorManualRoute} from '../src/assembly/wireRouting.js';
+import {allocateWireLanes,orthogonalWireRoute,routeAssemblyEdges,previewAssemblyEdges,wireFitPadding,wireObstacles,segmentCrossesObstacle,manualWirePoints,reanchorManualRoute} from '../src/assembly/wireRouting.js';
 import {catalog} from './catalog-fixture.js';
 import {p4Project} from './p4-fixture.js';
 import {displayProject} from './display-fixture.js';
@@ -146,4 +146,35 @@ test('a manually routed wire stays manual when moving the component makes its pa
  const result=manualWirePoints(start,[end[0],start[1]],wire.route);
  assert.deepEqual(result,[start,[end[0],start[1]]]);
  assert.deepEqual(parseProject(serializeProject(moved)).assembly.connections,moved.assembly.connections);
+});
+
+test('drag preview follows board, driver and motor contacts without changing saved geometry', async () => {
+ const { assemblyPerformanceProject } = await import('./assembly-performance-fixture.js');
+ const { assemblyRoutingScene } = await import('../src/assembly/routingScene.js');
+ const project = assemblyPerformanceProject(), before = structuredClone(project);
+ const board = catalog.boards.find(board => board.id === project.boardId);
+ project.assembly.connections[0].route = [{ x: 900, y: -40 }, { x: -60, y: -40 }];
+ const scene = assemblyRoutingScene({ ...project.assembly, components: project.components }, board, catalog);
+ const routed = routeAssemblyEdges(scene.edges, scene.nodes, board);
+ const snapshot = structuredClone(project);
+ for (const moved of ['board', ...project.components.map(component => component.id)]) {
+  const nodes = scene.nodes.map(node => node.id === moved ? { ...node, position: { x: node.position.x + 56, y: node.position.y - 32 } } : node);
+  const preview = previewAssemblyEdges(routed, nodes), byId = new Map(nodes.map(node => [node.id, node]));
+  for (const [index, edge] of preview.entries()) {
+   const { sourcePin, targetTerminal, route } = edge.data;
+   assert.deepEqual(route.points[0], [byId.get(edge.source).position.x + sourcePin.x, byId.get(edge.source).position.y + sourcePin.y]);
+   assert.deepEqual(route.points.at(-1), [byId.get(edge.target).position.x + targetTerminal.x, byId.get(edge.target).position.y + targetTerminal.y]);
+   for (let i = 1; i < route.points.length; i++) assert.ok(route.points[i - 1][0] === route.points[i][0] || route.points[i - 1][1] === route.points[i][1]);
+   if (edge.source !== moved && edge.target !== moved) assert.equal(edge, routed[index], 'unaffected wire keeps its route and render data');
+  }
+ }
+ const translated = previewAssemblyEdges(routed, scene.nodes.map(node => ({ ...node, position: { x: node.position.x + 80, y: node.position.y + 40 } })));
+ for (let index = 0; index < routed.length; index++) {
+  const expected = routed[index].data.route.points.map(([x, y]) => [x + 80, y + 40]), actual = translated[index].data.route.points;
+  assert.equal(actual.length, expected.length);
+  for (let i = 0; i < actual.length; i++) for (let axis = 0; axis < 2; axis++) assert.ok(Math.abs(actual[i][axis] - expected[i][axis]) < 1e-7, 'translation retains the interior route despite fractional pin coordinates');
+ }
+ assert.deepEqual(project, snapshot, 'preview does not change stored routes or positions');
+ assert.deepEqual(project.gpioAssignments, before.gpioAssignments);
+ assert.deepEqual(previewAssemblyEdges(routed, scene.nodes), routed);
 });

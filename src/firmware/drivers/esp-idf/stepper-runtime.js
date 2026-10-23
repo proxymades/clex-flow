@@ -1,6 +1,8 @@
 import {STEPPER_CORE} from '../stepper-core.js';
 export const STEPPER_RUNTIME=String.raw`
 ${STEPPER_CORE}
+#include "soc/soc_caps.h"
+_Static_assert(@COUNT@ <= SOC_TIMER_GROUP_TOTAL_TIMERS, "Stepper drivers exceed hardware GPTimer capacity");
 typedef struct { int step,dir,enable; bool enable_high,invert_direction; uint32_t pulse_us; } clex_sp_config_t;
 static const clex_sp_config_t clex_sp_configs[@COUNT@]=@CONFIG@;
 typedef struct { clex_sp_core_t core; gptimer_handle_t timer; uint64_t alarm; int64_t published_at; clex_sp_core_t published; bool seen; } clex_sp_driver_t;

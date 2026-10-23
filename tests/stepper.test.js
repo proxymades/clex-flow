@@ -3,6 +3,9 @@ import assert from 'node:assert/strict';
 import {runHostC} from './host-c.js';
 import {catalog} from './catalog-fixture.js';
 import {stepperProject} from './stepper-fixture.js';
+import {addStepper} from './assembly-performance-fixture.js';
+import {stepperIssues,stepperTimerBudget} from '../src/stepper/model.js';
+import {createProject} from '../src/projects/model.js';
 import {STEPPER_CORE} from '../src/firmware/drivers/stepper-core.js';
 import {addHardware,connectTerminal,connectionProblem,disconnectTerminal,removeHardware,validateAssembly,transformAssembly} from '../src/assembly/model.js';
 import {componentContact} from '../src/assembly/endpoints.js';
@@ -45,7 +48,7 @@ test('revolutions use the manual microstep setting and the motor resolution, and
  motion.parameters.revolutions=NaN;assert.ok(validateGraph(p,catalog).some(i=>i.message.includes('Количество оборотов')));
  motion.parameters.revolutions=10000;assert.ok(validateGraph(p,catalog).some(i=>i.message.includes('10000000')));
 });
-test('two independent drivers use distinct GPIOs and timers; a third driver exceeds the resource limit',()=>{
+test('two independent drivers use distinct GPIOs and timers; further drivers use the board budget',()=>{
  let {project:p}=stepperProject();
  p=addHardware(p,catalog.modules.find(m=>m.id==='clex.hardware.nema17'),catalog);const motor=p.components.at(-1);
  const module=catalog.modules.find(m=>m.id==='clex.hardware.drv8825');p=addHardware(p,module,catalog);const driver=p.components.at(-1),board=catalog.boards.find(b=>b.id===p.boardId);
@@ -54,6 +57,8 @@ test('two independent drivers use distinct GPIOs and timers; a third driver exce
  p.logic=addNode(p.logic,catalog.modules.find(m=>m.id==='clex.logic.stepper'),p.components,p,catalog);p.logic.nodes.at(-1).parameters.componentId=driver.id;
  assert.deepEqual(validateAssembly(p,catalog).filter(i=>i.severity==='error'),[]);assert.deepEqual(validateGraph(p,catalog).filter(i=>i.severity==='error'),[]);
  assert.equal(new Set(p.gpioAssignments.map(a=>a.gpio)).size,6);const bundle=generateFirmware(p,catalog);assert.match(bundle.mainC,/clex_sp_drivers\[2\]/);assert.match(bundle.mainC,/clex_sp_start\(0,/);assert.match(bundle.mainC,/clex_sp_start\(1,/);
+ p=addHardware(p,module,catalog);assert.equal(validateAssembly(p,catalog).some(i=>i.code==='stepper-count'),false);
+ p=addHardware(p,module,catalog);assert.equal(validateAssembly(p,catalog).some(i=>i.code==='stepper-count'),false);
  p=addHardware(p,module,catalog);assert.ok(validateAssembly(p,catalog).some(i=>i.code==='stepper-count'));
 });
 test('import rejects orphaned or mixed motor connections and generation supports a disabled driver without logic',()=>{
@@ -84,4 +89,41 @@ int main(void){
  return 0;
 }
 `,'clex-stepper-core-');
+});
+
+test('three and four drivers generate independent motion on each supported ESP32 target', () => {
+ for (const boardId of ['doit-esp32-devkit-v1-30pin', 'waveshare-esp32-s3-eth', 'waveshare-esp32-p4-nano']) {
+  let project = createProject('Четыре двигателя', '', boardId, boardId.includes('p4') ? { chipRevision: 'pre-v3' } : { camera: 'disconnected' });
+  for (let index = 0; index < 4; index++) {
+   project = addStepper(project, index).project;
+   if (index < 2) continue;
+   assert.deepEqual(validateAssembly(project, catalog).filter(issue => issue.severity === 'error'), [], boardId);
+   assert.deepEqual(validateGraph(project, catalog).filter(issue => issue.severity === 'error'), [], boardId);
+   const count = index + 1, bundle = generateFirmware(project, catalog);
+   assert.ok(bundle.mainC.includes('clex_sp_drivers[' + count + ']'));
+   assert.ok(bundle.mainC.includes('_Static_assert(' + count + ' <= SOC_TIMER_GROUP_TOTAL_TIMERS'));
+   for (let driver = 0; driver < count; driver++) assert.ok(bundle.mainC.includes('clex_sp_start(' + driver + ','));
+   assert.equal(new Set(project.gpioAssignments.map(assignment => assignment.gpio)).size, count * 3);
+   assert.deepEqual(parseProject(serializeProject(project)), project);
+  }
+ }
+});
+
+test('motion capacity follows the selected board and deducts occupied GPTimer resources', () => {
+ let project = createProject('Ресурсы');
+ const driver = catalog.modules.find(module => module.id === 'clex.hardware.drv8825');
+ for (let i = 0; i < 3; i++) project = addHardware(project, driver, catalog);
+ const board = catalog.boards.find(board => board.id === project.boardId);
+ const use = changed => ({ ...catalog, boards: catalog.boards.map(item => item.id === board.id ? changed : item) });
+ assert.equal(stepperTimerBudget(project, catalog).available, 4);
+ assert.equal(stepperIssues(project, catalog).some(issue => issue.code === 'stepper-count'), false);
+ const small = use({ ...board, resources: { gptimer: 2 } });
+ assert.equal(stepperTimerBudget(project, small).available, 2);
+ assert.match(stepperIssues(project, small).find(issue => issue.code === 'stepper-count').message, /требуется 3, доступно 2 из 2/);
+ const occupied = use({ ...board, peripherals: [...board.peripherals || [], { id: 'other-timers', occupancySetting: 'timers', resources: [{ key: 'gptimer', count: 2 }] }] });
+ project = { ...project, boardSettings: { ...project.boardSettings, timers: 'connected' } };
+ assert.equal(stepperTimerBudget(project, occupied).available, 2);
+ assert.ok(stepperIssues(project, occupied).some(issue => issue.code === 'stepper-count'));
+ const unknown = use({ ...board, resources: {} });
+ assert.match(stepperIssues(project, unknown).find(issue => issue.code === 'stepper-count').message, /не описаны/);
 });

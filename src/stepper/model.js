@@ -1,9 +1,22 @@
+import { resourceClaims } from '../hardware/resources.js';
 export const STEPPER_DRIVERS=['clex.hardware.tb6600','clex.hardware.tmc2208','clex.hardware.drv8825'];
 export const isStepperDriver=component=>STEPPER_DRIVERS.includes(component?.moduleId);
-export function stepperIssues(project){
+export function stepperTimerBudget(project, catalog) {
+ const board = catalog.boards.find(board => board.id === project.boardId);
+ const declared = board?.resources?.gptimer;
+ const total = Number.isInteger(declared) && declared >= 0 ? declared : 0;
+ const reserved = resourceClaims(project, catalog)
+  .filter(claim => claim.key === 'gptimer' || claim.key.startsWith('gptimer:'))
+  .reduce((sum, claim) => sum + (Number.isInteger(claim.count) && claim.count > 0 ? claim.count : 1), 0);
+ return { board, total, reserved, available: Math.max(0, total - reserved) };
+}
+export function stepperIssues(project, catalog){
  const issues=[];
  const drivers=project.components.filter(isStepperDriver);
- if(drivers.length>2)issues.push({severity:'error',code:'stepper-count',message:'Поддерживается до двух шаговых драйверов: по одному аппаратному таймеру на двигатель.'});
+ if(drivers.length){
+  const budget=stepperTimerBudget(project,catalog);
+  if(drivers.length>budget.available)issues.push({severity:'error',code:'stepper-count',message:budget.total?`Недостаточно аппаратных таймеров движения на плате «${budget.board.name}»: требуется ${drivers.length}, доступно ${budget.available} из ${budget.total}. Один драйвер занимает один GPTimer.`:'В профиле выбранной платы не описаны доступные аппаратные таймеры движения.'});
+ }
  for(const driver of drivers){
   if(!Number.isInteger(driver.parameters.pulseUs))issues.push({severity:'error',code:'stepper-pulse',componentId:driver.id,message:driver.name+': длительность импульса должна быть целым числом микросекунд.'});
   const wires=project.assembly.connections.filter(w=>w.sourceComponentId===driver.id);

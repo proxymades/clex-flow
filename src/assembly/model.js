@@ -180,7 +180,7 @@ export function validateAssembly(project, catalog) {
   const issues = [];
   const issue = (severity, code, message, fields = {}) => issues.push({ severity, code, message, ...fields });
   const board = boardFor(project, catalog);
-  issues.push(...resourceIssues(project,catalog),...stepperIssues(project));
+  issues.push(...resourceIssues(project,catalog),...stepperIssues(project,catalog));
   if(project.components.filter(c=>c.moduleId===ESPNOW_MODULE).length>1)issue('error','espnow-duplicate','В проекте поддерживается один ESP-NOW-интерфейс платы.');
   if (!board) { issue('error', 'board-missing', 'Плата отсутствует в каталоге.'); return issues; }
   if (!board.pins.length) issue('error', 'board-generic', 'Выберите конкретную плату. Общая ESP32-S3 не имеет распиновки.');

@@ -735,6 +735,7 @@
       "phyAddress": 1
     }
   ],
+  "resources": { "gptimer": 4 },
   "firmware": {
     "flashSizeMb": 16,
     "consoleModes": [

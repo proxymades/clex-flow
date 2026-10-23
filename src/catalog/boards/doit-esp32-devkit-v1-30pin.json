@@ -7,6 +7,7 @@
   "espIdfVersion": "5.4.4",
   "target": "esp32",
   "platform": "esp-idf",
+  "resources": { "gptimer": 4 },
   "logicVoltage": 3.3,
   "pinoutVerified": false,
   "documentationVerified": true,

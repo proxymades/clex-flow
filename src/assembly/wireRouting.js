@@ -140,7 +140,15 @@ export function manualWirePoints(start,end,waypoints){
 // Reattach endpoint-adjacent segments while retaining the user's interior lanes.
 export function reanchorManualRoute(start,end,waypoints,nextStart=start,nextEnd=end){
  const points=manualWirePoints(start,end,waypoints),sourceDelta=nextStart.map((value,axis)=>value-start[axis]),targetDelta=nextEnd.map((value,axis)=>value-end[axis]);
- if(same(sourceDelta,targetDelta))return points.map(point=>point.map((value,axis)=>value+sourceDelta[axis]));
+ if(length(sourceDelta,targetDelta)<1e-7){
+  const translated=points.map(point=>point.map((value,axis)=>value+sourceDelta[axis]));
+  translated[0]=[...nextStart];translated[translated.length-1]=[...nextEnd];
+  if(points.length>2){
+   const sourceAxis=points[0][0]===points[1][0]?0:1,last=points.length-1,targetAxis=points[last][0]===points[last-1][0]?0:1;
+   translated[1][sourceAxis]=nextStart[sourceAxis];translated[last-1][targetAxis]=nextEnd[targetAxis];
+  }else if(nextStart[0]!==nextEnd[0] && nextStart[1]!==nextEnd[1])translated.splice(1,0,[nextEnd[0],nextStart[1]]);
+  return simplifyWirePoints(translated);
+ }
  if(points.length<3){
   const corner=start[1]===end[1]?[nextEnd[0],nextStart[1]]:[nextStart[0],nextEnd[1]];
   return simplifyWirePoints([nextStart,corner,nextEnd]);
@@ -204,6 +212,23 @@ export function routeAssemblyEdges(edges,nodes,board){
  }
  return edges.map(edge=>result.get(edge.id) || edge);
 }
+// Во время drag меняются только концы готовых маршрутов. Полный обход
+// препятствий выполняется для сохраненных позиций после отпускания узла.
+export function previewAssemblyEdges(edges, nodes) {
+ const byId = new Map(nodes.map(node => [node.id, node]));
+ return edges.map(edge => {
+  const data = edge.data, source = byId.get(edge.source), target = byId.get(edge.target);
+  if (!data.route || !source || !target || !data.sourcePin || !data.targetTerminal) return edge;
+  const start = [source.position.x + data.sourcePin.x, source.position.y + data.sourcePin.y];
+  const end = [target.position.x + data.targetTerminal.x, target.position.y + data.targetTerminal.y];
+  if (same(start, data.sourceAnchor) && same(end, data.targetAnchor)) return edge;
+  const points = reanchorManualRoute(data.sourceAnchor, data.targetAnchor, data.route.points.slice(1, -1), start, end);
+  return { ...edge, data: { ...data, sourceAnchor: start, targetAnchor: end,
+   route: { ...data.route, points, path: roundedWirePath(points) },
+  } };
+ });
+}
+
 export function wireFitPadding(nodes,edges){
  if(!nodes.length)return 0.12;
  const xs=nodes.flatMap(node=>[node.position.x,node.position.x+(node.width || node.measured?.width || 0)]),ys=nodes.flatMap(node=>[node.position.y,node.position.y+(node.height || node.measured?.height || 0)]);

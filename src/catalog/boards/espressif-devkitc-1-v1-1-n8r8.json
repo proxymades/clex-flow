@@ -744,6 +744,7 @@
       ]
     }
   },
+  "resources": { "gptimer": 4 },
   "firmware": {
     "flashSizeMb": 8,
     "consoleModes": [
