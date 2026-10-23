@@ -19,7 +19,7 @@
   "id": "clex.hardware.mqtt",
   "kind": "hardware",
   "name": "MQTT",
-  "description": "MQTT 3.1.1 / 5.0 через существующее Wi-Fi или Ethernet-подключение платы. Отдельное соединение с брокером без физических проводов.",
+  "description": "Подключение к MQTT-брокеру через Wi-Fi или Ethernet платы. Поддерживаются MQTT 3.1.1 и 5.0.",
   "visual": {
     "svg": "mqtt.svg",
     "width": 250,

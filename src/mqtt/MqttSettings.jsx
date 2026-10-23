@@ -17,7 +17,7 @@ export default function MqttSettings({component,module,project,catalog,busy,onCh
  return <>
  {group('Подключение',['networkId','host','port','protocol','clientId'])}
  {!networks.length&&<p className="inspector-warning">Добавьте Wi-Fi маршрутизатор или Ethernet-компонент в монтаж.</p>}
- <p className="panel-note">MQTT использует существующее подключение платы без проводов и отдельной настройки Wi-Fi. При выборе маршрута по умолчанию следует активному WAN. Пустой Client ID заменяется постоянным идентификатором платы и этого MQTT-компонента. Для сохраняемой сессии укажите явный Client ID.</p>
+ <p className="panel-note">MQTT использует Wi-Fi или Ethernet-подключение платы. При выборе маршрутизатора соединение следует его активному WAN-подключению. Пустой Client ID заменяется постоянным идентификатором платы и этого MQTT-компонента. Для сохраняемой сессии укажите явный Client ID.</p>
  {group('Аутентификация',['username','password'])}
  <label className="espnow-check"><input type="checkbox" disabled={busy} checked={showPassword} onChange={event=>setShowPassword(event.target.checked)}/> Показать пароль</label>
  {group('Защита TLS',['tls',...(p.tls?['caMode',...(p.caMode==='pem'?['caPem']:[])]:[])])}
