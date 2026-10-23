@@ -1,0 +1,115 @@
+{
+  "version": "1.0.0",
+  "category": "network",
+  "categoryName": "Сеть",
+  "icon": "Network",
+  "color": "#2dd4bf",
+  "compatibility": {
+    "projectFormat": 3,
+    "targets": [
+      "esp32",
+      "esp32s2",
+      "esp32s3",
+      "esp32c3",
+      "esp32c6",
+      "esp32p4"
+    ],
+    "espIdf": "5.4.4"
+  },
+  "id": "clex.logic.mqtt-control",
+  "kind": "logic",
+  "name": "MQTT – Управление",
+  "description": "Подключает и отключает общее MQTT-соединение, сообщает состояние, события и ошибки.",
+  "inputs": [
+    {
+      "id": "connect",
+      "name": "Подключить",
+      "type": "event",
+      "description": "Запускает соединение или возобновляет его после ручного отключения."
+    },
+    {
+      "id": "disconnect",
+      "name": "Отключить",
+      "type": "event",
+      "description": "Отключает соединение и приостанавливает автоматическое переподключение до следующей команды подключения."
+    }
+  ],
+  "outputs": [
+    {
+      "id": "changed",
+      "name": "Состояние изменилось",
+      "type": "event",
+      "description": ""
+    },
+    {
+      "id": "connected",
+      "name": "Подключено",
+      "type": "event",
+      "description": ""
+    },
+    {
+      "id": "disconnected",
+      "name": "Отключено",
+      "type": "event",
+      "description": ""
+    },
+    {
+      "id": "failed",
+      "name": "Ошибка",
+      "type": "event",
+      "description": ""
+    },
+    {
+      "id": "state",
+      "name": "Состояние",
+      "type": "number",
+      "description": "0 – отключено, 1 – подключение, 2 – подключено, 3 – переподключение, 4 – ошибка.",
+      "readyOn": "changed"
+    },
+    {
+      "id": "isConnected",
+      "name": "Есть соединение",
+      "type": "boolean",
+      "description": "Текущее соединение с брокером.",
+      "readyOn": "changed"
+    },
+    {
+      "id": "error",
+      "name": "Описание ошибки",
+      "type": "text",
+      "description": "Последняя ошибка подключения.",
+      "readyOn": "failed"
+    },
+    {
+      "id": "reasonCode",
+      "name": "Код причины",
+      "type": "number",
+      "description": "MQTT reason code или код сетевой ошибки.",
+      "additional": true,
+      "readyOn": "failed"
+    }
+  ],
+  "parameters": {
+    "componentId": {
+      "label": "MQTT-подключение",
+      "type": "component",
+      "default": ""
+    }
+  },
+  "constraints": {
+    "hardware": {
+      "kind": "mqtt",
+      "modules": [
+        "clex.hardware.mqtt"
+      ]
+    }
+  },
+  "firmware": {
+    "status": "implemented",
+    "generatorKey": "mqtt-control",
+    "eventSource": true,
+    "dependencies": [
+      "mqtt"
+    ]
+  }
+}

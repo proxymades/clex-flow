@@ -1,5 +1,6 @@
 import {parseContact,wireSource,touches,normalizedContact,componentWireProblem} from './endpoints.js';
 import {stepperIssues} from '../stepper/model.js';
+import {MQTT_MODULE,MAX_MQTT_CONNECTIONS,mqttSupported,mqttIssues} from '../mqtt/model.js';
 import {ROUTER_MODULE,routerCapabilities,routerIssues} from '../router/model.js';
 import {ESPNOW_MODULE,espNowSupported,espNowIssues,newKey} from '../espnow/model.js';
 import { moduleSupportsBoard } from '../catalog/compatibility.js';
@@ -36,6 +37,7 @@ export function transformAssembly(project,catalog,transform){
 export function moduleProblem(component, catalog, board = null) {
   const module = moduleFor(component, catalog);
   if (!module) return 'Модуль не установлен в библиотеке.';
+  if(module.softwareInterface==='mqtt'&&board&&!mqttSupported(board))return 'MQTT требует поддерживаемое Wi-Fi или Ethernet-подключение ESP-IDF.';
   if(module.softwareInterface==='espnow'&&board&&!espNowSupported(board))return 'Эта плата не имеет поддерживаемого ESP-NOW-радиоинтерфейса.';
   if (board && module.hardwareInterface && !hardwareProvider(component,module,board)) return 'Выберите совместимый аппаратный интерфейс платы.';
   if (module.version !== component.moduleVersion) return `Требуется модуль ${component.moduleId} версии ${component.moduleVersion}; установлен ${module.version}.`;
@@ -131,6 +133,7 @@ export function addHardware(project, module, catalog = null) {
   while (project.components.some(component => component.name === instanceName(number) || component.name === `${module.name} ${number}`)) number++;
   const name = instanceName(number);
   const parameters=Object.fromEntries(Object.entries(module.parameters).map(([key,parameter])=>[key,parameter.default]));
+  if(module.id===MQTT_MODULE){if(!catalog||!mqttSupported(boardFor(project,catalog)))throw new Error('Для платы нет поддерживаемого сетевого интерфейса MQTT.');if(project.components.filter(component=>component.moduleId===MQTT_MODULE).length>=MAX_MQTT_CONNECTIONS)throw new Error('В проекте допускается до '+MAX_MQTT_CONNECTIONS+' MQTT-подключений.');}
   if(module.id===ROUTER_MODULE){if(!catalog||!routerCapabilities(boardFor(project,catalog)).available)throw new Error('У платы нет совместимого Wi-Fi STA/SoftAP-интерфейса.');if(project.components.some(c=>c.moduleId===ROUTER_MODULE))throw new Error('Маршрутизатор уже добавлен.');parameters.otaEnabled=boardFor(project,catalog).firmware.flashSizeMb>=8;parameters.adminPassword=newKey().slice(0,24);parameters.apPassword=newKey().slice(0,16);parameters.ethernetId=project.components.find(c=>c.moduleId==='clex.hardware.ethernet')?.id||'';}
   if(module.softwareInterface==='espnow'){if(!catalog||!espNowSupported(boardFor(project,catalog)))throw new Error('Для платы нет ESP-NOW-радиоинтерфейса.');if(project.components.some(c=>c.moduleId===ESPNOW_MODULE))throw new Error('ESP-NOW уже добавлен: плата использует одно радио.');parameters.pmk=newKey();}
   if(module.hardwareInterface&&catalog){const provider=boardFor(project,catalog)?.peripherals?.find(provider=>provider.family===module.hardwareInterface.family && provider.interface===module.hardwareInterface.interface);parameters.interfaceId=provider?.id || '';}
@@ -202,6 +205,7 @@ export function validateAssembly(project, catalog) {
       if (parameter.type === 'select' && !parameter.options.some(option => option.value === value)) issue('error', 'parameter-option', `${component.name}: неверный параметр «${parameter.label}».`, fields);
     }
     if (module.constraints.signalVoltageParameter && Number(component.parameters[module.constraints.signalVoltageParameter]) > Number(component.parameters[module.constraints.supplyVoltageParameter])) issue('error','input-voltage',`${component.name}: напряжение OUT не может превышать выбранное питание VCC.`,fields);
+    if(module.softwareInterface==='mqtt')for(const message of mqttIssues(component,project,catalog))issue('error','mqtt-config',component.name+': '+message,fields);
     if(module.softwareInterface==='espnow')for(const message of espNowIssues(component,board))issue('error','espnow-config',component.name+': '+message,fields);
     if(module.softwareInterface==='router')for(const message of routerIssues(component,project,catalog))issue('error','router-config',component.name+': '+message,fields);
     if(module.network)for(const message of networkIssues(component,board,module))issue('error','network-config',component.name+': '+message,fields);

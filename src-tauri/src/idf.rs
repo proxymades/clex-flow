@@ -271,6 +271,40 @@ fn write_project(dir: &PathBuf, spec: &Specification) -> Result<(), String> {
     let runtime_profiles: serde_json::Value =
         serde_json::from_str(include_str!("../../src/firmware/runtime-profiles.json"))
             .map_err(|e| e.to_string())?;
+    let packages: serde_json::Value =
+        serde_json::from_str(include_str!("../../src/firmware/component-files.json"))
+            .map_err(|e| e.to_string())?;
+    let mut component_names = std::collections::BTreeSet::new();
+    for feature in &spec.feature_runtimes {
+        if let Some(components) = runtime_profiles[feature]["components"].as_array() {
+            for name in components {
+                component_names.insert(name.as_str().ok_or("Некорректный компонент драйвера")?);
+            }
+        }
+    }
+    for name in component_names {
+        for (relative, source) in packages[name]["files"]
+            .as_object()
+            .ok_or("Нет исходников компонента драйвера")?
+        {
+            let prefix = format!("components/{name}/");
+            if !relative.starts_with(&prefix)
+                || relative
+                    .split('/')
+                    .any(|part| part == ".." || part.is_empty())
+                || relative.contains('\\')
+            {
+                return Err("Некорректный путь компонента драйвера".into());
+            }
+            let path = dir.join(relative);
+            fs::create_dir_all(path.parent().ok_or("Нет каталога компонента")?)
+                .map_err(|e| e.to_string())?;
+            write_source(
+                &path,
+                source.as_str().ok_or("Некорректные исходники компонента")?,
+            )?;
+        }
+    }
     let cmake_prelude: String = spec
         .feature_runtimes
         .iter()

@@ -1,0 +1,212 @@
+{
+  "version": "1.0.0",
+  "category": "network",
+  "categoryName": "Сеть",
+  "icon": "Network",
+  "color": "#2dd4bf",
+  "compatibility": {
+    "projectFormat": 3,
+    "targets": [
+      "esp32",
+      "esp32s2",
+      "esp32s3",
+      "esp32c3",
+      "esp32c6",
+      "esp32p4"
+    ],
+    "espIdf": "5.4.4"
+  },
+  "id": "clex.logic.mqtt-send",
+  "kind": "logic",
+  "name": "MQTT – Отправить",
+  "description": "Публикует сообщение через выбранное общее соединение. QoS 0 подтверждает приём в локальную очередь передачи, QoS 1/2 – подтверждение брокером.",
+  "inputs": [
+    {
+      "id": "trigger",
+      "name": "Отправить",
+      "type": "event",
+      "description": "",
+      "required": true
+    },
+    {
+      "id": "topic",
+      "name": "Topic",
+      "type": "text",
+      "description": "Необязательный topic вместо настройки блока.",
+      "additional": true
+    },
+    {
+      "id": "payload",
+      "name": "Payload",
+      "type": "text",
+      "description": "Payload в выбранной кодировке: текст UTF-8, Base64 или HEX.",
+      "additional": true
+    }
+  ],
+  "outputs": [
+    {
+      "id": "sent",
+      "name": "Отправлено",
+      "type": "event",
+      "description": "QoS 0: сообщение принято в локальную очередь передачи. QoS 1/2: получено подтверждение брокера."
+    },
+    {
+      "id": "failed",
+      "name": "Ошибка",
+      "type": "event",
+      "description": ""
+    },
+    {
+      "id": "messageId",
+      "name": "ID сообщения",
+      "type": "number",
+      "description": "Идентификатор публикации; для QoS 0 равен 0.",
+      "readyOn": "sent",
+      "additional": true
+    },
+    {
+      "id": "error",
+      "name": "Описание ошибки",
+      "type": "text",
+      "description": "",
+      "readyOn": "failed"
+    },
+    {
+      "id": "reasonCode",
+      "name": "Код причины",
+      "type": "number",
+      "description": "Код результата публикации.",
+      "additional": true
+    }
+  ],
+  "parameters": {
+    "componentId": {
+      "label": "MQTT-подключение",
+      "type": "component",
+      "default": ""
+    },
+    "topic": {
+      "label": "Topic",
+      "type": "text",
+      "default": "",
+      "maxLength": 256
+    },
+    "payload": {
+      "label": "Payload",
+      "type": "text",
+      "default": "",
+      "maxLength": 8192
+    },
+    "qos": {
+      "label": "QoS",
+      "type": "select",
+      "default": "0",
+      "options": [
+        {
+          "value": "0",
+          "label": "0"
+        },
+        {
+          "value": "1",
+          "label": "1"
+        },
+        {
+          "value": "2",
+          "label": "2"
+        }
+      ]
+    },
+    "retain": {
+      "label": "Retain",
+      "type": "boolean",
+      "default": false,
+      "trueLabel": "Включено",
+      "falseLabel": "Выключено"
+    },
+    "payloadEncoding": {
+      "label": "Кодировка payload",
+      "type": "select",
+      "default": "utf8",
+      "options": [
+        {
+          "value": "utf8",
+          "label": "Текст UTF-8"
+        },
+        {
+          "value": "base64",
+          "label": "Base64"
+        },
+        {
+          "value": "hex",
+          "label": "HEX"
+        }
+      ]
+    },
+    "contentType": {
+      "label": "Content Type MQTT 5",
+      "type": "text",
+      "default": "",
+      "maxLength": 256
+    },
+    "responseTopic": {
+      "label": "Response Topic MQTT 5",
+      "type": "text",
+      "default": "",
+      "maxLength": 256
+    },
+    "correlationData": {
+      "label": "Correlation Data MQTT 5 (Base64)",
+      "type": "text",
+      "default": "",
+      "maxLength": 344
+    },
+    "messageExpiry": {
+      "label": "Срок сообщения MQTT 5, с (-1 – не задан)",
+      "type": "integer",
+      "default": -1,
+      "min": -1,
+      "max": 4294967295
+    },
+    "payloadFormatIndicator": {
+      "label": "Payload Format Indicator MQTT 5",
+      "type": "select",
+      "default": "unspecified",
+      "options": [
+        {
+          "value": "unspecified",
+          "label": "Не передавать"
+        },
+        {
+          "value": "0",
+          "label": "Бинарные данные"
+        },
+        {
+          "value": "1",
+          "label": "Текст UTF-8"
+        }
+      ]
+    },
+    "userProperties": {
+      "label": "User Properties MQTT 5",
+      "type": "text",
+      "default": "[]",
+      "maxLength": 4096
+    }
+  },
+  "constraints": {
+    "hardware": {
+      "kind": "mqtt",
+      "modules": [
+        "clex.hardware.mqtt"
+      ]
+    }
+  },
+  "firmware": {
+    "status": "implemented",
+    "generatorKey": "mqtt-send",
+    "eventSource": false,
+    "dependencies": [
+      "mqtt"
+    ]
+  }
+}

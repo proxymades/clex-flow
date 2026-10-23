@@ -20722,3 +20722,9 @@ SPDX-FileCopyrightText: 2024 Espressif Systems (Shanghai) CO LTD. Licensed under
 Source: https://github.com/waveshareteam/Waveshare-ESP32-components/tree/80402cdb12d5170f0a0b1d8bc58f64d0ce175d3e/display/lcd/esp_lcd_jd9365
 
 Generated firmware uses Espressif esp_lcd_jd9365, esp_lcd_touch_gt911, esp_codec_dev and esp_video under their upstream licenses; source archives and license files are managed by ESP-IDF Component Manager.
+
+## Espressif ESP-MQTT 1.1.0
+
+Source: https://github.com/espressif/esp-mqtt/tree/v1.1.0
+
+License: Apache-2.0. Bundled source and full license: `src/firmware/components/mqtt/`. Local modifications are documented in `CLEX-PATCHES.md` in that directory. The firmware component and its license are embedded together in generated projects.

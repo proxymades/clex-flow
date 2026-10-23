@@ -74,13 +74,17 @@
   "temperature-esp32s3": {
     "target": "esp32s3",
     "dependencies": {},
-    "requires": ["esp_driver_tsens"],
+    "requires": [
+      "esp_driver_tsens"
+    ],
     "config": ""
   },
   "temperature-esp32p4": {
     "target": "esp32p4",
     "dependencies": {},
-    "requires": ["esp_driver_tsens"],
+    "requires": [
+      "esp_driver_tsens"
+    ],
     "config": ""
   },
   "router-esp32s3": {
@@ -190,6 +194,63 @@
       "http_parser"
     ],
     "config": "CONFIG_LWIP_IP_FORWARD=y\nCONFIG_LWIP_IPV4_NAPT=y\nCONFIG_LWIP_IPV4_NAPT_PORTMAP=y\nCONFIG_LWIP_TCPIP_CORE_LOCKING=y\nCONFIG_LWIP_DHCPS=y\nCONFIG_LWIP_DHCPS_ADD_DNS=y\nCONFIG_LWIP_DHCPS_MAX_STATION_NUM=10\nCONFIG_ESP_WIFI_SOFTAP_SUPPORT=y\nCONFIG_ESP_WIFI_SOFTAP_SAE_SUPPORT=y\nCONFIG_ESP_WIFI_ENABLE_WPA3_SAE=y\nCONFIG_MBEDTLS_CERTIFICATE_BUNDLE=y\nCONFIG_MBEDTLS_CERTIFICATE_BUNDLE_DEFAULT_FULL=y\nCONFIG_PARTITION_TABLE_CUSTOM=y\nCONFIG_PARTITION_TABLE_CUSTOM_FILENAME=\"partitions.csv\"\nCONFIG_HTTPD_MAX_REQ_HDR_LEN=1024\nCONFIG_HTTPD_MAX_URI_LEN=128\nCONFIG_ESP_NETIF_SET_DNS_PER_DEFAULT_NETIF=y\n",
+    "partitions": "nvs,data,nvs,0x9000,0x6000\nphy_init,data,phy,0xf000,0x1000\nfactory,app,factory,0x10000,0x300000\n"
+  },
+  "mqtt-esp32": {
+    "target": "esp32",
+    "dependencies": {},
+    "components": [
+      "mqtt"
+    ],
+    "requires": [
+      "mqtt",
+      "esp_netif",
+      "esp_event",
+      "mbedtls",
+      "esp_timer",
+      "lwip",
+      "json",
+      "esp_hw_support"
+    ],
+    "config": "CONFIG_MQTT_PROTOCOL_311=y\nCONFIG_MQTT_PROTOCOL_5=y\nCONFIG_MQTT_TRANSPORT_SSL=y\nCONFIG_MQTT_REPORT_DELETED_MESSAGES=y\nCONFIG_MBEDTLS_CERTIFICATE_BUNDLE=y\nCONFIG_MBEDTLS_CERTIFICATE_BUNDLE_DEFAULT_FULL=y\nCONFIG_PARTITION_TABLE_CUSTOM=y\nCONFIG_PARTITION_TABLE_CUSTOM_FILENAME=\"partitions.csv\"\n",
+    "partitions": "nvs,data,nvs,0x9000,0x6000\nphy_init,data,phy,0xf000,0x1000\nfactory,app,factory,0x10000,0x300000\n"
+  },
+  "mqtt-esp32s3": {
+    "target": "esp32s3",
+    "dependencies": {},
+    "components": [
+      "mqtt"
+    ],
+    "requires": [
+      "mqtt",
+      "esp_netif",
+      "esp_event",
+      "mbedtls",
+      "esp_timer",
+      "lwip",
+      "json",
+      "esp_hw_support"
+    ],
+    "config": "CONFIG_MQTT_PROTOCOL_311=y\nCONFIG_MQTT_PROTOCOL_5=y\nCONFIG_MQTT_TRANSPORT_SSL=y\nCONFIG_MQTT_REPORT_DELETED_MESSAGES=y\nCONFIG_MBEDTLS_CERTIFICATE_BUNDLE=y\nCONFIG_MBEDTLS_CERTIFICATE_BUNDLE_DEFAULT_FULL=y\nCONFIG_PARTITION_TABLE_CUSTOM=y\nCONFIG_PARTITION_TABLE_CUSTOM_FILENAME=\"partitions.csv\"\n",
+    "partitions": "nvs,data,nvs,0x9000,0x6000\nphy_init,data,phy,0xf000,0x1000\nfactory,app,factory,0x10000,0x300000\n"
+  },
+  "mqtt-esp32p4": {
+    "target": "esp32p4",
+    "dependencies": {},
+    "components": [
+      "mqtt"
+    ],
+    "requires": [
+      "mqtt",
+      "esp_netif",
+      "esp_event",
+      "mbedtls",
+      "esp_timer",
+      "lwip",
+      "json",
+      "esp_hw_support"
+    ],
+    "config": "CONFIG_MQTT_PROTOCOL_311=y\nCONFIG_MQTT_PROTOCOL_5=y\nCONFIG_MQTT_TRANSPORT_SSL=y\nCONFIG_MQTT_REPORT_DELETED_MESSAGES=y\nCONFIG_MBEDTLS_CERTIFICATE_BUNDLE=y\nCONFIG_MBEDTLS_CERTIFICATE_BUNDLE_DEFAULT_FULL=y\nCONFIG_PARTITION_TABLE_CUSTOM=y\nCONFIG_PARTITION_TABLE_CUSTOM_FILENAME=\"partitions.csv\"\n",
     "partitions": "nvs,data,nvs,0x9000,0x6000\nphy_init,data,phy,0xf000,0x1000\nfactory,app,factory,0x10000,0x300000\n"
   }
 }

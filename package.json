@@ -57,7 +57,12 @@
     "test:stepper-ui": "node tests/stepper-ui.cjs",
     "test:router-ui": "node tests/router-ui.cjs",
     "test:router-admin-ui": "node tests/router-admin-ui.cjs",
-    "test:router-builds": "node scripts/check-router-builds.mjs"
+    "test:router-builds": "node scripts/check-router-builds.mjs",
+    "pack:firmware-components": "node scripts/pack-firmware-components.mjs",
+    "test:firmware-components": "node scripts/pack-firmware-components.mjs --check",
+    "test:mqtt-ui": "node tests/mqtt-ui.cjs",
+    "test:mqtt-host": "node tests/mqtt-host/check.mjs && node tests/mqtt-host/runtime.mjs && node tests/mqtt-host/tls-runtime.mjs && node tests/mqtt-host/session-runtime.mjs && node tests/mqtt-host/session-runtime.mjs --overflow && node tests/mqtt-host/pressure-runtime.mjs && node tests/mqtt-host/pressure-runtime.mjs --311 && node tests/mqtt-host/receive-duplicate.mjs",
+    "test:mqtt-builds": "node scripts/check-mqtt-builds.mjs"
   },
   "dependencies": {
     "@tauri-apps/api": "2.10.1",

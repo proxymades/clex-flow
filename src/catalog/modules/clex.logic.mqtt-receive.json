@@ -1,0 +1,212 @@
+{
+  "version": "1.0.0",
+  "category": "network",
+  "categoryName": "Сеть",
+  "icon": "Network",
+  "color": "#2dd4bf",
+  "compatibility": {
+    "projectFormat": 3,
+    "targets": [
+      "esp32",
+      "esp32s2",
+      "esp32s3",
+      "esp32c3",
+      "esp32c6",
+      "esp32p4"
+    ],
+    "espIdf": "5.4.4"
+  },
+  "id": "clex.logic.mqtt-receive",
+  "kind": "logic",
+  "name": "MQTT – Получить",
+  "description": "Управляет несколькими подписками и выдает topic, payload и событие для каждого полученного сообщения. Активные подписки восстанавливаются после переподключения.",
+  "inputs": [
+    {
+      "id": "subscribe",
+      "name": "Подписаться",
+      "type": "event",
+      "description": "Включает все подписки из настроек блока."
+    },
+    {
+      "id": "unsubscribe",
+      "name": "Отписаться",
+      "type": "event",
+      "description": "Удаляет подписки этого блока, сохраняя подписки других блоков."
+    }
+  ],
+  "outputs": [
+    {
+      "id": "received",
+      "name": "Получено",
+      "type": "event",
+      "description": ""
+    },
+    {
+      "id": "subscribed",
+      "name": "Подписки подтверждены",
+      "type": "event",
+      "description": ""
+    },
+    {
+      "id": "unsubscribed",
+      "name": "Отписка подтверждена",
+      "type": "event",
+      "description": ""
+    },
+    {
+      "id": "failed",
+      "name": "Ошибка",
+      "type": "event",
+      "description": ""
+    },
+    {
+      "id": "topic",
+      "name": "Topic",
+      "type": "text",
+      "description": "Topic полученного сообщения.",
+      "readyOn": "received"
+    },
+    {
+      "id": "payload",
+      "name": "Payload",
+      "type": "text",
+      "description": "Payload в выбранной кодировке: текст UTF-8, Base64 или HEX.",
+      "readyOn": "received"
+    },
+    {
+      "id": "qos",
+      "name": "QoS",
+      "type": "number",
+      "description": "",
+      "readyOn": "received",
+      "additional": true
+    },
+    {
+      "id": "retain",
+      "name": "Retain",
+      "type": "boolean",
+      "description": "",
+      "readyOn": "received",
+      "additional": true
+    },
+    {
+      "id": "messageId",
+      "name": "ID сообщения",
+      "type": "number",
+      "description": "",
+      "readyOn": "received",
+      "additional": true
+    },
+    {
+      "id": "error",
+      "name": "Описание ошибки",
+      "type": "text",
+      "description": "",
+      "readyOn": "failed",
+      "additional": true
+    },
+    {
+      "id": "reasonCode",
+      "name": "Код причины",
+      "type": "number",
+      "description": "",
+      "additional": true
+    },
+    {
+      "id": "properties",
+      "name": "Свойства MQTT 5 (JSON)",
+      "type": "text",
+      "description": "Content Type, Response Topic, Correlation Data и User Properties полученного сообщения.",
+      "readyOn": "received",
+      "additional": true
+    }
+  ],
+  "parameters": {
+    "componentId": {
+      "label": "MQTT-подключение",
+      "type": "component",
+      "default": ""
+    },
+    "filters": {
+      "label": "Подписки",
+      "type": "text",
+      "default": "[]",
+      "maxLength": 8192
+    },
+    "autoSubscribe": {
+      "label": "Подписываться при подключении",
+      "type": "boolean",
+      "default": true,
+      "trueLabel": "Включено",
+      "falseLabel": "Выключено"
+    },
+    "payloadEncoding": {
+      "label": "Кодировка payload",
+      "type": "select",
+      "default": "utf8",
+      "options": [
+        {
+          "value": "utf8",
+          "label": "Текст UTF-8"
+        },
+        {
+          "value": "base64",
+          "label": "Base64"
+        },
+        {
+          "value": "hex",
+          "label": "HEX"
+        }
+      ]
+    },
+    "noLocal": {
+      "label": "No Local MQTT 5",
+      "type": "boolean",
+      "default": false,
+      "trueLabel": "Да",
+      "falseLabel": "Нет"
+    },
+    "retainAsPublished": {
+      "label": "Retain As Published MQTT 5",
+      "type": "boolean",
+      "default": false,
+      "trueLabel": "Да",
+      "falseLabel": "Нет"
+    },
+    "retainHandling": {
+      "label": "Retain Handling MQTT 5",
+      "type": "select",
+      "default": "0",
+      "options": [
+        {
+          "value": "0",
+          "label": "При каждой подписке"
+        },
+        {
+          "value": "1",
+          "label": "Только для новой подписки"
+        },
+        {
+          "value": "2",
+          "label": "Не получать сохраненные сообщения"
+        }
+      ]
+    }
+  },
+  "constraints": {
+    "hardware": {
+      "kind": "mqtt",
+      "modules": [
+        "clex.hardware.mqtt"
+      ]
+    }
+  },
+  "firmware": {
+    "status": "implemented",
+    "generatorKey": "mqtt-receive",
+    "eventSource": true,
+    "dependencies": [
+      "mqtt"
+    ]
+  }
+}

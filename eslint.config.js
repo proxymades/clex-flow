@@ -12,5 +12,5 @@ export default [
     plugins: { 'react-hooks': hooks, 'react-refresh': refresh },
     rules: { ...hooks.configs.recommended.rules, 'react-refresh/only-export-components': 'warn', 'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]', argsIgnorePattern: '^[A-Z_]' }] },
   },
-  { files: ['tests/**/*.{js,cjs}', '*.config.js', 'scripts/**/*.mjs'], languageOptions: { globals: globals.node } },
+  { files: ['tests/**/*.{js,cjs}', 'tests/mqtt-host/**/*.mjs', '*.config.js', 'scripts/**/*.mjs'], languageOptions: { globals: globals.node } },
 ];

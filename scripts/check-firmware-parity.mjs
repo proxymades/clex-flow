@@ -1,3 +1,4 @@
+import {mqttProject} from '../tests/mqtt-fixture.js';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { mkdtempSync, writeFileSync, rmSync } from 'node:fs';
@@ -85,6 +86,8 @@ for(const board of [ESP32_BOARD,'waveshare-esp32-s3-eth','waveshare-esp32-p4-nan
 }
 for(const driver of ['tb6600','tmc2208','drv8825'])cases.push(['nano-'+driver,nanoStepperProject({drivers:[driver],serial:true}),'uart']);
 cases.push(['nano-four-steppers',nanoStepperProject({drivers:Array(4).fill('drv8825'),speed:250}),'uart']);
+for(const boardId of [ESP32_BOARD,'espressif-devkitc-1-v1-1-n8r8','waveshare-esp32-s3-eth','waveshare-esp32-p4-nano'])for(const protocol of ['3.1.1','5.0'])cases.push([boardId+'-mqtt-'+protocol,mqttProject({boardId,network:boardId.startsWith('waveshare')?'ethernet':'wifi',protocol,clients:2}).project,boardId==='waveshare-esp32-s3-eth'?'usb':'uart']);
+cases.push(['s3-mqtt-auto',mqttProject({nodes:false}).project,'usb']);
 const temporary = mkdtempSync(join(tmpdir(), 'clex-firmware-parity-'));
 try {
   for (const [name, project, consoleMode] of cases) {

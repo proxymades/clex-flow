@@ -1,3 +1,4 @@
+import {mqttLogicIssues} from '../mqtt/model.js';
 import {stepperLogicIssues} from '../stepper/model.js';
 import {ESPNOW_MODULE,espNowSupported,espNowLogicIssues,espNowAckIssues} from '../espnow/model.js';
 import { moduleSupportsBoard,moduleIsEventSource } from '../catalog/compatibility.js';
@@ -153,7 +154,7 @@ export function connectNodes(graph, catalog, connection, project = null) {
 
 export function hardwareBinding(node, project, catalog) {
   const module = graphModule(node, catalog), requirement = module?.constraints.hardware;
-  if(requirement?.kind==='stepper'||requirement?.kind==='router'){const component=project.components.find(c=>c.id===node.parameters.componentId);return {component,gpio:null,error:hardwareMatches(component,requirement,catalog)?null:'Выберите совместимый компонент из монтажа.'};}
+  if(requirement?.kind==='stepper'||requirement?.kind==='router'||requirement?.kind==='mqtt'){const component=project.components.find(c=>c.id===node.parameters.componentId);return {component,gpio:null,error:hardwareMatches(component,requirement,catalog)?null:'Выберите совместимый компонент из монтажа.'};}
   if (requirement?.kind === 'peripheral') {
     const component=project.components.find(component=>component.id===node.parameters.componentId),definition=catalog.modules.find(module=>module.id===component?.moduleId);
     return {component,gpio:null,error:component && requirement.modules.includes(component.moduleId) && hardwareProvider(component,definition,boardFor(project,catalog)) ? null : 'Выберите аппаратный компонент и его интерфейс в монтаже.'};
@@ -201,6 +202,7 @@ export function validateGraph(project, catalog) {
       if (parameter.type === 'text' && (typeof value !== 'string' || value.length > parameter.maxLength)) add('error', 'logic-parameter', `${node.name}: текст не должен превышать ${formatCount(parameter.maxLength, ['символ', 'символа', 'символов'])}.`, fields);
     }
     if (module.id === 'clex.logic.select-number' && node.parameters.firstValue === node.parameters.secondValue) add('error', 'logic-parameter', node.name + ': укажите два разных значения для выбора.', fields);
+    for(const message of mqttLogicIssues(node,project))add('error','mqtt-logic',node.name+': '+message,fields);
     for(const message of stepperLogicIssues(node,project,catalog))add('error','stepper-logic',node.name+': '+message,fields);
     for(const message of [...espNowLogicIssues(node,project,boardFor(project,catalog)),...espNowAckIssues(node,project,catalog)])add('error','espnow-logic',node.name+': '+message,fields);
     if(module.constraints.network){if(!project.components.some(component=>(catalog.modules.find(module=>module.id===component.moduleId)?.network||component.moduleId==='clex.hardware.router')))add('error','probe-network',node.name+': добавьте сетевой интерфейс в монтаж.',fields);if(!probeUrl(node.parameters.url))add('error','probe-url',node.name+': укажите HTTP/HTTPS-адрес без логина, пароля и фрагмента.',fields);}

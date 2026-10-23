@@ -1,0 +1,231 @@
+{
+  "version": "1.0.0",
+  "category": "network",
+  "categoryName": "Сеть",
+  "icon": "Network",
+  "color": "#2dd4bf",
+  "compatibility": {
+    "projectFormat": 3,
+    "targets": [
+      "esp32",
+      "esp32s2",
+      "esp32s3",
+      "esp32c3",
+      "esp32c6",
+      "esp32p4"
+    ],
+    "espIdf": "5.4.4"
+  },
+  "id": "clex.hardware.mqtt",
+  "kind": "hardware",
+  "name": "MQTT",
+  "description": "MQTT 3.1.1 / 5.0 через существующее Wi-Fi или Ethernet-подключение платы. Отдельное соединение с брокером без физических проводов.",
+  "visual": {
+    "svg": "mqtt.svg",
+    "width": 250,
+    "height": 170
+  },
+  "terminals": [],
+  "inputs": [],
+  "outputs": [],
+  "softwareInterface": "mqtt",
+  "parameters": {
+    "networkId": {
+      "label": "Сетевое подключение",
+      "type": "text",
+      "default": "",
+      "maxLength": 100
+    },
+    "host": {
+      "label": "Адрес брокера",
+      "type": "text",
+      "default": "",
+      "maxLength": 253,
+      "description": "DNS-имя ASCII (для международных имён используйте Punycode), IPv4 или IPv6 без схемы, пути и порта."
+    },
+    "port": {
+      "label": "Порт",
+      "type": "number",
+      "default": 1883,
+      "min": 1,
+      "max": 65535,
+      "step": 1
+    },
+    "protocol": {
+      "label": "Версия MQTT",
+      "type": "select",
+      "default": "3.1.1",
+      "options": [
+        {
+          "value": "3.1.1",
+          "label": "MQTT 3.1.1"
+        },
+        {
+          "value": "5.0",
+          "label": "MQTT 5.0"
+        }
+      ]
+    },
+    "clientId": {
+      "label": "Client ID (пусто – автоматически)",
+      "type": "text",
+      "default": "",
+      "maxLength": 128
+    },
+    "username": {
+      "label": "Логин",
+      "type": "text",
+      "default": "",
+      "maxLength": 256
+    },
+    "password": {
+      "label": "Пароль",
+      "type": "text",
+      "default": "",
+      "maxLength": 1024
+    },
+    "tls": {
+      "label": "TLS",
+      "type": "boolean",
+      "default": false,
+      "trueLabel": "Включено",
+      "falseLabel": "Выключено"
+    },
+    "caMode": {
+      "label": "Проверка сертификата",
+      "type": "select",
+      "default": "bundle",
+      "options": [
+        {
+          "value": "bundle",
+          "label": "Встроенный набор корневых CA"
+        },
+        {
+          "value": "pem",
+          "label": "Свой корневой CA (PEM)"
+        }
+      ]
+    },
+    "caPem": {
+      "label": "Корневые сертификаты CA (PEM)",
+      "type": "text",
+      "default": "",
+      "maxLength": 16384
+    },
+    "keepAlive": {
+      "label": "Keep Alive, с",
+      "type": "number",
+      "default": 60,
+      "min": 0,
+      "max": 65535,
+      "step": 1
+    },
+    "cleanSession": {
+      "label": "Начинать новую сессию",
+      "type": "boolean",
+      "default": true,
+      "trueLabel": "Включено",
+      "falseLabel": "Выключено"
+    },
+    "sessionExpiry": {
+      "label": "Срок хранения сессии MQTT 5, с",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 4294967295,
+      "step": 1
+    },
+    "autoConnect": {
+      "label": "Подключаться при запуске",
+      "type": "boolean",
+      "default": true,
+      "trueLabel": "Включено",
+      "falseLabel": "Выключено"
+    },
+    "autoReconnect": {
+      "label": "Переподключаться автоматически",
+      "type": "boolean",
+      "default": true,
+      "trueLabel": "Включено",
+      "falseLabel": "Выключено"
+    },
+    "reconnectMs": {
+      "label": "Интервал переподключения, мс",
+      "type": "number",
+      "default": 5000,
+      "min": 1000,
+      "max": 300000,
+      "step": 1
+    },
+    "timeoutMs": {
+      "label": "Таймаут сетевых операций, мс",
+      "type": "number",
+      "default": 10000,
+      "min": 1000,
+      "max": 120000,
+      "step": 1
+    },
+    "lwtEnabled": {
+      "label": "Последняя воля (LWT)",
+      "type": "boolean",
+      "default": false,
+      "trueLabel": "Включено",
+      "falseLabel": "Выключено"
+    },
+    "lwtTopic": {
+      "label": "LWT topic",
+      "type": "text",
+      "default": "",
+      "maxLength": 256
+    },
+    "lwtPayload": {
+      "label": "LWT payload",
+      "type": "text",
+      "default": "",
+      "maxLength": 4096
+    },
+    "lwtQos": {
+      "label": "LWT QoS",
+      "type": "select",
+      "default": "0",
+      "options": [
+        {
+          "value": "0",
+          "label": "0"
+        },
+        {
+          "value": "1",
+          "label": "1"
+        },
+        {
+          "value": "2",
+          "label": "2"
+        }
+      ]
+    },
+    "lwtRetain": {
+      "label": "LWT Retain",
+      "type": "boolean",
+      "default": false,
+      "trueLabel": "Включено",
+      "falseLabel": "Выключено"
+    },
+    "lwtDelay": {
+      "label": "Задержка LWT MQTT 5, с",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 4294967295,
+      "step": 1
+    }
+  },
+  "constraints": {},
+  "firmware": {
+    "status": "implemented",
+    "generatorKey": "mqtt-interface",
+    "dependencies": [
+      "mqtt",
+      "esp_netif"
+    ]
+  }
+}
