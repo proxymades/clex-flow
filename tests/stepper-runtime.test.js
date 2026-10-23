@@ -69,5 +69,8 @@ int main(void){
  return 0;
 }
 `;
- assert.ok(driver.enabled);runHostC(source,'clex-stepper-gptimer-');
+ assert.ok(driver.enabled);
+ const headers={'soc/soc_caps.h':'#define SOC_TIMER_GROUP_TOTAL_TIMERS 4\n'};
+ runHostC(source,'clex-stepper-gptimer-',headers);
+ assert.throws(()=>runHostC(source,'clex-stepper-capacity-',{...headers,'soc/soc_caps.h':'#define SOC_TIMER_GROUP_TOTAL_TIMERS 0\n'}),/Stepper drivers exceed hardware GPTimer capacity/);
 });
