@@ -1,3 +1,5 @@
+import {relayChannelCount} from '../relay/model.js';
+import {formatCount} from '../utils/plural.js';
 import { memo, useEffect, useState } from 'react';
 import { Handle, Position, useUpdateNodeInternals } from '@xyflow/react';
 import { getAsset } from '../catalog/index.js';
@@ -27,7 +29,7 @@ function BoardNode({ id, data }) {
           <rect x={layout.x} y={layout.y} width={layout.width} height={layout.height} rx="4" fill={selected || connected ? '#24364a' : '#101722'} opacity={selected || connected ? 0.9 : 0.7} />
           <circle cx={pin.x} cy={pin.y} r={candidate ? 6 : 5} fill={connected || candidate || selected || hoveredPin === pin.id ? color : '#121c26'} stroke={color} strokeWidth={selected || candidate ? 2.5 : 1.5} />
           <text x={layout.textX} y={layout.textY} textAnchor={layout.textAnchor} fill={blocked && pin.kind === 'gpio' ? '#69758e' : '#bbc9db'} fontSize={layout.fontSize} fontFamily="ui-monospace, monospace">{layout.text}</text>
-          <title>{label + ' · ' + (blocked || (pin.kind === 'gpio' ? 'Цифровой GPIO' : pin.kind === 'ground' ? 'Общая земля' : pin.kind === 'analog' ? 'Аналоговый вход' : 'Питание / управление')) + (pin.functions.length ? ' · ' + pin.functions.join(', ') : '')}</title>
+          <title>{label + ' · ' + (blocked || (pin.kind === 'gpio' ? 'Цифровой GPIO' : pin.kind === 'ground' ? 'Общая земля' : pin.kind === 'analog' ? 'Аналоговый вход' : 'Питание / управление')) + (pin.functions.length ? ' · ' + pin.functions.join(', ') : '') + (pin.powerNote ? ' · ' + pin.powerNote : '')}</title>
         </g>;
       })}
     </svg>
@@ -47,7 +49,7 @@ function HardwareNode({ id, data }) {
       <rect width={width} height={height} rx="12" fill="#151c2a" stroke={selected ? module?.color || '#8b5cf6' : '#344158'} strokeWidth={selected ? 2 : 1} />
       <rect x="0" y={14 + headerOffset} width="3" height="29" rx="1" fill={module?.color || '#fb7185'} />
       <text x="16" y={30 + headerOffset} fill="#e2e8f0" fontSize="12" fontWeight="550">{component.name.length > 28 ? component.name.slice(0, 27) + '…' : component.name}</text>
-      <text x="16" y={49 + headerOffset} fill="#72869f" fontSize="8" fontFamily="monospace">{module ? module.categoryName.toUpperCase() + ' / v' + component.moduleVersion : 'МОДУЛЬ НЕ УСТАНОВЛЕН'}</text>
+      <text x="16" y={49 + headerOffset} fill="#72869f" fontSize="8" fontFamily="monospace">{module?.id==='clex.hardware.relay'?formatCount(relayChannelCount(component),['канал','канала','каналов'])+' · '+String(component.parameters.activeLevel||'').toUpperCase()+' / v'+component.moduleVersion:module ? module.categoryName.toUpperCase() + ' / v' + component.moduleVersion : 'МОДУЛЬ НЕ УСТАНОВЛЕН'}</text>
       {module && <image href={getAsset(module.visual.svg)} x={(width - 180) / 2} y={57 + headerOffset} width="180" height="56" />}
       {terminals.map(({ terminal, pin, active, candidate, color, connected }) => {
         const vertical = terminal.side === 'top' || terminal.side === 'bottom';

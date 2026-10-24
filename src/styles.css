@@ -97,3 +97,8 @@ input:is([type=checkbox],[type=radio],[type=color],[type=range],[type=button],[t
 @media(max-width:540px){.board-picker-filters{grid-template-columns:1fr;gap:0}.modal.board-picker-modal{padding:18px;max-height:calc(100dvh - 24px)}}
 
 .assembly-history-controls{display:flex;align-items:center;gap:4px;pointer-events:auto;background:#111a27e6;border-radius:5px;padding:2px}.assembly-history-controls .canvas-scale{margin-left:4px;background:transparent}
+
+.workspace-properties .board-sources[open]>summary{margin-bottom:12px}
+.workspace-properties .board-sources+.field{margin-top:16px}
+.workspace-properties :is(.panel-note,.board-sources)+.logic-hardware-binding{margin-top:16px}
+.workspace-properties .board-sources>.button+.button{margin-top:10px}

@@ -1,3 +1,5 @@
+import {relayFirmware} from './drivers/relay.js';
+import {RELAY_MODULE} from '../relay/model.js';
 import {mqttFirmware} from './drivers/mqtt.js';
 import componentPackages from './component-files.json' with { type: 'json' };
 import {routerFirmware} from './drivers/router.js';
@@ -27,6 +29,8 @@ const implementationVersions = {
   'clex.logic.espnow-ack':'2.0.0',
   'clex.logic.espnow-control':'2.0.0',
 };
+implementationKeys['clex.hardware.relay']='relay';
+implementationKeys['clex.logic.relay']='relay-control';
 implementationKeys['clex.hardware.mqtt']='mqtt-interface';
 for(const action of ['control','send','receive'])implementationKeys['clex.logic.mqtt-'+action]='mqtt-'+action;
 implementationKeys['clex.hardware.router']='router';
@@ -122,9 +126,11 @@ export function generateFirmware(project, catalog, consoleMode = 'usb') {
     }
   }
   if ([...textLengths.values(), ...dynamicLengths.values()].reduce((sum,length)=>sum+length,0)+stopwatch.textBudget>65536) throw new Error('Текстовые выходы требуют более 64 КиБ. Уменьшите число сообщений или длину текста.');
-  const declarations = [], initializers = [], inputUpdates = [];
+  const relay=relayFirmware(project,nodes,index,board.platform);
+  const declarations = [relay.declarations].filter(Boolean), initializers = [relay.initialize].filter(Boolean), inputUpdates = [];
   for (let i=0;i<components.length;i++) {
     const component=components[i];
+    if(component.moduleId===RELAY_MODULE)continue;
     if (catalog.modules.find(module=>module.id===component.moduleId)?.display || catalog.modules.find(module=>module.id===component.moduleId)?.network || catalog.modules.find(module=>module.id===component.moduleId)?.hardwareInterface || catalog.modules.find(module=>module.id===component.moduleId)?.softwareInterface || catalog.modules.find(module=>module.id===component.moduleId)?.stepper || catalog.modules.find(module=>module.id===component.moduleId)?.passive) continue;
     const assignment=project.gpioAssignments.find(assignment=>assignment.componentId===component.id);
     if (!assignment) throw new Error('Компонент не имеет назначения GPIO.');
@@ -152,6 +158,7 @@ export function generateFirmware(project, catalog, consoleMode = 'usb') {
     const calls = (eventModules.has(node.moduleId) ? [] : sourceEvents).sort((a,b)=>index.get(a.target)-index.get(b.target) || (a.targetHandle < b.targetHandle ? -1 : a.targetHandle > b.targetHandle ? 1 : 0)).map(edge=>`  ${eventCall(edge)}`);
     const binding=hardwareBinding(node,project,catalog), h=hardware.get(binding.component?.id), gpio=binding.gpio;
     const operations=[], elementFunctions=[];
+    if(relay.operations.has(node.id))operations.push(relay.operations.get(node.id)({inputEdge,dataExpression}));
     if(mqtt.operations.has(node.id)){const op=mqtt.operations.get(node.id);operations.push(typeof op==='function'?op({inputEdge,dataExpression}):op);}
     if(temperature.operations.has(node.id))operations.push(temperature.operations.get(node.id));
     if (node.moduleId === 'clex.logic.select-number') operations.push(selectNumberCode(node, dataExpression(inputEdge(node, 'value')), port => `    node_${i}_emit_${port}();`));

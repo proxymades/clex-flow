@@ -1,0 +1,197 @@
+{
+  "id": "clex.logic.relay",
+  "version": "1.0.0",
+  "kind": "logic",
+  "name": "Управлять реле",
+  "description": "Включает, выключает или переключает выбранный канал модуля реле по событию. Для действия «Установить состояние» можно подключить логический вход.",
+  "category": "gpio",
+  "categoryName": "Контакты",
+  "icon": "ToggleRight",
+  "color": "#38BDF8",
+  "compatibility": {
+    "projectFormat": 3,
+    "targets": [
+      "esp32",
+      "esp32s3",
+      "esp32p4",
+      "atmega328p"
+    ],
+    "espIdf": "5.4.4",
+    "platforms": {
+      "arduino-avr": "1.8.6"
+    }
+  },
+  "parameters": {
+    "componentId": {
+      "label": "Модуль реле",
+      "type": "component",
+      "default": ""
+    },
+    "channel": {
+      "label": "Канал реле",
+      "type": "select",
+      "default": "1",
+      "options": [
+        {
+          "value": "1",
+          "label": "Канал 1 · IN1"
+        },
+        {
+          "value": "2",
+          "label": "Канал 2 · IN2"
+        },
+        {
+          "value": "3",
+          "label": "Канал 3 · IN3"
+        },
+        {
+          "value": "4",
+          "label": "Канал 4 · IN4"
+        },
+        {
+          "value": "5",
+          "label": "Канал 5 · IN5"
+        },
+        {
+          "value": "6",
+          "label": "Канал 6 · IN6"
+        },
+        {
+          "value": "7",
+          "label": "Канал 7 · IN7"
+        },
+        {
+          "value": "8",
+          "label": "Канал 8 · IN8"
+        },
+        {
+          "value": "9",
+          "label": "Канал 9 · IN9"
+        },
+        {
+          "value": "10",
+          "label": "Канал 10 · IN10"
+        },
+        {
+          "value": "11",
+          "label": "Канал 11 · IN11"
+        },
+        {
+          "value": "12",
+          "label": "Канал 12 · IN12"
+        },
+        {
+          "value": "13",
+          "label": "Канал 13 · IN13"
+        },
+        {
+          "value": "14",
+          "label": "Канал 14 · IN14"
+        },
+        {
+          "value": "15",
+          "label": "Канал 15 · IN15"
+        },
+        {
+          "value": "16",
+          "label": "Канал 16 · IN16"
+        }
+      ]
+    },
+    "action": {
+      "label": "Действие",
+      "type": "select",
+      "default": "set",
+      "options": [
+        {
+          "value": "set",
+          "label": "Установить состояние"
+        },
+        {
+          "value": "on",
+          "label": "Включить"
+        },
+        {
+          "value": "off",
+          "label": "Выключить"
+        },
+        {
+          "value": "toggle",
+          "label": "Переключить"
+        }
+      ]
+    },
+    "defaultValue": {
+      "label": "Состояние без входной связи",
+      "type": "boolean",
+      "default": false,
+      "trueLabel": "Включено",
+      "falseLabel": "Выключено",
+      "when": {
+        "field": "action",
+        "value": "set"
+      }
+    }
+  },
+  "inputs": [
+    {
+      "id": "trigger",
+      "name": "Выполнить",
+      "type": "event",
+      "required": true,
+      "description": "Выполняет выбранное действие для канала реле."
+    },
+    {
+      "id": "value",
+      "name": "Включить?",
+      "type": "boolean",
+      "additional": true,
+      "description": "Да включает реле, Нет выключает. Используется действием «Установить состояние»; без связи применяется настройка блока."
+    }
+  ],
+  "outputs": [
+    {
+      "id": "done",
+      "name": "Команда выполнена",
+      "type": "event",
+      "description": "Сигнал после установки управляющего уровня канала."
+    },
+    {
+      "id": "state",
+      "name": "Реле включено?",
+      "type": "boolean",
+      "readyOn": "done",
+      "description": "Заданное состояние канала после команды. Это состояние управления, без обратной связи от контактов реле.",
+      "valueStates": {
+        "options": [
+          {
+            "value": false,
+            "label": "Выключено",
+            "dotColor": "#64748b"
+          },
+          {
+            "value": true,
+            "label": "Включено",
+            "dotColor": "#34d399"
+          }
+        ]
+      }
+    }
+  ],
+  "constraints": {
+    "hardware": {
+      "kind": "relay",
+      "modules": [
+        "clex.hardware.relay"
+      ],
+      "mode": "output"
+    }
+  },
+  "firmware": {
+    "status": "implemented",
+    "generatorKey": "relay-control",
+    "dependencies": [
+      "esp_driver_gpio"
+    ]
+  }
+}

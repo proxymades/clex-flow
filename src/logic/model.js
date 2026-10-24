@@ -1,3 +1,4 @@
+import {relayChannelCount} from '../relay/model.js';
 import {mqttLogicIssues} from '../mqtt/model.js';
 import {stepperLogicIssues} from '../stepper/model.js';
 import {ESPNOW_MODULE,espNowSupported,espNowLogicIssues,espNowAckIssues} from '../espnow/model.js';
@@ -171,7 +172,8 @@ export function hardwareBinding(node, project, catalog) {
   if (!requirement) return { component: null, gpio: null, error: null };
   const component = project.components.find(component => component.id === node.parameters.componentId);
   if (!component || !hardwareMatches(component,requirement,catalog)) return { component: null, gpio: null, error: 'Выберите подходящий компонент монтажа.' };
-  const terminalId=requirement.terminal||catalog.modules.find(module=>module.id===component.moduleId)?.terminals.find(terminal=>terminal.kind===(requirement.mode==='input'?'gpio-input':'gpio-output'))?.id;
+  if(requirement.kind==='relay'&&(!/^(?:[1-9]|1[0-6])$/.test(node.parameters.channel)||Number(node.parameters.channel)>relayChannelCount(component)))return {component,gpio:null,error:'Выберите существующий канал модуля реле.'};
+  const terminalId=(requirement.kind==='relay'?'in'+node.parameters.channel:requirement.terminal)||catalog.modules.find(module=>module.id===component.moduleId)?.terminals.find(terminal=>terminal.kind===(requirement.mode==='input'?'gpio-input':'gpio-output'))?.id;
   const assignment = project.gpioAssignments.find(assignment => assignment.componentId === component.id && assignment.terminalId === terminalId);
   if (!assignment || assignment.mode !== requirement.mode) return { component, gpio: null, error: 'Сначала назначьте GPIO этому компоненту во вкладке «Монтаж».' };
   const wire = project.assembly.connections.find(wire => wire.componentId === component.id && wire.terminalId === terminalId && wire.boardPinId === assignment.pinId);

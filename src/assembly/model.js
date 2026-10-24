@@ -1,3 +1,4 @@
+import {RELAY_MODULE,relayChannelCount,resolveRelayModule} from '../relay/model.js';
 import {parseContact,wireSource,touches,normalizedContact,componentWireProblem} from './endpoints.js';
 import {stepperIssues} from '../stepper/model.js';
 import {MQTT_MODULE,MAX_MQTT_CONNECTIONS,mqttSupported,mqttIssues} from '../mqtt/model.js';
@@ -12,7 +13,7 @@ export const DEFAULT_BOARD_POSITION = { x: 100, y: 40 };
 export const DEFAULT_VIEWPORT = { x: 0, y: 0, zoom: 1 };
 const lookup = (items, id) => items.find(item => item.id === id);
 export const boardFor = (project, catalog) => lookup(catalog.boards, project.boardId);
-export const moduleFor = (component, catalog) => lookup(catalog.modules, component.moduleId);
+export const moduleFor = (component, catalog) => resolveRelayModule(component,lookup(catalog.modules, component.moduleId));
 
 export function transformAssembly(project,catalog,transform){
  const previous=project.assembly.positions,positions={...previous,...transform.positions},board=boardFor(project,catalog);
@@ -71,6 +72,7 @@ export function connectionProblem(project, catalog, componentId, terminalId, pin
   const pin = lookup(board.pins, pinId);
   if (!terminal) return 'Контакт компонента не найден.';
   if (!pin) return 'Контакт платы не найден.';
+  if (terminal.externalPower) return 'VCC питается от внешнего источника 5 В. Для соединения с платой измените источник питания модуля.';
   if (terminal.kind === 'power') return pin.kind === 'power' && pin.voltage === (terminal.voltageFromBoard ? (board.logicVoltage || 3.3) : terminal.voltageParameter ? Number(component.parameters[terminal.voltageParameter]) : terminal.voltage) ? null : 'Питание компонента подключается к контакту платы с указанным напряжением.';
   if (terminal.kind === 'ground') return pin.kind === 'ground' ? null : 'Общий контакт / катод должен быть подключен к GND. Питание и GPIO здесь недопустимы.';
   if (pin.kind !== 'gpio') return 'Сигнальный контакт подключается к GPIO, а не к питанию, GND или управлению.';
@@ -98,6 +100,22 @@ export function gpioAssignments(project, catalog) {
     const terminal = component && moduleFor(component, catalog)?.terminals.find(terminal => terminal.id === wire.terminalId);
     return pin?.kind === 'gpio' && terminal && terminal.kind !== 'ground' ? [{ componentId: wire.componentId, terminalId: wire.terminalId, pinId: pin.id, gpio: pin.gpio, mode: terminal.kind === 'gpio-output' ? 'output' : 'input' }] : [];
   });
+}
+
+export function updateHardware(project,catalog,id,patch){
+ const previous=project.components.find(component=>component.id===id);
+ if(!previous)return project;
+ const component={...previous,...patch};
+ let updated={...project,components:project.components.map(item=>item.id===id?component:item)};
+ if(component.moduleId===RELAY_MODULE&&relayChannelCount(component)&&(component.parameters.channels!==previous.parameters.channels||component.parameters.powerSource!==previous.parameters.powerSource)){
+  const definition=moduleFor(component,catalog);
+  const terminals=new Set(definition.terminals.map(terminal=>terminal.id)),wired=new Set(definition.terminals.filter(terminal=>!terminal.externalPower).map(terminal=>terminal.id));
+  const connections=project.assembly.connections.filter(wire=>!(wire.componentId===id&&!wired.has(wire.terminalId)||wire.sourceComponentId===id&&!wired.has(wire.sourceTerminalId)));
+  const sides=Object.fromEntries(Object.entries(project.assembly.portSides?.[id]||{}).filter(([terminal])=>terminals.has(terminal)));
+  updated={...updated,assembly:{...updated.assembly,...(project.assembly.portSides?{portSides:{...project.assembly.portSides,[id]:sides}}:{})}};
+  updated=withConnections(updated,connections,catalog);
+ }
+ return updated;
 }
 
 function withConnections(project, connections, catalog) {
@@ -142,12 +160,12 @@ export function addHardware(project, module, catalog = null) {
 
   if(catalog)Object.assign(parameters,boardFor(project,catalog)?.componentDefaults?.[module.id]);
   const occupied = project.components.map(component => {
-    const layout = terminalLayout(catalog?.modules.find(item => item.id === component.moduleId), project.assembly.portSides?.[component.id]);
+    const layout = terminalLayout(catalog?moduleFor(component,catalog):null, project.assembly.portSides?.[component.id]);
     return { ...project.assembly.positions[component.id], width: layout.width, height: layout.height };
   });
   const board = catalog && boardFor(project, catalog), boardPosition = project.assembly.positions.board;
   if (board) occupied.push({ ...boardPosition, width: board.width, height: board.height });
-  const { width, height } = terminalLayout(module);
+  const { width, height } = terminalLayout(resolveRelayModule({parameters},module));
   const origin = board ? { x: boardPosition.x + board.width + 48, y: boardPosition.y + 80 } : { x: 670, y: 100 };
   const xs = new Set([origin.x]), ys = new Set([origin.y]);
   for (const rectangle of occupied) {
@@ -205,6 +223,7 @@ export function validateAssembly(project, catalog) {
       if (parameter.type === 'select' && !parameter.options.some(option => option.value === value)) issue('error', 'parameter-option', `${component.name}: неверный параметр «${parameter.label}».`, fields);
     }
     if (module.constraints.signalVoltageParameter && Number(component.parameters[module.constraints.signalVoltageParameter]) > Number(component.parameters[module.constraints.supplyVoltageParameter])) issue('error','input-voltage',`${component.name}: напряжение OUT не может превышать выбранное питание VCC.`,fields);
+    if(module.id===RELAY_MODULE&&!project.assembly.connections.some(wire=>wire.componentId===component.id&&/^in\d+$/.test(wire.terminalId)))issue('error','relay-channel',component.name+': подключите хотя бы один вход IN к GPIO.',fields);
     if(module.softwareInterface==='mqtt')for(const message of mqttIssues(component,project,catalog))issue('error','mqtt-config',component.name+': '+message,fields);
     if(module.softwareInterface==='espnow')for(const message of espNowIssues(component,board))issue('error','espnow-config',component.name+': '+message,fields);
     if(module.softwareInterface==='router')for(const message of routerIssues(component,project,catalog))issue('error','router-config',component.name+': '+message,fields);
@@ -223,6 +242,8 @@ export function validateAssembly(project, catalog) {
   for (const wire of project.assembly.connections) {
     const problem = connectionProblem(project, catalog, wire.componentId, wire.terminalId, wireSource(wire));
     if (problem) issue('error', 'connection-invalid', problem, { componentId: wire.componentId, wireId: wire.id, pinId: wire.boardPinId });
+    const component=project.components.find(component=>component.id===wire.componentId),pin=board.pins.find(pin=>pin.id===wire.boardPinId);
+    if(!problem&&component?.moduleId===RELAY_MODULE&&wire.terminalId==='power'&&pin?.powerNote)issue('warning','relay-power',component.name+': '+pin.powerNote+' Для многоканального модуля рекомендуется внешний источник 5 В.',{componentId:component.id,wireId:wire.id,pinId:pin.id});
   }
   if (JSON.stringify(project.gpioAssignments) !== JSON.stringify(gpioAssignments(project, catalog))) issue('error', 'gpio-cache', 'Назначения GPIO не совпадают с физическими соединениями. Переназначьте контакты в редакторе.');
   if (!project.components.length && board.pins.length) issue('warning', 'empty-assembly', 'Добавьте компоненты во вкладке «Монтаж».');

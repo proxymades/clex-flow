@@ -1,0 +1,310 @@
+{
+  "id": "clex.hardware.relay",
+  "version": "1.0.0",
+  "kind": "hardware",
+  "name": "Модуль реле",
+  "category": "actuators",
+  "categoryName": "Исполнительные устройства",
+  "icon": "ToggleRight",
+  "color": "#38BDF8",
+  "description": "Модуль реле с питанием 5 В и независимым управлением каналами. Выберите число каналов и активный уровень входов LOW/HIGH. Подходит для настройки модулей с реле SRD-05VDC-SL-C.",
+  "compatibility": {
+    "projectFormat": 3,
+    "targets": [
+      "esp32",
+      "esp32s3",
+      "esp32p4",
+      "atmega328p"
+    ],
+    "espIdf": "5.4.4",
+    "platforms": {
+      "arduino-avr": "1.8.6"
+    }
+  },
+  "inputs": [],
+  "outputs": [],
+  "visual": {
+    "svg": "relay.svg",
+    "width": 280,
+    "height": 230
+  },
+  "parameters": {
+    "channels": {
+      "label": "Количество каналов",
+      "type": "select",
+      "default": "8",
+      "options": [
+        {
+          "value": "1",
+          "label": "1"
+        },
+        {
+          "value": "2",
+          "label": "2"
+        },
+        {
+          "value": "3",
+          "label": "3"
+        },
+        {
+          "value": "4",
+          "label": "4"
+        },
+        {
+          "value": "5",
+          "label": "5"
+        },
+        {
+          "value": "6",
+          "label": "6"
+        },
+        {
+          "value": "7",
+          "label": "7"
+        },
+        {
+          "value": "8",
+          "label": "8"
+        },
+        {
+          "value": "9",
+          "label": "9"
+        },
+        {
+          "value": "10",
+          "label": "10"
+        },
+        {
+          "value": "11",
+          "label": "11"
+        },
+        {
+          "value": "12",
+          "label": "12"
+        },
+        {
+          "value": "13",
+          "label": "13"
+        },
+        {
+          "value": "14",
+          "label": "14"
+        },
+        {
+          "value": "15",
+          "label": "15"
+        },
+        {
+          "value": "16",
+          "label": "16"
+        }
+      ]
+    },
+    "activeLevel": {
+      "label": "Уровень включения реле",
+      "type": "select",
+      "default": "low",
+      "options": [
+        {
+          "value": "low",
+          "label": "LOW – низкий уровень"
+        },
+        {
+          "value": "high",
+          "label": "HIGH – высокий уровень"
+        }
+      ],
+      "description": "Уровень управляющего входа IN, при котором включается реле."
+    },
+    "powerSource": {
+      "label": "Источник питания реле",
+      "type": "select",
+      "default": "external",
+      "options": [
+        {
+          "value": "board",
+          "label": "От платы · 5 В"
+        },
+        {
+          "value": "external",
+          "label": "Внешний источник · 5 В"
+        }
+      ],
+      "description": "При внешнем питании VCC не соединяется с платой. GND источника, модуля и микроконтроллера должны быть общими."
+    }
+  },
+  "terminals": [
+    {
+      "id": "power",
+      "label": "VCC · 5 В",
+      "kind": "power",
+      "voltage": 5,
+      "x": 280,
+      "y": 125
+    },
+    {
+      "id": "ground",
+      "label": "GND",
+      "kind": "ground",
+      "x": 280,
+      "y": 160
+    },
+    {
+      "id": "in1",
+      "label": "IN1",
+      "kind": "gpio-output",
+      "channel": 1,
+      "optional": true,
+      "x": 0,
+      "y": 125
+    },
+    {
+      "id": "in2",
+      "label": "IN2",
+      "kind": "gpio-output",
+      "channel": 2,
+      "optional": true,
+      "x": 0,
+      "y": 160
+    },
+    {
+      "id": "in3",
+      "label": "IN3",
+      "kind": "gpio-output",
+      "channel": 3,
+      "optional": true,
+      "x": 0,
+      "y": 195
+    },
+    {
+      "id": "in4",
+      "label": "IN4",
+      "kind": "gpio-output",
+      "channel": 4,
+      "optional": true,
+      "x": 0,
+      "y": 230
+    },
+    {
+      "id": "in5",
+      "label": "IN5",
+      "kind": "gpio-output",
+      "channel": 5,
+      "optional": true,
+      "x": 0,
+      "y": 265
+    },
+    {
+      "id": "in6",
+      "label": "IN6",
+      "kind": "gpio-output",
+      "channel": 6,
+      "optional": true,
+      "x": 0,
+      "y": 300
+    },
+    {
+      "id": "in7",
+      "label": "IN7",
+      "kind": "gpio-output",
+      "channel": 7,
+      "optional": true,
+      "x": 0,
+      "y": 335
+    },
+    {
+      "id": "in8",
+      "label": "IN8",
+      "kind": "gpio-output",
+      "channel": 8,
+      "optional": true,
+      "x": 0,
+      "y": 370
+    },
+    {
+      "id": "in9",
+      "label": "IN9",
+      "kind": "gpio-output",
+      "channel": 9,
+      "optional": true,
+      "x": 0,
+      "y": 405
+    },
+    {
+      "id": "in10",
+      "label": "IN10",
+      "kind": "gpio-output",
+      "channel": 10,
+      "optional": true,
+      "x": 0,
+      "y": 440
+    },
+    {
+      "id": "in11",
+      "label": "IN11",
+      "kind": "gpio-output",
+      "channel": 11,
+      "optional": true,
+      "x": 0,
+      "y": 475
+    },
+    {
+      "id": "in12",
+      "label": "IN12",
+      "kind": "gpio-output",
+      "channel": 12,
+      "optional": true,
+      "x": 0,
+      "y": 510
+    },
+    {
+      "id": "in13",
+      "label": "IN13",
+      "kind": "gpio-output",
+      "channel": 13,
+      "optional": true,
+      "x": 0,
+      "y": 545
+    },
+    {
+      "id": "in14",
+      "label": "IN14",
+      "kind": "gpio-output",
+      "channel": 14,
+      "optional": true,
+      "x": 0,
+      "y": 580
+    },
+    {
+      "id": "in15",
+      "label": "IN15",
+      "kind": "gpio-output",
+      "channel": 15,
+      "optional": true,
+      "x": 0,
+      "y": 615
+    },
+    {
+      "id": "in16",
+      "label": "IN16",
+      "kind": "gpio-output",
+      "channel": 16,
+      "optional": true,
+      "x": 0,
+      "y": 650
+    }
+  ],
+  "constraints": {},
+  "firmware": {
+    "status": "implemented",
+    "generatorKey": "relay",
+    "dependencies": [
+      "esp_driver_gpio"
+    ]
+  },
+  "manualWiring": [
+    "Для питания от платы подключите VCC к 5 В. При внешнем питании подайте на модуль 5 В от отдельного источника; соединение VCC с платой в проекте не требуется. GND – общая земля модуля и микроконтроллера. Каждый используемый вход IN занимает отдельный выходной GPIO.",
+    "Питание 5 В не определяет совместимость входов IN с GPIO 3,3 В. Сверьте характеристики управляющих входов конкретного модуля. Ток питания всех включенных реле должен соответствовать возможностям источника.",
+    "Контакты COM/NO/NC относятся к коммутируемой цепи. Они не подключаются к GPIO микроконтроллера."
+  ]
+}

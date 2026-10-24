@@ -1,3 +1,4 @@
+import {resolveRelayModule} from '../relay/model.js';
 import { physicalEdges } from './flow.js';
 import { terminalLayout } from './terminalLayout.js';
 import { allocateWireLanes } from './wireRouting.js';
@@ -5,7 +6,7 @@ import { allocateWireLanes } from './wireRouting.js';
 // Только геометрия. Выделение, подсветка и камера не запускают поиск маршрутов.
 export function assemblyRoutingScene({ components, positions, connections, portSides }, board, catalog) {
   const layouts = new Map(components.map(component => [component.id,
-    terminalLayout(catalog.modules.find(module => module.id === component.moduleId), portSides?.[component.id]),
+    terminalLayout(resolveRelayModule(component,catalog.modules.find(module => module.id === component.moduleId)), portSides?.[component.id]),
   ]));
   const nodes = [{ id: 'board', position: positions.board, width: board.width, height: board.height },
     ...components.map(component => {

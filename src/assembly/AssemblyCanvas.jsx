@@ -131,7 +131,7 @@ export default function AssemblyCanvas({ project, board, catalog, selection, set
       const selected = selection?.type === 'component' && selection.id === component.id;
       const terminals = layout.terminals.map(terminal => {
         const wire = project.assembly.connections.find(wire => touches(wire,component.id,terminal.id));
-        return { terminal, connected: Boolean(wire), pin: wire && {label:connectionLabel(project,catalog,wire,component.id)},
+        return { terminal, connected: Boolean(wire)||Boolean(terminal.externalPower), pin: terminal.externalPower?{label:'Внешние 5 В'}:wire && {label:connectionLabel(project,catalog,wire,component.id)},
           active: connectionSource?.componentId === component.id && connectionSource.terminalId === terminal.id,
           candidate: Boolean((connectionSource?.boardPinId||connectionSource?.componentId&&connectionSource.componentId!==component.id)&&!connectionProblem(project,catalog,component.id,terminal.id,connectionSource.boardPinId||componentContact(connectionSource.componentId,connectionSource.terminalId))),
           color: colors[wire?.id] || (terminal.kind === 'ground' ? GROUND_COLOR : module.color) };
