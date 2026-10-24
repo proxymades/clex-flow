@@ -3,13 +3,13 @@ import {createProject} from '../src/projects/model.js';
 import {addHardware,connectTerminal,connectionProblem} from '../src/assembly/model.js';
 import {addNode,connectNodes,withLogic} from '../src/logic/model.js';
 const definition=id=>catalog.modules.find(module=>module.id===id);
-export function relayProject({boardId='waveshare-esp32-s3-eth',channels='8',activeLevel='low',connected=[1,2]}={}){
+export function relayProject({boardId='waveshare-esp32-s3-eth',channels='8',activeLevel='low',supplyVoltage='5',powerSource='board',connected=[1,2]}={}){
  const board=catalog.boards.find(board=>board.id===boardId);
  let project=createProject('Relay','',boardId,Object.fromEntries(Object.entries(board.options||{}).map(([key,option])=>[key,option.default])));
  if(boardId==='waveshare-esp32-s3-eth')project.boardSettings.camera='disconnected';
  project=addHardware(project,definition('clex.hardware.relay'),catalog);
- const component=project.components.at(-1);Object.assign(component.parameters,{channels,activeLevel,powerSource:'board'});
- for(const [terminal,pin]of [['power',board.pins.find(pin=>pin.kind==='power'&&pin.voltage===5)],['ground',board.pins.find(pin=>pin.kind==='ground')]])project=connectTerminal(project,catalog,component.id,terminal,pin.id);
+ const component=project.components.at(-1);Object.assign(component.parameters,{channels,activeLevel,supplyVoltage,powerSource});
+ for(const [terminal,pin]of [...(powerSource==='board'?[['power',board.pins.find(pin=>pin.kind==='power'&&pin.voltage===Number(supplyVoltage))]]:[]),['ground',board.pins.find(pin=>pin.kind==='ground')]])project=connectTerminal(project,catalog,component.id,terminal,pin.id);
  for(const channel of connected){
   const terminal='in'+channel,pin=board.pins.find(pin=>!connectionProblem(project,catalog,component.id,terminal,pin.id));
   if(!pin)throw Error('No output pin for '+terminal+' on '+boardId);

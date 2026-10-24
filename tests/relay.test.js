@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {catalog} from './catalog-fixture.js';
 import {relayProject} from './relay-fixture.js';
 import {createProject,parseProject,serializeProject} from '../src/projects/model.js';
-import {RELAY_MODULE,relayChannelCount} from '../src/relay/model.js';
+import {RELAY_MODULE,RELAY_SUPPLY_VOLTAGES,relayChannelCount,relayParameters,relaySupplyVoltage} from '../src/relay/model.js';
 import {moduleFor,updateHardware,validateAssembly,connectionProblem,connectTerminal,disconnectTerminal,addHardware} from '../src/assembly/model.js';
 import {terminalLayout} from '../src/assembly/terminalLayout.js';
 import {assemblyRoutingScene} from '../src/assembly/routingScene.js';
@@ -115,4 +115,78 @@ test('ESP32-S3-ETH supply notes distinguish VSYS and VBUS without blocking GPIO 
  }
  const fresh=addHardware(createProject('Relay external','',project.boardId,{camera:'disconnected'}),catalog.modules.find(m=>m.id===RELAY_MODULE),catalog);
  assert.equal(fresh.components[0].parameters.powerSource,'external');
+});
+
+test('relay board supplies must match selected 3.3/5V on every board and always report a warning',()=>{
+ for(const boardId of boards)for(const supplyVoltage of ['3.3','5']){
+  const {project,component}=relayProject({boardId,supplyVoltage});const board=catalog.boards.find(board=>board.id===boardId);
+  assert.deepEqual(errors(project),[]);
+  for(const pin of board.pins)assert.equal(connectionProblem(project,catalog,component.id,'power',pin.id)===null,pin.kind==='power'&&pin.voltage===Number(supplyVoltage),boardId+' '+supplyVoltage+' '+pin.id);
+  const issue=validateAssembly(project,catalog).find(issue=>issue.code==='relay-power');
+  assert.equal(issue.severity,'warning');assert.match(issue.message,/внешний источник/);
+  const power=moduleFor(component,catalog).terminals.find(t=>t.id==='power');assert.equal(power.voltage,Number(supplyVoltage));
+  generateFirmware(project,catalog);
+ }
+});
+test('external power supports every relay voltage independently of GPIO logic and blocks high voltage from board',async()=>{
+ for(const boardId of boards){
+  const baseline=relayProject({boardId,supplyVoltage:'5',powerSource:'external'}).project;
+  for(const supplyVoltage of RELAY_SUPPLY_VOLTAGES){
+   const project=structuredClone(baseline),component=project.components[0];component.parameters.supplyVoltage=supplyVoltage;
+   assert.deepEqual(errors(project),[]);
+   assert.equal(relaySupplyVoltage(component),Number(supplyVoltage));
+   assert.deepEqual(parseProject(serializeProject(project)),project);
+   assert.equal(await firmwareFingerprint(generateFirmware(project,catalog)),await firmwareFingerprint(generateFirmware(baseline,catalog)));
+   const definition=moduleFor(component,catalog),power=definition.terminals.find(t=>t.id==='power');
+   assert.equal(power.optional,true);assert.equal(power.externalPower,true);assert.equal(power.externalPowerLabel,'Внешние '+supplyVoltage.replace('.',',')+' В');
+   assert.equal(definition.parameters.powerSource.options.find(o=>o.value==='board').disabled,Number(supplyVoltage)>5);
+   if(Number(supplyVoltage)>5){
+    component.parameters.powerSource='board';
+    const board=catalog.boards.find(board=>board.id===boardId);
+    for(const pin of board.pins)assert.ok(connectionProblem(project,catalog,component.id,'power',pin.id),pin.id);
+    assert.ok(errors(project).some(issue=>issue.code==='relay-power-source'));
+    assert.throws(()=>generateFirmware(project,catalog),/внешний источник/);
+   }
+  }
+ }
+});
+test('supply changes remove only incompatible VCC wiring and select external power above 5V',()=>{
+ let {project,component}=relayProject();const board=catalog.boards.find(board=>board.id===project.boardId);
+ const before=structuredClone(project.gpioAssignments),ground=project.assembly.connections.find(w=>w.terminalId==='ground');
+ project=updateHardware(project,catalog,component.id,{parameters:{...component.parameters,supplyVoltage:'3.3'}});
+ assert.equal(project.components[0].parameters.powerSource,'board');assert.ok(!project.assembly.connections.some(w=>w.terminalId==='power'));
+ assert.deepEqual(project.gpioAssignments,before);assert.deepEqual(project.assembly.connections.find(w=>w.terminalId==='ground'),ground);
+ assert.ok(errors(project).some(issue=>issue.code==='terminal-unconnected'&&issue.message.includes('VCC')));
+ project=connectTerminal(project,catalog,component.id,'power',board.pins.find(pin=>pin.kind==='power'&&pin.voltage===3.3).id);
+ assert.deepEqual(errors(project),[]);
+ const configured=updateHardware(project,catalog,component.id,{parameters:{...project.components[0].parameters,supplyVoltage:'3.3'}});
+ assert.deepEqual(configured.assembly.connections,project.assembly.connections);
+ project=updateHardware(project,catalog,component.id,{parameters:{...project.components[0].parameters,supplyVoltage:'12'}});
+ assert.equal(project.components[0].parameters.powerSource,'external');assert.ok(!project.assembly.connections.some(w=>w.terminalId==='power'));
+ assert.deepEqual(project.gpioAssignments,before);assert.deepEqual(project.assembly.connections.find(w=>w.terminalId==='ground'),ground);
+ assert.deepEqual(errors(project),[]);generateFirmware(project,catalog);
+ project=updateHardware(project,catalog,component.id,{parameters:{...project.components[0].parameters,supplyVoltage:'24'}});
+ assert.deepEqual(errors(project),[]);assert.deepEqual(project.gpioAssignments,before);
+});
+test('legacy relay projects retain 5V without rewriting files or changing firmware',()=>{
+ const {project,component}=relayProject();const source=generateFirmware(project,catalog).mainC;
+ delete component.parameters.supplyVoltage;
+ const restored=parseProject(serializeProject(project)),old=restored.components[0];
+ assert.equal(Object.hasOwn(old.parameters,'supplyVoltage'),false);
+ assert.equal(relayParameters(old).supplyVoltage,'5');assert.equal(relaySupplyVoltage(old),5);
+ assert.deepEqual(errors(restored),[]);assert.equal(generateFirmware(restored,catalog).mainC,source);
+ assert.equal(moduleFor(old,catalog).terminals.find(t=>t.id==='power').voltage,5);
+ assert.equal(Object.hasOwn(old.parameters,'supplyVoltage'),false);
+});
+test('invalid relay supply values cannot bypass validation and 5V GPIO to a 3.3V module is diagnosed',()=>{
+ const {project,component}=relayProject({powerSource:'external'});
+ for(const value of ['','0','4','13','230','3.30',3.3]){
+  component.parameters.supplyVoltage=value;assert.equal(relaySupplyVoltage(component),0);
+  assert.ok(errors(project).some(issue=>issue.code==='parameter-option'));assert.throws(()=>generateFirmware(project,catalog));
+ }
+ const nano=relayProject({boardId:'arduino-nano-atmega328p-ch340',supplyVoltage:'3.3',powerSource:'external'}).project;
+ assert.ok(validateAssembly(nano,catalog).some(issue=>issue.code==='relay-logic-level'&&issue.severity==='warning'));assert.deepEqual(errors(nano),[]);
+ component.parameters.supplyVoltage='12';component.parameters.powerSource='board';
+ const renamed=updateHardware(project,catalog,component.id,{name:'Relay renamed'});
+ assert.equal(renamed.components[0].parameters.powerSource,'board');assert.ok(errors(renamed).some(issue=>issue.code==='relay-power-source'));
 });
