@@ -1,3 +1,4 @@
+import {wifiSupported} from '../wifi/model.js';
 import {networkProvider} from '../network/model.js';
 import {routerCapabilities} from '../router/model.js';
 
@@ -12,15 +13,15 @@ const bytes=value=>typeof value==='string'?new TextEncoder().encode(value).lengt
 export const mqttStringValid=value=>typeof value==='string'&&!/\0|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/u.test(value);
 export const mqttComponents=project=>project.components.filter(component=>component.moduleId===MQTT_MODULE);
 export function mqttSupported(board){
- return board?.platform==='esp-idf'&&(routerCapabilities(board).available||Boolean(board.networkInterfaces?.some(provider=>provider.family==='ethernet')));
+ return board?.platform==='esp-idf'&&(wifiSupported(board)||Boolean(board.networkInterfaces?.some(provider=>provider.family==='ethernet')));
 }
 export function mqttNetworks(project,catalog){
  const board=catalog.boards.find(board=>board.id===project.boardId);
- return project.components.filter(component=>component.moduleId==='clex.hardware.router'?routerCapabilities(board).available:component.moduleId==='clex.hardware.ethernet'&&Boolean(networkProvider(component,board,catalog.modules.find(module=>module.id===component.moduleId))));
+ return project.components.filter(component=>component.moduleId==='clex.hardware.wifi'?wifiSupported(board):component.moduleId==='clex.hardware.router'?routerCapabilities(board).available:component.moduleId==='clex.hardware.ethernet'&&Boolean(networkProvider(component,board,catalog.modules.find(module=>module.id===component.moduleId))));
 }
 export function mqttNetwork(component,project,catalog){
  const networks=mqttNetworks(project,catalog);
- return component.parameters.networkId?networks.find(network=>network.id===component.parameters.networkId)||null:networks.find(network=>network.moduleId==='clex.hardware.router')||networks[0]||null;
+ return component.parameters.networkId?networks.find(network=>network.id===component.parameters.networkId)||null:networks.find(network=>['clex.hardware.wifi','clex.hardware.router'].includes(network.moduleId))||networks[0]||null;
 }
 export function mqttTopicValid(value,{filter=false}={}){
  if(!mqttStringValid(value)||bytes(value)<1||bytes(value)>MAX_MQTT_TOPIC_BYTES)return false;
@@ -72,7 +73,7 @@ export function mqttIssues(component,project,catalog){
  const p=component.parameters,errors=[],board=catalog.boards.find(board=>board.id===project.boardId);
  if(!mqttSupported(board))errors.push('Для MQTT нужна плата с поддерживаемым Wi-Fi или Ethernet и ESP-IDF.');
  if(mqttComponents(project).length>MAX_MQTT_CONNECTIONS)errors.push('В проекте допускается до '+MAX_MQTT_CONNECTIONS+' MQTT-подключений.');
- if(!mqttNetwork(component,project,catalog))errors.push('Добавьте и выберите существующий Wi-Fi маршрутизатор или Ethernet-компонент в монтаже.');
+ if(!mqttNetwork(component,project,catalog))errors.push('Добавьте и выберите Wi-Fi, маршрутизатор или Ethernet-компонент в монтаже.');
  if(!hostValid(p.host))errors.push('Укажите ASCII-имя хоста или IP брокера без схемы, пути и порта.');
  for(const [key,min,max]of[['port',1,65535],['keepAlive',0,65535],['sessionExpiry',0,4294967295],['reconnectMs',1000,300000],['timeoutMs',1000,120000],['lwtDelay',0,4294967295]])if(!Number.isInteger(p[key])||p[key]<min||p[key]>max)errors.push('Неверное целое значение параметра «'+key+'».');
  for(const key of['tls','cleanSession','autoConnect','autoReconnect','lwtEnabled','lwtRetain'])if(typeof p[key]!=='boolean')errors.push('Неверное логическое значение параметра «'+key+'».');

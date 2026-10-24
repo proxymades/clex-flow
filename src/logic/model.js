@@ -56,7 +56,7 @@ export function logicAdditionProblem(module, project, catalog) {
       : requirement.modules.map(id => '«' + (catalog.modules.find(item => item.id === id)?.name || id) + '»').join(' или ');
     return `Сначала добавьте ${name} во вкладке «Монтаж».`;
   }
-  if (module.constraints.network && !components.some(component => (catalog.modules.find(item => item.id === component.moduleId)?.network||component.moduleId==='clex.hardware.router'))) {
+  if (module.constraints.network && !components.some(component => (catalog.modules.find(item => item.id === component.moduleId)?.network||['clex.hardware.router','clex.hardware.wifi'].includes(component.moduleId)))) {
     return 'Сначала добавьте сетевой интерфейс во вкладке «Монтаж».';
   }
   return null;
@@ -155,7 +155,7 @@ export function connectNodes(graph, catalog, connection, project = null) {
 
 export function hardwareBinding(node, project, catalog) {
   const module = graphModule(node, catalog), requirement = module?.constraints.hardware;
-  if(requirement?.kind==='stepper'||requirement?.kind==='router'||requirement?.kind==='mqtt'){const component=project.components.find(c=>c.id===node.parameters.componentId);return {component,gpio:null,error:hardwareMatches(component,requirement,catalog)?null:'Выберите совместимый компонент из монтажа.'};}
+  if(requirement?.kind==='wifi'||requirement?.kind==='stepper'||requirement?.kind==='router'||requirement?.kind==='mqtt'){const component=project.components.find(c=>c.id===node.parameters.componentId);return {component,gpio:null,error:hardwareMatches(component,requirement,catalog)?null:'Выберите совместимый компонент из монтажа.'};}
   if (requirement?.kind === 'peripheral') {
     const component=project.components.find(component=>component.id===node.parameters.componentId),definition=catalog.modules.find(module=>module.id===component?.moduleId);
     return {component,gpio:null,error:component && requirement.modules.includes(component.moduleId) && hardwareProvider(component,definition,boardFor(project,catalog)) ? null : 'Выберите аппаратный компонент и его интерфейс в монтаже.'};
@@ -207,7 +207,7 @@ export function validateGraph(project, catalog) {
     for(const message of mqttLogicIssues(node,project))add('error','mqtt-logic',node.name+': '+message,fields);
     for(const message of stepperLogicIssues(node,project,catalog))add('error','stepper-logic',node.name+': '+message,fields);
     for(const message of [...espNowLogicIssues(node,project,boardFor(project,catalog)),...espNowAckIssues(node,project,catalog)])add('error','espnow-logic',node.name+': '+message,fields);
-    if(module.constraints.network){if(!project.components.some(component=>(catalog.modules.find(module=>module.id===component.moduleId)?.network||component.moduleId==='clex.hardware.router')))add('error','probe-network',node.name+': добавьте сетевой интерфейс в монтаж.',fields);if(!probeUrl(node.parameters.url))add('error','probe-url',node.name+': укажите HTTP/HTTPS-адрес без логина, пароля и фрагмента.',fields);}
+    if(module.constraints.network){if(!project.components.some(component=>(catalog.modules.find(module=>module.id===component.moduleId)?.network||['clex.hardware.router','clex.hardware.wifi'].includes(component.moduleId))))add('error','probe-network',node.name+': добавьте сетевой интерфейс в монтаж.',fields);if(!probeUrl(node.parameters.url))add('error','probe-url',node.name+': укажите HTTP/HTTPS-адрес без логина, пароля и фрагмента.',fields);}
     const binding = hardwareBinding(node, project, catalog);
     if (module.editor === 'screen' && binding.component) {
       if (!project.screens?.[binding.component.id]) add('error', 'display-interface', node.name + ': создайте и сохраните интерфейс экрана.', fields);

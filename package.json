@@ -63,7 +63,9 @@
     "test:mqtt-ui": "node tests/mqtt-ui.cjs",
     "test:mqtt-host": "node tests/mqtt-host/check.mjs && node tests/mqtt-host/runtime.mjs && node tests/mqtt-host/tls-runtime.mjs && node tests/mqtt-host/session-runtime.mjs && node tests/mqtt-host/session-runtime.mjs --overflow && node tests/mqtt-host/pressure-runtime.mjs && node tests/mqtt-host/pressure-runtime.mjs --311 && node tests/mqtt-host/receive-duplicate.mjs",
     "test:mqtt-builds": "node scripts/check-mqtt-builds.mjs",
-    "test:relay-runtime": "node tests/relay-runtime.mjs"
+    "test:relay-runtime": "node tests/relay-runtime.mjs",
+    "test:wifi-builds": "node scripts/check-wifi-builds.mjs",
+    "test:wifi-ui": "node tests/wifi-ui.cjs"
   },
   "dependencies": {
     "@tauri-apps/api": "2.10.1",

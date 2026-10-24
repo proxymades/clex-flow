@@ -1,0 +1,136 @@
+{
+  "id": "clex.hardware.wifi",
+  "version": "1.0.0",
+  "kind": "hardware",
+  "name": "Wi-Fi",
+  "description": "Подключает плату к существующей сети Wi-Fi. Доступны DHCP, статический IPv4 и автоматическое восстановление соединения.",
+  "category": "network",
+  "categoryName": "Сеть",
+  "icon": "Wifi",
+  "color": "#22d3ee",
+  "visual": {
+    "svg": "wifi.svg",
+    "width": 250,
+    "height": 170
+  },
+  "terminals": [],
+  "inputs": [],
+  "outputs": [],
+  "softwareInterface": "wifi",
+  "parameters": {
+    "ssid": {
+      "label": "Название сети (SSID)",
+      "type": "text",
+      "default": "",
+      "maxLength": 32
+    },
+    "password": {
+      "label": "Пароль Wi-Fi",
+      "type": "text",
+      "default": "",
+      "maxLength": 63,
+      "description": "Для открытой сети оставьте поле пустым."
+    },
+    "addressMode": {
+      "label": "Настройка IPv4",
+      "type": "select",
+      "default": "dhcp",
+      "options": [
+        {
+          "value": "dhcp",
+          "label": "DHCP"
+        },
+        {
+          "value": "static",
+          "label": "Статический IP"
+        }
+      ]
+    },
+    "staticIp": {
+      "label": "IP-адрес",
+      "type": "text",
+      "default": "",
+      "maxLength": 15,
+      "when": {
+        "field": "addressMode",
+        "value": "static"
+      }
+    },
+    "netmask": {
+      "label": "Маска подсети",
+      "type": "text",
+      "default": "",
+      "maxLength": 15,
+      "when": {
+        "field": "addressMode",
+        "value": "static"
+      }
+    },
+    "gateway": {
+      "label": "Шлюз",
+      "type": "text",
+      "default": "",
+      "maxLength": 15,
+      "when": {
+        "field": "addressMode",
+        "value": "static"
+      }
+    },
+    "dns": {
+      "label": "DNS (необязательно)",
+      "type": "text",
+      "default": "",
+      "maxLength": 15,
+      "when": {
+        "field": "addressMode",
+        "value": "static"
+      }
+    },
+    "autoConnect": {
+      "label": "Подключаться при запуске",
+      "type": "boolean",
+      "default": true
+    },
+    "autoReconnect": {
+      "label": "Переподключаться при потере сети",
+      "type": "boolean",
+      "default": true
+    },
+    "reconnectMs": {
+      "label": "Интервал повторных попыток, мс",
+      "type": "number",
+      "default": 5000,
+      "min": 1000,
+      "max": 300000,
+      "step": 1000
+    },
+    "connectTimeoutMs": {
+      "label": "Таймаут подключения, мс",
+      "type": "number",
+      "default": 30000,
+      "min": 3000,
+      "max": 120000,
+      "step": 1000
+    }
+  },
+  "constraints": {},
+  "compatibility": {
+    "projectFormat": 3,
+    "targets": [
+      "esp32",
+      "esp32s3",
+      "esp32p4"
+    ],
+    "espIdf": "5.4.4"
+  },
+  "firmware": {
+    "status": "implemented",
+    "generatorKey": "wifi-interface",
+    "dependencies": [
+      "esp_wifi",
+      "esp_netif",
+      "esp_event",
+      "nvs_flash"
+    ]
+  }
+}

@@ -9,7 +9,7 @@ export function resourceClaims(project, catalog) {
     return (provider?.resources || []).map(resource => ({...resource, componentId:component.id,name:component.name}));
   });
   const configured = (board?.peripherals || []).filter(provider=>provider.occupancySetting && project.boardSettings[provider.occupancySetting]==='connected' && !project.components.some(component=>hardwareProvider(component,catalog.modules.find(module=>module.id===component.moduleId),board)?.id===provider.id)).flatMap(provider=>(provider.resources || []).map(resource=>({...resource,componentId:null,name:provider.name})));
-  const router=project.components.find(c=>c.moduleId==='clex.hardware.router');
+  const router=project.components.find(c=>['clex.hardware.router','clex.hardware.wifi'].includes(c.moduleId));
   const wifi=router&&board?.wifi?.driverKey==='hosted'?[{key:'sdmmc:1',label:'ESP-Hosted SDIO',gpios:Object.values(board.wifi.signals),componentId:router.id,name:router.name}]:[];
   const motion=board?.motion?.timerResource&&project.components.find(component=>catalog.modules.find(module=>module.id===component.moduleId)?.stepper);
   const motionTimers=motion?[{key:board.motion.timerResource,label:'Timer1 движения',componentId:motion.id,name:'Шаговые двигатели'}]:[];

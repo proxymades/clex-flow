@@ -1,8 +1,8 @@
 import { formatCount } from '../utils/plural.js';
 import { useState } from 'react';
-import { ToggleRight, RotateCw, Cpu, Search, Lightbulb, MousePointer2, Monitor, Timer, ScanLine, ArrowUpRight, Repeat2, Terminal, Hash, Box , Network, Globe , Camera, Volume2, Radio, Thermometer } from 'lucide-react';
+import { Wifi, ToggleRight, RotateCw, Cpu, Search, Lightbulb, MousePointer2, Monitor, Timer, ScanLine, ArrowUpRight, Repeat2, Terminal, Hash, Box , Network, Globe , Camera, Volume2, Radio, Thermometer } from 'lucide-react';
 import Modal from '../components/Modal.jsx';
-const icons = { ToggleRight, RotateCw, Lightbulb, MousePointer2, Monitor, Timer, ScanLine, ArrowUpRight, Repeat2, Terminal, Hash, Network, Globe, Camera,Volume2,Radio,Thermometer };
+const icons = { Wifi, ToggleRight, RotateCw, Lightbulb, MousePointer2, Monitor, Timer, ScanLine, ArrowUpRight, Repeat2, Terminal, Hash, Network, Globe, Camera,Volume2,Radio,Thermometer };
 const kinds = { hardware: 'Аппаратные компоненты', logic: 'Блоки логики', board: 'Платы' };
 export default function LibraryDialog({ catalog, onClose }) {
   const [kind, setKind] = useState('hardware'), [query, setQuery] = useState('');

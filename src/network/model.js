@@ -18,6 +18,10 @@ export function networkIssues(component,board,module) {
   const issues=[],provider=networkProvider(component,board,module),p=component.parameters;
   if(!provider)return ['На выбранной плате нет описанного сетевого интерфейса.'];
   if(provider.interface==='spi'&&!board.interfaces?.spi?.hosts.includes(Number(p.spiHost)))issues.push('Выберите доступный SPI для сетевого интерфейса.');
+  return [...issues,...ipv4Issues(p)];
+}
+export function ipv4Issues(p){
+  const issues=[];
   if(!['dhcp','static'].includes(p.addressMode))issues.push('Выберите DHCP или статический IPv4.');
   if(p.addressMode==='static'){
     const ip=ipv4(p.staticIp),mask=ipv4(p.netmask),gateway=ipv4(p.gateway),dns=p.dns?ipv4(p.dns):0;

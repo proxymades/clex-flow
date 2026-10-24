@@ -1,3 +1,4 @@
+import {WIFI_MODULE,wifiSupported,wifiIssues} from '../wifi/model.js';
 import {RELAY_MODULE,relayChannelCount,resolveRelayModule,relayParameters,relaySupplyVoltage,relayVoltageLabel,relayPowerProblem,relayPowerWarning} from '../relay/model.js';
 import {parseContact,wireSource,touches,normalizedContact,componentWireProblem} from './endpoints.js';
 import {stepperIssues} from '../stepper/model.js';
@@ -160,6 +161,8 @@ export function addHardware(project, module, catalog = null) {
   while (project.components.some(component => component.name === instanceName(number) || component.name === `${module.name} ${number}`)) number++;
   const name = instanceName(number);
   const parameters=Object.fromEntries(Object.entries(module.parameters).map(([key,parameter])=>[key,parameter.default]));
+  if(module.id===WIFI_MODULE){if(!catalog||!wifiSupported(boardFor(project,catalog)))throw new Error('У платы нет поддерживаемого Wi-Fi Station-интерфейса.');if(project.components.some(c=>[WIFI_MODULE,ROUTER_MODULE,ESPNOW_MODULE].includes(c.moduleId)))throw new Error('Радио платы уже используется. Оставьте Wi-Fi, маршрутизатор или ESP-NOW.');}
+  if([ROUTER_MODULE,ESPNOW_MODULE].includes(module.id)&&project.components.some(c=>c.moduleId===WIFI_MODULE))throw new Error('Радио платы уже используется компонентом Wi-Fi.');
   if(module.id===MQTT_MODULE){if(!catalog||!mqttSupported(boardFor(project,catalog)))throw new Error('Для платы нет поддерживаемого сетевого интерфейса MQTT.');if(project.components.filter(component=>component.moduleId===MQTT_MODULE).length>=MAX_MQTT_CONNECTIONS)throw new Error('В проекте допускается до '+MAX_MQTT_CONNECTIONS+' MQTT-подключений.');}
   if(module.id===ROUTER_MODULE){if(!catalog||!routerCapabilities(boardFor(project,catalog)).available)throw new Error('У платы нет совместимого Wi-Fi STA/SoftAP-интерфейса.');if(project.components.some(c=>c.moduleId===ROUTER_MODULE))throw new Error('Маршрутизатор уже добавлен.');parameters.otaEnabled=boardFor(project,catalog).firmware.flashSizeMb>=8;parameters.adminPassword=newKey().slice(0,24);parameters.apPassword=newKey().slice(0,16);parameters.ethernetId=project.components.find(c=>c.moduleId==='clex.hardware.ethernet')?.id||'';}
   if(module.softwareInterface==='espnow'){if(!catalog||!espNowSupported(boardFor(project,catalog)))throw new Error('Для платы нет ESP-NOW-радиоинтерфейса.');if(project.components.some(c=>c.moduleId===ESPNOW_MODULE))throw new Error('ESP-NOW уже добавлен: плата использует одно радио.');parameters.pmk=newKey();}
@@ -235,6 +238,7 @@ export function validateAssembly(project, catalog) {
     if(module.id===RELAY_MODULE&&relaySupplyVoltage(component)>5&&component.parameters.powerSource==='board')issue('error','relay-power-source',component.name+': для питания '+relayVoltageLabel(component)+' выберите внешний источник.',fields);
     if(module.id===RELAY_MODULE&&relaySupplyVoltage(component)>0&&(board.logicVoltage||3.3)>relaySupplyVoltage(component))issue('warning','relay-logic-level',component.name+': GPIO платы имеют уровень '+String(board.logicVoltage).replace('.',',')+' В. Проверьте совместимость входов IN модуля с питанием '+relayVoltageLabel(component)+'; может потребоваться согласование уровней.',fields);
     if(module.id===RELAY_MODULE&&!project.assembly.connections.some(wire=>wire.componentId===component.id&&/^in\d+$/.test(wire.terminalId)))issue('error','relay-channel',component.name+': подключите хотя бы один вход IN к GPIO.',fields);
+    if(module.softwareInterface==='wifi')for(const message of wifiIssues(component,project,catalog))issue('error','wifi-config',component.name+': '+message,fields);
     if(module.softwareInterface==='mqtt')for(const message of mqttIssues(component,project,catalog))issue('error','mqtt-config',component.name+': '+message,fields);
     if(module.softwareInterface==='espnow')for(const message of espNowIssues(component,board))issue('error','espnow-config',component.name+': '+message,fields);
     if(module.softwareInterface==='router')for(const message of routerIssues(component,project,catalog))issue('error','router-config',component.name+': '+message,fields);

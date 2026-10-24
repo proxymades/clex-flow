@@ -1,0 +1,220 @@
+{
+  "id": "clex.logic.wifi",
+  "version": "1.0.0",
+  "kind": "logic",
+  "name": "Wi-Fi",
+  "description": "Управляет подключением к сети Wi-Fi и сообщает состояние, IPv4 и причину ошибки.",
+  "category": "network",
+  "categoryName": "Сеть",
+  "icon": "Wifi",
+  "color": "#22d3ee",
+  "inputs": [
+    {
+      "id": "trigger",
+      "name": "Обновить состояние",
+      "type": "event",
+      "required": false,
+      "additional": false,
+      "description": ""
+    },
+    {
+      "id": "connect",
+      "name": "Подключиться",
+      "type": "event",
+      "required": false,
+      "additional": true,
+      "description": ""
+    },
+    {
+      "id": "disconnect",
+      "name": "Отключиться",
+      "type": "event",
+      "required": false,
+      "additional": true,
+      "description": ""
+    },
+    {
+      "id": "reconnect",
+      "name": "Переподключиться",
+      "type": "event",
+      "required": false,
+      "additional": true,
+      "description": ""
+    }
+  ],
+  "outputs": [
+    {
+      "id": "changed",
+      "name": "Данные сети обновлены",
+      "type": "event",
+      "required": false,
+      "additional": false,
+      "description": ""
+    },
+    {
+      "id": "connected",
+      "name": "Соединение установлено",
+      "type": "event",
+      "required": false,
+      "additional": true,
+      "description": "Сеть доступна и IP-адрес получен."
+    },
+    {
+      "id": "disconnected",
+      "name": "Соединение потеряно",
+      "type": "event",
+      "required": false,
+      "additional": true,
+      "description": ""
+    },
+    {
+      "id": "ipChanged",
+      "name": "IP-адрес обновлен",
+      "type": "event",
+      "required": false,
+      "additional": true,
+      "description": ""
+    },
+    {
+      "id": "failed",
+      "name": "Ошибка подключения",
+      "type": "event",
+      "required": false,
+      "additional": true,
+      "description": ""
+    },
+    {
+      "id": "isConnected",
+      "name": "Есть подключение?",
+      "type": "boolean",
+      "required": false,
+      "additional": true,
+      "description": "",
+      "readyOn": "changed"
+    },
+    {
+      "id": "state",
+      "name": "Состояние подключения",
+      "type": "number",
+      "required": false,
+      "additional": false,
+      "description": "",
+      "readyOn": "changed",
+      "valueStates": {
+        "initialValue": 0,
+        "fallbackValue": 4,
+        "options": [
+          {
+            "value": 0,
+            "label": "Отключено",
+            "dotColor": "#97a6bd"
+          },
+          {
+            "value": 1,
+            "label": "Подключение",
+            "dotColor": "#fbbf24"
+          },
+          {
+            "value": 2,
+            "label": "Ожидание IP",
+            "dotColor": "#fbbf24"
+          },
+          {
+            "value": 3,
+            "label": "IP получен",
+            "dotColor": "#34d399"
+          },
+          {
+            "value": 4,
+            "label": "Ошибка",
+            "dotColor": "#ef6666"
+          }
+        ]
+      }
+    },
+    {
+      "id": "ip",
+      "name": "IP-адрес устройства",
+      "type": "text",
+      "required": false,
+      "additional": false,
+      "description": "",
+      "readyOn": "changed"
+    },
+    {
+      "id": "netmask",
+      "name": "Маска подсети",
+      "type": "text",
+      "required": false,
+      "additional": true,
+      "description": "",
+      "readyOn": "changed"
+    },
+    {
+      "id": "gateway",
+      "name": "Шлюз",
+      "type": "text",
+      "required": false,
+      "additional": true,
+      "description": "",
+      "readyOn": "changed"
+    },
+    {
+      "id": "dns",
+      "name": "DNS-сервер",
+      "type": "text",
+      "required": false,
+      "additional": true,
+      "description": "",
+      "readyOn": "changed"
+    },
+    {
+      "id": "reasonCode",
+      "name": "Код причины отключения",
+      "type": "number",
+      "required": false,
+      "additional": true,
+      "description": "",
+      "readyOn": "changed"
+    },
+    {
+      "id": "error",
+      "name": "Ошибка подключения",
+      "type": "text",
+      "required": false,
+      "additional": true,
+      "description": "",
+      "readyOn": "changed"
+    }
+  ],
+  "parameters": {
+    "componentId": {
+      "label": "Wi-Fi-подключение",
+      "type": "component",
+      "default": ""
+    }
+  },
+  "constraints": {
+    "hardware": {
+      "kind": "wifi",
+      "modules": [
+        "clex.hardware.wifi"
+      ]
+    }
+  },
+  "compatibility": {
+    "projectFormat": 3,
+    "targets": [
+      "esp32",
+      "esp32s3",
+      "esp32p4"
+    ],
+    "espIdf": "5.4.4"
+  },
+  "firmware": {
+    "status": "implemented",
+    "generatorKey": "wifi",
+    "eventSource": true
+  },
+  "displayResetEvent": "ipChanged"
+}

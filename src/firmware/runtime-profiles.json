@@ -252,5 +252,47 @@
     ],
     "config": "CONFIG_MQTT_PROTOCOL_311=y\nCONFIG_MQTT_PROTOCOL_5=y\nCONFIG_MQTT_TRANSPORT_SSL=y\nCONFIG_MQTT_REPORT_DELETED_MESSAGES=y\nCONFIG_MBEDTLS_CERTIFICATE_BUNDLE=y\nCONFIG_MBEDTLS_CERTIFICATE_BUNDLE_DEFAULT_FULL=y\nCONFIG_PARTITION_TABLE_CUSTOM=y\nCONFIG_PARTITION_TABLE_CUSTOM_FILENAME=\"partitions.csv\"\n",
     "partitions": "nvs,data,nvs,0x9000,0x6000\nphy_init,data,phy,0xf000,0x1000\nfactory,app,factory,0x10000,0x300000\n"
+  },
+  "wifi-sta-esp32": {
+    "target": "esp32",
+    "dependencies": {},
+    "requires": [
+      "esp_wifi",
+      "esp_netif",
+      "esp_event",
+      "nvs_flash",
+      "lwip",
+      "esp_hw_support"
+    ],
+    "config": "CONFIG_ESP_WIFI_ENABLE_WPA3_SAE=y\nCONFIG_ESP_NETIF_IP_LOST_TIMER_INTERVAL=1\nCONFIG_PARTITION_TABLE_CUSTOM=y\nCONFIG_PARTITION_TABLE_CUSTOM_FILENAME=\"partitions.csv\"\nCONFIG_ESP_NETIF_SET_DNS_PER_DEFAULT_NETIF=y\n",
+    "partitions": "nvs,data,nvs,0x9000,0x6000\nphy_init,data,phy,0xf000,0x1000\nfactory,app,factory,0x10000,0x300000\n"
+  },
+  "wifi-sta-esp32s3": {
+    "target": "esp32s3",
+    "dependencies": {},
+    "requires": [
+      "esp_wifi",
+      "esp_netif",
+      "esp_event",
+      "nvs_flash",
+      "lwip",
+      "esp_hw_support"
+    ],
+    "config": "CONFIG_ESP_WIFI_ENABLE_WPA3_SAE=y\nCONFIG_ESP_NETIF_IP_LOST_TIMER_INTERVAL=1\nCONFIG_PARTITION_TABLE_CUSTOM=y\nCONFIG_PARTITION_TABLE_CUSTOM_FILENAME=\"partitions.csv\"\nCONFIG_ESP_NETIF_SET_DNS_PER_DEFAULT_NETIF=y\n",
+    "partitions": "nvs,data,nvs,0x9000,0x6000\nphy_init,data,phy,0xf000,0x1000\nfactory,app,factory,0x10000,0x300000\n"
+  },
+  "wifi-sta-esp32p4": {
+    "target": "esp32p4",
+    "dependencies": {},
+    "requires": [
+      "esp_wifi",
+      "esp_netif",
+      "esp_event",
+      "nvs_flash",
+      "lwip",
+      "esp_hw_support"
+    ],
+    "config": "CONFIG_ESP_WIFI_ENABLE_WPA3_SAE=y\nCONFIG_ESP_NETIF_IP_LOST_TIMER_INTERVAL=1\nCONFIG_PARTITION_TABLE_CUSTOM=y\nCONFIG_PARTITION_TABLE_CUSTOM_FILENAME=\"partitions.csv\"\nCONFIG_ESP_NETIF_SET_DNS_PER_DEFAULT_NETIF=y\n",
+    "partitions": "nvs,data,nvs,0x9000,0x6000\nphy_init,data,phy,0xf000,0x1000\nfactory,app,factory,0x10000,0x300000\n"
   }
 }

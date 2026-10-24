@@ -3,8 +3,8 @@ import { formatCount } from '../utils/plural.js';
 import { useState } from 'react';
 import BoardChoice from '../components/BoardChoice.jsx';
 import BoardPicker from '../components/BoardPicker.jsx';
-import { ToggleRight, RotateCw, Search, Plus, Lightbulb, MousePointer2, Box, Monitor, Network , Camera, Volume2, Radio } from 'lucide-react';
-const icons = { ToggleRight, RotateCw, Lightbulb, MousePointer2, Monitor, Network, Camera, Volume2, Radio };
+import { Wifi, ToggleRight, RotateCw, Search, Plus, Lightbulb, MousePointer2, Box, Monitor, Network , Camera, Volume2, Radio } from 'lucide-react';
+const icons = { Wifi, ToggleRight, RotateCw, Lightbulb, MousePointer2, Monitor, Network, Camera, Volume2, Radio };
 
 export default function HardwareLibrary({ boards, modules, board, busy, onBoard, onAdd }) {
   const [choosingBoard, setChoosingBoard] = useState(false);
