@@ -1,3 +1,5 @@
+import {numericFirmware} from '../drivers/numeric.js';
+import {NUMERIC_MODULES} from '../../logic/numeric.js';
 import {xgzpFirmware} from '../drivers/xgzp6847d.js';
 import {relayFirmware} from '../drivers/relay.js';
 import {RELAY_MODULE,relayChannelCount} from '../../relay/model.js';
@@ -5,7 +7,7 @@ import { stepperFirmware } from '../drivers/stepper.js';
 import { isStepperDriver } from '../../stepper/model.js';
 import { hardwareBinding } from '../../logic/model.js';
 import { selectNumberCode } from '../drivers/select-number.js';
-const keys=new Set(['clex.hardware.xgzp6847d','clex.logic.xgzp6847d','clex.hardware.relay','clex.logic.relay','clex.hardware.nema17','clex.hardware.tb6600','clex.hardware.tmc2208','clex.hardware.drv8825','clex.logic.stepper','clex.logic.select-number','clex.hardware.touch-button','clex.logic.gpio-edge','clex.hardware.led','clex.hardware.button','clex.logic.timer','clex.logic.counter','clex.logic.stopwatch','clex.logic.serial','clex.logic.gpio-read','clex.logic.gpio-set','clex.logic.gpio-toggle']);
+const keys=new Set([...NUMERIC_MODULES,'clex.hardware.xgzp6847d','clex.logic.xgzp6847d','clex.hardware.relay','clex.logic.relay','clex.hardware.nema17','clex.hardware.tb6600','clex.hardware.tmc2208','clex.hardware.drv8825','clex.logic.stepper','clex.logic.select-number','clex.hardware.touch-button','clex.logic.gpio-edge','clex.hardware.led','clex.hardware.button','clex.logic.timer','clex.logic.counter','clex.logic.stopwatch','clex.logic.serial','clex.logic.gpio-read','clex.logic.gpio-set','clex.logic.gpio-toggle']);
 export function generateArduinoAvr(project,catalog,board,cString,issues){
  const revision=project.boardSettings.bootloader || board.options.bootloader.default;
  if(!Object.hasOwn(board.firmware.variants,revision))throw new Error('Выберите загрузчик Nano.');
@@ -15,16 +17,18 @@ export function generateArduinoAvr(project,catalog,board,cString,issues){
  const index=new Map(nodes.map((n,i)=>[n.id,i])),hardware=new Map(components.map((c,i)=>[c.id,i]));
  const stepper=stepperFirmware(project,nodes,index,board);
  const xgzp=xgzpFirmware(project,catalog,nodes,index);
+ const numeric=numericFirmware(nodes,index,cString);
  const edge=(n,port)=>project.logic.edges.find(e=>e.target===n.id&&e.targetHandle===port);
  const textLengths=new Map();
- const textSize=(n,port='text')=>{if(xgzp.textSizes.has(n.id))return xgzp.textSizes.get(n.id)[port];if(n.moduleId==='clex.logic.stepper')return stepper.textSizes.get(n.id).error;if(n.moduleId==='clex.logic.stopwatch')return 24;if(textLengths.has(n.id))return textLengths.get(n.id);const input=edge(n,'text'),size=(input?textSize(nodes[index.get(input.source)],input.sourceHandle):new TextEncoder().encode(n.parameters.message).length+1)+(edge(n,'number')?(xgzp.expressions.has(edge(n,'number').source)?25:13):0);textLengths.set(n.id,size);return size;};
+ const textSize=(n,port='text')=>{if(numeric.textSizes.has(n.id))return numeric.textSizes.get(n.id)[port];if(xgzp.textSizes.has(n.id))return xgzp.textSizes.get(n.id)[port];if(n.moduleId==='clex.logic.stepper')return stepper.textSizes.get(n.id).error;if(n.moduleId==='clex.logic.stopwatch')return 24;if(textLengths.has(n.id))return textLengths.get(n.id);const input=edge(n,'text'),size=(input?textSize(nodes[index.get(input.source)],input.sourceHandle):new TextEncoder().encode(n.parameters.message).length+1)+(edge(n,'number')?((xgzp.expressions.has(edge(n,'number').source)||numeric.expressions.has(edge(n,'number').source))?25:13):0);textLengths.set(n.id,size);return size;};
  for(const n of nodes.filter(n=>n.moduleId==='clex.logic.serial'))textSize(n);
  const watches=nodes.filter(n=>n.moduleId==='clex.logic.stopwatch'),timers=nodes.filter(n=>n.moduleId==='clex.logic.timer');
  const ram=[...textLengths.values()].reduce((a,b)=>a+b,0)+watches.length*48+timers.length*4+nodes.length*4+components.length*10+components.filter(c=>c.moduleId===RELAY_MODULE).reduce((sum,c)=>sum+relayChannelCount(c),0)+components.filter(isStepperDriver).length*96+nodes.filter(n=>n.moduleId==='clex.logic.stepper').length*16;
- if(ram+xgzp.ram>896)throw new Error('Тексты и блоки требуют слишком много памяти Nano. Сократите сообщения или количество блоков.');
+ if(ram+xgzp.ram+numeric.ram>896)throw new Error('Тексты и блоки требуют слишком много памяти Nano. Сократите сообщения или количество блоков.');
  if(!xgzp.enabled&&!stepper.enabled&&!timers.length&&!watches.length&&!nodes.some(n=>n.moduleId==='clex.logic.gpio-edge'))throw new Error('Добавьте таймер или секундомер для запуска схемы.');
  const data=e=>{
   const n=nodes[index.get(e.source)],i=index.get(n.id);
+  if(numeric.expressions.has(n.id))return numeric.expressions.get(n.id)[e.sourceHandle];
   if(xgzp.expressions.has(n.id))return xgzp.expressions.get(n.id)[e.sourceHandle];
   if(stepper.expressions.has(n.id))return stepper.expressions.get(n.id)[e.sourceHandle];
   if(n.moduleId==='clex.logic.stopwatch')return 'watch_'+i+'.'+e.sourceHandle;
@@ -55,6 +59,7 @@ export function generateArduinoAvr(project,catalog,board,cString,issues){
  });
  const prototypes=nodes.map((n,i)=>'static void node_'+i+'();'+(n.moduleId==='clex.logic.counter'?'\nstatic void node_'+i+'_reset();':'')+(n.moduleId==='clex.logic.xgzp6847d'?'\n'+['changed','done','failed'].map(port=>'static void node_'+i+'_emit_'+port+'();').join('\n'):'')+(n.moduleId==='clex.logic.stepper'?'\nstatic void node_'+i+'_stop();\nstatic void node_'+i+'_release();\n'+['changed','started','completed','stopped','failed'].map(port=>'static void node_'+i+'_emit_'+port+'();').join('\n'):'')+(n.moduleId==='clex.logic.stopwatch'?'\nstatic void node_'+i+'_pause();\nstatic void node_'+i+'_reset();\nstatic void node_'+i+'_changed();':'')).join('\n');
  const functions=nodes.map((n,i)=>{
+  if(numeric.operations.has(n.id))return 'static void node_'+i+'(){\n'+numeric.operations.get(n.id)({inputEdge:edge,dataExpression:data,emit:port=>emit(n,port)})+'\n}';
   if(n.moduleId==='clex.logic.xgzp6847d')return 'static void node_'+i+'(){\n'+xgzp.operations.get(n.id)+'\n}\n'+['changed','done','failed'].map(port=>'static void node_'+i+'_emit_'+port+'(){\n'+emit(n,port)+'\n}').join('\n');
   if(n.moduleId==='clex.logic.stepper')return 'static void node_'+i+'(){\n'+stepper.operations.get(n.id)+'\n}\n'+['changed','started','completed','stopped','failed'].map(port=>'static void node_'+i+'_emit_'+port+'(){\n'+emit(n,port)+'\n}').join('\n');
   if(n.moduleId==='clex.logic.select-number')return 'static void node_'+i+'(){\n'+selectNumberCode(n,data(edge(n,'value')),port=>emit(n,port),true)+'\n}';
@@ -67,8 +72,8 @@ export function generateArduinoAvr(project,catalog,board,cString,issues){
   if(n.moduleId==='clex.logic.serial'){
    const text=edge(n,'text'),number=edge(n,'number'),unsigned=number&&(nodes[index.get(number.source)].moduleId==='clex.logic.stopwatch'||nodes[index.get(number.source)].moduleId==='clex.logic.stepper'&&number.sourceHandle==='emitted');
    const flashText=text&&nodes[index.get(text.source)].moduleId==='clex.logic.stepper';
-   const decimal=number&&xgzp.expressions.has(number.source);
-   if(decimal)operations.push('  char sensor_number[24]; dtostrf('+data(number)+',0,3,sensor_number);');
+   const decimal=number&&(xgzp.expressions.has(number.source)||numeric.expressions.has(number.source));
+   if(decimal)operations.push('  char sensor_number[24]; '+(numeric.expressions.has(number.source)?'dtostre('+data(number)+',sensor_number,6,0);':'dtostrf('+data(number)+',0,3,sensor_number);'));
    const format=(text?(flashText?'%S':'%s'):'%S')+(number?(decimal?' %s':unsigned?' %lu':' %ld'):'');
    operations.push('  snprintf_P(text_'+i+', sizeof(text_'+i+'), PSTR('+cString(format)+'), '+(text?data(text):'PSTR('+cString(n.parameters.message)+')')+(number?decimal?', sensor_number':', ('+(unsigned?'unsigned long':'long')+')('+data(number)+')':'')+');\n  Serial.println(text_'+i+');');
   }
@@ -99,7 +104,7 @@ static bool clex_watch_reset(clex_watch_t *w,uint32_t now){w->elapsed=0;w->sampl
 #include <stdint.h>
 #include <stdio.h>
 #include <avr/pgmspace.h>
-${xgzp.headers?xgzp.headers+'\n':''}${runtime}${stepper.source}${xgzp.source?'\n'+xgzp.source:''}
+${xgzp.headers?xgzp.headers+'\n':''}${runtime}${stepper.source}${xgzp.source?'\n'+xgzp.source:''}${numeric.source?'\n'+numeric.source:''}
 ${declarations.join('\n')}
 ${prototypes}
 ${[...stepper.extraFunctions.values()].join('\n')}${stepper.notify}

@@ -67,7 +67,9 @@
     "test:wifi-builds": "node scripts/check-wifi-builds.mjs",
     "test:wifi-ui": "node tests/wifi-ui.cjs",
     "test:xgzp-builds": "node scripts/check-xgzp-builds.mjs",
-    "test:xgzp-ui": "node tests/xgzp-ui.cjs"
+    "test:xgzp-ui": "node tests/xgzp-ui.cjs",
+    "test:numeric-ui": "node tests/numeric-ui.cjs",
+    "test:numeric-mqtt": "node tests/mqtt-host/numeric-runtime.mjs"
   },
   "dependencies": {
     "@tauri-apps/api": "2.10.1",

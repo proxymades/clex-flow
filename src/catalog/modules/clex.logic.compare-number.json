@@ -1,0 +1,323 @@
+{
+  "id": "clex.logic.compare-number",
+  "version": "1.0.0",
+  "kind": "logic",
+  "name": "Сравнение числа",
+  "description": "Сравнивает число с порогом или определяет его положение относительно диапазона. Выдаёт события и значения Да/Нет. Выполняется по входному сигналу.",
+  "category": "values",
+  "categoryName": "Данные",
+  "icon": "GitBranch",
+  "color": "#fbbf24",
+  "inputs": [
+    {
+      "id": "trigger",
+      "name": "Проверить",
+      "type": "event",
+      "required": true
+    },
+    {
+      "id": "value",
+      "name": "Проверяемое число",
+      "type": "number",
+      "required": true,
+      "sample": "latest"
+    },
+    {
+      "id": "reference",
+      "name": "Число для сравнения",
+      "type": "number",
+      "additional": true,
+      "sample": "latest",
+      "when": {
+        "field": "mode",
+        "value": "compare"
+      }
+    },
+    {
+      "id": "lower",
+      "name": "Нижняя граница",
+      "type": "number",
+      "additional": true,
+      "sample": "latest",
+      "when": {
+        "field": "mode",
+        "value": "range"
+      }
+    },
+    {
+      "id": "upper",
+      "name": "Верхняя граница",
+      "type": "number",
+      "additional": true,
+      "sample": "latest",
+      "when": {
+        "field": "mode",
+        "value": "range"
+      }
+    }
+  ],
+  "outputs": [
+    {
+      "id": "changed",
+      "name": "Проверка завершена",
+      "type": "event",
+      "description": "После каждого вызова. Логические выходы уже обновлены; при ошибке все они равны Нет."
+    },
+    {
+      "id": "matched",
+      "name": "Условие выполнено",
+      "type": "event",
+      "when": {
+        "field": "mode",
+        "value": "compare"
+      }
+    },
+    {
+      "id": "unmatched",
+      "name": "Условие не выполнено",
+      "type": "event",
+      "when": {
+        "field": "mode",
+        "value": "compare"
+      }
+    },
+    {
+      "id": "below",
+      "name": "Ниже диапазона",
+      "type": "event",
+      "when": {
+        "field": "mode",
+        "value": "range"
+      }
+    },
+    {
+      "id": "inside",
+      "name": "В диапазоне",
+      "type": "event",
+      "when": {
+        "field": "mode",
+        "value": "range"
+      }
+    },
+    {
+      "id": "above",
+      "name": "Выше диапазона",
+      "type": "event",
+      "when": {
+        "field": "mode",
+        "value": "range"
+      }
+    },
+    {
+      "id": "failed",
+      "name": "Ошибка сравнения",
+      "type": "event",
+      "additional": true
+    },
+    {
+      "id": "result",
+      "name": "Условие выполнено?",
+      "type": "boolean",
+      "readyOn": "changed",
+      "when": {
+        "field": "mode",
+        "value": "compare"
+      }
+    },
+    {
+      "id": "isBelow",
+      "name": "Ниже диапазона?",
+      "type": "boolean",
+      "readyOn": "changed",
+      "when": {
+        "field": "mode",
+        "value": "range"
+      }
+    },
+    {
+      "id": "isInside",
+      "name": "В диапазоне?",
+      "type": "boolean",
+      "readyOn": "changed",
+      "when": {
+        "field": "mode",
+        "value": "range"
+      },
+      "additional": true
+    },
+    {
+      "id": "isAbove",
+      "name": "Выше диапазона?",
+      "type": "boolean",
+      "readyOn": "changed",
+      "when": {
+        "field": "mode",
+        "value": "range"
+      }
+    },
+    {
+      "id": "value",
+      "name": "Проверенное число",
+      "type": "number",
+      "readyOn": "changed",
+      "additional": true
+    },
+    {
+      "id": "valid",
+      "name": "Проверка корректна?",
+      "type": "boolean",
+      "readyOn": "changed",
+      "additional": true
+    },
+    {
+      "id": "error",
+      "name": "Описание ошибки",
+      "type": "text",
+      "readyOn": "changed",
+      "additional": true
+    }
+  ],
+  "parameters": {
+    "mode": {
+      "label": "Режим проверки",
+      "type": "select",
+      "default": "range",
+      "options": [
+        {
+          "value": "range",
+          "label": "Диапазон"
+        },
+        {
+          "value": "compare",
+          "label": "Сравнение с числом"
+        }
+      ]
+    },
+    "operator": {
+      "label": "Условие",
+      "type": "select",
+      "default": "gt",
+      "when": {
+        "field": "mode",
+        "value": "compare"
+      },
+      "options": [
+        {
+          "value": "lt",
+          "label": "Меньше (<)"
+        },
+        {
+          "value": "lte",
+          "label": "Меньше или равно (≤)"
+        },
+        {
+          "value": "eq",
+          "label": "Равно (=)"
+        },
+        {
+          "value": "neq",
+          "label": "Не равно (≠)"
+        },
+        {
+          "value": "gte",
+          "label": "Больше или равно (≥)"
+        },
+        {
+          "value": "gt",
+          "label": "Больше (>)"
+        }
+      ]
+    },
+    "reference": {
+      "label": "Число для сравнения",
+      "type": "number",
+      "default": 0,
+      "min": -1000000000000,
+      "max": 1000000000000,
+      "step": "any",
+      "when": {
+        "field": "mode",
+        "value": "compare"
+      },
+      "description": "Используется, если соответствующий числовой вход не подключён."
+    },
+    "tolerance": {
+      "label": "Допуск равенства",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 1000000000000,
+      "step": "any",
+      "when": {
+        "field": "mode",
+        "value": "compare"
+      },
+      "description": "Абсолютный допуск только для равно и не равно. 0 означает точное сравнение."
+    },
+    "lower": {
+      "label": "Нижняя граница",
+      "type": "number",
+      "default": 0,
+      "min": -1000000000000,
+      "max": 1000000000000,
+      "step": "any",
+      "when": {
+        "field": "mode",
+        "value": "range"
+      }
+    },
+    "upper": {
+      "label": "Верхняя граница",
+      "type": "number",
+      "default": 100,
+      "min": -1000000000000,
+      "max": 1000000000000,
+      "step": "any",
+      "when": {
+        "field": "mode",
+        "value": "range"
+      }
+    },
+    "includeLower": {
+      "label": "Включать нижнюю границу",
+      "type": "boolean",
+      "default": true,
+      "trueLabel": "Да",
+      "falseLabel": "Нет",
+      "when": {
+        "field": "mode",
+        "value": "range"
+      }
+    },
+    "includeUpper": {
+      "label": "Включать верхнюю границу",
+      "type": "boolean",
+      "default": true,
+      "trueLabel": "Да",
+      "falseLabel": "Нет",
+      "when": {
+        "field": "mode",
+        "value": "range"
+      }
+    }
+  },
+  "constraints": {},
+  "compatibility": {
+    "projectFormat": 3,
+    "targets": [
+      "esp32",
+      "esp32s3",
+      "esp32p4",
+      "atmega328p"
+    ],
+    "espIdf": "5.4.4",
+    "platforms": {
+      "arduino-avr": "1.8.6"
+    }
+  },
+  "firmware": {
+    "status": "implemented",
+    "generatorKey": "compare-number",
+    "dependencies": []
+  }
+}

@@ -1,0 +1,142 @@
+{
+  "id": "clex.logic.text-to-number",
+  "version": "1.0.0",
+  "kind": "logic",
+  "name": "Текст в число",
+  "description": "Преобразует текст в число по событию. Поддерживает знак, дробную часть, экспоненту и настраиваемую подпись. При ошибке сбрасывает число в NaN.",
+  "category": "values",
+  "categoryName": "Данные",
+  "icon": "Hash",
+  "color": "#fbbf24",
+  "inputs": [
+    {
+      "id": "trigger",
+      "name": "Преобразовать",
+      "type": "event",
+      "required": true
+    },
+    {
+      "id": "text",
+      "name": "Исходный текст",
+      "type": "text",
+      "required": true
+    }
+  ],
+  "outputs": [
+    {
+      "id": "changed",
+      "name": "Преобразование завершено",
+      "type": "event",
+      "description": "После каждой попытки, включая ошибку."
+    },
+    {
+      "id": "done",
+      "name": "Число получено",
+      "type": "event"
+    },
+    {
+      "id": "failed",
+      "name": "Ошибка преобразования",
+      "type": "event"
+    },
+    {
+      "id": "value",
+      "name": "Число",
+      "type": "number",
+      "readyOn": "changed"
+    },
+    {
+      "id": "valid",
+      "name": "Число корректно?",
+      "type": "boolean",
+      "readyOn": "changed",
+      "additional": true
+    },
+    {
+      "id": "error",
+      "name": "Описание ошибки",
+      "type": "text",
+      "readyOn": "changed",
+      "additional": true
+    }
+  ],
+  "parameters": {
+    "format": {
+      "label": "Формат текста",
+      "type": "select",
+      "default": "plain",
+      "options": [
+        {
+          "value": "plain",
+          "label": "Только число"
+        },
+        {
+          "value": "affixes",
+          "label": "Число с подписью"
+        }
+      ]
+    },
+    "decimalSeparator": {
+      "label": "Десятичный разделитель",
+      "type": "select",
+      "default": "either",
+      "options": [
+        {
+          "value": "either",
+          "label": "Точка или запятая"
+        },
+        {
+          "value": "dot",
+          "label": "Точка"
+        },
+        {
+          "value": "comma",
+          "label": "Запятая"
+        }
+      ]
+    },
+    "prefix": {
+      "label": "Текст перед числом",
+      "type": "text",
+      "default": "",
+      "maxLength": 32,
+      "rows": 1,
+      "description": "Ожидаемая подпись перед числом, например P=. Пустое поле означает отсутствие подписи.",
+      "when": {
+        "field": "format",
+        "value": "affixes"
+      }
+    },
+    "suffix": {
+      "label": "Текст после числа",
+      "type": "text",
+      "default": "",
+      "maxLength": 32,
+      "rows": 1,
+      "description": "Ожидаемая подпись после числа, например Па, °C или %. Единицы не пересчитываются.",
+      "when": {
+        "field": "format",
+        "value": "affixes"
+      }
+    }
+  },
+  "constraints": {},
+  "compatibility": {
+    "projectFormat": 3,
+    "targets": [
+      "esp32",
+      "esp32s3",
+      "esp32p4",
+      "atmega328p"
+    ],
+    "espIdf": "5.4.4",
+    "platforms": {
+      "arduino-avr": "1.8.6"
+    }
+  },
+  "firmware": {
+    "status": "implemented",
+    "generatorKey": "text-to-number",
+    "dependencies": []
+  }
+}

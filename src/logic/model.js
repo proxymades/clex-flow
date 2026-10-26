@@ -1,3 +1,4 @@
+import {numericLogicIssues} from './numeric.js';
 import {relayChannelCount} from '../relay/model.js';
 import {mqttLogicIssues} from '../mqtt/model.js';
 import {stepperLogicIssues} from '../stepper/model.js';
@@ -90,7 +91,9 @@ export function updateNode(graph, id, patch, catalog = null, project = null) {
     for(const [key,parameter] of Object.entries(module?.parameters||{}))if(parameter.when?.field==='action'&&parameter.when.value==='peer'&&patch.parameters[key]===undefined)patch.parameters[key]=parameter.default;
   }
   const next={...graph,nodes:graph.nodes.map(node=>node.id===id?{...node,...patch}:node)};
-  if(!catalog||!previous?.moduleId.startsWith('clex.logic.espnow-')||!patch.parameters||!['transferType','action'].some(key=>previous.parameters[key]!==patch.parameters[key]))return next;
+  if(!catalog||!previous||!patch.parameters)return next;
+  const changedPorts=previous.moduleId==='clex.logic.compare-number'?previous.parameters.mode!==patch.parameters.mode:previous.moduleId.startsWith('clex.logic.espnow-')&&['transferType','action'].some(key=>previous.parameters[key]!==patch.parameters[key]);
+  if(!changedPorts)return next;
   const current=next.nodes.find(node=>node.id===id), before=nodePorts(previous,catalog,project), after=nodePorts(current,catalog,project);
   // Different purposes have different port IDs; retain only the same purpose and data type.
   const keep=(direction,handle,type)=>before[direction].some(port=>port.id===handle&&port.type===type)&&after[direction].some(port=>port.id===handle&&port.type===type);
@@ -200,11 +203,13 @@ export function validateGraph(project, catalog) {
       if(parameter.when&&node.parameters[parameter.when.field]!==parameter.when.value)continue;
       const value = node.parameters[key];
       if (parameter.type === 'integer' && (!Number.isInteger(value) || value < parameter.min || value > parameter.max)) add('error', 'logic-parameter', `${node.name}: «${parameter.label}» должен быть целым числом ${parameter.min}-${parameter.max}.`, fields);
+      if (parameter.type === 'number' && (!Number.isFinite(value) || value < parameter.min || value > parameter.max)) add('error', 'logic-parameter', node.name+': «'+parameter.label+'» должен быть конечным числом от '+parameter.min+' до '+parameter.max+'.', fields);
       if (parameter.type === 'boolean' && typeof value !== 'boolean') add('error', 'logic-parameter', `${node.name}: неверное логическое значение.`, fields);
       if (parameter.type === 'select' && !parameter.options.some(option=>option.value===value)) add('error','logic-parameter',node.name+': выберите допустимый вариант «'+parameter.label+'».',fields);
       if (parameter.type === 'text' && (typeof value !== 'string' || value.length > parameter.maxLength)) add('error', 'logic-parameter', `${node.name}: текст не должен превышать ${formatCount(parameter.maxLength, ['символ', 'символа', 'символов'])}.`, fields);
     }
     if (module.id === 'clex.logic.select-number' && node.parameters.firstValue === node.parameters.secondValue) add('error', 'logic-parameter', node.name + ': укажите два разных значения для выбора.', fields);
+    for(const message of numericLogicIssues(node,project))add('error','numeric-logic',node.name+': '+message,fields);
     for(const message of mqttLogicIssues(node,project))add('error','mqtt-logic',node.name+': '+message,fields);
     for(const message of stepperLogicIssues(node,project,catalog))add('error','stepper-logic',node.name+': '+message,fields);
     for(const message of [...espNowLogicIssues(node,project,boardFor(project,catalog)),...espNowAckIssues(node,project,catalog)])add('error','espnow-logic',node.name+': '+message,fields);

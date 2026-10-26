@@ -1,0 +1,306 @@
+{
+  "id": "ec46d407-13eb-4934-8a84-eefef53971c7",
+  "name": "MQTT – Реле по диапазону",
+  "description": "Преобразование текстового давления в Па и управление двумя реле: ниже -10000 Па, от -10000 до 10000 Па, выше 10000 Па. Настройте Wi-Fi и MQTT перед сборкой.",
+  "formatVersion": 3,
+  "createdAt": "2026-10-26T13:07:07.022Z",
+  "updatedAt": "2026-10-26T13:07:07.022Z",
+  "boardId": "doit-esp32-devkit-v1-30pin",
+  "boardSettings": {},
+  "components": [
+    {
+      "id": "33ded1c9-6797-4e74-96bc-bf49cbfefd6d",
+      "moduleId": "clex.hardware.relay",
+      "moduleVersion": "1.0.0",
+      "name": "Модуль реле 1",
+      "parameters": {
+        "channels": "2",
+        "activeLevel": "low",
+        "supplyVoltage": "5",
+        "powerSource": "external"
+      }
+    },
+    {
+      "id": "a5ff58bb-d83c-47a4-b5bd-f1422a4d653d",
+      "moduleId": "clex.hardware.wifi",
+      "moduleVersion": "1.0.0",
+      "name": "Wi-Fi 1",
+      "parameters": {
+        "ssid": "YOUR_WIFI_SSID",
+        "password": "YOUR_WIFI_PASSWORD",
+        "addressMode": "dhcp",
+        "staticIp": "",
+        "netmask": "",
+        "gateway": "",
+        "dns": "",
+        "autoConnect": true,
+        "autoReconnect": true,
+        "reconnectMs": 5000,
+        "connectTimeoutMs": 30000
+      }
+    },
+    {
+      "id": "d367d0fa-834f-4e61-9c48-855bce0f6f30",
+      "moduleId": "clex.hardware.mqtt",
+      "moduleVersion": "1.0.0",
+      "name": "MQTT 1",
+      "parameters": {
+        "networkId": "a5ff58bb-d83c-47a4-b5bd-f1422a4d653d",
+        "host": "broker.example.com",
+        "port": 1883,
+        "protocol": "3.1.1",
+        "clientId": "",
+        "username": "",
+        "password": "",
+        "tls": false,
+        "caMode": "bundle",
+        "caPem": "",
+        "keepAlive": 60,
+        "cleanSession": true,
+        "sessionExpiry": 0,
+        "autoConnect": true,
+        "autoReconnect": true,
+        "reconnectMs": 5000,
+        "timeoutMs": 10000,
+        "lwtEnabled": false,
+        "lwtTopic": "",
+        "lwtPayload": "",
+        "lwtQos": "0",
+        "lwtRetain": false,
+        "lwtDelay": 0
+      }
+    }
+  ],
+  "gpioAssignments": [
+    {
+      "componentId": "33ded1c9-6797-4e74-96bc-bf49cbfefd6d",
+      "terminalId": "in1",
+      "pinId": "L6",
+      "gpio": 32,
+      "mode": "output"
+    },
+    {
+      "componentId": "33ded1c9-6797-4e74-96bc-bf49cbfefd6d",
+      "terminalId": "in2",
+      "pinId": "L7",
+      "gpio": 33,
+      "mode": "output"
+    }
+  ],
+  "logic": {
+    "nodes": [
+      {
+        "id": "e2da3660-2f21-4dc2-8962-315b8260f7d4",
+        "moduleId": "clex.logic.mqtt-receive",
+        "moduleVersion": "1.0.0",
+        "name": "MQTT – Получить 1",
+        "position": {
+          "x": 0,
+          "y": 0
+        },
+        "parameters": {
+          "componentId": "d367d0fa-834f-4e61-9c48-855bce0f6f30",
+          "filters": "[{\"topic\":\"clex/test/value\",\"qos\":1}]",
+          "autoSubscribe": true,
+          "payloadEncoding": "utf8",
+          "noLocal": false,
+          "retainAsPublished": false,
+          "retainHandling": "0"
+        }
+      },
+      {
+        "id": "eaf63b54-70a4-41e3-aa66-b74bde1881df",
+        "moduleId": "clex.logic.text-to-number",
+        "moduleVersion": "1.0.0",
+        "name": "Текст в число 1",
+        "position": {
+          "x": 360,
+          "y": 0
+        },
+        "parameters": {
+          "format": "affixes",
+          "decimalSeparator": "either",
+          "prefix": "",
+          "suffix": "Па"
+        }
+      },
+      {
+        "id": "5aaca776-a4ff-4dcf-be1d-eeccd6091aae",
+        "moduleId": "clex.logic.compare-number",
+        "moduleVersion": "1.0.0",
+        "name": "Сравнение числа 1",
+        "position": {
+          "x": 720,
+          "y": 0
+        },
+        "parameters": {
+          "mode": "range",
+          "operator": "gt",
+          "reference": 0,
+          "tolerance": 0,
+          "lower": -10000,
+          "upper": 10000,
+          "includeLower": true,
+          "includeUpper": true
+        }
+      },
+      {
+        "id": "c3bf9c48-a195-4f96-90d0-1910e3f76199",
+        "moduleId": "clex.logic.relay",
+        "moduleVersion": "1.0.0",
+        "name": "Управлять реле 1",
+        "position": {
+          "x": 1120,
+          "y": 0
+        },
+        "parameters": {
+          "componentId": "33ded1c9-6797-4e74-96bc-bf49cbfefd6d",
+          "channel": "1",
+          "action": "set",
+          "defaultValue": false
+        }
+      },
+      {
+        "id": "941b5ba6-4313-481c-a5ab-b116d97f1744",
+        "moduleId": "clex.logic.relay",
+        "moduleVersion": "1.0.0",
+        "name": "Управлять реле 2",
+        "position": {
+          "x": 1120,
+          "y": 390
+        },
+        "parameters": {
+          "componentId": "33ded1c9-6797-4e74-96bc-bf49cbfefd6d",
+          "channel": "2",
+          "action": "set",
+          "defaultValue": false
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "c637b13a-b2c9-4fa4-b5fa-b6d323d9235c",
+        "source": "e2da3660-2f21-4dc2-8962-315b8260f7d4",
+        "target": "eaf63b54-70a4-41e3-aa66-b74bde1881df",
+        "sourceHandle": "received",
+        "targetHandle": "trigger",
+        "dataType": "event"
+      },
+      {
+        "id": "ff838e18-e745-490a-bcee-c8d02005af86",
+        "source": "e2da3660-2f21-4dc2-8962-315b8260f7d4",
+        "target": "eaf63b54-70a4-41e3-aa66-b74bde1881df",
+        "sourceHandle": "payload",
+        "targetHandle": "text",
+        "dataType": "text"
+      },
+      {
+        "id": "df537e09-ab79-4e38-8d7b-cc1af05b9a8c",
+        "source": "eaf63b54-70a4-41e3-aa66-b74bde1881df",
+        "target": "5aaca776-a4ff-4dcf-be1d-eeccd6091aae",
+        "sourceHandle": "changed",
+        "targetHandle": "trigger",
+        "dataType": "event"
+      },
+      {
+        "id": "a91d43bc-866a-4699-8578-47de9e5dff5c",
+        "source": "eaf63b54-70a4-41e3-aa66-b74bde1881df",
+        "target": "5aaca776-a4ff-4dcf-be1d-eeccd6091aae",
+        "sourceHandle": "value",
+        "targetHandle": "value",
+        "dataType": "number"
+      },
+      {
+        "id": "fc298e17-fd8a-48cd-97c1-c32da16cd1fc",
+        "source": "5aaca776-a4ff-4dcf-be1d-eeccd6091aae",
+        "target": "c3bf9c48-a195-4f96-90d0-1910e3f76199",
+        "sourceHandle": "changed",
+        "targetHandle": "trigger",
+        "dataType": "event"
+      },
+      {
+        "id": "204e710c-06e5-440f-b926-101ef801970e",
+        "source": "5aaca776-a4ff-4dcf-be1d-eeccd6091aae",
+        "target": "941b5ba6-4313-481c-a5ab-b116d97f1744",
+        "sourceHandle": "changed",
+        "targetHandle": "trigger",
+        "dataType": "event"
+      },
+      {
+        "id": "1f7f4767-f0b3-4054-821c-987638474932",
+        "source": "5aaca776-a4ff-4dcf-be1d-eeccd6091aae",
+        "target": "c3bf9c48-a195-4f96-90d0-1910e3f76199",
+        "sourceHandle": "isBelow",
+        "targetHandle": "value",
+        "dataType": "boolean"
+      },
+      {
+        "id": "674dd5f7-f881-48f8-9d1f-924588d52ada",
+        "source": "5aaca776-a4ff-4dcf-be1d-eeccd6091aae",
+        "target": "941b5ba6-4313-481c-a5ab-b116d97f1744",
+        "sourceHandle": "isAbove",
+        "targetHandle": "value",
+        "dataType": "boolean"
+      }
+    ],
+    "viewport": {
+      "x": 0,
+      "y": 0,
+      "zoom": 1
+    }
+  },
+  "assembly": {
+    "positions": {
+      "board": {
+        "x": 100,
+        "y": 40
+      },
+      "33ded1c9-6797-4e74-96bc-bf49cbfefd6d": {
+        "x": 668,
+        "y": 120
+      },
+      "a5ff58bb-d83c-47a4-b5bd-f1422a4d653d": {
+        "x": 668,
+        "y": 374
+      },
+      "d367d0fa-834f-4e61-9c48-855bce0f6f30": {
+        "x": 972,
+        "y": 120
+      }
+    },
+    "connections": [
+      {
+        "id": "56a2f3a6-0964-4394-ae77-0f2fec8f9de3",
+        "componentId": "33ded1c9-6797-4e74-96bc-bf49cbfefd6d",
+        "terminalId": "ground",
+        "boardPinId": "L14"
+      },
+      {
+        "id": "4190f047-e819-4fae-a1e9-d1b2806f826c",
+        "componentId": "33ded1c9-6797-4e74-96bc-bf49cbfefd6d",
+        "terminalId": "in1",
+        "boardPinId": "L6"
+      },
+      {
+        "id": "a1390ecd-7306-4e06-9c83-1e855924b2a4",
+        "componentId": "33ded1c9-6797-4e74-96bc-bf49cbfefd6d",
+        "terminalId": "in2",
+        "boardPinId": "L7"
+      }
+    ],
+    "viewport": {
+      "x": 0,
+      "y": 0,
+      "zoom": 1
+    }
+  },
+  "moduleVersions": {
+    "clex.hardware.relay": "1.0.0",
+    "clex.hardware.wifi": "1.0.0",
+    "clex.hardware.mqtt": "1.0.0",
+    "clex.logic.mqtt-receive": "1.0.0",
+    "clex.logic.text-to-number": "1.0.0",
+    "clex.logic.compare-number": "1.0.0",
+    "clex.logic.relay": "1.0.0"
+  }
+}
