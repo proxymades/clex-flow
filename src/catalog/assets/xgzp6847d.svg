@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="180" height="56" viewBox="0 0 180 56" fill="none">
+<defs><linearGradient id="housing" x1="72" y1="8" x2="108" y2="47" gradientUnits="userSpaceOnUse"><stop stop-color="#e8edf1"/><stop offset="1" stop-color="#8b9aa8"/></linearGradient></defs>
+<path d="M71 3h38l12 12v26l-12 12H71L59 41V15Z" fill="#15524b" stroke="#65a598"/>
+<g stroke="#bbc7d2" stroke-width="3"><path d="M49 12h15M49 28h15M49 44h15M116 12h15M116 28h15M116 44h15"/></g>
+<path d="M77 7h26l12 12v18l-12 12H77L65 37V19Z" fill="url(#housing)" stroke="#64748b"/>
+<rect x="45" y="8" width="8" height="8" rx="1" fill="#d6bb70" stroke="#f2d997"/>
+<g fill="#d6bb70" stroke="#f2d997"><circle cx="49" cy="28" r="3.5"/><circle cx="49" cy="44" r="3.5"/><circle cx="131" cy="12" r="3.5"/><circle cx="131" cy="28" r="3.5"/><circle cx="131" cy="44" r="3.5"/></g>
+<circle cx="90" cy="26" r="12" fill="#d7dfe5" stroke="#64748b"/><circle cx="90" cy="26" r="6" fill="#394957" stroke="#8999a8"/>
+<text x="90" y="44" text-anchor="middle" fill="#334155" font-family="monospace" font-size="5">XGZP6847D</text>
+<g fill="#9fb6bd" font-size="8" font-family="monospace"><text x="33" y="15">1</text><text x="33" y="31">2</text><text x="33" y="47">3</text><text x="141" y="15">6</text><text x="141" y="31">5</text><text x="141" y="47">4</text></g>
+</svg>

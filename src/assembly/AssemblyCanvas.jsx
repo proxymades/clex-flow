@@ -134,7 +134,7 @@ export default function AssemblyCanvas({ project, board, catalog, selection, set
         return { terminal, connected: Boolean(wire)||Boolean(terminal.externalPower), pin: terminal.externalPower?{label:terminal.externalPowerLabel}:wire && {label:connectionLabel(project,catalog,wire,component.id)},
           active: connectionSource?.componentId === component.id && connectionSource.terminalId === terminal.id,
           candidate: Boolean((connectionSource?.boardPinId||connectionSource?.componentId&&connectionSource.componentId!==component.id)&&!connectionProblem(project,catalog,component.id,terminal.id,connectionSource.boardPinId||componentContact(connectionSource.componentId,connectionSource.terminalId))),
-          color: colors[wire?.id] || (terminal.kind === 'ground' ? GROUND_COLOR : module.color) };
+          color: colors[wire?.id] || (terminal.kind === 'ground' ? GROUND_COLOR : terminal.kind==='nc'?'#576179':module.color) };
       });
       nodes.push({
         id: component.id, type: 'physicalHardware', zIndex: 0, position: project.assembly.positions[component.id], width, height,

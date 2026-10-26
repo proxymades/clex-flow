@@ -1,3 +1,4 @@
+import {externalI2cBuses} from '../pressure/model.js';
 export function hardwareProvider(component, module, board) {
   if (!module?.hardwareInterface) return null;
   return board?.peripherals?.find(provider => provider.id === component.parameters.interfaceId && provider.family === module.hardwareInterface.family && provider.interface === module.hardwareInterface.interface) || null;
@@ -13,7 +14,8 @@ export function resourceClaims(project, catalog) {
   const wifi=router&&board?.wifi?.driverKey==='hosted'?[{key:'sdmmc:1',label:'ESP-Hosted SDIO',gpios:Object.values(board.wifi.signals),componentId:router.id,name:router.name}]:[];
   const motion=board?.motion?.timerResource&&project.components.find(component=>catalog.modules.find(module=>module.id===component.moduleId)?.stepper);
   const motionTimers=motion?[{key:board.motion.timerResource,label:'Timer1 движения',componentId:motion.id,name:'Шаговые двигатели'}]:[];
-  return [...mounted,...configured,...wifi,...motionTimers];
+  const sensors=externalI2cBuses(project).map(bus=>({key:'i2c:'+bus.port,label:'I²C'+bus.port,gpios:[bus.sda,bus.scl].filter(Number.isInteger),share:'bus',configuration:Number.isInteger(bus.sda)&&Number.isInteger(bus.scl)?{port:bus.port,sda:bus.sda,scl:bus.scl}:null,componentId:bus.componentId,name:bus.name}));
+  return [...mounted,...configured,...wifi,...motionTimers,...sensors];
 }
 const normalized = value => Array.isArray(value) ? value.map(normalized) : value && typeof value==='object' ? Object.fromEntries(Object.keys(value).sort().map(key=>[key,normalized(value[key])])) : value;
 const canonical = value => JSON.stringify(normalized(value));

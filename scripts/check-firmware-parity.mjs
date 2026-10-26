@@ -1,3 +1,4 @@
+import {xgzpProject,XGZP_BOARDS} from '../tests/xgzp-fixture.js';
 import {wifiProject} from '../tests/wifi-fixture.js';
 import {relayProject} from '../tests/relay-fixture.js';
 import {mqttProject} from '../tests/mqtt-fixture.js';
@@ -92,6 +93,7 @@ for(const boardId of [ESP32_BOARD,'espressif-devkitc-1-v1-1-n8r8','waveshare-esp
 cases.push(['s3-mqtt-auto',mqttProject({nodes:false}).project,'usb']);
 for(const boardId of ['doit-esp32-devkit-v1-30pin','espressif-devkitc-1-v1-1-n8r8','waveshare-esp32-s3-eth','waveshare-esp32-p4-nano','arduino-nano-atmega328p-ch340'])for(const activeLevel of ['low','high'])cases.push([boardId+'-relay-'+activeLevel,relayProject({boardId,activeLevel}).project,boardId==='waveshare-esp32-s3-eth'?'usb':'uart']);
 for(const boardId of [ESP32_BOARD,'espressif-devkitc-1-v1-1-n8r8','waveshare-esp32-s3-eth','waveshare-esp32-p4-nano'])for(const mode of [{},{staticIp:true},{mqtt:true,logic:false}])cases.push([boardId+'-wifi-'+(mode.staticIp?'static':mode.mqtt?'mqtt':'dhcp'),wifiProject({boardId,...mode}).project,boardId==='waveshare-esp32-s3-eth'?'usb':'uart']);
+for(const boardId of XGZP_BOARDS)cases.push([boardId+'-xgzp',xgzpProject(boardId).project,boardId==='waveshare-esp32-s3-eth'?'usb':'uart']);
 const temporary = mkdtempSync(join(tmpdir(), 'clex-firmware-parity-'));
 try {
   for (const [name, project, consoleMode] of cases) {

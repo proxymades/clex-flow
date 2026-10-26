@@ -1,0 +1,172 @@
+{
+  "id": "clex.logic.xgzp6847d",
+  "version": "1.0.0",
+  "kind": "logic",
+  "name": "XGZP6847D – Измерение",
+  "description": "Измеряет давление и температуру выбранного датчика. При ошибке сбрасывает числовые показания в NaN и передает описание ошибки.",
+  "category": "sensors",
+  "categoryName": "Датчики",
+  "icon": "Gauge",
+  "color": "#2dd4bf",
+  "inputs": [
+    {
+      "id": "trigger",
+      "name": "Измерить",
+      "type": "event",
+      "required": false
+    }
+  ],
+  "outputs": [
+    {
+      "id": "changed",
+      "name": "Измерение завершено",
+      "type": "event",
+      "description": "После каждой попытки, включая ошибку."
+    },
+    {
+      "id": "done",
+      "name": "Данные получены",
+      "type": "event",
+      "additional": true
+    },
+    {
+      "id": "failed",
+      "name": "Ошибка измерения",
+      "type": "event",
+      "additional": true
+    },
+    {
+      "id": "pressure",
+      "name": "Давление",
+      "type": "number",
+      "readyOn": "done",
+      "description": "В единицах, выбранных в настройках блока."
+    },
+    {
+      "id": "temperature",
+      "name": "Температура, °C",
+      "type": "number",
+      "readyOn": "done"
+    },
+    {
+      "id": "text",
+      "name": "Давление с единицей",
+      "type": "text",
+      "readyOn": "changed"
+    },
+    {
+      "id": "temperatureText",
+      "name": "Температура с единицей",
+      "type": "text",
+      "readyOn": "changed",
+      "additional": true
+    },
+    {
+      "id": "pressurePa",
+      "name": "Давление, Па",
+      "type": "number",
+      "readyOn": "done",
+      "additional": true
+    },
+    {
+      "id": "valid",
+      "name": "Показания достоверны?",
+      "type": "boolean",
+      "readyOn": "changed",
+      "additional": true
+    },
+    {
+      "id": "error",
+      "name": "Ошибка датчика",
+      "type": "text",
+      "readyOn": "changed",
+      "additional": true
+    }
+  ],
+  "parameters": {
+    "componentId": {
+      "label": "Датчик",
+      "type": "component",
+      "default": ""
+    },
+    "unit": {
+      "label": "Единица давления",
+      "type": "select",
+      "default": "Pa",
+      "options": [
+        {
+          "value": "Pa",
+          "label": "Па"
+        },
+        {
+          "value": "kPa",
+          "label": "кПа"
+        },
+        {
+          "value": "bar",
+          "label": "бар"
+        },
+        {
+          "value": "mmHg",
+          "label": "мм рт. ст."
+        },
+        {
+          "value": "psi",
+          "label": "PSI"
+        }
+      ]
+    },
+    "autoRead": {
+      "label": "Измерять автоматически",
+      "type": "boolean",
+      "default": true,
+      "trueLabel": "Да",
+      "falseLabel": "Нет"
+    },
+    "intervalMs": {
+      "label": "Период измерения, мс",
+      "type": "integer",
+      "default": 1000,
+      "min": 100,
+      "max": 3600000,
+      "step": 100,
+      "when": {
+        "field": "autoRead",
+        "value": true
+      }
+    }
+  },
+  "constraints": {
+    "hardware": {
+      "kind": "i2c",
+      "modules": [
+        "clex.hardware.xgzp6847d"
+      ]
+    }
+  },
+  "compatibility": {
+    "projectFormat": 3,
+    "targets": [
+      "esp32",
+      "esp32s3",
+      "esp32p4",
+      "atmega328p"
+    ],
+    "espIdf": "5.4.4",
+    "platforms": {
+      "arduino-avr": "1.8.6"
+    }
+  },
+  "firmware": {
+    "status": "implemented",
+    "generatorKey": "xgzp6847d",
+    "eventSource": true,
+    "eventSourceWhen": {
+      "field": "autoRead",
+      "value": true
+    },
+    "dependencies": [
+      "esp_driver_i2c"
+    ]
+  }
+}

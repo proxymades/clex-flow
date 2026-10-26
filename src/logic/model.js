@@ -40,7 +40,7 @@ export function hardwareMatches(component,requirement,catalog){
  if(!component||!requirement)return false;
  const definition=catalog?.modules.find(module=>module.id===component.moduleId);
  if(requirement.kind==='display')return Boolean(definition?.display);
- if(requirement.kind==='gpio')return !definition?.stepper&&Boolean(definition?.terminals?.some(terminal=>terminal.kind===(requirement.mode==='input'?'gpio-input':'gpio-output')));
+ if(requirement.kind==='gpio')return !definition?.i2c&&!definition?.stepper&&Boolean(definition?.terminals?.some(terminal=>terminal.kind===(requirement.mode==='input'?'gpio-input':'gpio-output')));
  return Boolean(requirement.modules?.includes(component.moduleId));
 }
 
@@ -155,6 +155,7 @@ export function connectNodes(graph, catalog, connection, project = null) {
 
 export function hardwareBinding(node, project, catalog) {
   const module = graphModule(node, catalog), requirement = module?.constraints.hardware;
+  if(requirement?.kind==='i2c'){const component=project.components.find(c=>c.id===node.parameters.componentId);return {component,gpio:null,error:hardwareMatches(component,requirement,catalog)?null:'Выберите датчик из монтажа.'};}
   if(requirement?.kind==='wifi'||requirement?.kind==='stepper'||requirement?.kind==='router'||requirement?.kind==='mqtt'){const component=project.components.find(c=>c.id===node.parameters.componentId);return {component,gpio:null,error:hardwareMatches(component,requirement,catalog)?null:'Выберите совместимый компонент из монтажа.'};}
   if (requirement?.kind === 'peripheral') {
     const component=project.components.find(component=>component.id===node.parameters.componentId),definition=catalog.modules.find(module=>module.id===component?.moduleId);

@@ -1,3 +1,4 @@
+import {isXgzp,xgzpPowerProblem,i2cConnectionProblem,i2cClaimAllows,xgzpIssues} from '../pressure/model.js';
 import {WIFI_MODULE,wifiSupported,wifiIssues} from '../wifi/model.js';
 import {RELAY_MODULE,relayChannelCount,resolveRelayModule,relayParameters,relaySupplyVoltage,relayVoltageLabel,relayPowerProblem,relayPowerWarning} from '../relay/model.js';
 import {parseContact,wireSource,touches,normalizedContact,componentWireProblem} from './endpoints.js';
@@ -8,7 +9,7 @@ import {ESPNOW_MODULE,espNowSupported,espNowIssues,newKey} from '../espnow/model
 import { moduleSupportsBoard } from '../catalog/compatibility.js';
 import { terminalLayout } from './terminalLayout.js';
 import { reanchorManualRoute } from './wireRouting.js';
-import { hardwareProvider, resourceIssues, claimedGpio, sharedPinProblem } from '../hardware/resources.js';
+import { hardwareProvider, resourceClaims, resourceIssues, claimedGpio, sharedPinProblem } from '../hardware/resources.js';
 import { networkProvider, networkIssues, spiOptions, spiUsage } from '../network/model.js';
 export const DEFAULT_BOARD_POSITION = { x: 100, y: 40 };
 export const DEFAULT_VIEWPORT = { x: 0, y: 0, zoom: 1 };
@@ -72,22 +73,30 @@ export function connectionProblem(project, catalog, componentId, terminalId, pin
   const terminal = lookup(module.terminals, terminalId);
   const pin = lookup(board.pins, pinId);
   if (!terminal) return 'Контакт компонента не найден.';
+  if (terminal.kind==='nc') return 'Вывод NC не подключается к внешней цепи или земле.';
   if (!pin) return 'Контакт платы не найден.';
   if(component.moduleId===RELAY_MODULE&&terminal.id==='power')return relayPowerProblem(component,pin);
+  if(isXgzp(component)&&terminal.id==='power')return xgzpPowerProblem(component,pin,board);
   if (terminal.kind === 'power') return pin.kind === 'power' && pin.voltage === (terminal.voltageFromBoard ? (board.logicVoltage || 3.3) : terminal.voltageParameter ? Number(component.parameters[terminal.voltageParameter]) : terminal.voltage) ? null : 'Питание компонента подключается к контакту платы с указанным напряжением.';
   if (terminal.kind === 'ground') return pin.kind === 'ground' ? null : 'Общий контакт / катод должен быть подключен к GND. Питание и GPIO здесь недопустимы.';
   if (pin.kind !== 'gpio') return 'Сигнальный контакт подключается к GPIO, а не к питанию, GND или управлению.';
   if (module.constraints.signalVoltageParameter && Number(component.parameters[module.constraints.signalVoltageParameter]) > (board.logicVoltage || 3.3)) return `Уровень OUT превышает допустимые ${board.logicVoltage || 3.3} В GPIO платы. Используйте совместимый уровень сигнала.`;
   const claim = claimedGpio(project,catalog,pin.gpio);
-  if (claim) return `GPIO${pin.gpio} используется компонентом «${claim.name}» (${claim.label || claim.key}).`;
-  const restriction = pinProblem(project, pin, board);
+  const i2cShared = claim && i2cClaimAllows(component,terminalId,pin,claim);
+  if (claim && !i2cShared) return `GPIO${pin.gpio} используется компонентом «${claim.name}» (${claim.label || claim.key}).`;
+  const busProblem = i2cConnectionProblem(component,terminal,pin,board);
+  if (busProblem) return busProblem;
+  const sharedBoardBus=i2cShared&&!isXgzp(lookup(project.components,claim.componentId));
+  const restriction = sharedBoardBus ? null : pinProblem(project, pin, board);
   if (restriction) return restriction;
   const capability = terminal.kind === 'gpio-output' ? 'digital-output' : terminal.kind === 'gpio-input' ? 'digital-input' : null;
   if (!capability || !pin.capabilities.includes(capability)) return 'GPIO не поддерживает требуемое направление цифрового интерфейса.';
   if (capability==='digital-input' && pin.internalPulls===false && ['up','down'].includes(component.parameters.pull)) return 'У этого GPIO нет внутренней подтяжки. Выберите другой вход для компонента с внутренней подтяжкой.';
   const conflict = project.assembly.connections.find(wire => {
     if (wire.componentId === componentId && wire.terminalId === terminalId) return false;
-    return lookup(board.pins, wire.boardPinId)?.gpio === pin.gpio;
+    if(lookup(board.pins,wire.boardPinId)?.gpio!==pin.gpio)return false;
+    const other=lookup(project.components,wire.componentId);
+    return !(isXgzp(component)&&isXgzp(other)&&component.parameters.i2cPort===other.parameters.i2cPort&&wire.terminalId===terminalId);
   });
   if (conflict) return `GPIO${pin.gpio} уже назначен другому контакту. Сначала удалите прежнее соединение.`;
   return null;
@@ -170,6 +179,7 @@ export function addHardware(project, module, catalog = null) {
   if(module.network&&catalog){const board=boardFor(project,catalog),provider=board.networkInterfaces?.find(provider=>provider.family===module.network.family);if(!provider)throw new Error('На этой плате нет описанного сетевого интерфейса.');if(project.components.some(component=>networkProvider(component,board,module)?.id===provider.id))throw new Error('Этот встроенный интерфейс уже добавлен.');parameters.providerId=provider.id;}
   if(module.parameters.spiHost&&catalog&&(!module.network||networkProvider({parameters},boardFor(project,catalog),module)?.interface==='spi')){const options=spiOptions(project,catalog,id).filter(option=>!option.busy.length);parameters.spiHost=options.find(option=>option.value===String(parameters.spiHost))?.value||options[0]?.value||'';}
 
+  if(isXgzp({moduleId:module.id})&&catalog){const board=boardFor(project,catalog);parameters.supplyVoltage=String(board.logicVoltage||3.3);if(board.platform!=='arduino-avr'){const used=new Set([...project.components.filter(isXgzp).map(c=>c.parameters.i2cPort),...resourceClaims(project,catalog).filter(c=>/^i2c:[01]$/.test(c.key)).map(c=>c.key.slice(4))]);parameters.i2cPort=['0','1'].find(port=>!used.has(port))||'0';}}
   if(catalog)Object.assign(parameters,boardFor(project,catalog)?.componentDefaults?.[module.id]);
   const occupied = project.components.map(component => {
     const layout = terminalLayout(catalog?moduleFor(component,catalog):null, project.assembly.portSides?.[component.id]);
@@ -238,6 +248,7 @@ export function validateAssembly(project, catalog) {
     if(module.id===RELAY_MODULE&&relaySupplyVoltage(component)>5&&component.parameters.powerSource==='board')issue('error','relay-power-source',component.name+': для питания '+relayVoltageLabel(component)+' выберите внешний источник.',fields);
     if(module.id===RELAY_MODULE&&relaySupplyVoltage(component)>0&&(board.logicVoltage||3.3)>relaySupplyVoltage(component))issue('warning','relay-logic-level',component.name+': GPIO платы имеют уровень '+String(board.logicVoltage).replace('.',',')+' В. Проверьте совместимость входов IN модуля с питанием '+relayVoltageLabel(component)+'; может потребоваться согласование уровней.',fields);
     if(module.id===RELAY_MODULE&&!project.assembly.connections.some(wire=>wire.componentId===component.id&&/^in\d+$/.test(wire.terminalId)))issue('error','relay-channel',component.name+': подключите хотя бы один вход IN к GPIO.',fields);
+    for(const message of xgzpIssues(component,project,board))issue('error','xgzp-config',component.name+': '+message,fields);
     if(module.softwareInterface==='wifi')for(const message of wifiIssues(component,project,catalog))issue('error','wifi-config',component.name+': '+message,fields);
     if(module.softwareInterface==='mqtt')for(const message of mqttIssues(component,project,catalog))issue('error','mqtt-config',component.name+': '+message,fields);
     if(module.softwareInterface==='espnow')for(const message of espNowIssues(component,board))issue('error','espnow-config',component.name+': '+message,fields);

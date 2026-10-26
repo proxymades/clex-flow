@@ -1,3 +1,4 @@
+import {migrateXgzpProject} from '../pressure/model.js';
 import { imageIssues } from '../displays/image.js';
 import { indicatorIssues } from '../displays/indicator.js';
 import { dynamicTextValid, screenPorts } from '../displays/model.js';
@@ -39,9 +40,9 @@ export function migrateProject(project) {
   }
   if (project.formatVersion === 2) {
     if (!isObject(project.logic) || !Array.isArray(project.logic.nodes) || !Array.isArray(project.logic.edges) || project.logic.nodes.length || project.logic.edges.length) throw new Error('Проект формата 2 содержит неподдерживаемый граф. Исходный файл не изменен.');
-    return { ...project, formatVersion: 3 };
+    project = { ...project, formatVersion: 3 };
   }
-  return project;
+  return migrateXgzpProject(project);
 }
 
 export function validateProject(project) {

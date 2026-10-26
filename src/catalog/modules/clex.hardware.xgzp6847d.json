@@ -1,0 +1,205 @@
+{
+  "id": "clex.hardware.xgzp6847d",
+  "version": "1.0.0",
+  "kind": "hardware",
+  "name": "XGZP6847D",
+  "manufacturer": "CFSensor",
+  "description": "Датчик давления и температуры XGZP6847D в корпусе DIP6, протокол I²C 0x6D по документации V2.8. Выберите коэффициент K по диапазону датчика. Новая серия XGZP6847DC (0x58) использует другой протокол и не поддерживается.",
+  "category": "sensors",
+  "categoryName": "Датчики",
+  "icon": "Gauge",
+  "color": "#2dd4bf",
+  "visual": {
+    "svg": "xgzp6847d.svg",
+    "width": 300,
+    "height": 270,
+    "terminalStartY": 140,
+    "terminalPitch": 45
+  },
+  "i2c": {
+    "sda": "sda",
+    "scl": "scl",
+    "address": 109,
+    "frequencyHz": 100000
+  },
+  "terminals": [
+    {
+      "id": "scl",
+      "label": "1 · SCL",
+      "kind": "gpio-output",
+      "x": 0,
+      "y": 140,
+      "physicalNumber": 1
+    },
+    {
+      "id": "nc2",
+      "label": "2 · NC",
+      "kind": "nc",
+      "physicalNumber": 2,
+      "x": 0,
+      "y": 185,
+      "optional": true,
+      "description": "Не подключать к внешней цепи или земле."
+    },
+    {
+      "id": "ground",
+      "label": "3 · GND",
+      "kind": "ground",
+      "x": 0,
+      "y": 230,
+      "physicalNumber": 3
+    },
+    {
+      "id": "nc6",
+      "label": "6 · NC",
+      "kind": "nc",
+      "physicalNumber": 6,
+      "x": 300,
+      "y": 140,
+      "optional": true,
+      "description": "Не подключать к внешней цепи или земле."
+    },
+    {
+      "id": "sda",
+      "label": "5 · SDA",
+      "kind": "gpio-output",
+      "x": 300,
+      "y": 185,
+      "physicalNumber": 5
+    },
+    {
+      "id": "power",
+      "label": "4 · VDD",
+      "kind": "power",
+      "x": 300,
+      "y": 230,
+      "voltageParameter": "supplyVoltage",
+      "physicalNumber": 4
+    }
+  ],
+  "parameters": {
+    "supplyVoltage": {
+      "label": "Питание VDD",
+      "type": "select",
+      "default": "3.3",
+      "options": [
+        {
+          "value": "3.3",
+          "label": "3,3 В"
+        },
+        {
+          "value": "5",
+          "label": "5 В"
+        }
+      ],
+      "description": "На ESP32 разрешено питание и подтяжки I²C только 3,3 В; на Arduino Nano ATmega328P – 5 В. Используйте датчик, допускающий выбранное питание.",
+      "boardLogicVoltageOnly": true
+    },
+    "i2cPort": {
+      "label": "Контроллер I²C",
+      "type": "select",
+      "default": "0",
+      "options": [
+        {
+          "value": "0",
+          "label": "I²C0"
+        },
+        {
+          "value": "1",
+          "label": "I²C1"
+        }
+      ],
+      "description": "ESP32: два контроллера. На Arduino Nano используется Wire, A4/SDA и A5/SCL."
+    },
+    "kFactor": {
+      "label": "Коэффициент K по диапазону датчика",
+      "type": "select",
+      "default": "",
+      "options": [
+        {
+          "value": "",
+          "label": "Выберите коэффициент K"
+        },
+        {
+          "value": "8192",
+          "label": "8192 · P < 1 кПа"
+        },
+        {
+          "value": "4096",
+          "label": "4096 · 1 ≤ P < 2 кПа"
+        },
+        {
+          "value": "2048",
+          "label": "2048 · 2 ≤ P ≤ 4 кПа"
+        },
+        {
+          "value": "1024",
+          "label": "1024 · 4 < P ≤ 8 кПа"
+        },
+        {
+          "value": "512",
+          "label": "512 · 8 < P ≤ 16 кПа"
+        },
+        {
+          "value": "256",
+          "label": "256 · 16 < P ≤ 32 кПа"
+        },
+        {
+          "value": "128",
+          "label": "128 · 32 < P ≤ 65 кПа"
+        },
+        {
+          "value": "64",
+          "label": "64 · 65 < P ≤ 130 кПа"
+        },
+        {
+          "value": "32",
+          "label": "32 · 130 < P ≤ 260 кПа"
+        },
+        {
+          "value": "16",
+          "label": "16 · 260 < P ≤ 500 кПа"
+        },
+        {
+          "value": "8",
+          "label": "8 · 500 < P < 1000 кПа"
+        },
+        {
+          "value": "4",
+          "label": "4 · P ≥ 1000 кПа"
+        }
+      ],
+      "description": "K выбирается по наибольшему абсолютному давлению относительно нуля, а не по полной ширине диапазона. Сверьте его с паспортом исполнения."
+    }
+  },
+  "manualWiring": [
+    "K выбирается по наибольшему абсолютному давлению относительно нуля. Для диапазона −100…300 кПа используется K = 16.",
+    "ESP32: VDD и подтяжки SDA/SCL подключаются только к 3,3 В. Питание датчика от 5 В на ESP32 недоступно. Arduino Nano ATmega328P: VDD и подтяжки к 5 В, SDA → A4, SCL → A5.",
+    "Для SDA и SCL нужны внешние подтяжки около 4,7 кОм. На готовом модуле они могут быть установлены.",
+    "Корпус DIP6: 1 – SCL, 2 – NC, 3 – GND, 4 – VDD, 5 – SDA, 6 – NC. Выводы 2 и 6 не подключаются. Нумерацию сверяйте с индексом первого вывода на чертеже производителя.",
+    "Датчик предназначен для воздуха и неагрессивных газов. Температура измеряется внутри датчика; это не отдельный выносной термометр."
+  ],
+  "constraints": {},
+  "inputs": [],
+  "outputs": [],
+  "compatibility": {
+    "projectFormat": 3,
+    "targets": [
+      "esp32",
+      "esp32s3",
+      "esp32p4",
+      "atmega328p"
+    ],
+    "espIdf": "5.4.4",
+    "platforms": {
+      "arduino-avr": "1.8.6"
+    }
+  },
+  "firmware": {
+    "status": "implemented",
+    "generatorKey": "xgzp6847d",
+    "dependencies": [
+      "esp_driver_i2c"
+    ]
+  }
+}

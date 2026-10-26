@@ -13,11 +13,13 @@ export function terminalLayout(module, overrides = {}) {
   for (const terminal of module.terminals || []) grouped[terminalSide(module, terminal, overrides)].push(terminal);
   const headerOffset = grouped.top.length ? 36 : 0;
   const width = Math.max(module.visual.width, Math.max(grouped.top.length, grouped.bottom.length) * 82 + 24);
-  const height = Math.max(module.visual.height + headerOffset, 110 + headerOffset + Math.max(grouped.left.length, grouped.right.length) * 35);
+  const pitch=module.visual.terminalPitch, startY=module.visual.terminalStartY;
+  const count=Math.max(grouped.left.length,grouped.right.length);
+  const height = Math.max(module.visual.height + headerOffset, pitch?startY+headerOffset+Math.max(0,count-1)*pitch+24:110 + headerOffset + count * 35);
   return { width, height, headerOffset, terminals: (module.terminals || []).map((terminal, index) => {
     const side = terminalSide(module, terminal, overrides), siblings = grouped[side], slot = siblings.indexOf(terminal);
     const x = side === 'left' ? 0 : side === 'right' ? width : width * (slot + 1) / (siblings.length + 1);
-    const y = side === 'top' ? 0 : side === 'bottom' ? height : Math.min(height - 16, (terminal.y ?? (125 + index * 35)) + headerOffset);
+    const y = side === 'top' ? 0 : side === 'bottom' ? height : Math.min(height - 16, (pitch?startY+slot*pitch:terminal.y ?? (125 + index * 35)) + headerOffset);
     return { ...terminal, x, y, side };
   }) };
 }
