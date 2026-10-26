@@ -61,7 +61,7 @@ test('multiple logic blocks share a physical conversion and manual mode removes 
  p=withLogic(p,addNode(p.logic,catalog.modules.find(m=>m.id===sensor.moduleId),p.components,p,catalog));
  p.logic.nodes.at(-1).parameters.autoRead=false;
  const source=generateFirmware(p,catalog).mainC;
- assert.equal(source.match(/\.slot=0, .k=16/g).length,1);
+ assert.equal(source.match(/\.slot=0,/g).length,1);
  assert.equal(source.match(/clex_xgzp_request\(&clex_xgzp_sensors\[0\]/g).length,2);
  assert.equal(source.match(/\.scheduled=true/g).length,1);
 });

@@ -36,7 +36,7 @@ static bool clex_xgzp_read(uint8_t slot,uint8_t reg,uint8_t *bytes,uint8_t count
   return clex_xgzp_devices[slot] && i2c_master_transmit_receive(clex_xgzp_devices[slot],&reg,1,bytes,count,20)==ESP_OK;
 }
 `;
-  const source=transport+XGZP_RUNTIME+`\nstatic clex_xgzp_sensor_t clex_xgzp_sensors[] = {\n${sensors.map((c,i)=>'  {.slot='+i+', .k='+c.parameters.kFactor+', .pressure=NAN, .temperature=NAN},').join('\n')}\n};\n`+blocks.map(n=>'static clex_xgzp_value_t xgzp_value_'+index.get(n.id)+' = {.pressure=NAN,.pressurePa=NAN,.temperature=NAN,.text="Нет данных",.temperatureText="Нет данных"};').join('\n');
+  const source=transport+XGZP_RUNTIME+`\nstatic clex_xgzp_sensor_t clex_xgzp_sensors[] = {\n${sensors.map((c,i)=>'  {.slot='+i+', .phase=0, .error=0, .k='+c.parameters.kFactor+', .started=0, .generation=0, .pressure=NAN, .temperature=NAN, .valid=false},').join('\n')}\n};\n`+blocks.map(n=>'static clex_xgzp_value_t xgzp_value_'+index.get(n.id)+' = {.pressure=NAN,.pressurePa=NAN,.temperature=NAN,.valid=false,.waiting=false,.scheduled=false,.generation=0,.due=0,.text="Нет данных",.temperatureText="Нет данных",.error=""};').join('\n');
   const initialize=avr?'  Wire.begin(); Wire.setClock(100000); Wire.setWireTimeout(25000, true);':sensors.map((c,i)=>{
     const {sda,scl}=i2cSignals(c,project);
     return `  { i2c_master_bus_handle_t bus=clex_i2c_bus(${c.parameters.i2cPort});
