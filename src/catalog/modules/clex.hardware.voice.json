@@ -69,7 +69,7 @@
       "options": [
         {
           "value": "tone",
-          "label": "Тын-дын"
+          "label": "Стандартный сигнал"
         },
         {
           "value": "recording",
