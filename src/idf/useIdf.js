@@ -141,7 +141,8 @@ export default function useIdf(project) {
   },[hasEspNow,compatible,target,ready,checking,sdkLoading,readingMac,running,ports,port,macKey,readMac]);
   const startBuild=()=>preview&&fingerprint&&compatible?start('build',{spec:{boardId:preview.boardId,boardRevision:preview.boardRevision,featureRuntimes:preview.featureRuntimes,consoleMode:preview.consoleMode,mainC:preview.mainC,graphicsRuntime:preview.graphicsRuntime,networkRuntime:preview.networkRuntime,fingerprint}}):Promise.resolve(false);
   const startFlash=(confirmedPort=port)=>build&&fingerprint&&port&&confirmedPort===port?start('flash',{buildId:build.id,fingerprint,port}):Promise.resolve(false);
-  const startMonitor=()=>port?start('monitor',{port}):Promise.resolve(false);
+  const monitorBaud=target==='esp32p4'&&project?.components.some(c=>c.moduleId==='clex.hardware.voice')?460800:115200;
+  const startMonitor=()=>port?start('monitor',{port,baud:monitorBaud}):Promise.resolve(false);
   const cancel=async()=>{if(!current.current)return;try{await invoke('idf_cancel',{id:current.current.id});setJob(value=>value && !terminal.includes(value.status)?{...value,status:'stopping'}:value);}catch(error){setError(String(error));}};
   const setConsole=value=>{if(!['usb','uart'].includes(value))return;localStorage.setItem('clex-flow:console',value);setConsoleMode(value);};
   const sdkAction=async(command,args={})=>{
@@ -157,5 +158,5 @@ export default function useIdf(project) {
     selectSdk:sdkId=>start('sdk_select',{sdkId,target}),installSdk:(version,allowPrerequisites)=>start('sdk_install',{version,allowPrerequisites,target}),removeSdk:sdkId=>start('sdk_remove',{sdkId}),
     readingMac,readMac,deviceMac:deviceMacs[macKey]||null,macError:macError?.key===macKey?macError.message:'',
     desktop,environment,checking,check,ports,port,setPort,refreshPorts,consoleModes,consoleMode,setConsole,job,events,build,error,setError,preview,fingerprint,generationError,ready,
-    busy:Boolean(checking||running||sdkLoading||readingMac),monitoring:Boolean(running&&job.operation==='monitor'),fresh:Boolean(compatible&&build&&fingerprint&&build.fingerprint===fingerprint&&environment?.identity===build.environmentIdentity),startBuild,startFlash,startMonitor,cancel};
+    busy:Boolean(checking||running||sdkLoading||readingMac),monitorBaud,monitoring:Boolean(running&&job.operation==='monitor'),fresh:Boolean(compatible&&build&&fingerprint&&build.fingerprint===fingerprint&&environment?.identity===build.environmentIdentity),startBuild,startFlash,startMonitor,cancel};
 }

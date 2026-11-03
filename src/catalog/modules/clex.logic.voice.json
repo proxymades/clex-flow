@@ -1,0 +1,90 @@
+{
+  "id": "clex.logic.voice",
+  "version": "1.0.0",
+  "kind": "logic",
+  "name": "Голосовые команды",
+  "description": "Передаёт отдельное событие для каждой команды выбранного голосового компонента.",
+  "category": "audio",
+  "categoryName": "Аудио",
+  "icon": "Mic",
+  "color": "#a78bfa",
+  "inputs": [],
+  "outputs": [
+    {
+      "id": "recognized",
+      "name": "Команда распознана",
+      "type": "event"
+    },
+    {
+      "id": "phrase",
+      "name": "Текст команды",
+      "type": "text",
+      "readyOn": "recognized"
+    },
+    {
+      "id": "commandId",
+      "name": "ID команды",
+      "type": "text",
+      "readyOn": "recognized",
+      "additional": true
+    },
+    {
+      "id": "activated",
+      "name": "Активация",
+      "type": "event",
+      "additional": true
+    },
+    {
+      "id": "uncertain",
+      "name": "Повторить команду",
+      "type": "event",
+      "additional": true
+    },
+    {
+      "id": "closed",
+      "name": "Окно закрыто",
+      "type": "event",
+      "additional": true
+    },
+    {
+      "id": "failed",
+      "name": "Ошибка",
+      "type": "event",
+      "additional": true
+    },
+    {
+      "id": "error",
+      "name": "Описание ошибки",
+      "type": "text",
+      "readyOn": "failed",
+      "additional": true
+    }
+  ],
+  "parameters": {
+    "componentId": {
+      "label": "Голосовой компонент",
+      "type": "component",
+      "default": ""
+    }
+  },
+  "constraints": {
+    "hardware": {
+      "kind": "peripheral",
+      "modules": [
+        "clex.hardware.voice"
+      ]
+    }
+  },
+  "compatibility": {
+    "projectFormat": 3,
+    "targets": [
+      "esp32p4"
+    ],
+    "espIdf": "5.4.4"
+  },
+  "firmware": {
+    "status": "implemented",
+    "generatorKey": "voice",
+    "eventSource": true
+  }
+}

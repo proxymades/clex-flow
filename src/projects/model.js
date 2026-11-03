@@ -1,3 +1,4 @@
+import {VOICE_MODULE,readVoiceProfile,voiceProfileProblem} from '../voice/model.js';
 import {migrateXgzpProject} from '../pressure/model.js';
 import { imageIssues } from '../displays/image.js';
 import { indicatorIssues } from '../displays/indicator.js';
@@ -58,6 +59,7 @@ export function validateProject(project) {
   const ids = new Set();
   for (const component of project.components) {
     if (!isObject(component) || !validKey(component.id) || component.id === 'board' || ids.has(component.id) || !validKey(component.moduleId) || !semver(component.moduleVersion) || !isObject(component.parameters)) throw new Error('Некорректный или повторяющийся компонент.');
+    if(component.moduleId===VOICE_MODULE){const problem=voiceProfileProblem(readVoiceProfile(component));if(problem)throw new Error(problem);}
     validateName(component.name); ids.add(component.id);
     if (!Object.entries(component.parameters).every(([key, value]) => validKey(key) && (typeof value === 'string' || typeof value === 'boolean' || Number.isFinite(value)))) throw new Error('Некорректные параметры компонента.');
   }

@@ -9,6 +9,7 @@ mod sdk;
 mod sdk_discovery;
 mod sdk_installer;
 mod tooling;
+mod voice;
 use tauri::{Emitter, Manager};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -32,6 +33,10 @@ pub fn run() {
             }
         })
         .invoke_handler(tauri::generate_handler![
+            voice::voice_record,
+            voice::voice_prepare,
+            voice::voice_audio,
+            voice::voice_test,
             projects::list_projects,
             projects::save_project,
             projects::delete_project,

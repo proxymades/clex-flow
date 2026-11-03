@@ -1,3 +1,4 @@
+import {voiceProject} from '../tests/voice-fixture.js';
 import {numericProject,NUMERIC_BOARDS} from '../tests/numeric-fixture.js';
 import {xgzpProject,XGZP_BOARDS} from '../tests/xgzp-fixture.js';
 import {wifiProject} from '../tests/wifi-fixture.js';
@@ -42,6 +43,8 @@ function mediaProject(family) {
 }
 
 const cases = [
+  ['p4-voice-recording',voiceProject({trained:false,serial:false}),'uart'],
+  ['p4-voice-trained',voiceProject(),'uart'],
   ['esp32-gpio',esp32GpioProject(),'uart'],
   ['esp32-display-spi2',esp32DisplayProject(),'uart'],
   ['esp32-display-spi3',esp32DisplayProject(undefined,'3'),'uart'],
@@ -97,6 +100,12 @@ for(const boardId of [ESP32_BOARD,'espressif-devkitc-1-v1-1-n8r8','waveshare-esp
 for(const boardId of XGZP_BOARDS)cases.push([boardId+'-xgzp',xgzpProject(boardId).project,boardId==='waveshare-esp32-s3-eth'?'usb':'uart']);
 for(const boardId of NUMERIC_BOARDS)for(const mode of ['range','compare'])cases.push([boardId+'-numeric-'+mode,numericProject(boardId,{mode}).project,boardId==='waveshare-esp32-s3-eth'?'usb':'uart']);
 for(const boardId of NUMERIC_BOARDS.filter(id=>!id.startsWith('arduino')))cases.push([boardId+'-numeric-mqtt',numericProject(boardId,{mqtt:true}).project,boardId==='waveshare-esp32-s3-eth'?'usb':'uart']);
+for(const network of ['wifi','router']){
+ const project=addHardware(voiceProject(),catalog.modules.find(m=>m.id==='clex.hardware.'+network),catalog);
+ if(network==='wifi')project.components.at(-1).parameters.ssid='Voice build test';
+ if(network==='router')Object.assign(project.components.at(-1).parameters,{staSsid:'Voice build test',staPassword:'test-wan-key',apPassword:'test-lan-key',adminPassword:'test-admin-key'});
+ cases.push(['p4-voice-'+network,project,'uart']);
+}
 const temporary = mkdtempSync(join(tmpdir(), 'clex-firmware-parity-'));
 try {
   for (const [name, project, consoleMode] of cases) {

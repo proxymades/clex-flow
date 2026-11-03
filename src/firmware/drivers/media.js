@@ -1,11 +1,12 @@
+import {VOICE_MODULE} from '../../voice/model.js';
 import { hardwareProvider } from '../../hardware/resources.js';
 import { es8311I2s } from './esp-idf/es8311-i2s.js';
 import { ov5647Csi } from './esp-idf/ov5647-csi.js';
 export const MEDIA_TYPES='enum { CLEX_EVENT_MEDIA=3 };\ntypedef struct { bool success; uint32_t frames,width,height,bytes; char error[128]; } clex_media_snapshot_t;\ntypedef struct { uint16_t node; uint32_t frequency_hz,duration_ms; unsigned volume; } clex_media_command_t;';
 const drivers={'esp-idf':{'es8311-i2s':es8311I2s,'ov5647-csi':ov5647Csi}};
 export function mediaFirmware(project,catalog,nodes,index) {
- const board=catalog.boards.find(board=>board.id===project.boardId),components=project.components.filter(component=>['audio','camera'].includes(catalog.modules.find(module=>module.id===component.moduleId)?.hardwareInterface?.family));
- const owned=nodes.filter(node=>['clex.logic.tone','clex.logic.camera-capture'].includes(node.moduleId));
+ const board=catalog.boards.find(board=>board.id===project.boardId),components=project.components.filter(component=>component.moduleId!==VOICE_MODULE&&['audio','camera'].includes(catalog.modules.find(module=>module.id===component.moduleId)?.hardwareInterface?.family));
+ const owned=nodes.filter(node=>['clex.logic.tone','clex.logic.camera-capture'].includes(node.moduleId)&&!project.components.some(c=>c.id===node.parameters.componentId&&c.moduleId===VOICE_MODULE));
  if(!components.length)return {enabled:false,source:'',initialize:'',features:[],expressions:new Map(),textSizes:new Map(),dispatch:[],eventModules:new Set(),operations:new Map()};
  const expressions=new Map(),textSizes=new Map(),operations=new Map();
  const variables=owned.map(node=>{const i=index.get(node.id),name='media_value_'+i;expressions.set(node.id,{success:name+'.success',error:name+'.error',frames:name+'.frames',width:name+'.width',height:name+'.height',bytes:name+'.bytes'});textSizes.set(node.id,{error:128});return `static clex_media_snapshot_t ${name};`;});

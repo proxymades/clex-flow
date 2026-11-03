@@ -21,3 +21,7 @@ ESP-IDF, пользовательский Python и macOS frameworks не коп
 ## Встроенный компонент прошивки MQTT
 
 В пакет приложения и экспортируемые MQTT-проекты включены исходники Espressif ESP-MQTT 1.1.0 под Apache-2.0. [Лицензия](../src/firmware/components/mqtt/LICENSE), [источник и изменения](../src/firmware/components/mqtt/CLEX-PATCHES.md). Этот компонент не является npm- или Cargo-зависимостью и учитывается отдельно от приведенного выше списка lockfiles.
+
+## Голосовой компонент
+
+Подготовка голосовой прошивки загружает ESP-SR 2.6.1 с моделями Espressif и esp_codec_dev 1.5.7 через ESP-IDF Component Manager. ESP-SR распространяется по ESPRESSIF MIT License для использования на продуктах Espressif, esp_codec_dev – по Apache-2.0. Исходные архивы и лицензии сохраняются менеджером компонентов. Эти зависимости не включены в приложение; их лицензии не заменяют лицензию оригинальных файлов CLEX Flow.

@@ -486,6 +486,27 @@ fn write_project(dir: &PathBuf, spec: &Specification) -> Result<(), String> {
             write_source(&dir.join("partitions.csv"), partitions)?;
         }
     }
+    if spec
+        .feature_runtimes
+        .iter()
+        .any(|feature| feature == "voice-p4")
+    {
+        let key = if spec
+            .feature_runtimes
+            .iter()
+            .any(|feature| feature == "router-ota-esp32p4")
+        {
+            "otaPartitions"
+        } else {
+            "partitions"
+        };
+        write_source(
+            &dir.join("partitions.csv"),
+            profiles["voice-p4"][key]
+                .as_str()
+                .ok_or("Нет раздела голосовой модели")?,
+        )?;
+    }
     Ok(())
 }
 #[cfg(unix)]
@@ -979,7 +1000,15 @@ pub fn idf_build(
                     "build/flash_args",
                 ]
             };
-            for &path in artifacts {
+            let mut artifacts = artifacts.to_vec();
+            if spec
+                .feature_runtimes
+                .iter()
+                .any(|feature| feature == "voice-p4")
+            {
+                artifacts.push("build/srmodels/srmodels.bin");
+            }
+            for &path in &artifacts {
                 let file = dir.join(path);
                 let bytes = fs::read(&file)
                     .map_err(|e| format!("Не найден результат сборки {path}: {e}"))?;
@@ -1130,7 +1159,7 @@ pub fn idf_flash(
 const MONITOR: &str = r#"import sys, serial
 p=serial.Serial()
 p.port=sys.argv[1]
-p.baudrate=115200
+p.baudrate=int(sys.argv[2]) if len(sys.argv)>2 else 115200
 p.timeout=0.2
 p.dtr=False
 p.rts=False
@@ -1149,7 +1178,12 @@ pub fn idf_monitor(
     state: tauri::State<'_, Service>,
     id: String,
     port: String,
+    baud: Option<u32>,
 ) -> Result<(), String> {
+    let baud = baud.unwrap_or(115200);
+    if ![115200, 460800].contains(&baud) {
+        return Err("Некорректная скорость монитора".into());
+    }
     let environment = env_from(&state)?;
     let service = state.0.clone();
     let inner = service.clone();
@@ -1180,7 +1214,7 @@ pub fn idf_monitor(
                 "monitor",
                 "running",
                 "system",
-                &format!("Открываем монитор {port}, 115200 бод"),
+                &format!("Открываем монитор {port}, {baud} бод"),
                 None,
             );
             if environment.arduino.is_some() {
@@ -1204,7 +1238,7 @@ pub fn idf_monitor(
                 .map(|_| None);
             }
             let mut cmd = command(&environment);
-            cmd.args(["-u", "-c", MONITOR, &port]);
+            cmd.args(["-u", "-c", MONITOR, &port, &baud.to_string()]);
             execute(&app, &inner, &id, "monitor", cmd, &cancel).map(|_| None)
         })();
         let result = if cancel.load(Ordering::SeqCst) {

@@ -1,0 +1,71 @@
+{
+  "id": "clex.hardware.voice",
+  "version": "1.0.0",
+  "kind": "hardware",
+  "name": "Голосовое управление",
+  "description": "Распознаёт собственные короткие команды через микрофон платы. Записи и модель настраиваются в мастере.",
+  "category": "audio",
+  "categoryName": "Аудио",
+  "icon": "Mic",
+  "color": "#a78bfa",
+  "visual": {
+    "svg": "voice.svg",
+    "width": 250,
+    "height": 185
+  },
+  "terminals": [],
+  "inputs": [],
+  "outputs": [],
+  "parameters": {
+    "interfaceId": {
+      "label": "Аудиоинтерфейс",
+      "type": "hardware-interface",
+      "default": ""
+    },
+    "profile": {
+      "label": "Голосовые команды",
+      "type": "text",
+      "default": "",
+      "maxLength": 1000000
+    },
+    "windowMs": {
+      "label": "Окно команд, мс",
+      "type": "number",
+      "min": 5000,
+      "max": 120000,
+      "default": 20000
+    },
+    "volume": {
+      "label": "Громкость сигнала, %",
+      "type": "number",
+      "min": 0,
+      "max": 100,
+      "default": 85
+    },
+    "gainDb": {
+      "label": "Усиление микрофона, дБ",
+      "type": "number",
+      "min": 0,
+      "max": 42,
+      "step": 6,
+      "default": 24
+    }
+  },
+  "constraints": {},
+  "softwareInterface": "voice",
+  "hardwareInterface": {
+    "family": "audio",
+    "interface": "i2s"
+  },
+  "compatibility": {
+    "projectFormat": 3,
+    "targets": [
+      "esp32p4"
+    ],
+    "espIdf": "5.4.4"
+  },
+  "firmware": {
+    "status": "implemented",
+    "generatorKey": "voice-interface"
+  }
+}

@@ -1,3 +1,4 @@
+import {VOICE_LOGIC,voicePorts} from '../voice/model.js';
 import {numericLogicIssues} from './numeric.js';
 import {relayChannelCount} from '../relay/model.js';
 import {mqttLogicIssues} from '../mqtt/model.js';
@@ -19,6 +20,7 @@ export function nodePorts(node, catalog, project) {
   const active=port=>!port.when||node.parameters[port.when.field]===port.when.value;
   let inputs = (module?.inputs || []).filter(active);
   let outputs = (module?.outputs || []).filter(active);
+  if(node.moduleId===VOICE_LOGIC&&project)outputs=[...voicePorts(project.components.find(c=>c.id===node.parameters.componentId)),...outputs];
   if(node.moduleId==='clex.logic.espnow-receive'&&node.parameters.transferType==='command')outputs=outputs.map(port=>port.readyOn==='messageReceived'?{...port,readyOn:'commandReceived'}:port);
   if (module?.editor === 'screen' && project) {
     const screen = screenFor(project, node.parameters.componentId);

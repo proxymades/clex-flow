@@ -1,3 +1,4 @@
+import {voiceFirmware,VOICE_TYPES} from './drivers/voice.js';
 import {numericFirmware} from './drivers/numeric.js';
 import {NUMERIC_MODULES} from '../logic/numeric.js';
 import {xgzpFirmware} from './drivers/xgzp6847d.js';
@@ -33,6 +34,8 @@ const implementationVersions = {
   'clex.logic.espnow-ack':'2.0.0',
   'clex.logic.espnow-control':'2.0.0',
 };
+implementationKeys['clex.hardware.voice']='voice-interface';
+implementationKeys['clex.logic.voice']='voice';
 implementationKeys['clex.hardware.relay']='relay';
 implementationKeys['clex.logic.relay']='relay-control';
 implementationKeys['clex.hardware.mqtt']='mqtt-interface';
@@ -79,17 +82,19 @@ export function generateFirmware(project, catalog, consoleMode = 'usb') {
   const espnow=espNowFirmware(project,nodes,index,cString,Boolean(network.runtime),board.target);
   const stepper=stepperFirmware(project,nodes,index);
   const media=mediaFirmware(project,catalog,nodes,index);
+  const voice=voiceFirmware(project,catalog,nodes,index,cString);
   const stopwatch=stopwatchFirmware(nodes,index);
   const buses=peripheralBuses(project,catalog);
-  const events=Boolean(network.runtime || media.enabled);
-  const eventModules=new Set([...NUMERIC_MODULES,...network.eventModules,...media.eventModules,...stopwatch.eventModules,...espnow.eventModules,...gpioEdge.eventModules,...mqtt.eventModules,'clex.logic.router','clex.logic.wifi','clex.logic.xgzp6847d','clex.logic.temperature','clex.logic.stepper','clex.logic.select-number']);
-  const eventTypes=media.enabled ? MEDIA_TYPES+'\n'+(network.types ? network.types.replace('clex_ethernet_snapshot_t ethernet;', 'clex_media_snapshot_t media; clex_ethernet_snapshot_t ethernet;') : 'typedef struct { uint16_t node; uint8_t kind,flags; uint32_t generation; union { clex_media_snapshot_t media; } payload; } clex_flow_event_t;') : network.types;
-  const featureRuntimes=[...new Set([...(graphics.features||[]),...media.features,...espnow.features,...router.features,...wifi.features,...temperature.features,...xgzp.features,...mqtt.features,...(stepper.enabled?["stepper-"+board.target]:[])])].sort();
+  const events=Boolean(network.runtime || media.enabled || voice.enabled);
+  const eventModules=new Set([...NUMERIC_MODULES,...network.eventModules,...media.eventModules,...voice.eventModules,...stopwatch.eventModules,...espnow.eventModules,...gpioEdge.eventModules,...mqtt.eventModules,'clex.logic.router','clex.logic.wifi','clex.logic.xgzp6847d','clex.logic.temperature','clex.logic.stepper','clex.logic.select-number']);
+  let eventTypes=media.enabled ? MEDIA_TYPES+'\n'+(network.types ? network.types.replace('clex_ethernet_snapshot_t ethernet;', 'clex_media_snapshot_t media; clex_ethernet_snapshot_t ethernet;') : 'typedef struct { uint16_t node; uint8_t kind,flags; uint32_t generation; union { clex_media_snapshot_t media; } payload; } clex_flow_event_t;') : network.types;
+  if(voice.enabled)eventTypes=VOICE_TYPES+'\n'+(eventTypes?eventTypes.replace('union {','union { clex_voice_event_t voice;'):'typedef struct {uint16_t node;uint8_t kind,flags;uint32_t generation;union {clex_voice_event_t voice;} payload;} clex_flow_event_t;');
+  const featureRuntimes=[...new Set([...(graphics.features||[]),...media.features,...voice.features,...espnow.features,...router.features,...wifi.features,...temperature.features,...xgzp.features,...mqtt.features,...(stepper.enabled?["stepper-"+board.target]:[])])].sort();
   const extraProfiles=featureRuntimes.map(feature=>{const profile=profiles[feature];if(!profile || profile.target!==board.target)throw new Error('Неподдерживаемая комбинация драйвера и платы.');return profile;});
   const componentNames=[...new Set(extraProfiles.flatMap(profile=>profile.components||[]))].sort();
   const componentFiles=Object.assign({},...componentNames.map(name=>{if(!componentPackages[name])throw new Error('Отсутствуют исходники компонента '+name);return componentPackages[name].files;}));
   const extraConfig=[...new Set(extraProfiles.filter(profile=>profile.config.trim()).flatMap(profile=>profile.config.trim().split('\n')))].join('\n')+(featureRuntimes.length?'\n':'');
-  if (!graphics.runtime && !network.runtime && !media.enabled && !stopwatch.enabled && !espnow.enabled && !gpioEdge.enabled && !stepper.enabled && !router.enabled && !wifi.enabled && !temperature.enabled && !xgzp.enabled && !numeric.enabled && !mqtt.enabled && (!nodes.some(node=>node.moduleId==='clex.logic.timer') || !project.logic.edges.some(edge=>edge.dataType==='event'))) throw new Error('Добавьте таймер и соедините его такт с действием.');
+  if (!graphics.runtime && !network.runtime && !media.enabled && !voice.enabled && !stopwatch.enabled && !espnow.enabled && !gpioEdge.enabled && !stepper.enabled && !router.enabled && !wifi.enabled && !temperature.enabled && !xgzp.enabled && !numeric.enabled && !mqtt.enabled && (!nodes.some(node=>node.moduleId==='clex.logic.timer') || !project.logic.edges.some(edge=>edge.dataType==='event'))) throw new Error('Добавьте таймер и соедините его такт с действием.');
   for (const element of [...nodes,...components]) {
     const module = catalog.modules.find(module=>module.id===element.moduleId);
     if (!module || module.version !== (implementationVersions[module.id] || '1.0.0') || element.moduleVersion !== module.version || ((module.display && !supportsDisplayDriver(module.display, board.platform)) || (!module.display && (!implementationKeys[module.id] || implementationKeys[module.id] !== module.firmware?.generatorKey)))) throw new Error(`Нет проверенной реализации генератора для ${element.moduleId} v${element.moduleVersion}.`);
@@ -100,16 +105,16 @@ export function generateFirmware(project, catalog, consoleMode = 'usb') {
     if(xgzp.expressions.has(edge.source))return xgzp.expressions.get(edge.source)[edge.sourceHandle];
     if(temperature.expressions.has(edge.source))return temperature.expressions.get(edge.source)[edge.sourceHandle];
     if(stepper.expressions.has(edge.source))return stepper.expressions.get(edge.source)[edge.sourceHandle];
-    const registered=mqtt.expressions.get(edge.source)?.[edge.sourceHandle] || wifi.expressions.get(edge.source)?.[edge.sourceHandle] || router.expressions.get(edge.source)?.[edge.sourceHandle] || gpioEdge.expressions.get(edge.source)?.[edge.sourceHandle] || espnow.expressions.get(edge.source)?.[edge.sourceHandle] || network.expressions.get(edge.source)?.[edge.sourceHandle] || media.expressions.get(edge.source)?.[edge.sourceHandle] || stopwatch.expressions.get(edge.source)?.[edge.sourceHandle];if(registered)return registered;
+    const registered=voice.expressions.get(edge.source)?.[edge.sourceHandle] || mqtt.expressions.get(edge.source)?.[edge.sourceHandle] || wifi.expressions.get(edge.source)?.[edge.sourceHandle] || router.expressions.get(edge.source)?.[edge.sourceHandle] || gpioEdge.expressions.get(edge.source)?.[edge.sourceHandle] || espnow.expressions.get(edge.source)?.[edge.sourceHandle] || network.expressions.get(edge.source)?.[edge.sourceHandle] || media.expressions.get(edge.source)?.[edge.sourceHandle] || stopwatch.expressions.get(edge.source)?.[edge.sourceHandle];if(registered)return registered;
     const producer = nodes[index.get(edge.source)];
     if (edge.sourceHandle==='interval' && producer.moduleId==='clex.logic.timer') return `${producer.parameters.intervalMs}.0`;
     if (['boolean', 'number'].includes(edge.dataType)) return `value_${index.get(edge.source)}`;
     if (edge.dataType==='text') return `text_${index.get(edge.source)}`;
     throw new Error('Выход значения не поддерживается генератором.');
   }
-  const runtimeTextSizes = new Map([...numeric.textSizes,...xgzp.textSizes,...mqtt.textSizes,...temperature.textSizes,...router.textSizes,...wifi.textSizes,...network.textSizes, ...media.textSizes, ...stopwatch.textSizes,...espnow.textSizes,...stepper.textSizes]);
+  const runtimeTextSizes = new Map([...numeric.textSizes,...xgzp.textSizes,...mqtt.textSizes,...temperature.textSizes,...router.textSizes,...wifi.textSizes,...network.textSizes, ...media.textSizes,...voice.textSizes, ...stopwatch.textSizes,...espnow.textSizes,...stepper.textSizes]);
   const runtimeTextGlyphs = '0123456789.:_-/ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz ';
-  const runtimeGlyphsFor = id => stopwatch.textGlyphs.get(id) || runtimeTextGlyphs+(numeric.textGlyphs.get(id)||'')+(xgzp.textGlyphs.get(id)||'')+(temperature.textGlyphs.get(id)||'')+(espnow.textGlyphs.get(id)||'')+(stepper.textGlyphs.get(id)||'')+(mqtt.textGlyphs.get(id)||'');
+  const runtimeGlyphsFor = id => stopwatch.textGlyphs.get(id) || runtimeTextGlyphs+(voice.textGlyphs.get(id)||'')+(numeric.textGlyphs.get(id)||'')+(xgzp.textGlyphs.get(id)||'')+(temperature.textGlyphs.get(id)||'')+(espnow.textGlyphs.get(id)||'')+(stepper.textGlyphs.get(id)||'')+(mqtt.textGlyphs.get(id)||'');
   const textLengths = new Map();
   const producerTextLength = edge => runtimeTextSizes.get(edge.source)?.[edge.sourceHandle] || textLength(nodes[index.get(edge.source)]);
   function textLength(node) {
@@ -183,6 +188,7 @@ export function generateFirmware(project, catalog, consoleMode = 'usb') {
     if(stepper.operations.has(node.id))operations.push(stepper.operations.get(node.id));
     if(espnow.operations.has(node.id)){const op=espnow.operations.get(node.id);operations.push(typeof op==='function'?op({inputEdge,dataExpression}):op);}
     if (media.operations.has(node.id)) operations.push(media.operations.get(node.id));
+    if (voice.operations.has(node.id)) operations.push(voice.operations.get(node.id));
     if (stopwatch.operations.has(node.id)) operations.push(stopwatch.operations.get(node.id));
     if (node.moduleId==='clex.logic.counter') operations.push(`  int64_t next = (int64_t)value_${i} + (${node.parameters.step}LL);`, `  value_${i} = (int32_t)(next > INT32_MAX ? INT32_MAX : next < INT32_MIN ? INT32_MIN : next);`);
     if (node.moduleId==='clex.logic.gpio-read') operations.push(`  value_${i} = input_stable_${h};`);
@@ -234,6 +240,7 @@ static atomic_uint dropped_events;
 ${mqtt.enabled?'static atomic_bool clex_flow_ready;\n':''}${declarations.join('\n')}
 ${network.source}${espnow.source?'\n'+espnow.source:''}${gpioEdge.source?'\n'+gpioEdge.source:''}
 ${media.source}
+${voice.source}
 ${stepper.source}
 ${router.source}${wifi.source?'\n'+wifi.source:''}
 ${temperature.source}${xgzp.source?'\n'+xgzp.source:''}${numeric.source?'\n'+numeric.source:''}
@@ -268,6 +275,7 @@ ${mqtt.enabled?'    if (!atomic_load(&clex_flow_ready)) { vTaskDelay(1); continu
 ${timers.map(({i})=>`        case ${i}: node_${i}(); break;`).join('\n')}
 ${network.dispatch.join('\n')}
 ${media.dispatch.join('\n')}
+${voice.dispatch.join('\n')}
         default: break;
       }
     }
@@ -291,6 +299,7 @@ ${gpioEdge.initialize?'\n'+gpioEdge.initialize:''}
 ${stopwatch.initialize ? stopwatch.initialize+'\n' : ''}  timer_queue = xQueueCreate(128, sizeof(${events?'clex_flow_event_t':'uint16_t'}));
   if (!timer_queue || xTaskCreate(flow_worker, "clex_flow", 8192, NULL, 5, NULL) != pdPASS) { ESP_LOGE("CLEX", "Cannot create worker"); abort(); }
 ${media.initialize}
+${voice.initialize}
 ${network.initialize}
 ${network.start}
 ${router.start}${wifi.initialize?'\n'+wifi.initialize:''}
@@ -304,19 +313,19 @@ ${timers.map(({node,i})=>`  static const uint16_t timer_node_${i} = ${i};
 ${mqtt.enabled?'  atomic_store(&clex_flow_ready, true);\n':''}  ESP_LOGI("CLEX", "Flow ready: ${nodes.length} blocks, ${timers.length} timers");
 }
 `;
-  if (new TextEncoder().encode(source).length > 2 * 1024 * 1024) throw new Error('Исходники прошивки превышают 2 МБ. Уменьшите изображения.');
+  if (new TextEncoder().encode(source).length > 2 * 1024 * 1024) throw new Error('Исходники прошивки превышают 2 МБ. Уменьшите изображения или число голосовых образцов.');
   const flashSize = board.firmware.flashSizeMb;
   const config = `CONFIG_IDF_TARGET="${board.target}"\nCONFIG_ESPTOOLPY_FLASHSIZE_${flashSize}MB=y\nCONFIG_ESPTOOLPY_FLASHMODE_DIO=y\nCONFIG_FREERTOS_HZ=1000\nCONFIG_LOG_COLORS=n\nCONFIG_ESP_CONSOLE_${consoleMode==='usb'?'USB_SERIAL_JTAG':'UART_DEFAULT'}=y\nCONFIG_ESP_CONSOLE_SECONDARY_NONE=y\n`;
   const graphicsFiles = graphics.runtime ? { ...GRAPHICS_FILES, 'main/idf_component.yml': 'dependencies:\n  lvgl/lvgl: "=9.2.2"\n' } : {};
   const requirements='esp_driver_gpio esp_timer freertos log' + (graphics.runtime?' esp_lcd esp_driver_spi lvgl__lvgl':'') + (network.runtime?' esp_driver_spi '+NETWORK_DEPENDENCIES:'');
   const dependencyList=[...new Set([...requirements.split(' '),...extraProfiles.flatMap(profile=>profile.requires)])].join(' ');
-  const managed=Object.assign({},...(graphics.runtime?[{'lvgl/lvgl':'9.2.2'}]:[]),...extraProfiles.map(profile=>Object.fromEntries(Object.entries(profile.dependencies).sort(([a],[b])=>a.localeCompare(b)))));
+  const managed=Object.assign({},...(graphics.runtime?[{'lvgl/lvgl':'9.2.2'}]:[]),...extraProfiles.map(profile=>Object.fromEntries(Object.entries(profile.dependencies).sort(([a],[b])=>a<b?-1:a>b?1:0))));
   const manifest=Object.keys(managed).length?{'main/idf_component.yml':'dependencies:\n'+Object.entries(managed).map(([name,version])=>'  '+name+': "='+version+'"\n').join('')}:{};
   return { networkRuntime:network.runtime, graphicsRuntime: graphics.runtime, boardId: board.id, target: board.target, boardRevision, featureRuntimes, consoleMode, mainC: source, warnings: issues.filter(issue=>issue.severity==='warning'), files: {
     ...graphicsFiles, ...manifest, ...componentFiles,
     'CMakeLists.txt': 'cmake_minimum_required(VERSION 3.16)\nset(COMPONENTS main)\n'+extraProfiles.map(p=>p.cmakePrelude||'').join('')+'include($ENV{IDF_PATH}/tools/cmake/project.cmake)\nproject(clex_flow_firmware)\n',
     'main/CMakeLists.txt': 'idf_component_register(SRCS "main.c"' + (graphics.runtime?' '+GRAPHICS_SOURCES:'') + ' INCLUDE_DIRS "." REQUIRES '+dependencyList+')\n',
-    ...((router.enabled||wifi.enabled||network.partitions||espnow.enabled)?{'partitions.csv':router.enabled?router.partitions:wifi.enabled?WIFI_PARTITIONS:network.partitions||'nvs,data,nvs,0x9000,0x6000\nphy_init,data,phy,0xf000,0x1000\nfactory,app,factory,0x10000,0x300000\n'}:{}),
+    ...((voice.enabled||router.enabled||wifi.enabled||network.partitions||espnow.enabled)?{'partitions.csv':voice.enabled?(featureRuntimes.includes('router-ota-esp32p4')?profiles['voice-p4'].otaPartitions:profiles['voice-p4'].partitions):router.enabled?router.partitions:wifi.enabled?WIFI_PARTITIONS:network.partitions||'nvs,data,nvs,0x9000,0x6000\nphy_init,data,phy,0xf000,0x1000\nfactory,app,factory,0x10000,0x300000\n'}:{}),
     'main/main.c': source, 'sdkconfig.defaults': config + (boardRevision ? board.firmware.revisionConfigs[boardRevision] : '') + (graphics.runtime ? GRAPHICS_CONFIG : '') + network.config + extraConfig + (router.boardConfig||'') + wifi.boardConfig,
   } };
 }

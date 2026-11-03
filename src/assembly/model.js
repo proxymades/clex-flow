@@ -1,3 +1,4 @@
+import {VOICE_MODULE,voiceIssues} from '../voice/model.js';
 import {isXgzp,xgzpPowerProblem,i2cConnectionProblem,i2cClaimAllows,xgzpIssues} from '../pressure/model.js';
 import {WIFI_MODULE,wifiSupported,wifiIssues} from '../wifi/model.js';
 import {RELAY_MODULE,relayChannelCount,resolveRelayModule,relayParameters,relaySupplyVoltage,relayVoltageLabel,relayPowerProblem,relayPowerWarning} from '../relay/model.js';
@@ -170,6 +171,7 @@ export function addHardware(project, module, catalog = null) {
   while (project.components.some(component => component.name === instanceName(number) || component.name === `${module.name} ${number}`)) number++;
   const name = instanceName(number);
   const parameters=Object.fromEntries(Object.entries(module.parameters).map(([key,parameter])=>[key,parameter.default]));
+  if(module.id===VOICE_MODULE&&project.components.some(c=>c.moduleId===VOICE_MODULE))throw new Error('Голосовой компонент уже добавлен.');
   if(module.id===WIFI_MODULE){if(!catalog||!wifiSupported(boardFor(project,catalog)))throw new Error('У платы нет поддерживаемого Wi-Fi Station-интерфейса.');if(project.components.some(c=>[WIFI_MODULE,ROUTER_MODULE,ESPNOW_MODULE].includes(c.moduleId)))throw new Error('Радио платы уже используется. Оставьте Wi-Fi, маршрутизатор или ESP-NOW.');}
   if([ROUTER_MODULE,ESPNOW_MODULE].includes(module.id)&&project.components.some(c=>c.moduleId===WIFI_MODULE))throw new Error('Радио платы уже используется компонентом Wi-Fi.');
   if(module.id===MQTT_MODULE){if(!catalog||!mqttSupported(boardFor(project,catalog)))throw new Error('Для платы нет поддерживаемого сетевого интерфейса MQTT.');if(project.components.filter(component=>component.moduleId===MQTT_MODULE).length>=MAX_MQTT_CONNECTIONS)throw new Error('В проекте допускается до '+MAX_MQTT_CONNECTIONS+' MQTT-подключений.');}
@@ -223,7 +225,7 @@ export function validateAssembly(project, catalog) {
   const issues = [];
   const issue = (severity, code, message, fields = {}) => issues.push({ severity, code, message, ...fields });
   const board = boardFor(project, catalog);
-  issues.push(...resourceIssues(project,catalog),...stepperIssues(project,catalog));
+  issues.push(...resourceIssues(project,catalog),...stepperIssues(project,catalog),...voiceIssues(project));
   if(project.components.filter(c=>c.moduleId===ESPNOW_MODULE).length>1)issue('error','espnow-duplicate','В проекте поддерживается один ESP-NOW-интерфейс платы.');
   if (!board) { issue('error', 'board-missing', 'Плата отсутствует в каталоге.'); return issues; }
   if (!board.pins.length) issue('error', 'board-generic', 'Выберите конкретную плату. Общая ESP32-S3 не имеет распиновки.');

@@ -20728,3 +20728,7 @@ Generated firmware uses Espressif esp_lcd_jd9365, esp_lcd_touch_gt911, esp_codec
 Source: https://github.com/espressif/esp-mqtt/tree/v1.1.0
 
 License: Apache-2.0. Bundled source and full license: `src/firmware/components/mqtt/`. Local modifications are documented in `CLEX-PATCHES.md` in that directory. The firmware component and its license are embedded together in generated projects.
+
+## Espressif speech recognition
+
+Generated voice firmware resolves ESP-SR 2.6.1, including the WakeNet model, from the ESP-IDF Component Registry. ESP-SR uses the ESPRESSIF MIT License for use on Espressif products. Its source archive and license are managed by ESP-IDF Component Manager. ESP-SR and its models are firmware dependencies and are not embedded in the desktop application.

@@ -301,6 +301,8 @@ dependencies = [
 name = "clex-flow"
 version = "0.1.10"
 dependencies = [
+ "base64 0.22.1",
+ "cc",
  "dunce",
  "libc",
  "reqwest",
