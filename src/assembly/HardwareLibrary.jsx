@@ -1,3 +1,4 @@
+import MicAudioLines from '../components/MicAudioLines.jsx';
 import { Mic } from 'lucide-react';
 import { moduleSupportsBoard } from '../catalog/compatibility.js';
 import { formatCount } from '../utils/plural.js';
@@ -5,7 +6,7 @@ import { useState } from 'react';
 import BoardChoice from '../components/BoardChoice.jsx';
 import BoardPicker from '../components/BoardPicker.jsx';
 import { Gauge, Wifi, ToggleRight, RotateCw, Search, Plus, Lightbulb, MousePointer2, Box, Monitor, Network , Camera, Volume2, Radio } from 'lucide-react';
-const icons = { Mic, Gauge, Wifi, ToggleRight, RotateCw, Lightbulb, MousePointer2, Monitor, Network, Camera, Volume2, Radio };
+const icons = { MicAudioLines, Mic, Gauge, Wifi, ToggleRight, RotateCw, Lightbulb, MousePointer2, Monitor, Network, Camera, Volume2, Radio };
 
 export default function HardwareLibrary({ boards, modules, board, busy, onBoard, onAdd }) {
   const [choosingBoard, setChoosingBoard] = useState(false);

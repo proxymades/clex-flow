@@ -478,9 +478,14 @@
       ],
       "capabilities": [
         "digital-input",
-        "digital-output"
+        "digital-output",
+        "analog-input"
       ],
-      "sharedWith": "camera"
+      "sharedWith": "camera",
+      "adc": {
+        "unit": 1,
+        "channel": 0
+      }
     },
     {
       "id": "P26",
@@ -496,9 +501,14 @@
       ],
       "capabilities": [
         "digital-input",
-        "digital-output"
+        "digital-output",
+        "analog-input"
       ],
-      "sharedWith": "camera"
+      "sharedWith": "camera",
+      "adc": {
+        "unit": 1,
+        "channel": 1
+      }
     },
     {
       "id": "P27",
@@ -514,10 +524,15 @@
       ],
       "capabilities": [
         "digital-input",
-        "digital-output"
+        "digital-output",
+        "analog-input"
       ],
       "reservedReason": "Загрузочный strapping-контакт; запрещен политикой MVP",
-      "sharedWith": "camera"
+      "sharedWith": "camera",
+      "adc": {
+        "unit": 1,
+        "channel": 2
+      }
     },
     {
       "id": "P28",
@@ -714,6 +729,12 @@
         2,
         3
       ]
+    },
+    "i2s": {
+      "hosts": [
+        0,
+        1
+      ]
     }
   },
   "networkInterfaces": [
@@ -737,7 +758,9 @@
       "phyAddress": 1
     }
   ],
-  "resources": { "gptimer": 4 },
+  "resources": {
+    "gptimer": 4
+  },
   "firmware": {
     "flashSizeMb": 16,
     "consoleModes": [
@@ -783,5 +806,8 @@
       "mixed"
     ],
     "maxClients": 10
+  },
+  "voice": {
+    "psramMb": 8
   }
 }

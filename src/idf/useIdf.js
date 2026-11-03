@@ -141,7 +141,7 @@ export default function useIdf(project) {
   },[hasEspNow,compatible,target,ready,checking,sdkLoading,readingMac,running,ports,port,macKey,readMac]);
   const startBuild=()=>preview&&fingerprint&&compatible?start('build',{spec:{boardId:preview.boardId,boardRevision:preview.boardRevision,featureRuntimes:preview.featureRuntimes,consoleMode:preview.consoleMode,mainC:preview.mainC,graphicsRuntime:preview.graphicsRuntime,networkRuntime:preview.networkRuntime,fingerprint}}):Promise.resolve(false);
   const startFlash=(confirmedPort=port)=>build&&fingerprint&&port&&confirmedPort===port?start('flash',{buildId:build.id,fingerprint,port}):Promise.resolve(false);
-  const monitorBaud=target==='esp32p4'&&project?.components.some(c=>c.moduleId==='clex.hardware.voice')?460800:115200;
+  const monitorBaud=['esp32p4','esp32s3'].includes(target)&&project?.components.some(c=>c.moduleId==='clex.hardware.voice')?460800:115200;
   const startMonitor=()=>port?start('monitor',{port,baud:monitorBaud}):Promise.resolve(false);
   const cancel=async()=>{if(!current.current)return;try{await invoke('idf_cancel',{id:current.current.id});setJob(value=>value && !terminal.includes(value.status)?{...value,status:'stopping'}:value);}catch(error){setError(String(error));}};
   const setConsole=value=>{if(!['usb','uart'].includes(value))return;localStorage.setItem('clex-flow:console',value);setConsoleMode(value);};

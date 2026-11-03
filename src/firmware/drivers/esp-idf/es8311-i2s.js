@@ -31,10 +31,11 @@ static void ${s}_worker(void *arg){
   if(xQueueReceive(${s}_commands,&command,portMAX_DELAY)!=pdTRUE)continue;
   clex_media_snapshot_t value={0};esp_err_t result=initialized;
   if(result==ESP_OK && esp_codec_dev_set_out_vol(${s}_codec,command.volume)!=0)result=ESP_FAIL;
-  uint32_t samples=command.duration_ms*16U, phase=0;int16_t pcm[256];
+  uint32_t samples=command.pcm?command.samples:command.duration_ms*16U, phase=0;int16_t pcm[256];
   for(uint32_t offset=0;result==ESP_OK && offset<samples;){
    uint32_t count=samples-offset<256?samples-offset:256;
-   for(uint32_t j=0;j<count;j++){phase=(phase+command.frequency_hz)%16000;int32_t triangle=phase<8000?(int32_t)phase:(int32_t)(16000-phase);pcm[j]=(int16_t)((triangle*8000/8000)-4000);}
+   if(command.pcm)memcpy(pcm,command.pcm+offset,count*sizeof(int16_t));
+   else for(uint32_t j=0;j<count;j++){phase=(phase+command.frequency_hz)%16000;int32_t triangle=phase<8000?(int32_t)phase:(int32_t)(16000-phase);pcm[j]=(int16_t)((triangle*8000/8000)-4000);}
    if(esp_codec_dev_write(${s}_codec,pcm,count*sizeof(int16_t))!=0)result=ESP_FAIL;
    offset+=count;
   }
@@ -48,8 +49,12 @@ static void ${s}_start(void){
  ${s}_commands=xQueueCreate(4,sizeof(clex_media_command_t));
  if(!${s}_commands || xTaskCreate(${s}_worker,"clex_audio",6144,NULL,4,NULL)!=pdPASS){ESP_LOGE("CLEX_AUDIO","Cannot start audio worker");abort();}
 }
-static bool ${s}_request(uint16_t node,uint32_t frequency,uint32_t duration,unsigned volume){
+static bool __attribute__((unused)) ${s}_request(uint16_t node,uint32_t frequency,uint32_t duration,unsigned volume){
  clex_media_command_t command={.node=node,.frequency_hz=frequency,.duration_ms=duration,.volume=volume};return xQueueSend(${s}_commands,&command,0)==pdTRUE;
+}
+static bool __attribute__((unused)) ${s}_play_request(uint16_t node,const int16_t *pcm,size_t samples,unsigned volume){
+ if(!pcm||samples<800||samples>80000||volume>100)return false;
+ clex_media_command_t command={.node=node,.pcm=pcm,.samples=samples,.volume=volume};return xQueueSend(${s}_commands,&command,0)==pdTRUE;
 }
 `;
 }

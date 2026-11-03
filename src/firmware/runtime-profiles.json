@@ -335,5 +335,22 @@
     "config": "CONFIG_CODEC_ES8311_SUPPORT=y\nCONFIG_CODEC_I2C_BACKWARD_COMPATIBLE=n\nCONFIG_SR_WN_WN10_RU_PRIVETESP=y\nCONFIG_MODEL_IN_FLASH=y\nCONFIG_SR_NSN_WEBRTC=y\nCONFIG_SR_VADN_WEBRTC=y\nCONFIG_ESP_CONSOLE_UART_DEFAULT=n\nCONFIG_ESP_CONSOLE_UART_CUSTOM=y\nCONFIG_ESP_CONSOLE_UART_TX_GPIO=37\nCONFIG_ESP_CONSOLE_UART_RX_GPIO=38\nCONFIG_ESP_CONSOLE_UART_BAUDRATE=460800\nCONFIG_ESP_MAIN_TASK_STACK_SIZE=8192\nCONFIG_PARTITION_TABLE_CUSTOM=y\nCONFIG_PARTITION_TABLE_CUSTOM_FILENAME=\"partitions.csv\"\nCONFIG_SPIRAM=y\nCONFIG_SPIRAM_SPEED_200M=y\nCONFIG_SPIRAM_USE_MALLOC=y\nCONFIG_IDF_EXPERIMENTAL_FEATURES=y\n",
     "partitions": "nvs,data,nvs,0x9000,0x6000\nphy_init,data,phy,0xf000,0x1000\nfactory,app,factory,0x10000,0x600000\nmodel,data,,0x610000,0x100000\n",
     "otaPartitions": "nvs,data,nvs,0x9000,0x5000\notadata,data,ota,0xe000,0x2000\nphy_init,data,phy,0x10000,0x1000\nota_0,app,ota_0,0x20000,0x600000\nota_1,app,ota_1,0x620000,0x600000\nmodel,data,,0xc20000,0x100000\n"
+  },
+  "voice-s3": {
+    "target": "esp32s3",
+    "dependencies": {
+      "espressif/esp_codec_dev": "1.5.7",
+      "espressif/esp-sr": "2.6.1"
+    },
+    "components": [
+      "clex_voice"
+    ],
+    "requires": [
+      "clex_voice",
+      "esp_driver_i2c"
+    ],
+    "config": "CONFIG_CODEC_ES8311_SUPPORT=y\nCONFIG_CODEC_I2C_BACKWARD_COMPATIBLE=n\nCONFIG_SR_WN_WN10_RU_PRIVETESP=y\nCONFIG_MODEL_IN_FLASH=y\nCONFIG_SR_NSN_WEBRTC=y\nCONFIG_SR_VADN_WEBRTC=y\nCONFIG_ESP_CONSOLE_UART_BAUDRATE=460800\nCONFIG_ESP_MAIN_TASK_STACK_SIZE=8192\nCONFIG_PARTITION_TABLE_CUSTOM=y\nCONFIG_PARTITION_TABLE_CUSTOM_FILENAME=\"partitions.csv\"\nCONFIG_SPIRAM=y\nCONFIG_SPIRAM_MODE_OCT=y\nCONFIG_SPIRAM_SPEED_80M=y\nCONFIG_SPIRAM_USE_MALLOC=y\n",
+    "partitions": "nvs,data,nvs,0x9000,0x6000\nphy_init,data,phy,0xf000,0x1000\nfactory,app,factory,0x10000,0x500000\nmodel,data,,0x510000,0x100000\n",
+    "otaPartitions": "nvs,data,nvs,0x9000,0x5000\notadata,data,ota,0xe000,0x2000\nphy_init,data,phy,0x10000,0x1000\nota_0,app,ota_0,0x20000,0x300000\nota_1,app,ota_1,0x320000,0x300000\nmodel,data,,0x620000,0x100000\n"
   }
 }

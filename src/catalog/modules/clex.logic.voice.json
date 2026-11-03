@@ -6,7 +6,7 @@
   "description": "Передаёт отдельное событие для каждой команды выбранного голосового компонента.",
   "category": "audio",
   "categoryName": "Аудио",
-  "icon": "Mic",
+  "icon": "MicAudioLines",
   "color": "#a78bfa",
   "inputs": [],
   "outputs": [
@@ -38,7 +38,8 @@
       "id": "uncertain",
       "name": "Повторить команду",
       "type": "event",
-      "additional": true
+      "additional": true,
+      "description": "Срабатывает, когда команда неизвестна или распознана неуверенно во время приёма команд. Можно подключить блок «Воспроизвести запись» с просьбой повторить."
     },
     {
       "id": "closed",
@@ -69,7 +70,7 @@
   },
   "constraints": {
     "hardware": {
-      "kind": "peripheral",
+      "kind": "voice",
       "modules": [
         "clex.hardware.voice"
       ]
@@ -78,7 +79,8 @@
   "compatibility": {
     "projectFormat": 3,
     "targets": [
-      "esp32p4"
+      "esp32p4",
+      "esp32s3"
     ],
     "espIdf": "5.4.4"
   },

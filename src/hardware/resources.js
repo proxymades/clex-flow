@@ -1,5 +1,8 @@
+import {microphoneClaims} from '../microphone/model.js';
+import {VOICE_MODULE,SPEAKER_MODULE} from '../voice/model.js';
 import {externalI2cBuses} from '../pressure/model.js';
 export function hardwareProvider(component, module, board) {
+  if(module?.id===VOICE_MODULE)return component.parameters.microphoneId?null:board?.peripherals?.find(p=>p.id===component.parameters.interfaceId&&p.driverKey==='es8311-i2s')||null;
   if (!module?.hardwareInterface) return null;
   return board?.peripherals?.find(provider => provider.id === component.parameters.interfaceId && provider.family === module.hardwareInterface.family && provider.interface === module.hardwareInterface.interface) || null;
 }
@@ -7,7 +10,7 @@ export function resourceClaims(project, catalog) {
   const board = catalog.boards.find(board => board.id === project.boardId);
   const mounted = project.components.flatMap(component => {
     const module = catalog.modules.find(module => module.id === component.moduleId), provider = hardwareProvider(component,module,board);
-    return (provider?.resources || []).map(resource => ({...resource, componentId:component.id,name:component.name}));
+    return (provider?.resources || []).map(resource => ({...resource, componentId:component.id,name:component.name,moduleId:component.moduleId,providerId:provider.id,driverKey:provider.driverKey}));
   });
   const configured = (board?.peripherals || []).filter(provider=>provider.occupancySetting && project.boardSettings[provider.occupancySetting]==='connected' && !project.components.some(component=>hardwareProvider(component,catalog.modules.find(module=>module.id===component.moduleId),board)?.id===provider.id)).flatMap(provider=>(provider.resources || []).map(resource=>({...resource,componentId:null,name:provider.name})));
   const router=project.components.find(c=>['clex.hardware.router','clex.hardware.wifi'].includes(c.moduleId));
@@ -15,15 +18,16 @@ export function resourceClaims(project, catalog) {
   const motion=board?.motion?.timerResource&&project.components.find(component=>catalog.modules.find(module=>module.id===component.moduleId)?.stepper);
   const motionTimers=motion?[{key:board.motion.timerResource,label:'Timer1 движения',componentId:motion.id,name:'Шаговые двигатели'}]:[];
   const sensors=externalI2cBuses(project).map(bus=>({key:'i2c:'+bus.port,label:'I²C'+bus.port,gpios:[bus.sda,bus.scl].filter(Number.isInteger),share:'bus',configuration:Number.isInteger(bus.sda)&&Number.isInteger(bus.scl)?{port:bus.port,sda:bus.sda,scl:bus.scl}:null,componentId:bus.componentId,name:bus.name}));
-  return [...mounted,...configured,...wifi,...motionTimers,...sensors];
+  return [...mounted,...configured,...wifi,...motionTimers,...sensors,...microphoneClaims(project,board)];
 }
 const normalized = value => Array.isArray(value) ? value.map(normalized) : value && typeof value==='object' ? Object.fromEntries(Object.keys(value).sort().map(key=>[key,normalized(value[key])])) : value;
 const canonical = value => JSON.stringify(normalized(value));
 const shareCompatible = (a,b) => a.share && a.share === b.share && a.configuration && b.configuration && canonical(a.configuration) === canonical(b.configuration);
+const sharedAudioPair=(a,b)=>a.providerId&&a.providerId===b.providerId&&a.driverKey==='es8311-i2s'&&b.driverKey===a.driverKey&&((a.moduleId===VOICE_MODULE&&b.moduleId===SPEAKER_MODULE)||(b.moduleId===VOICE_MODULE&&a.moduleId===SPEAKER_MODULE));
 export function resourceIssues(project, catalog) {
   const claims=resourceClaims(project,catalog),issues=[];
   for (const [index,claim] of claims.entries()) {
-    for (const other of claims.slice(index+1)) if ((claim.key===other.key || claim.gpios?.some(gpio=>other.gpios?.includes(gpio))) && !(claim.key===other.key && shareCompatible(claim,other))) issues.push({severity:'error',code:'hardware-resource',componentId:other.componentId,message:`${claim.name} и ${other.name}: ресурс «${claim.label || claim.key}» уже занят. Выберите другой интерфейс или удалите дублирующий компонент.`});
+    for (const other of claims.slice(index+1)) if ((claim.key===other.key || claim.gpios?.some(gpio=>other.gpios?.includes(gpio))) && !sharedAudioPair(claim,other) && !(claim.key===other.key && shareCompatible(claim,other))) issues.push({severity:'error',code:'hardware-resource',componentId:other.componentId,message:`${claim.name} и ${other.name}: ресурс «${claim.label || claim.key}» уже занят. Выберите другой интерфейс или удалите дублирующий компонент.`});
   }
   return issues;
 }

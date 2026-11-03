@@ -86,8 +86,7 @@
     "hardware": {
       "kind": "peripheral",
       "modules": [
-        "clex.hardware.audio",
-        "clex.hardware.voice"
+        "clex.hardware.audio"
       ]
     }
   },

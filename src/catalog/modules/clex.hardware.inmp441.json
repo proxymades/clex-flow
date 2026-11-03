@@ -1,0 +1,128 @@
+{
+  "version": "1.0.0",
+  "kind": "hardware",
+  "category": "audio",
+  "categoryName": "Аудио",
+  "icon": "Mic",
+  "color": "#a78bfa",
+  "passive": true,
+  "visual": {
+    "width": 300,
+    "height": 285,
+    "terminalStartY": 130,
+    "terminalPitch": 42,
+    "svg": "inmp441.svg"
+  },
+  "inputs": [],
+  "outputs": [],
+  "constraints": {},
+  "compatibility": {
+    "projectFormat": 3,
+    "targets": [
+      "esp32s3",
+      "esp32p4"
+    ],
+    "espIdf": "5.4.4"
+  },
+  "firmware": {
+    "status": "implemented",
+    "generatorKey": "microphone-interface"
+  },
+  "id": "clex.hardware.inmp441",
+  "name": "Микрофон INMP441",
+  "microphone": {
+    "kind": "i2s"
+  },
+  "description": "Цифровой микрофон I²S. Подключается к свободному контроллеру I²S и используется в голосовом управлении.",
+  "parameters": {
+    "i2sPort": {
+      "label": "Контроллер I²S",
+      "type": "select",
+      "default": "1",
+      "i2sPortOnly": true,
+      "options": [
+        {
+          "value": "0",
+          "label": "I²S0"
+        },
+        {
+          "value": "1",
+          "label": "I²S1"
+        },
+        {
+          "value": "2",
+          "label": "I²S2"
+        }
+      ]
+    },
+    "channel": {
+      "label": "Канал микрофона",
+      "type": "select",
+      "default": "left",
+      "options": [
+        {
+          "value": "left",
+          "label": "Левый · L/R к GND"
+        },
+        {
+          "value": "right",
+          "label": "Правый · L/R к 3,3 В"
+        }
+      ]
+    }
+  },
+  "terminals": [
+    {
+      "id": "power",
+      "label": "VDD · 3,3 В",
+      "kind": "power",
+      "x": 0,
+      "y": 130,
+      "voltage": 3.3
+    },
+    {
+      "id": "ground",
+      "label": "GND",
+      "kind": "ground",
+      "x": 0,
+      "y": 172
+    },
+    {
+      "id": "lr",
+      "label": "L/R",
+      "kind": "gpio-input",
+      "x": 0,
+      "y": 214
+    },
+    {
+      "id": "bclk",
+      "label": "SCK / BCLK",
+      "kind": "gpio-output",
+      "x": 300,
+      "y": 130
+    },
+    {
+      "id": "ws",
+      "label": "WS / LRCLK",
+      "kind": "gpio-output",
+      "x": 300,
+      "y": 172
+    },
+    {
+      "id": "sd",
+      "label": "SD",
+      "kind": "gpio-input",
+      "x": 300,
+      "y": 214
+    }
+  ],
+  "sources": [
+    {
+      "title": "TDK INMP441 datasheet",
+      "url": "https://product.tdk.cn/system/files/dam/doc/product/sw_piezo/mic/mems-mic/data_sheet/inmp441.pdf"
+    }
+  ],
+  "manualWiring": [
+    "INMP441 питается от 3,3 В. L/R подключается к GND для левого канала или к 3,3 В для правого. Сверьте подписи контактов своего модуля."
+  ]
+}

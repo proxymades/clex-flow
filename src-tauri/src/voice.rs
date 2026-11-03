@@ -82,6 +82,8 @@ pub struct VoiceCommand {
 #[derive(Deserialize)]
 pub struct Profile {
     version: u32,
+    #[serde(default)]
+    purpose: Option<String>,
     commands: Vec<VoiceCommand>,
     samples: Vec<Sample>,
 }
@@ -299,6 +301,10 @@ fn evaluate(
 }
 fn prepare(profile: Profile, signature: String, cancel: &AtomicBool) -> Result<Model, String> {
     let n = profile.commands.len();
+    let wake = profile.purpose.as_deref() == Some("wake");
+    if profile.purpose.as_deref().is_some_and(|p| p != "wake") || (wake && n != 1) {
+        return Err("Для активации нужна одна фраза".into());
+    }
     if profile.version != 1
         || n < 1
         || n > 32
@@ -350,15 +356,30 @@ fn prepare(profile: Profile, signature: String, cancel: &AtomicBool) -> Result<M
             .enumerate()
             .filter_map(|(i, &v)| (v == label as i32).then_some(i))
             .collect();
-        let minimum = if label < n { 3 } else { 2 };
+        let minimum = if wake {
+            if label < n {
+                5
+            } else {
+                3
+            }
+        } else if label < n {
+            3
+        } else {
+            2
+        };
         if group.len() < minimum {
             return Err(if label < n {
                 format!(
-                    "Нужны хотя бы три записи команды «{}»",
+                    "Нужны хотя бы {} «{}»",
+                    if wake {
+                        "пять записей фразы активации"
+                    } else {
+                        "три записи команды"
+                    },
                     profile.commands[label].phrase
                 )
             } else {
-                "Нужны хотя бы две записи фона и посторонней речи".into()
+                format!("Нужны хотя бы {} записи фона и посторонней речи", minimum)
             });
         }
         if group.len() >= 3 {
@@ -388,6 +409,9 @@ fn prepare(profile: Profile, signature: String, cancel: &AtomicBool) -> Result<M
     let mut best = (usize::MAX, 0usize, 0f32, 0f32);
     for threshold in [0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.5, 0.6, 0.8, 1.0] {
         for ratio in [0.75, 0.8, 0.85, 0.9, 0.93, 0.95, 0.97] {
+            if wake && (threshold > 0.5 || ratio > 0.9) {
+                continue;
+            }
             check_cancel(cancel)?;
             let (mut wrong, mut correct) = (0, 0);
             for (&i, result) in val.iter().zip(&raw) {
@@ -837,7 +861,7 @@ pub async fn voice_test(
                 }
             }
             send(&mut *port, "START")?;
-            progress(app, id, "listening", "Скажите «Привет ESP»");
+            progress(app, id, "listening", "Ожидание активации");
             let result = (|| {
                 while !cancel.load(Ordering::SeqCst) {
                     match read_line(&mut *port, cancel, Instant::now() + Duration::from_secs(1)) {
@@ -907,6 +931,7 @@ mod tests {
         }
         Profile {
             version: 1,
+            purpose: None,
             commands,
             samples,
         }
@@ -920,6 +945,29 @@ mod tests {
             assert_eq!(model.test.wrong, 0);
             assert_eq!(model.reference_ids.len(), (n + 2) * 4);
         }
+    }
+    #[test]
+    fn personal_wake_phrase_has_independent_validation_and_rejects_false_activations() {
+        let mut profile = fixture(1);
+        profile.purpose = Some("wake".into());
+        profile.commands[0].phrase = "Добрый вечер, дом".into();
+        let model = prepare(profile, "87654321".into(), &AtomicBool::new(false)).unwrap();
+        assert!(model.ready);
+        assert!(model.threshold <= 0.5 && model.ratio <= 0.9);
+        assert_eq!(model.test.total, 3);
+        let mut profile = fixture(1);
+        profile.purpose = Some("wake".into());
+        profile.samples[9].data = profile.samples[4].data.clone();
+        let model = prepare(profile, "87654321".into(), &AtomicBool::new(false)).unwrap();
+        assert!(!model.ready);
+        assert_eq!(model.test.false_commands, 1);
+        let mut profile = fixture(1);
+        profile.purpose = Some("wake".into());
+        profile.samples.remove(0);
+        assert!(prepare(profile, "87654321".into(), &AtomicBool::new(false)).is_err());
+        let mut profile = fixture(2);
+        profile.purpose = Some("wake".into());
+        assert!(prepare(profile, "87654321".into(), &AtomicBool::new(false)).is_err());
     }
     #[test]
     fn malformed_or_missing_samples_are_rejected() {
@@ -1042,5 +1090,40 @@ mod tests {
                 .ready
         );
         assert!(quantize(&[f32::NAN]).is_err());
+    }
+}
+
+#[cfg(test)]
+mod microphone_pcm_tests {
+    #[repr(C)]
+    #[derive(Default)]
+    struct AdcFilter {
+        previous: f32,
+        highpass: f32,
+        initialized: bool,
+    }
+    unsafe extern "C" {
+        fn cv_pcm_scale(value: f32, gain: f32) -> i16;
+        fn cv_i2s_to_pcm(frame: *const i32, right: bool, gain: f32) -> i16;
+        fn cv_adc_to_pcm(raw: u32, bits: u32, gain: f32, filter: *mut AdcFilter) -> i16;
+    }
+    #[test]
+    fn microphone_wire_samples_preserve_channel_sign_and_adc_dc_rejection() {
+        let frame = [0x12345600, -0x20000000];
+        unsafe {
+            assert_eq!(cv_i2s_to_pcm(frame.as_ptr(), false, 1.0), 0x1234);
+            assert_eq!(cv_i2s_to_pcm(frame.as_ptr(), true, 1.0), -8192);
+            assert_eq!(cv_pcm_scale(20000.0, 4.0), i16::MAX);
+            assert_eq!(cv_pcm_scale(-20000.0, 4.0), i16::MIN);
+            let mut filter = AdcFilter::default();
+            for _ in 0..100 {
+                assert_eq!(cv_adc_to_pcm(1536, 12, 1.0, &mut filter), 0);
+            }
+            assert_eq!(cv_adc_to_pcm(2560, 12, 1.0, &mut filter), 16384);
+            for _ in 0..2000 {
+                cv_adc_to_pcm(2560, 12, 1.0, &mut filter);
+            }
+            assert!(cv_adc_to_pcm(2560, 12, 1.0, &mut filter).abs() < 2);
+        }
     }
 }

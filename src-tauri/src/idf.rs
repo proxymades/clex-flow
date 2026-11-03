@@ -489,12 +489,12 @@ fn write_project(dir: &PathBuf, spec: &Specification) -> Result<(), String> {
     if spec
         .feature_runtimes
         .iter()
-        .any(|feature| feature == "voice-p4")
+        .any(|feature| feature == "voice-p4" || feature == "voice-s3")
     {
         let key = if spec
             .feature_runtimes
             .iter()
-            .any(|feature| feature == "router-ota-esp32p4")
+            .any(|feature| feature.starts_with("router-ota-"))
         {
             "otaPartitions"
         } else {
@@ -502,7 +502,11 @@ fn write_project(dir: &PathBuf, spec: &Specification) -> Result<(), String> {
         };
         write_source(
             &dir.join("partitions.csv"),
-            profiles["voice-p4"][key]
+            profiles[if spec.feature_runtimes.iter().any(|f| f == "voice-s3") {
+                "voice-s3"
+            } else {
+                "voice-p4"
+            }][key]
                 .as_str()
                 .ok_or("Нет раздела голосовой модели")?,
         )?;
@@ -1004,7 +1008,7 @@ pub fn idf_build(
             if spec
                 .feature_runtimes
                 .iter()
-                .any(|feature| feature == "voice-p4")
+                .any(|feature| feature == "voice-p4" || feature == "voice-s3")
             {
                 artifacts.push("build/srmodels/srmodels.bin");
             }

@@ -1,3 +1,4 @@
+import {recordingIssues} from '../audio/model.js';
 import {VOICE_LOGIC,voicePorts} from '../voice/model.js';
 import {numericLogicIssues} from './numeric.js';
 import {relayChannelCount} from '../relay/model.js';
@@ -43,7 +44,7 @@ export function hardwareMatches(component,requirement,catalog){
  if(!component||!requirement)return false;
  const definition=catalog?.modules.find(module=>module.id===component.moduleId);
  if(requirement.kind==='display')return Boolean(definition?.display);
- if(requirement.kind==='gpio')return !definition?.i2c&&!definition?.stepper&&Boolean(definition?.terminals?.some(terminal=>terminal.kind===(requirement.mode==='input'?'gpio-input':'gpio-output')));
+ if(requirement.kind==='gpio')return !definition?.i2c&&!definition?.stepper&&!definition?.microphone&&Boolean(definition?.terminals?.some(terminal=>terminal.kind===(requirement.mode==='input'?'gpio-input':'gpio-output')));
  return Boolean(requirement.modules?.includes(component.moduleId));
 }
 
@@ -161,7 +162,7 @@ export function connectNodes(graph, catalog, connection, project = null) {
 export function hardwareBinding(node, project, catalog) {
   const module = graphModule(node, catalog), requirement = module?.constraints.hardware;
   if(requirement?.kind==='i2c'){const component=project.components.find(c=>c.id===node.parameters.componentId);return {component,gpio:null,error:hardwareMatches(component,requirement,catalog)?null:'Выберите датчик из монтажа.'};}
-  if(requirement?.kind==='wifi'||requirement?.kind==='stepper'||requirement?.kind==='router'||requirement?.kind==='mqtt'){const component=project.components.find(c=>c.id===node.parameters.componentId);return {component,gpio:null,error:hardwareMatches(component,requirement,catalog)?null:'Выберите совместимый компонент из монтажа.'};}
+  if(requirement?.kind==='voice'||requirement?.kind==='wifi'||requirement?.kind==='stepper'||requirement?.kind==='router'||requirement?.kind==='mqtt'){const component=project.components.find(c=>c.id===node.parameters.componentId);return {component,gpio:null,error:hardwareMatches(component,requirement,catalog)?null:'Выберите совместимый компонент из монтажа.'};}
   if (requirement?.kind === 'peripheral') {
     const component=project.components.find(component=>component.id===node.parameters.componentId),definition=catalog.modules.find(module=>module.id===component?.moduleId);
     return {component,gpio:null,error:component && requirement.modules.includes(component.moduleId) && hardwareProvider(component,definition,boardFor(project,catalog)) ? null : 'Выберите аппаратный компонент и его интерфейс в монтаже.'};
@@ -211,6 +212,7 @@ export function validateGraph(project, catalog) {
       if (parameter.type === 'text' && (typeof value !== 'string' || value.length > parameter.maxLength)) add('error', 'logic-parameter', `${node.name}: текст не должен превышать ${formatCount(parameter.maxLength, ['символ', 'символа', 'символов'])}.`, fields);
     }
     if (module.id === 'clex.logic.select-number' && node.parameters.firstValue === node.parameters.secondValue) add('error', 'logic-parameter', node.name + ': укажите два разных значения для выбора.', fields);
+    for(const message of recordingIssues(node))add('error','audio-recording',node.name+': '+message,fields);
     for(const message of numericLogicIssues(node,project))add('error','numeric-logic',node.name+': '+message,fields);
     for(const message of mqttLogicIssues(node,project))add('error','mqtt-logic',node.name+': '+message,fields);
     for(const message of stepperLogicIssues(node,project,catalog))add('error','stepper-logic',node.name+': '+message,fields);

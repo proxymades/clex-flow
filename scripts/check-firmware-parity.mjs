@@ -1,4 +1,6 @@
-import {voiceProject} from '../tests/voice-fixture.js';
+import {audioPlayProject} from '../tests/audio-play-fixture.js';
+import {microphoneProject,MICROPHONE_BOARDS} from '../tests/microphone-fixture.js';
+import {voiceProject,withCustomWake} from '../tests/voice-fixture.js';
 import {numericProject,NUMERIC_BOARDS} from '../tests/numeric-fixture.js';
 import {xgzpProject,XGZP_BOARDS} from '../tests/xgzp-fixture.js';
 import {wifiProject} from '../tests/wifi-fixture.js';
@@ -43,8 +45,14 @@ function mediaProject(family) {
 }
 
 const cases = [
+  ['p4-voice-custom-wake',withCustomWake(voiceProject()),'uart'],
+  ['p4-voice-wake-capture',withCustomWake(voiceProject(),{trained:false}),'uart'],
+  ['p4-voice-confirmation',audioPlayProject({customWake:true}),'uart'],
+  ['p4-recording-playback',audioPlayProject({voice:false}),'uart'],
   ['p4-voice-recording',voiceProject({trained:false,serial:false}),'uart'],
   ['p4-voice-trained',voiceProject(),'uart'],
+  ['p4-voice-shared-speaker',voiceProject({speaker:true,activationSound:true}),'uart'],
+  ['p4-voice-custom-audio',voiceProject({speaker:true,activationSound:true,customAudio:true}),'uart'],
   ['esp32-gpio',esp32GpioProject(),'uart'],
   ['esp32-display-spi2',esp32DisplayProject(),'uart'],
   ['esp32-display-spi3',esp32DisplayProject(undefined,'3'),'uart'],
@@ -106,6 +114,9 @@ for(const network of ['wifi','router']){
  if(network==='router')Object.assign(project.components.at(-1).parameters,{staSsid:'Voice build test',staPassword:'test-wan-key',apPassword:'test-lan-key',adminPassword:'test-admin-key'});
  cases.push(['p4-voice-'+network,project,'uart']);
 }
+for(const board of MICROPHONE_BOARDS)for(const chip of ['max9814','max4466','inmp441'])cases.push([board+'-mic-'+chip,microphoneProject(board,chip),'uart']);
+{const p=addHardware(microphoneProject('waveshare-esp32-s3-eth','inmp441'),catalog.modules.find(m=>m.id==='clex.hardware.wifi'),catalog);p.components.at(-1).parameters.ssid='Voice network';cases.push(['s3-microphone-wifi',p,'uart']);}
+cases.push(['s3-custom-wake',withCustomWake(microphoneProject('waveshare-esp32-s3-eth','inmp441')),'uart']);
 const temporary = mkdtempSync(join(tmpdir(), 'clex-firmware-parity-'));
 try {
   for (const [name, project, consoleMode] of cases) {

@@ -206,12 +206,17 @@
       ],
       "capabilities": [
         "digital-input",
-        "digital-output"
+        "digital-output",
+        "analog-input"
       ],
       "displayNumber": "7",
       "labelX": 78,
       "labelWidth": 90,
-      "labelFontSize": 9
+      "labelFontSize": 9,
+      "adc": {
+        "unit": 1,
+        "channel": 7
+      }
     },
     {
       "id": "P1-9",
@@ -264,12 +269,17 @@
       ],
       "capabilities": [
         "digital-input",
-        "digital-output"
+        "digital-output",
+        "analog-input"
       ],
       "displayNumber": "13",
       "labelX": 78,
       "labelWidth": 90,
-      "labelFontSize": 9
+      "labelFontSize": 9,
+      "adc": {
+        "unit": 1,
+        "channel": 4
+      }
     },
     {
       "id": "P1-15",
@@ -285,12 +295,17 @@
       ],
       "capabilities": [
         "digital-input",
-        "digital-output"
+        "digital-output",
+        "analog-input"
       ],
       "displayNumber": "15",
       "labelX": 78,
       "labelWidth": 90,
-      "labelFontSize": 9
+      "labelFontSize": 9,
+      "adc": {
+        "unit": 1,
+        "channel": 5
+      }
     },
     {
       "id": "P1-17",
@@ -533,12 +548,17 @@
       ],
       "capabilities": [
         "digital-input",
-        "digital-output"
+        "digital-output",
+        "analog-input"
       ],
       "displayNumber": "16",
       "labelX": 172,
       "labelWidth": 90,
-      "labelFontSize": 9
+      "labelFontSize": 9,
+      "adc": {
+        "unit": 1,
+        "channel": 6
+      }
     },
     {
       "id": "P1-18",
@@ -1125,9 +1145,18 @@
         2,
         3
       ]
+    },
+    "i2s": {
+      "hosts": [
+        0,
+        1,
+        2
+      ]
     }
   },
-  "resources": { "gptimer": 4 },
+  "resources": {
+    "gptimer": 4
+  },
   "firmware": {
     "flashSizeMb": 16,
     "consoleModes": [
@@ -1479,5 +1508,8 @@
     "profileKey": "wifi-hosted-p4",
     "config": "CONFIG_ESP_HOSTED_PRIV_SDIO_PIN_CMD_SLOT_1=19\nCONFIG_ESP_HOSTED_PRIV_SDIO_PIN_CLK_SLOT_1=18\nCONFIG_ESP_HOSTED_PRIV_SDIO_PIN_D0_SLOT_1=14\nCONFIG_ESP_HOSTED_PRIV_SDIO_PIN_D1_4BIT_BUS_SLOT_1=15\nCONFIG_ESP_HOSTED_PRIV_SDIO_PIN_D2_4BIT_BUS_SLOT_1=16\nCONFIG_ESP_HOSTED_PRIV_SDIO_PIN_D3_4BIT_BUS_SLOT_1=17\nCONFIG_ESP_HOSTED_SDIO_GPIO_RESET_SLAVE=54\n",
     "limitation": "SoftAP/AP+STA через ESP-Hosted 2.12.3. Требуется совместимая прошивка C6. WPA3 не включена до проверки сопроцессора."
+  },
+  "voice": {
+    "psramMb": 32
   }
 }

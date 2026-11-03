@@ -2,3 +2,11 @@
 .voice-dialog-body .button,.voice-modal>footer .button{font-size:12px}.voice-dialog-body .field{margin-bottom:0}.voice-recordings span{overflow-wrap:anywhere}
 .voice-settings>.button{font-size:10px;min-height:34px}.voice-build-status{height:76px;flex-shrink:0;overflow:auto;overflow-anchor:none;padding:10px 12px;border:1px solid #30384a;border-radius:8px;background:#101621;color:#a1aec3;font-size:11px;line-height:1.6;white-space:pre-wrap;overflow-wrap:anywhere}.voice-error{color:#f7a3b2}.modal.voice-modal{overflow-anchor:none}
 .voice-port-row{display:flex;align-items:flex-end;gap:10px;flex-wrap:nowrap}.voice-port-row>.field{flex:1;min-width:0}.voice-port-row select{width:100%;min-width:0;height:38px}.voice-port-row>.button{flex:0 0 auto;height:38px;min-height:38px;padding:0 12px;white-space:nowrap}
+
+.voice-activation-sound{display:flex;flex-direction:column;gap:12px;padding-left:12px;border-left:2px solid var(--border,#34384a)}.voice-settings .espnow-check input{padding:0;flex:0 0 auto}
+
+.voice-settings .voice-audio-file{display:none}.voice-activation-sound audio{width:100%;height:36px}.voice-audio-name{font-size:11px;overflow-wrap:anywhere}
+
+.voice-wake-settings{display:flex;flex-direction:column;gap:12px;padding:12px;border:1px solid var(--border,#34384a);border-radius:8px}.voice-wake-settings>.button{font-size:10px;min-height:34px}
+
+.audio-recording-settings{display:flex;flex-direction:column;gap:12px;margin:12px 0}.audio-recording-settings>input[type=file]{display:none}.audio-recording-settings .panel-note{margin:0}.audio-recording-settings audio{width:100%;height:36px}.audio-recording-settings>.button{font-size:10px;min-height:34px}

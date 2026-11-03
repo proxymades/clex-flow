@@ -1,1 +1,1 @@
-idf_component_register(SRCS "features.c" "core.c" "dtw.c" "endpoint.c" "audio.c" "runtime.c" INCLUDE_DIRS "." REQUIRES esp_driver_i2c esp_driver_i2s esp_driver_gpio esp_timer espressif__esp_codec_dev espressif__esp-sr)
+idf_component_register(SRCS "microphone_pcm.c" "features.c" "core.c" "dtw.c" "endpoint.c" "audio.c" "runtime.c" INCLUDE_DIRS "." REQUIRES esp_adc esp_driver_i2c esp_driver_i2s esp_driver_gpio esp_timer espressif__esp_codec_dev espressif__esp-sr)

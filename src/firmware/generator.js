@@ -1,3 +1,4 @@
+import {MICROPHONE_MODULES} from '../microphone/model.js';
 import {voiceFirmware,VOICE_TYPES} from './drivers/voice.js';
 import {numericFirmware} from './drivers/numeric.js';
 import {NUMERIC_MODULES} from '../logic/numeric.js';
@@ -26,7 +27,7 @@ import { validateAssembly, boardFor } from '../assembly/model.js';
 import { validateGraph, hardwareBinding, nodePorts } from '../logic/model.js';
 
 const compare = (a, b) => a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
-const implementationKeys = {'clex.hardware.nema17':'stepper','clex.hardware.tb6600':'stepper','clex.hardware.tmc2208':'stepper','clex.hardware.drv8825':'stepper','clex.logic.stepper':'stepper','clex.hardware.touch-button':'gpio-input','clex.logic.gpio-edge':'gpio-edge',"clex.hardware.espnow":"espnow-interface","clex.logic.espnow-control":"espnow-control","clex.logic.espnow-receive":"espnow-receive","clex.logic.espnow-ack":"espnow-ack","clex.logic.espnow-send":"espnow-send",'clex.hardware.led':'gpio-led','clex.hardware.button':'gpio-button','clex.logic.timer':'timer','clex.logic.gpio-read':'gpio-read','clex.logic.gpio-set':'gpio-set','clex.logic.gpio-toggle':'gpio-toggle','clex.logic.serial':'serial','clex.logic.display':'display-view','clex.logic.counter':'counter','clex.logic.stopwatch':'stopwatch','clex.hardware.ethernet':'ethernet-interface','clex.logic.ethernet':'ethernet','clex.logic.internet-check':'internet-check','clex.hardware.audio':'audio-interface','clex.hardware.camera':'camera-interface','clex.logic.tone':'tone','clex.logic.camera-capture':'camera-capture'};
+const implementationKeys = {'clex.hardware.nema17':'stepper','clex.hardware.tb6600':'stepper','clex.hardware.tmc2208':'stepper','clex.hardware.drv8825':'stepper','clex.logic.stepper':'stepper','clex.hardware.touch-button':'gpio-input','clex.logic.gpio-edge':'gpio-edge',"clex.hardware.espnow":"espnow-interface","clex.logic.espnow-control":"espnow-control","clex.logic.espnow-receive":"espnow-receive","clex.logic.espnow-ack":"espnow-ack","clex.logic.espnow-send":"espnow-send",'clex.hardware.led':'gpio-led','clex.hardware.button':'gpio-button','clex.logic.timer':'timer','clex.logic.gpio-read':'gpio-read','clex.logic.gpio-set':'gpio-set','clex.logic.gpio-toggle':'gpio-toggle','clex.logic.serial':'serial','clex.logic.display':'display-view','clex.logic.counter':'counter','clex.logic.stopwatch':'stopwatch','clex.hardware.ethernet':'ethernet-interface','clex.logic.ethernet':'ethernet','clex.logic.internet-check':'internet-check','clex.hardware.audio':'audio-interface','clex.hardware.camera':'camera-interface','clex.logic.audio-play':'audio-play','clex.logic.tone':'tone','clex.logic.camera-capture':'camera-capture'};
 const implementationVersions = {
   'clex.hardware.espnow':'2.0.0',
   'clex.logic.espnow-send':'2.0.0',
@@ -34,6 +35,7 @@ const implementationVersions = {
   'clex.logic.espnow-ack':'2.0.0',
   'clex.logic.espnow-control':'2.0.0',
 };
+for(const id of MICROPHONE_MODULES)implementationKeys[id]='microphone-interface';
 implementationKeys['clex.hardware.voice']='voice-interface';
 implementationKeys['clex.logic.voice']='voice';
 implementationKeys['clex.hardware.relay']='relay';
@@ -313,7 +315,7 @@ ${timers.map(({node,i})=>`  static const uint16_t timer_node_${i} = ${i};
 ${mqtt.enabled?'  atomic_store(&clex_flow_ready, true);\n':''}  ESP_LOGI("CLEX", "Flow ready: ${nodes.length} blocks, ${timers.length} timers");
 }
 `;
-  if (new TextEncoder().encode(source).length > 2 * 1024 * 1024) throw new Error('Исходники прошивки превышают 2 МБ. Уменьшите изображения или число голосовых образцов.');
+  if (new TextEncoder().encode(source).length > 2 * 1024 * 1024) throw new Error('Исходники прошивки превышают 2 МБ. Уменьшите изображения, число голосовых образцов или длительность аудиозаписей.');
   const flashSize = board.firmware.flashSizeMb;
   const config = `CONFIG_IDF_TARGET="${board.target}"\nCONFIG_ESPTOOLPY_FLASHSIZE_${flashSize}MB=y\nCONFIG_ESPTOOLPY_FLASHMODE_DIO=y\nCONFIG_FREERTOS_HZ=1000\nCONFIG_LOG_COLORS=n\nCONFIG_ESP_CONSOLE_${consoleMode==='usb'?'USB_SERIAL_JTAG':'UART_DEFAULT'}=y\nCONFIG_ESP_CONSOLE_SECONDARY_NONE=y\n`;
   const graphicsFiles = graphics.runtime ? { ...GRAPHICS_FILES, 'main/idf_component.yml': 'dependencies:\n  lvgl/lvgl: "=9.2.2"\n' } : {};
@@ -325,7 +327,7 @@ ${mqtt.enabled?'  atomic_store(&clex_flow_ready, true);\n':''}  ESP_LOGI("CLEX",
     ...graphicsFiles, ...manifest, ...componentFiles,
     'CMakeLists.txt': 'cmake_minimum_required(VERSION 3.16)\nset(COMPONENTS main)\n'+extraProfiles.map(p=>p.cmakePrelude||'').join('')+'include($ENV{IDF_PATH}/tools/cmake/project.cmake)\nproject(clex_flow_firmware)\n',
     'main/CMakeLists.txt': 'idf_component_register(SRCS "main.c"' + (graphics.runtime?' '+GRAPHICS_SOURCES:'') + ' INCLUDE_DIRS "." REQUIRES '+dependencyList+')\n',
-    ...((voice.enabled||router.enabled||wifi.enabled||network.partitions||espnow.enabled)?{'partitions.csv':voice.enabled?(featureRuntimes.includes('router-ota-esp32p4')?profiles['voice-p4'].otaPartitions:profiles['voice-p4'].partitions):router.enabled?router.partitions:wifi.enabled?WIFI_PARTITIONS:network.partitions||'nvs,data,nvs,0x9000,0x6000\nphy_init,data,phy,0xf000,0x1000\nfactory,app,factory,0x10000,0x300000\n'}:{}),
+    ...((voice.enabled||router.enabled||wifi.enabled||network.partitions||espnow.enabled)?{'partitions.csv':voice.enabled?(featureRuntimes.some(f=>f.startsWith('router-ota-'))?profiles[voice.features[0]].otaPartitions:profiles[voice.features[0]].partitions):router.enabled?router.partitions:wifi.enabled?WIFI_PARTITIONS:network.partitions||'nvs,data,nvs,0x9000,0x6000\nphy_init,data,phy,0xf000,0x1000\nfactory,app,factory,0x10000,0x300000\n'}:{}),
     'main/main.c': source, 'sdkconfig.defaults': config + (boardRevision ? board.firmware.revisionConfigs[boardRevision] : '') + (graphics.runtime ? GRAPHICS_CONFIG : '') + network.config + extraConfig + (router.boardConfig||'') + wifi.boardConfig,
   } };
 }

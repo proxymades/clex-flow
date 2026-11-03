@@ -1,0 +1,97 @@
+{
+  "id": "clex.logic.audio-play",
+  "version": "1.0.0",
+  "kind": "logic",
+  "name": "Воспроизвести запись",
+  "description": "Воспроизводит загруженную аудиозапись через выбранный динамик при получении события.",
+  "category": "audio",
+  "categoryName": "Аудио",
+  "icon": "Volume2",
+  "color": "#f59e0b",
+  "inputs": [
+    {
+      "id": "trigger",
+      "name": "Воспроизвести",
+      "type": "event",
+      "required": true,
+      "description": "Запускает действие при получении сигнала."
+    }
+  ],
+  "outputs": [
+    {
+      "id": "changed",
+      "name": "Результат обновлен",
+      "type": "event",
+      "description": "Передает сигнал после завершения действия или ошибки.",
+      "additional": true
+    },
+    {
+      "id": "done",
+      "name": "Запись завершена",
+      "type": "event",
+      "description": "Срабатывает после успешного выполнения."
+    },
+    {
+      "id": "failed",
+      "name": "Ошибка",
+      "type": "event",
+      "additional": true,
+      "description": "Срабатывает, если действие выполнить не удалось."
+    },
+    {
+      "id": "success",
+      "name": "Успешно?",
+      "type": "boolean",
+      "readyOn": "changed",
+      "description": "Да, если действие выполнено успешно."
+    },
+    {
+      "id": "error",
+      "name": "Описание ошибки",
+      "type": "text",
+      "readyOn": "changed",
+      "additional": true,
+      "description": "Сообщение об ошибке подключения или выполнения."
+    }
+  ],
+  "parameters": {
+    "componentId": {
+      "label": "Динамик",
+      "type": "component",
+      "default": ""
+    },
+    "audio": {
+      "label": "Аудиозапись",
+      "type": "text",
+      "default": "",
+      "maxLength": 220000
+    },
+    "volume": {
+      "label": "Громкость, %",
+      "type": "integer",
+      "min": 0,
+      "max": 100,
+      "default": 85
+    }
+  },
+  "constraints": {
+    "hardware": {
+      "kind": "peripheral",
+      "modules": [
+        "clex.hardware.audio"
+      ]
+    }
+  },
+  "compatibility": {
+    "projectFormat": 3,
+    "targets": [
+      "esp32p4"
+    ],
+    "espIdf": "5.4.4"
+  },
+  "firmware": {
+    "status": "implemented",
+    "generatorKey": "audio-play"
+  },
+  "settingsEditor": "audio-recording"
+}

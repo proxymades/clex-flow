@@ -1,0 +1,90 @@
+{
+  "version": "1.0.0",
+  "kind": "hardware",
+  "category": "audio",
+  "categoryName": "Аудио",
+  "icon": "Mic",
+  "color": "#a78bfa",
+  "passive": true,
+  "visual": {
+    "width": 300,
+    "height": 285,
+    "terminalStartY": 130,
+    "terminalPitch": 42,
+    "svg": "max4466.svg"
+  },
+  "inputs": [],
+  "outputs": [],
+  "constraints": {},
+  "compatibility": {
+    "projectFormat": 3,
+    "targets": [
+      "esp32s3",
+      "esp32p4"
+    ],
+    "espIdf": "5.4.4"
+  },
+  "firmware": {
+    "status": "implemented",
+    "generatorKey": "microphone-interface"
+  },
+  "id": "clex.hardware.max4466",
+  "name": "Микрофон MAX4466",
+  "microphone": {
+    "kind": "adc"
+  },
+  "description": "Аналоговый микрофон с ручной регулировкой усиления на модуле. OUT подключается к ADC1.",
+  "parameters": {
+    "supplyVoltage": {
+      "label": "Питание микрофона",
+      "type": "select",
+      "default": "3.3",
+      "boardLogicVoltageOnly": true,
+      "options": [
+        {
+          "value": "3.3",
+          "label": "3,3 В"
+        },
+        {
+          "value": "5",
+          "label": "5 В"
+        }
+      ]
+    }
+  },
+  "terminals": [
+    {
+      "id": "power",
+      "label": "VDD",
+      "kind": "power",
+      "x": 0,
+      "y": 130,
+      "voltageParameter": "supplyVoltage"
+    },
+    {
+      "id": "ground",
+      "label": "GND",
+      "kind": "ground",
+      "x": 0,
+      "y": 172
+    },
+    {
+      "id": "out",
+      "label": "OUT · ADC",
+      "kind": "gpio-input",
+      "x": 0,
+      "y": 214
+    }
+  ],
+  "sources": [
+    {
+      "title": "MAX4466 datasheet",
+      "url": "https://www.analog.com/media/en/technical-documentation/data-sheets/MAX4465-MAX4469.pdf"
+    }
+  ],
+  "manualWiring": [
+    "На ESP32 используйте питание 3,3 В. OUT передаёт аналоговый звук и подключается к ADC1. Сверьте подписи контактов своего модуля.",
+    "Усиление регулируется подстроечным резистором на модуле. Уменьшите его, если запись перегружается.",
+    "На ESP32-S3-ETH доступные входы ADC1 GPIO1/GPIO2 используются камерой. Для аналогового микрофона камера должна быть отключена в свойствах платы."
+  ]
+}

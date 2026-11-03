@@ -1,1 +1,25 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="250" height="185" viewBox="0 0 250 185"><rect x="1" y="1" width="248" height="183" rx="18" fill="#1b2235" stroke="#a78bfa" stroke-width="2"/><rect x="109" y="38" width="32" height="58" rx="16" fill="#272945" stroke="#c4b5fd" stroke-width="3"/><path d="M96 79v7a29 29 0 0 0 58 0v-7m-29 36v15m-16 0h32" fill="none" stroke="#c4b5fd" stroke-width="3" stroke-linecap="round"/><text x="125" y="158" text-anchor="middle" fill="#d9d2f1" font-size="14" font-family="sans-serif">VOICE</text></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="250" height="185" viewBox="0 0 250 185">
+  <!--
+MicAudioLines from Lucide (https://lucide.dev/icons/mic-audio-lines).
+ISC License
+Copyright (c) 2026 Lucide Icons and Contributors
+
+Permission to use, copy, modify, and/or distribute this software for any
+purpose with or without fee is hereby granted, provided that the above
+copyright notice and this permission notice appear in all copies.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
+OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
+CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+  -->
+  <rect x="1" y="1" width="248" height="183" rx="18" fill="#1b2235" stroke="#a78bfa" stroke-width="2"/>
+  <g transform="translate(71 24) scale(4.5)" fill="none" stroke="#c4b5fd" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M10 3v2.341M12 17v4M14 5v.341M18 5v13M2 10v3M22 10v3M6 6v11M9 21h6"/>
+    <rect width="4" height="8" x="10" y="9" rx="2"/>
+  </g>
+  <text x="125" y="158" text-anchor="middle" fill="#d9d2f1" font-size="14" font-family="sans-serif">VOICE</text>
+</svg>

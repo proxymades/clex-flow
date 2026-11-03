@@ -1,3 +1,4 @@
+import {isMicrophone,microphoneConnectionProblem,microphoneIssues} from '../microphone/model.js';
 import {VOICE_MODULE,voiceIssues} from '../voice/model.js';
 import {isXgzp,xgzpPowerProblem,i2cConnectionProblem,i2cClaimAllows,xgzpIssues} from '../pressure/model.js';
 import {WIFI_MODULE,wifiSupported,wifiIssues} from '../wifi/model.js';
@@ -76,6 +77,8 @@ export function connectionProblem(project, catalog, componentId, terminalId, pin
   if (!terminal) return 'Контакт компонента не найден.';
   if (terminal.kind==='nc') return 'Вывод NC не подключается к внешней цепи или земле.';
   if (!pin) return 'Контакт платы не найден.';
+  if(isMicrophone(component)&&['power','lr'].includes(terminal.id))return microphoneConnectionProblem(component,terminal,pin,board);
+  const microphoneProblem=microphoneConnectionProblem(component,terminal,pin,board);if(microphoneProblem)return microphoneProblem;
   if(component.moduleId===RELAY_MODULE&&terminal.id==='power')return relayPowerProblem(component,pin);
   if(isXgzp(component)&&terminal.id==='power')return xgzpPowerProblem(component,pin,board);
   if (terminal.kind === 'power') return pin.kind === 'power' && pin.voltage === (terminal.voltageFromBoard ? (board.logicVoltage || 3.3) : terminal.voltageParameter ? Number(component.parameters[terminal.voltageParameter]) : terminal.voltage) ? null : 'Питание компонента подключается к контакту платы с указанным напряжением.';
@@ -84,7 +87,7 @@ export function connectionProblem(project, catalog, componentId, terminalId, pin
   if (module.constraints.signalVoltageParameter && Number(component.parameters[module.constraints.signalVoltageParameter]) > (board.logicVoltage || 3.3)) return `Уровень OUT превышает допустимые ${board.logicVoltage || 3.3} В GPIO платы. Используйте совместимый уровень сигнала.`;
   const claim = claimedGpio(project,catalog,pin.gpio);
   const i2cShared = claim && i2cClaimAllows(component,terminalId,pin,claim);
-  if (claim && !i2cShared) return `GPIO${pin.gpio} используется компонентом «${claim.name}» (${claim.label || claim.key}).`;
+  if (claim && !i2cShared && !(isMicrophone(component)&&claim.componentId===component.id)) return `GPIO${pin.gpio} используется компонентом «${claim.name}» (${claim.label || claim.key}).`;
   const busProblem = i2cConnectionProblem(component,terminal,pin,board);
   if (busProblem) return busProblem;
   const sharedBoardBus=i2cShared&&!isXgzp(lookup(project.components,claim.componentId));
@@ -171,7 +174,8 @@ export function addHardware(project, module, catalog = null) {
   while (project.components.some(component => component.name === instanceName(number) || component.name === `${module.name} ${number}`)) number++;
   const name = instanceName(number);
   const parameters=Object.fromEntries(Object.entries(module.parameters).map(([key,parameter])=>[key,parameter.default]));
-  if(module.id===VOICE_MODULE&&project.components.some(c=>c.moduleId===VOICE_MODULE))throw new Error('Голосовой компонент уже добавлен.');
+  if(module.id===VOICE_MODULE){if(project.components.some(c=>c.moduleId===VOICE_MODULE))throw new Error('Голосовой компонент уже добавлен.');parameters.interfaceId=boardFor(project,catalog)?.peripherals?.find(p=>p.driverKey==='es8311-i2s')?.id||'';const microphone=project.components.find(isMicrophone);parameters.microphoneId=microphone?.id||'';if(microphone)parameters.gainDb=microphone.moduleId==='clex.hardware.inmp441'?18:0;}
+  if(module.id==='clex.hardware.inmp441'){const board=boardFor(project,catalog),used=new Set(resourceClaims(project,catalog).map(c=>c.key));parameters.i2sPort=String(board.interfaces.i2s.hosts.find(port=>!used.has('i2s:'+port))??board.interfaces.i2s.hosts[0]);}
   if(module.id===WIFI_MODULE){if(!catalog||!wifiSupported(boardFor(project,catalog)))throw new Error('У платы нет поддерживаемого Wi-Fi Station-интерфейса.');if(project.components.some(c=>[WIFI_MODULE,ROUTER_MODULE,ESPNOW_MODULE].includes(c.moduleId)))throw new Error('Радио платы уже используется. Оставьте Wi-Fi, маршрутизатор или ESP-NOW.');}
   if([ROUTER_MODULE,ESPNOW_MODULE].includes(module.id)&&project.components.some(c=>c.moduleId===WIFI_MODULE))throw new Error('Радио платы уже используется компонентом Wi-Fi.');
   if(module.id===MQTT_MODULE){if(!catalog||!mqttSupported(boardFor(project,catalog)))throw new Error('Для платы нет поддерживаемого сетевого интерфейса MQTT.');if(project.components.filter(component=>component.moduleId===MQTT_MODULE).length>=MAX_MQTT_CONNECTIONS)throw new Error('В проекте допускается до '+MAX_MQTT_CONNECTIONS+' MQTT-подключений.');}
@@ -225,7 +229,7 @@ export function validateAssembly(project, catalog) {
   const issues = [];
   const issue = (severity, code, message, fields = {}) => issues.push({ severity, code, message, ...fields });
   const board = boardFor(project, catalog);
-  issues.push(...resourceIssues(project,catalog),...stepperIssues(project,catalog),...voiceIssues(project));
+  issues.push(...resourceIssues(project,catalog),...stepperIssues(project,catalog),...voiceIssues(project,catalog));
   if(project.components.filter(c=>c.moduleId===ESPNOW_MODULE).length>1)issue('error','espnow-duplicate','В проекте поддерживается один ESP-NOW-интерфейс платы.');
   if (!board) { issue('error', 'board-missing', 'Плата отсутствует в каталоге.'); return issues; }
   if (!board.pins.length) issue('error', 'board-generic', 'Выберите конкретную плату. Общая ESP32-S3 не имеет распиновки.');
@@ -250,6 +254,7 @@ export function validateAssembly(project, catalog) {
     if(module.id===RELAY_MODULE&&relaySupplyVoltage(component)>5&&component.parameters.powerSource==='board')issue('error','relay-power-source',component.name+': для питания '+relayVoltageLabel(component)+' выберите внешний источник.',fields);
     if(module.id===RELAY_MODULE&&relaySupplyVoltage(component)>0&&(board.logicVoltage||3.3)>relaySupplyVoltage(component))issue('warning','relay-logic-level',component.name+': GPIO платы имеют уровень '+String(board.logicVoltage).replace('.',',')+' В. Проверьте совместимость входов IN модуля с питанием '+relayVoltageLabel(component)+'; может потребоваться согласование уровней.',fields);
     if(module.id===RELAY_MODULE&&!project.assembly.connections.some(wire=>wire.componentId===component.id&&/^in\d+$/.test(wire.terminalId)))issue('error','relay-channel',component.name+': подключите хотя бы один вход IN к GPIO.',fields);
+    for(const message of microphoneIssues(component,project,board))issue('error','microphone-config',component.name+': '+message,fields);
     for(const message of xgzpIssues(component,project,board))issue('error','xgzp-config',component.name+': '+message,fields);
     if(module.softwareInterface==='wifi')for(const message of wifiIssues(component,project,catalog))issue('error','wifi-config',component.name+': '+message,fields);
     if(module.softwareInterface==='mqtt')for(const message of mqttIssues(component,project,catalog))issue('error','mqtt-config',component.name+': '+message,fields);

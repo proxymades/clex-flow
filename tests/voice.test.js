@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {catalog} from './catalog-fixture.js';
 import {voiceProject} from './voice-fixture.js';
-import {emptyVoiceProfile,readVoiceProfile,voiceProfileProblem,voiceModelReady,voiceSignature,voicePorts,voicePlan,voiceTrainingProblem,VOICE_MODULE} from '../src/voice/model.js';
+import {emptyVoiceProfile,readVoiceProfile,voiceProfileProblem,voiceModelReady,voiceSignature,voicePorts,voicePlan,voiceTrainingProblem,VOICE_MODULE,SPEAKER_MODULE} from '../src/voice/model.js';
 import {generateFirmware,cString} from '../src/firmware/generator.js';
 import {serializeProject,parseProject} from '../src/projects/model.js';
 import {nodePorts,validateGraph,addNode,connectNodes,withLogic} from '../src/logic/model.js';
@@ -44,7 +44,8 @@ test('recording firmware builds before training, owns audio resources and includ
  assert.ok(bundle.files['components/clex_voice/core.c']);assert.ok(bundle.files['components/clex_voice/runtime.c']);
  assert.match(bundle.files['main/idf_component.yml'],/esp-sr: "=2.6.1"/);
  assert.throws(()=>addHardware(p,catalog.modules.find(m=>m.id===VOICE_MODULE),catalog),/уже добавлен/);
- const double=addHardware(p,catalog.modules.find(m=>m.id==='clex.hardware.audio'),catalog);assert.ok(validateAssembly(double,catalog).some(i=>i.severity==='error'&&i.code==='hardware-resource'));
+ const shared=addHardware(p,catalog.modules.find(m=>m.id===SPEAKER_MODULE),catalog);assert.equal(validateAssembly(shared,catalog).filter(i=>i.severity==='error').length,0);
+ const duplicate=addHardware(shared,catalog.modules.find(m=>m.id===SPEAKER_MODULE),catalog);assert.ok(validateAssembly(duplicate,catalog).some(i=>i.severity==='error'&&i.code==='hardware-resource'));
  const source=readFileSync('src/firmware/components/clex_voice/core.c','utf8');assert.doesNotMatch(source,/lamp1|lamp2|both_on|both_off/);
 });
 
@@ -67,10 +68,10 @@ test('voice model partition takes priority over Wi-Fi and router OTA layouts',()
 });
 
 test('sound blocks reuse the voice codec and report asynchronous completion',()=>{
- let p=voiceProject();
+ let p=voiceProject({speaker:true,activationSound:true});
  let graph=addNode(p.logic,catalog.modules.find(m=>m.id==='clex.logic.tone'),p.components,p,catalog);
  const tone=graph.nodes.at(-1);
- assert.equal(tone.parameters.componentId,p.components[0].id);
+ assert.equal(tone.parameters.componentId,p.components[1].id);
  graph=connectNodes(graph,catalog,{source:graph.nodes[0].id,sourceHandle:'recognized',target:tone.id,targetHandle:'trigger'},{...p,logic:graph});
  p=withLogic(p,graph);const bundle=generateFirmware(p,catalog);
  assert.match(bundle.mainC,/clex_voice_tone\(/);assert.match(bundle.mainC,/CV_TONE_DONE/);
@@ -83,4 +84,65 @@ test('voice references preserve feature scales and invalidate models when encodi
  profile.model.signature=voiceSignature(profile);component.parameters.profile=JSON.stringify(profile);
  assert.match(generateFirmware(project,catalog).mainC,/voice_reference_0,12,0,2048/);
  profile.samples[0].scale=0;assert.ok(voiceProfileProblem(profile));
+});
+
+test('recognition works without a speaker and activation sound requires a selected speaker',()=>{
+ const p=voiceProject(),voice=p.components[0];
+ assert.equal(voice.parameters.activationSound,false);assert.equal(voice.parameters.speakerId,'');assert.equal(voice.parameters.volume,undefined);
+ assert.equal(validateAssembly(p,catalog).filter(i=>i.severity==='error').length,0);
+ assert.match(generateFirmware(p,catalog).mainC,/\.speaker_enabled=false,\.activation_sound=false/);
+ voice.parameters.activationSound=true;
+ assert.ok(validateAssembly(p,catalog).some(i=>i.code==='voice-speaker'));
+ assert.throws(()=>generateFirmware(p,catalog));
+ const shared=voiceProject({speaker:true,activationSound:true});
+ assert.equal(validateAssembly(shared,catalog).filter(i=>i.severity==='error').length,0);
+ assert.match(generateFirmware(shared,catalog).mainC,/\.speaker_enabled=true,\.activation_sound=true/);
+ shared.components[0].parameters.activationVolume=0;
+ assert.match(generateFirmware(shared,catalog).mainC,/\.activation_sound=false/);
+ shared.components.pop();
+ assert.ok(validateAssembly(shared,catalog).some(i=>i.code==='voice-speaker'));
+ shared.components[0].parameters.activationSound=false;
+ assert.equal(validateAssembly(shared,catalog).filter(i=>i.severity==='error').length,0);
+ shared.components[0].parameters.interfaceId='missing';
+ assert.ok(validateAssembly(shared,catalog).some(i=>i.code==='voice-microphone'));
+});
+
+test('legacy voice projects keep recordings, models, graph links and speaker playback',()=>{
+ const legacy=voiceProject(),voice=legacy.components[0],originalProfile=voice.parameters.profile;
+ delete voice.parameters.activationSound;delete voice.parameters.speakerId;delete voice.parameters.activationVolume;voice.parameters.volume=72;
+ // An old tone block was bound directly to the voice component.
+ legacy.logic.nodes.push({id:crypto.randomUUID(),moduleId:'clex.logic.tone',moduleVersion:'1.0.0',name:'Звуковой сигнал 1',position:{x:100,y:100},parameters:{componentId:voice.id,frequencyHz:800,durationMs:200,volume:50}});
+ legacy.moduleVersions['clex.logic.tone']='1.0.0';
+ legacy.logic=connectNodes(legacy.logic,catalog,{source:legacy.logic.nodes[0].id,sourceHandle:'recognized',target:legacy.logic.nodes.at(-1).id,targetHandle:'trigger'},legacy);
+ const edges=structuredClone(legacy.logic.edges);
+ const migrated=parseProject(JSON.stringify(legacy)),speaker=migrated.components.find(c=>c.moduleId===SPEAKER_MODULE),next=migrated.components[0];
+ assert.equal(parseProject(JSON.stringify(legacy)).components.find(c=>c.moduleId===SPEAKER_MODULE).id,speaker.id);
+ assert.ok(speaker);assert.equal(next.parameters.profile,originalProfile);assert.equal(voiceModelReady(readVoiceProfile(next)),true);
+ assert.equal(next.parameters.activationSound,true);assert.equal(next.parameters.activationVolume,72);assert.equal(next.parameters.speakerId,speaker.id);assert.equal(next.parameters.volume,undefined);
+ assert.deepEqual(migrated.logic.edges,edges);assert.equal(migrated.logic.nodes.at(-1).parameters.componentId,speaker.id);
+ assert.deepEqual(parseProject(serializeProject(migrated)),migrated);
+ assert.equal(validateAssembly(migrated,catalog).filter(i=>i.severity==='error').length,0);
+ assert.equal(validateGraph(migrated,catalog).filter(i=>i.severity==='error').length,0);
+ assert.match(generateFirmware(migrated,catalog).mainC,/\.speaker_enabled=true,\.activation_sound=true/);
+ assert.equal(legacy.components.length,1);assert.equal(legacy.components[0].parameters.volume,72);
+});
+
+test('a legacy muted voice project does not require a speaker and migration reuses an existing speaker',()=>{
+ for(const speaker of [false,true]){
+  const legacy=voiceProject({speaker}),voice=legacy.components[0];
+  delete voice.parameters.activationSound;delete voice.parameters.speakerId;delete voice.parameters.activationVolume;voice.parameters.volume=speaker?85:0;
+  const migrated=parseProject(JSON.stringify(legacy));
+  assert.equal(migrated.components.length,speaker?2:1);assert.equal(migrated.components[0].parameters.activationSound,speaker);
+  if(speaker)assert.equal(migrated.components[0].parameters.speakerId,legacy.components[1].id);
+  assert.equal(validateAssembly(migrated,catalog).filter(i=>i.severity==='error').length,0);
+ }
+});
+
+test('legacy speaker placement stays within the canvas near its right edge',()=>{
+ const legacy=voiceProject(),voice=legacy.components[0];
+ delete voice.parameters.activationSound;delete voice.parameters.speakerId;delete voice.parameters.activationVolume;voice.parameters.volume=85;
+ legacy.assembly.positions[voice.id]={x:4900,y:4900};
+ const migrated=parseProject(JSON.stringify(legacy)),speaker=migrated.components.find(c=>c.moduleId===SPEAKER_MODULE),position=migrated.assembly.positions[speaker.id];
+ assert.ok(Math.abs(position.x)<=5000&&Math.abs(position.y)<=5000);
+ assert.equal(migrated.components[0].parameters.profile,voice.parameters.profile);
 });

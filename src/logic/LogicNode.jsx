@@ -1,3 +1,4 @@
+import MicAudioLines from '../components/MicAudioLines.jsx';
 import {numericSummary} from './numeric.js';
 import { formatCount } from '../utils/plural.js';
 import {memo,useEffect} from 'react';
@@ -7,7 +8,7 @@ import ScreenPreview from '../displays/ScreenPreview.jsx';
 import PortValueStates from './PortValueStates.jsx';
 import {TYPE_COLORS,TYPE_NAMES} from './model.js';
 import {visiblePorts,nodeDisplayName} from './presentation.js';
-const icons={ Mic, Gauge, Wifi, ToggleRight, RotateCw,Timer,ScanLine,ArrowUpRight,Repeat2,Terminal,Monitor,Hash,Network,Globe,Camera,Volume2,Radio,GitBranch,Thermometer};
+const icons={ MicAudioLines, Mic, Gauge, Wifi, ToggleRight, RotateCw,Timer,ScanLine,ArrowUpRight,Repeat2,Terminal,Monitor,Hash,Network,Globe,Camera,Volume2,Radio,GitBranch,Thermometer};
 function LogicNode({id,data,selected}){
  const {definition,node,binding,issueCount,onPort,pending,display,screen,project,catalog,connection,onBindData}=data;
  const ports=visiblePorts(node,project,catalog,{connection});

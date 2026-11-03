@@ -19,8 +19,8 @@
 
 enum { STOPPED,WAITING,CHIME,OPEN };
 enum { CONTROL_STOP,CONTROL_START };
-typedef struct { uint32_t cycle,epoch; size_t count; int16_t pcm[]; } input_block_t;
-typedef struct { int tag; unsigned frequency,duration,volume; uint32_t cycle; bool chime; } sound_request_t;
+typedef struct { uint32_t cycle,epoch; int mode; size_t count; int16_t pcm[]; } input_block_t;
+typedef struct { int tag; unsigned frequency,duration,volume; uint32_t cycle; bool chime; const int16_t *pcm; size_t samples; } sound_request_t;
 typedef struct { sound_request_t request; esp_err_t status; int64_t ended; } sound_result_t;
 typedef struct { int16_t *pcm; size_t count; } capture_t;
 static clex_voice_config_t config;
@@ -38,6 +38,7 @@ static kws_endpoint_t *endpoint;
 static int16_t *scratch;
 static float *mel,*encoded;
 static uint32_t worker_cycle,worker_epoch;
+static int worker_mode;
 
 static void reply(const char *format,...){va_list args;va_start(args,format);flockfile(stdout);vfprintf(stdout,format,args);fflush(stdout);funlockfile(stdout);va_end(args);}
 static void emit(int type,int command,int tag,const char *error){
@@ -45,20 +46,35 @@ static void emit(int type,int command,int tag,const char *error){
     if(error)snprintf(event.error,sizeof(event.error),"%s",error);
     if(config.on_event)config.on_event(&event);
 }
-static bool active(uint32_t expected_cycle,uint32_t expected_epoch){
+static bool active(int mode,uint32_t expected_cycle,uint32_t expected_epoch){
     portENTER_CRITICAL(&gate_lock);
-    bool value=state==OPEN&&cycle==expected_cycle&&epoch==expected_epoch&&!audio_busy&&esp_timer_get_time()<deadline;
+    bool value=enabled&&state==mode&&cycle==expected_cycle&&epoch==expected_epoch&&!audio_busy&&!recording&&
+        ((mode==WAITING&&config.custom_wake&&config.wake_reference_count)||(mode==OPEN&&esp_timer_get_time()<deadline));
     portEXIT_CRITICAL(&gate_lock);return value;
+}
+static void activate(uint32_t expected_cycle,uint32_t expected_epoch){
+    portENTER_CRITICAL(&gate_lock);
+    bool accept=enabled&&state==WAITING&&cycle==expected_cycle&&epoch==expected_epoch&&!audio_busy&&!recording;
+    bool chime=config.activation_sound&&config.speaker_enabled&&config.activation_volume>0;
+    if(accept){state=chime?CHIME:OPEN;cycle++;epoch++;audio_busy=chime;deadline=chime?0:esp_timer_get_time()+(int64_t)config.window_ms*1000;}
+    uint32_t current_cycle=cycle;
+    portEXIT_CRITICAL(&gate_lock);
+    if(!accept)return;
+    if(!config.custom_wake)afe->disable_wakenet(afe_data);
+    reply("CLEX_VOICE_ACTIVATED\n");emit(CV_ACTIVATED,-1,-1,NULL);
+    if(chime){sound_request_t request={.tag=-1,.volume=config.activation_volume,.cycle=current_cycle,.chime=true};xQueueSend(sounds,&request,portMAX_DELAY);}
+    else reply("CLEX_VOICE_WINDOW remaining_ms=%u\n",config.window_ms);
 }
 static void utterance(const int16_t *pcm,size_t count,unsigned voiced,bool too_long,void *context){
     (void)context;
-    if(!active(worker_cycle,worker_epoch))return;
+    if(!active(worker_mode,worker_cycle,worker_epoch))return;
     cv_result_t found={.label=-1,.candidate=-1,.distance=1e9f,.ratio=1};
     if(!too_long&&voiced>=10){
         int frames=cv_encode(pcm,count,0,encoded,scratch,mel);
-        if(frames>0)found=cv_classify(encoded,frames,config.references,config.reference_count,config.commands,config.threshold,config.ratio);
+        if(frames>0)found=worker_mode==WAITING?cv_classify(encoded,frames,config.wake_references,config.wake_reference_count,1,config.wake_threshold,config.wake_ratio):cv_classify(encoded,frames,config.references,config.reference_count,config.commands,config.threshold,config.ratio);
     }
-    if(!active(worker_cycle,worker_epoch))return;
+    if(!active(worker_mode,worker_cycle,worker_epoch))return;
+    if(worker_mode==WAITING){if(found.label==0)activate(worker_cycle,worker_epoch);return;}
     if(found.label>=0){
         reply("CLEX_VOICE_COMMAND id=%s distance=%.5f ratio=%.5f\n",config.command_ids[found.label],found.distance,found.ratio);
         emit(CV_RECOGNIZED,found.label,-1,NULL);
@@ -72,9 +88,9 @@ static void infer_task(void *argument){
     for(;;){
         if(xQueueReceive(input_queue,consumer,portMAX_DELAY)!=pdTRUE)continue;
         portENTER_CRITICAL(&gate_lock);unsigned current_drops=drops;portEXIT_CRITICAL(&gate_lock);
-        if(current_drops!=seen_drops){seen_drops=current_drops;worker_cycle=consumer->cycle;worker_epoch=consumer->epoch;kws_endpoint_discard(endpoint);xQueueReset(input_queue);continue;}
-        if(!active(consumer->cycle,consumer->epoch)){worker_cycle=0;kws_endpoint_reset(endpoint);continue;}
-        if(worker_cycle!=consumer->cycle||worker_epoch!=consumer->epoch){worker_cycle=consumer->cycle;worker_epoch=consumer->epoch;kws_endpoint_reset(endpoint);}
+        if(current_drops!=seen_drops){seen_drops=current_drops;worker_cycle=consumer->cycle;worker_epoch=consumer->epoch;worker_mode=consumer->mode;kws_endpoint_discard(endpoint);xQueueReset(input_queue);continue;}
+        if(!active(consumer->mode,consumer->cycle,consumer->epoch)){worker_cycle=0;kws_endpoint_reset(endpoint);continue;}
+        if(worker_cycle!=consumer->cycle||worker_epoch!=consumer->epoch||worker_mode!=consumer->mode){worker_cycle=consumer->cycle;worker_epoch=consumer->epoch;worker_mode=consumer->mode;kws_endpoint_reset(endpoint);}
         kws_endpoint_push(endpoint,consumer->pcm,consumer->count,utterance,NULL);
     }
 }
@@ -85,6 +101,9 @@ static void feed_task(void *argument){
     capture_t capture={0};size_t copied=0;
     for(;;){
         if(!capture.pcm&&xQueueReceive(capture_requests,&capture,0)==pdTRUE){copied=0;reply("CLEX_VOICE_RECORDING 3\n");}
+        portENTER_CRITICAL(&gate_lock);
+        int input_mode=state;uint32_t input_cycle=cycle,input_epoch=epoch;bool input_idle=!audio_busy&&!recording;
+        portEXIT_CRITICAL(&gate_lock);
         if(cv_audio_read(pcm,feed_frames)!=ESP_OK){emit(CV_FAILED,-1,-1,"Ошибка чтения микрофона");reply("CLEX_VOICE_ERROR microphone_read\n");vTaskDelete(NULL);return;}
         if(capture.pcm){
             size_t n=capture.count-copied;if(n>feed_frames)n=feed_frames;
@@ -92,21 +111,44 @@ static void feed_task(void *argument){
             if(copied==capture.count){xQueueSend(capture_results,&capture,portMAX_DELAY);capture.pcm=NULL;}
         }
         portENTER_CRITICAL(&gate_lock);
-        bool listen=state==OPEN&&!audio_busy;uint32_t current_cycle=cycle,current_epoch=epoch;
+        bool process=input_idle&&!audio_busy&&!recording&&input_epoch==epoch;
+        bool listen=process&&input_mode==state&&input_cycle==cycle&&((state==OPEN&&config.commands>0)||(state==WAITING&&config.custom_wake&&config.wake_reference_count));
         portEXIT_CRITICAL(&gate_lock);
-        if(listen){producer->cycle=current_cycle;producer->epoch=current_epoch;producer->count=feed_frames;memcpy(producer->pcm,pcm,feed_frames*sizeof(int16_t));if(xQueueSend(input_queue,producer,0)!=pdTRUE){portENTER_CRITICAL(&gate_lock);drops++;portEXIT_CRITICAL(&gate_lock);}}
-        if(afe->feed(afe_data,pcm)<0){emit(CV_FAILED,-1,-1,"Ошибка обработки аудио");vTaskDelete(NULL);return;}
+        if(listen){producer->cycle=input_cycle;producer->epoch=input_epoch;producer->mode=input_mode;producer->count=feed_frames;memcpy(producer->pcm,pcm,feed_frames*sizeof(int16_t));if(xQueueSend(input_queue,producer,0)!=pdTRUE){portENTER_CRITICAL(&gate_lock);drops++;portEXIT_CRITICAL(&gate_lock);}}
+        if(process&&afe->feed(afe_data,pcm)<0){emit(CV_FAILED,-1,-1,"Ошибка обработки аудио");vTaskDelete(NULL);return;}
     }
+}
+static sound_result_t play_sound(sound_request_t request){
+    portENTER_CRITICAL(&gate_lock);bool valid=!request.chime||(state==CHIME&&cycle==request.cycle);portEXIT_CRITICAL(&gate_lock);
+    sound_result_t result={.request=request,.status=ESP_ERR_INVALID_STATE};
+    if(valid)result.status=request.chime?cv_audio_chime(request.volume,config.activation_pcm,config.activation_samples):request.pcm?cv_audio_chime(request.volume,request.pcm,request.samples):cv_audio_tone(request.frequency,request.duration,request.volume);
+    result.ended=esp_timer_get_time();return result;
 }
 static void sound_task(void *argument){
     (void)argument;sound_request_t request;
     for(;;){
         if(xQueueReceive(sounds,&request,portMAX_DELAY)!=pdTRUE)continue;
-        portENTER_CRITICAL(&gate_lock);bool valid=!request.chime||(state==CHIME&&cycle==request.cycle);portEXIT_CRITICAL(&gate_lock);
-        sound_result_t result={.request=request,.status=ESP_ERR_INVALID_STATE};
-        if(valid)result.status=request.chime?cv_audio_chime(request.volume):cv_audio_tone(request.frequency,request.duration,request.volume);
-        result.ended=esp_timer_get_time();xQueueSend(sound_results,&result,portMAX_DELAY);
+        sound_result_t result=play_sound(request);xQueueSend(sound_results,&result,portMAX_DELAY);
     }
+}
+static void complete_sound(const sound_result_t *sound){
+    portENTER_CRITICAL(&gate_lock);audio_busy=false;epoch++;
+    bool open=sound->request.chime&&state==CHIME&&cycle==sound->request.cycle&&sound->status==ESP_OK;
+    if(open){state=OPEN;deadline=sound->ended+(int64_t)config.window_ms*1000;}
+    bool wake=enabled&&state==WAITING;
+    portEXIT_CRITICAL(&gate_lock);
+    if(open)reply("CLEX_VOICE_WINDOW remaining_ms=%u\n",config.window_ms);
+    if(wake&&!config.custom_wake)afe->enable_wakenet(afe_data);
+    if(!sound->request.chime)emit(CV_TONE_DONE,-1,sound->request.tag,sound->status==ESP_OK?NULL:esp_err_to_name(sound->status));
+    else if(sound->status!=ESP_OK&&sound->status!=ESP_ERR_INVALID_STATE){emit(CV_FAILED,-1,-1,"Ошибка звукового сигнала");portENTER_CRITICAL(&gate_lock);state=enabled?WAITING:STOPPED;deadline=0;epoch++;portEXIT_CRITICAL(&gate_lock);if(!config.custom_wake)afe->enable_wakenet(afe_data);}
+}
+static void close_window(void){
+    portENTER_CRITICAL(&gate_lock);
+    bool closed=state==OPEN&&esp_timer_get_time()>=deadline;
+    if(closed){state=enabled?WAITING:STOPPED;deadline=0;epoch++;}
+    bool wait=enabled&&state==WAITING&&!audio_busy;
+    portEXIT_CRITICAL(&gate_lock);
+    if(closed){if(wait&&!config.custom_wake)afe->enable_wakenet(afe_data);emit(CV_CLOSED,-1,-1,NULL);reply("CLEX_VOICE_WAITING\n");}
 }
 static void detect_task(void *argument){
     (void)argument;
@@ -115,42 +157,23 @@ static void detect_task(void *argument){
         while(xQueueReceive(controls,&control,0)==pdTRUE){
             portENTER_CRITICAL(&gate_lock);
             if(control==CONTROL_STOP){enabled=false;state=STOPPED;deadline=0;epoch++;}
-            else if(config.reference_count&&config.commands&&!recording){enabled=true;if(state==STOPPED)state=WAITING;}
+            else if((config.custom_wake?config.wake_reference_count>0:config.reference_count&&config.commands)&&!recording){enabled=true;if(state==STOPPED)state=WAITING;}
             bool wake=enabled&&state==WAITING&&!audio_busy;
             portEXIT_CRITICAL(&gate_lock);
-            if(wake)afe->enable_wakenet(afe_data);else afe->disable_wakenet(afe_data);
+            if(wake&&!config.custom_wake)afe->enable_wakenet(afe_data);else afe->disable_wakenet(afe_data);
             if(control==CONTROL_STOP)reply("CLEX_VOICE_STOPPED\n");
             else if(wake)reply("CLEX_VOICE_WAITING\n");
-            else if(!config.reference_count)reply("CLEX_VOICE_ERROR model_not_ready\n");
+            else if(config.custom_wake?!config.wake_reference_count:!config.reference_count)reply("CLEX_VOICE_ERROR model_not_ready\n");
         }
         sound_result_t sound;
-        if(xQueueReceive(sound_results,&sound,0)==pdTRUE){
-            portENTER_CRITICAL(&gate_lock);audio_busy=false;epoch++;
-            bool open=sound.request.chime&&state==CHIME&&cycle==sound.request.cycle&&sound.status==ESP_OK;
-            if(open){state=OPEN;deadline=sound.ended+(int64_t)config.window_ms*1000;}
-            bool wake=enabled&&state==WAITING;
-            portEXIT_CRITICAL(&gate_lock);
-            if(open)reply("CLEX_VOICE_WINDOW remaining_ms=%u\n",config.window_ms);
-            if(wake)afe->enable_wakenet(afe_data);
-            if(!sound.request.chime)emit(CV_TONE_DONE,-1,sound.request.tag,sound.status==ESP_OK?NULL:esp_err_to_name(sound.status));
-            else if(sound.status!=ESP_OK&&sound.status!=ESP_ERR_INVALID_STATE){emit(CV_FAILED,-1,-1,"Ошибка звукового сигнала");portENTER_CRITICAL(&gate_lock);state=WAITING;portEXIT_CRITICAL(&gate_lock);afe->enable_wakenet(afe_data);}
-        }
-        portENTER_CRITICAL(&gate_lock);
-        bool closed=state==OPEN&&esp_timer_get_time()>=deadline;
-        if(closed){state=enabled?WAITING:STOPPED;deadline=0;epoch++;}
-        bool wait=enabled&&state==WAITING;
-        portEXIT_CRITICAL(&gate_lock);
-        if(closed){if(wait)afe->enable_wakenet(afe_data);emit(CV_CLOSED,-1,-1,NULL);reply("CLEX_VOICE_WAITING\n");}
+        if(xQueueReceive(sound_results,&sound,0)==pdTRUE)complete_sound(&sound);
+        close_window();
         afe_fetch_result_t *result=afe->fetch_with_delay(afe_data,pdMS_TO_TICKS(50));
         if(!result)continue;
         if(result->ret_value==ESP_FAIL){emit(CV_FAILED,-1,-1,"Ошибка распознавателя активации");vTaskDelay(pdMS_TO_TICKS(100));continue;}
-        if(result->wakeup_state==WAKENET_DETECTED){
-            portENTER_CRITICAL(&gate_lock);
-            bool accept=enabled&&state==WAITING&&!audio_busy&&!recording;
-            if(accept){state=CHIME;cycle++;epoch++;audio_busy=true;}
-            uint32_t current_cycle=cycle;
-            portEXIT_CRITICAL(&gate_lock);
-            if(accept){afe->disable_wakenet(afe_data);reply("CLEX_VOICE_ACTIVATED\n");emit(CV_ACTIVATED,-1,-1,NULL);sound_request_t request={.tag=-1,.volume=config.volume,.cycle=current_cycle,.chime=true};xQueueSend(sounds,&request,portMAX_DELAY);}
+        if(!config.custom_wake&&result->wakeup_state==WAKENET_DETECTED){
+            portENTER_CRITICAL(&gate_lock);uint32_t current_cycle=cycle,current_epoch=epoch;portEXIT_CRITICAL(&gate_lock);
+            activate(current_cycle,current_epoch);
         }
     }
 }
@@ -185,7 +208,7 @@ static void transport_task(void *argument){
         if(byte=='\n'){
             command[used]=0;
             if(!overflow&&used){
-                if(strcmp(command,"CLEXVOICE INFO")==0){portENTER_CRITICAL(&gate_lock);int current=state;portEXIT_CRITICAL(&gate_lock);reply("CLEX_VOICE_INFO protocol=1 target=esp32p4 state=%d model=%s\n",current,config.signature);}
+                if(strcmp(command,"CLEXVOICE INFO")==0){portENTER_CRITICAL(&gate_lock);int current=state;portEXIT_CRITICAL(&gate_lock);reply("CLEX_VOICE_INFO protocol=1 target=%s state=%d model=%s\n",CONFIG_IDF_TARGET,current,config.signature);}
                 else if(strcmp(command,"CLEXVOICE STOP")==0){int c=CONTROL_STOP;xQueueSend(controls,&c,portMAX_DELAY);}
                 else if(strcmp(command,"CLEXVOICE START")==0){int c=CONTROL_START;xQueueSend(controls,&c,portMAX_DELAY);}
                 else{
@@ -201,22 +224,29 @@ static void transport_task(void *argument){
         }else if(!overflow&&used<sizeof(command)-1)command[used++]=(char)byte;else overflow=true;
     }
 }
-bool clex_voice_tone(int tag,unsigned frequency,unsigned duration,unsigned volume){
-    if(!sounds||frequency<100||frequency>4000||duration<20||duration>10000||volume>100)return false;
+static bool queue_sound(sound_request_t request){
+    if(!config.speaker_enabled||!sounds||request.volume>100)return false;
     portENTER_CRITICAL(&gate_lock);bool allowed=!audio_busy&&!recording;if(allowed){audio_busy=true;epoch++;}portEXIT_CRITICAL(&gate_lock);
     if(!allowed)return false;
-    sound_request_t request={.tag=tag,.frequency=frequency,.duration=duration,.volume=volume};
     if(xQueueSend(sounds,&request,0)==pdTRUE)return true;
-    portENTER_CRITICAL(&gate_lock);audio_busy=false;portEXIT_CRITICAL(&gate_lock);return false;
+    portENTER_CRITICAL(&gate_lock);audio_busy=false;epoch++;portEXIT_CRITICAL(&gate_lock);return false;
+}
+bool clex_voice_tone(int tag,unsigned frequency,unsigned duration,unsigned volume){
+    if(frequency<100||frequency>4000||duration<20||duration>10000)return false;
+    return queue_sound((sound_request_t){.tag=tag,.frequency=frequency,.duration=duration,.volume=volume});
+}
+bool clex_voice_play(int tag,const int16_t *pcm,size_t samples,unsigned volume){
+    if(!pcm||samples<800||samples>80000)return false;
+    return queue_sound((sound_request_t){.tag=tag,.pcm=pcm,.samples=samples,.volume=volume});
 }
 esp_err_t clex_voice_start(const clex_voice_config_t *settings){
-    if(!settings||controls||!settings->bus||settings->commands<0||settings->commands>CV_MAX_COMMANDS||settings->reference_count>CV_MAX_TEMPLATES)return ESP_ERR_INVALID_ARG;
+    if(!settings||controls||(settings->mic_kind==CV_MIC_CODEC&&!settings->bus)||settings->commands<0||settings->commands>CV_MAX_COMMANDS||settings->reference_count>CV_MAX_TEMPLATES||settings->wake_reference_count>CV_MAX_TEMPLATES||(settings->wake_reference_count&&!settings->wake_references)||settings->activation_samples>80000||((settings->activation_pcm==NULL)!=(settings->activation_samples==0)))return ESP_ERR_INVALID_ARG;
     config=*settings;
     esp_err_t status=cv_audio_initialize(&config);if(status!=ESP_OK)return status;
     srmodel_list_t *models=esp_srmodel_init("model");if(!models)return ESP_ERR_NOT_FOUND;
-    char *wake=esp_srmodel_filter(models,"wn10","ru_privetesp");if(!wake||strcmp(wake,"wn10_ru_privetesp")!=0)return ESP_ERR_NOT_FOUND;
+    char *wake=config.custom_wake?NULL:esp_srmodel_filter(models,"wn10","ru_privetesp");if(!config.custom_wake&&(!wake||strcmp(wake,"wn10_ru_privetesp")!=0))return ESP_ERR_NOT_FOUND;
     afe_config_t *setup=afe_config_init("M",models,AFE_TYPE_SR,AFE_MODE_HIGH_PERF);if(!setup)return ESP_ERR_NO_MEM;
-    setup->aec_init=false;setup->se_init=false;setup->wakenet_init=true;setup->wakenet_model_name=wake;setup->wakenet_mode=DET_MODE_90;setup->memory_alloc_mode=AFE_MEMORY_ALLOC_MORE_PSRAM;
+    setup->aec_init=false;setup->se_init=false;setup->wakenet_init=!config.custom_wake;setup->wakenet_model_name=wake;setup->wakenet_mode=DET_MODE_90;setup->memory_alloc_mode=AFE_MEMORY_ALLOC_MORE_PSRAM;
     afe=esp_afe_handle_from_config(setup);afe_data=afe?afe->create_from_config(setup):NULL;afe_config_free(setup);if(!afe_data)return ESP_ERR_NO_MEM;
     afe->disable_wakenet(afe_data);feed_frames=afe->get_feed_chunksize(afe_data);
     if(!feed_frames||feed_frames>4096||afe->get_feed_channel_num(afe_data)!=1)return ESP_ERR_NOT_SUPPORTED;
@@ -229,6 +259,6 @@ esp_err_t clex_voice_start(const clex_voice_config_t *settings){
     cv_features_init();
     if(xTaskCreatePinnedToCore(infer_task,"voice_commands",16384,NULL,3,NULL,1)!=pdPASS||xTaskCreate(sound_task,"voice_sound",4096,NULL,4,NULL)!=pdPASS||xTaskCreatePinnedToCore(feed_task,"voice_feed",8192,NULL,5,NULL,0)!=pdPASS||xTaskCreatePinnedToCore(detect_task,"voice_wake",16384,NULL,5,NULL,1)!=pdPASS||xTaskCreate(transport_task,"voice_usb",8192,NULL,2,NULL)!=pdPASS)return ESP_ERR_NO_MEM;
     reply("CLEX_VOICE_READY protocol=1 model=%s\n",config.signature);
-    if(config.reference_count&&config.commands){int start=CONTROL_START;xQueueSend(controls,&start,portMAX_DELAY);}
+    if(config.custom_wake?config.wake_reference_count>0:config.reference_count&&config.commands){int start=CONTROL_START;xQueueSend(controls,&start,portMAX_DELAY);}
     return ESP_OK;
 }
