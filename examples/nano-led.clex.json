@@ -2,7 +2,7 @@
   "id": "c06ea0f2-f492-471f-88a6-385da5b78d3e",
   "name": "Nano: светодиод",
   "description": "Внешний светодиод: D13 через резистор 470 Ом к аноду, катод к GND. Таймер переключает его раз в секунду.",
-  "formatVersion": 3,
+  "formatVersion": 4,
   "createdAt": "2026-10-16T10:09:42.932Z",
   "updatedAt": "2026-10-16T10:09:42.932Z",
   "boardId": "arduino-nano-atmega328p-ch340",
@@ -47,7 +47,7 @@
       },
       {
         "id": "70f30c85-ec13-482f-b03e-f2456a7272e7",
-        "moduleId": "clex.logic.gpio-toggle",
+        "moduleId": "clex.logic.gpio-set",
         "moduleVersion": "1.0.0",
         "name": "Переключить выход 1",
         "position": {
@@ -78,7 +78,7 @@
         "source": "dd1dc82a-e5d0-4a0a-8d66-0e33b4f40478",
         "target": "70f30c85-ec13-482f-b03e-f2456a7272e7",
         "sourceHandle": "tick",
-        "targetHandle": "trigger",
+        "targetHandle": "toggle",
         "dataType": "event"
       },
       {
@@ -130,7 +130,7 @@
   "moduleVersions": {
     "clex.hardware.led": "1.0.0",
     "clex.logic.timer": "1.0.0",
-    "clex.logic.gpio-toggle": "1.0.0",
+    "clex.logic.gpio-set": "1.0.0",
     "clex.logic.serial": "1.0.0"
   }
 }

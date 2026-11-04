@@ -28,7 +28,8 @@
       "when": {
         "field": "action",
         "value": "peer"
-      }
+      },
+      "additional": true
     }
   ],
   "outputs": [
@@ -37,17 +38,6 @@
       "name": "Данные радио обновлены",
       "type": "event",
       "description": "Передает новые значения после запуска, обмена или ошибки.",
-      "when": {
-        "field": "action",
-        "value": "status"
-      }
-    },
-    {
-      "id": "ready",
-      "name": "Радио готово?",
-      "type": "boolean",
-      "description": "Местное радио запущено. Не означает, что удаленная плата доступна.",
-      "readyOn": "changed",
       "when": {
         "field": "action",
         "value": "status"
@@ -184,7 +174,8 @@
       "when": {
         "field": "action",
         "value": "peer"
-      }
+      },
+      "additional": true
     },
     {
       "id": "connected",
@@ -244,17 +235,6 @@
       }
     },
     {
-      "id": "online",
-      "name": "Устройство на связи?",
-      "type": "boolean",
-      "description": "Есть актуальный ответ выбранного устройства; не подтверждает выполнение команды.",
-      "readyOn": "peerChanged",
-      "when": {
-        "field": "action",
-        "value": "peer"
-      }
-    },
-    {
       "id": "rssi",
       "name": "Уровень сигнала, дБм",
       "type": "number",
@@ -263,18 +243,8 @@
       "when": {
         "field": "action",
         "value": "peer"
-      }
-    },
-    {
-      "id": "rssiValid",
-      "name": "RSSI актуален?",
-      "type": "boolean",
-      "description": "Есть измерение RSSI и не истек таймаут связи.",
-      "readyOn": "peerChanged",
-      "when": {
-        "field": "action",
-        "value": "peer"
-      }
+      },
+      "additional": true
     },
     {
       "id": "rssiText",
@@ -293,7 +263,11 @@
       "type": "number",
       "description": "Число проверочных пакетов до номера из последнего отчета приемника. Еще не сверенные пакеты учитываются отдельно.",
       "readyOn": "peerChanged",
-      "when": { "field": "action", "value": "peer" }
+      "when": {
+        "field": "action",
+        "value": "peer"
+      },
+      "additional": true
     },
     {
       "id": "testReceived",
@@ -301,7 +275,11 @@
       "type": "number",
       "description": "Уникальные проверочные пакеты, учтенные приемником в этом измерении. Дубликаты не увеличивают счетчик.",
       "readyOn": "peerChanged",
-      "when": { "field": "action", "value": "peer" }
+      "when": {
+        "field": "action",
+        "value": "peer"
+      },
+      "additional": true
     },
     {
       "id": "testLost",
@@ -309,7 +287,11 @@
       "type": "number",
       "description": "Разница между пакетами в измерении и реально учтенными приемником. Потеря обратного отчета не увеличивает потери.",
       "readyOn": "peerChanged",
-      "when": { "field": "action", "value": "peer" }
+      "when": {
+        "field": "action",
+        "value": "peer"
+      },
+      "additional": true
     },
     {
       "id": "lossPercent",
@@ -317,15 +299,11 @@
       "type": "number",
       "description": "Процент потерянных проверочных пакетов за текущее измерение. Перед использованием проверяйте актуальность отчета.",
       "readyOn": "peerChanged",
-      "when": { "field": "action", "value": "peer" }
-    },
-    {
-      "id": "statisticsValid",
-      "name": "Статистика актуальна?",
-      "type": "boolean",
-      "description": "Получен свежий отчет с ненулевым количеством пакетов; до первого измерения и после таймаута – нет.",
-      "readyOn": "peerChanged",
-      "when": { "field": "action", "value": "peer" }
+      "when": {
+        "field": "action",
+        "value": "peer"
+      },
+      "additional": true
     },
     {
       "id": "statisticsText",
@@ -333,7 +311,10 @@
       "type": "text",
       "description": "Получено N из M и Потери K (P%) на двух строках. До измерения --, после таймаута – Нет свежего отчета.",
       "readyOn": "peerChanged",
-      "when": { "field": "action", "value": "peer" }
+      "when": {
+        "field": "action",
+        "value": "peer"
+      }
     },
     {
       "id": "pendingPackets",
@@ -342,7 +323,10 @@
       "description": "Отправленные проверочные пакеты после последнего отчета. Их доставка пока неизвестна; они не включены в потери.",
       "readyOn": "peerChanged",
       "additional": true,
-      "when": { "field": "action", "value": "peer" }
+      "when": {
+        "field": "action",
+        "value": "peer"
+      }
     },
     {
       "id": "testSendErrors",
@@ -351,7 +335,10 @@
       "description": "Проверки, которые местный драйвер не принял к отправке. Не включены в число переданных или потерянных пакетов.",
       "readyOn": "peerChanged",
       "additional": true,
-      "when": { "field": "action", "value": "peer" }
+      "when": {
+        "field": "action",
+        "value": "peer"
+      }
     },
     {
       "id": "lastSeenSeconds",
@@ -362,7 +349,8 @@
       "when": {
         "field": "action",
         "value": "peer"
-      }
+      },
+      "additional": true
     }
   ],
   "parameters": {
@@ -451,7 +439,7 @@
     }
   },
   "compatibility": {
-    "projectFormat": 3,
+    "projectFormat": 4,
     "targets": [
       "esp32",
       "esp32s3"

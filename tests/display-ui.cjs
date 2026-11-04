@@ -25,7 +25,7 @@ const {chromium}=require('playwright');
   assert.equal(await page.getByRole('combobox',{name:'Подключение: VCC · 3,3 В'}).inputValue(),fixture.assembly.connections.find(w=>w.terminalId==='vcc').boardPinId);
   assert.equal(displayModule.terminals.some(t=>t.id==='bl'),false);
   await page.getByRole('button',{name:'Логика',exact:true}).click();
-  await page.getByRole('button',{name:'Добавить блок: Экран дисплея',exact:true}).click();
+  await page.getByRole('button',{name:/^Добавить блок: Экран дисплея · /}).click();
   await page.locator('.logic-node').first().dblclick();
   const dialog=page.getByRole('dialog');await dialog.waitFor();
   await dialog.getByRole('button',{name:'Добавить текст',exact:true}).click();

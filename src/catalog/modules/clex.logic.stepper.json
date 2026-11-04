@@ -13,79 +13,86 @@
       "id": "trigger",
       "name": "Запустить движение",
       "type": "event",
-      "required": false
+      "required": false,
+      "additional": false,
+      "description": "Запускает действие «Запустить движение»."
     },
     {
       "id": "stop",
       "name": "Остановить",
       "type": "event",
       "required": false,
-      "description": "Прекращает импульсы, сохраняя удержание двигателя. Короткий начатый импульс завершается."
+      "description": "Прекращает импульсы, сохраняя удержание двигателя. Короткий начатый импульс завершается.",
+      "additional": false
     },
     {
       "id": "release",
       "name": "Отключить обмотки",
       "type": "event",
       "required": false,
-      "description": "Останавливает движение и выключает ENABLE. Расчетная позиция больше не подтверждает положение вала."
+      "description": "Останавливает движение и выключает ENABLE. Расчетная позиция больше не подтверждает положение вала.",
+      "additional": false
     }
   ],
   "outputs": [
     {
       "id": "changed",
       "name": "Состояние обновлено",
-      "type": "event"
+      "type": "event",
+      "additional": true,
+      "description": "Сигнал: Состояние обновлено."
     },
     {
       "id": "started",
       "name": "Движение запущено",
-      "type": "event"
+      "type": "event",
+      "additional": true,
+      "description": "Сигнал: Движение запущено."
     },
     {
       "id": "completed",
       "name": "Импульсы выданы",
       "type": "event",
-      "description": "Выдано заданное количество STEP. Не является подтверждением физического поворота вала."
+      "description": "Выдано заданное количество STEP. Не является подтверждением физического поворота вала.",
+      "additional": false
     },
     {
       "id": "stopped",
       "name": "Движение остановлено",
-      "type": "event"
+      "type": "event",
+      "additional": false,
+      "description": "Сигнал: Движение остановлено."
     },
     {
       "id": "failed",
       "name": "Ошибка движения",
-      "type": "event"
-    },
-    {
-      "id": "moving",
-      "name": "Движение выполняется?",
-      "type": "boolean",
-      "readyOn": "changed"
-    },
-    {
-      "id": "enabled",
-      "name": "Обмотки включены?",
-      "type": "boolean",
-      "readyOn": "changed"
+      "type": "event",
+      "additional": false,
+      "description": "Сигнал: Ошибка движения."
     },
     {
       "id": "position",
       "name": "Расчетная позиция, импульсы",
       "type": "number",
-      "readyOn": "changed"
+      "readyOn": "changed",
+      "additional": false,
+      "description": "Передаёт число: Расчетная позиция, импульсы."
     },
     {
       "id": "emitted",
       "name": "Выдано импульсов в движении",
       "type": "number",
-      "readyOn": "changed"
+      "readyOn": "changed",
+      "additional": true,
+      "description": "Передаёт число: Выдано импульсов в движении."
     },
     {
       "id": "error",
       "name": "Причина ошибки",
       "type": "text",
-      "readyOn": "changed"
+      "readyOn": "changed",
+      "additional": true,
+      "description": "Передаёт текст: Причина ошибки."
     }
   ],
   "parameters": {
@@ -179,7 +186,7 @@
     }
   },
   "compatibility": {
-    "projectFormat": 3,
+    "projectFormat": 4,
     "targets": [
       "esp32",
       "esp32s3",
@@ -187,7 +194,9 @@
       "atmega328p"
     ],
     "espIdf": "5.4.4",
-    "platforms": { "arduino-avr": "1.8.6" }
+    "platforms": {
+      "arduino-avr": "1.8.6"
+    }
   },
   "firmware": {
     "status": "implemented",

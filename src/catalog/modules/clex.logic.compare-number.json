@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "kind": "logic",
   "name": "Сравнение числа",
-  "description": "Сравнивает число с порогом или определяет его положение относительно диапазона. Выдаёт события и значения Да/Нет. Выполняется по входному сигналу.",
+  "description": "Сравнивает число с порогом или определяет его положение относительно диапазона. Выдаёт событие результата проверки или ошибки. Выполняется по входному сигналу.",
   "category": "values",
   "categoryName": "Данные",
   "icon": "GitBranch",
@@ -13,14 +13,18 @@
       "id": "trigger",
       "name": "Проверить",
       "type": "event",
-      "required": true
+      "required": true,
+      "additional": false,
+      "description": "Запускает действие «Проверить»."
     },
     {
       "id": "value",
       "name": "Проверяемое число",
       "type": "number",
       "required": true,
-      "sample": "latest"
+      "sample": "latest",
+      "additional": false,
+      "description": "Передаёт число: Проверяемое число."
     },
     {
       "id": "reference",
@@ -31,7 +35,8 @@
       "when": {
         "field": "mode",
         "value": "compare"
-      }
+      },
+      "description": "Передаёт число: Число для сравнения."
     },
     {
       "id": "lower",
@@ -42,7 +47,8 @@
       "when": {
         "field": "mode",
         "value": "range"
-      }
+      },
+      "description": "Передаёт число: Нижняя граница."
     },
     {
       "id": "upper",
@@ -53,7 +59,8 @@
       "when": {
         "field": "mode",
         "value": "range"
-      }
+      },
+      "description": "Передаёт число: Верхняя граница."
     }
   ],
   "outputs": [
@@ -61,7 +68,8 @@
       "id": "changed",
       "name": "Проверка завершена",
       "type": "event",
-      "description": "После каждого вызова. Логические выходы уже обновлены; при ошибке все они равны Нет."
+      "description": "Сигнал после каждой проверки, включая ошибку. Числовой результат обновлён.",
+      "additional": true
     },
     {
       "id": "matched",
@@ -70,7 +78,9 @@
       "when": {
         "field": "mode",
         "value": "compare"
-      }
+      },
+      "additional": false,
+      "description": "Сигнал: Условие выполнено."
     },
     {
       "id": "unmatched",
@@ -79,7 +89,9 @@
       "when": {
         "field": "mode",
         "value": "compare"
-      }
+      },
+      "additional": false,
+      "description": "Сигнал: Условие не выполнено."
     },
     {
       "id": "below",
@@ -88,7 +100,9 @@
       "when": {
         "field": "mode",
         "value": "range"
-      }
+      },
+      "additional": false,
+      "description": "Сигнал: Ниже диапазона."
     },
     {
       "id": "inside",
@@ -97,7 +111,9 @@
       "when": {
         "field": "mode",
         "value": "range"
-      }
+      },
+      "additional": false,
+      "description": "Сигнал: В диапазоне."
     },
     {
       "id": "above",
@@ -106,75 +122,32 @@
       "when": {
         "field": "mode",
         "value": "range"
-      }
+      },
+      "additional": false,
+      "description": "Сигнал: Выше диапазона."
     },
     {
       "id": "failed",
       "name": "Ошибка сравнения",
       "type": "event",
-      "additional": true
-    },
-    {
-      "id": "result",
-      "name": "Условие выполнено?",
-      "type": "boolean",
-      "readyOn": "changed",
-      "when": {
-        "field": "mode",
-        "value": "compare"
-      }
-    },
-    {
-      "id": "isBelow",
-      "name": "Ниже диапазона?",
-      "type": "boolean",
-      "readyOn": "changed",
-      "when": {
-        "field": "mode",
-        "value": "range"
-      }
-    },
-    {
-      "id": "isInside",
-      "name": "В диапазоне?",
-      "type": "boolean",
-      "readyOn": "changed",
-      "when": {
-        "field": "mode",
-        "value": "range"
-      },
-      "additional": true
-    },
-    {
-      "id": "isAbove",
-      "name": "Выше диапазона?",
-      "type": "boolean",
-      "readyOn": "changed",
-      "when": {
-        "field": "mode",
-        "value": "range"
-      }
+      "additional": false,
+      "description": "Сигнал: Ошибка сравнения."
     },
     {
       "id": "value",
       "name": "Проверенное число",
       "type": "number",
       "readyOn": "changed",
-      "additional": true
-    },
-    {
-      "id": "valid",
-      "name": "Проверка корректна?",
-      "type": "boolean",
-      "readyOn": "changed",
-      "additional": true
+      "additional": true,
+      "description": "Передаёт число: Проверенное число."
     },
     {
       "id": "error",
       "name": "Описание ошибки",
       "type": "text",
       "readyOn": "changed",
-      "additional": true
+      "additional": true,
+      "description": "Передаёт текст: Описание ошибки."
     }
   ],
   "parameters": {
@@ -303,7 +276,7 @@
   },
   "constraints": {},
   "compatibility": {
-    "projectFormat": 3,
+    "projectFormat": 4,
     "targets": [
       "esp32",
       "esp32s3",

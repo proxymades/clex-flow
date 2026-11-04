@@ -18,35 +18,39 @@ function nodes(project, ...modules) {
   return withLogic(project,graph);
 }
 const edge = (graph, source, sourceHandle, target, targetHandle) => ({ source: graph.nodes[source].id, sourceHandle, target: graph.nodes[target].id, targetHandle });
-function blink() { const project = nodes(mounted(), timer, toggle); return withLogic(project,connectNodes(project.logic,catalog,edge(project.logic,0,'tick',1,'trigger'))); }
+function blink() { const project = nodes(mounted(), timer, toggle); return withLogic(project,connectNodes(project.logic,catalog,edge(project.logic,0,'tick',1,'toggle'))); }
 
 test('таймер 500 мс → переключение LED использует компонент монтажа и точные версии', () => {
   const project = blink(); assert.equal(project.logic.nodes[0].parameters.intervalMs,500);
   assert.equal(project.logic.nodes[1].parameters.componentId,project.components[0].id);
   assert.equal(project.logic.edges[0].dataType,'event');
   assert.equal(validateGraph(project,catalog).filter(issue=>issue.severity==='error').length,0);
-  assert.deepEqual(parseProject(serializeProject(project)),project);
+  const restored=parseProject(serializeProject(project));
+  assert.equal(restored.logic.nodes[1].moduleId,'clex.logic.gpio-set');assert.equal(restored.logic.edges[0].targetHandle,'toggle');
+  assert.deepEqual(restored.logic.edges,project.logic.edges);assert.deepEqual(parseProject(serializeProject(restored)),restored);
   assert.equal(project.moduleVersions[toggle.id],'1.0.0');
 });
-test('несовместимые типы, обратные направления, повторные связи и второй вход запрещены', () => {
+test('несовместимые типы и повторные связи запрещены, события допускают несколько источников', () => {
   const project = nodes(mounted(),timer,toggle,serial,timer), graph = project.logic;
-  assert.match(connectionProblem(graph,catalog,edge(graph,0,'interval',1,'trigger')),/Несовместимые/);
-  assert.match(connectionProblem(graph,catalog,edge(graph,1,'trigger',0,'tick')),/выход/);
-  const connected = connectNodes(graph,catalog,edge(graph,0,'tick',1,'trigger'));
-  assert.match(connectionProblem(connected,catalog,edge(graph,0,'tick',1,'trigger')),/уже существует/);
-  assert.match(connectionProblem(connected,catalog,edge(graph,3,'tick',1,'trigger')),/одно соединение/);
+  assert.match(connectionProblem(graph,catalog,edge(graph,0,'interval',1,'toggle')),/Несовместимые/);
+  assert.match(connectionProblem(graph,catalog,edge(graph,1,'toggle',0,'tick')),/выход/);
+  const connected = connectNodes(graph,catalog,edge(graph,0,'tick',1,'toggle'));
+  assert.match(connectionProblem(connected,catalog,edge(graph,0,'tick',1,'toggle')),/уже существует/);
+  assert.equal(connectionProblem(connected,catalog,edge(graph,3,'tick',1,'toggle')),null);
+  const data=connectNodes(connected,catalog,edge(graph,0,'interval',2,'number'));
+  assert.match(connectionProblem(data,catalog,edge(graph,3,'interval',2,'number')),/одно соединение/);
 });
-test('все четыре типа портов участвуют в допустимых схемах', () => {
+test('события, числа и текст участвуют в допустимых схемах', () => {
   let project = nodes(mounted(),timer,read,set,serial,serial);
   let graph = connectNodes(project.logic,catalog,edge(project.logic,0,'tick',1,'trigger'));
-  graph = connectNodes(graph,catalog,edge(graph,1,'done',2,'trigger'));
-  graph = connectNodes(graph,catalog,edge(graph,1,'level',2,'value'));
+  graph = connectNodes(graph,catalog,edge(graph,1,'active',2,'on'));
+  graph = connectNodes(graph,catalog,edge(graph,1,'inactive',2,'off'));
   graph = connectNodes(graph,catalog,edge(graph,2,'done',3,'trigger'));
   graph = connectNodes(graph,catalog,edge(graph,0,'interval',3,'number'));
   graph = connectNodes(graph,catalog,edge(graph,3,'done',4,'trigger'));
   graph = connectNodes(graph,catalog,edge(graph,3,'text',4,'text'));
   project=withLogic(project,graph);
-  assert.deepEqual(new Set(graph.edges.map(edge=>edge.dataType)),new Set(['event','boolean','number','text']));
+  assert.deepEqual(new Set(graph.edges.map(edge=>edge.dataType)),new Set(['event','number','text']));
   assert.equal(validateGraph(project,catalog).filter(issue=>issue.severity==='error').length,0);
 });
 test('самосоединения и косвенные циклы отклоняются', () => {
@@ -55,12 +59,13 @@ test('самосоединения и косвенные циклы отклон
   graph=connectNodes(graph,catalog,edge(graph,0,'done',1,'trigger')); graph=connectNodes(graph,catalog,edge(graph,1,'done',2,'trigger'));
   assert.match(connectionProblem(graph,catalog,edge(graph,2,'done',0,'trigger')),/Циклические/);
 });
-test('данные после действия требуют событийного пути от источника', () => {
-  let project=nodes(mounted(),timer,read,set); let graph=connectNodes(project.logic,catalog,edge(project.logic,0,'tick',1,'trigger'));
-  graph=connectNodes(graph,catalog,edge(graph,1,'level',2,'value'));
-  project=withLogic(project,graph); assert.ok(validateGraph(project,catalog).some(issue=>issue.code==='logic-order'));
-  project=withLogic(project,connectNodes(graph,catalog,edge(graph,1,'done',2,'trigger')));
-  assert.ok(!validateGraph(project,catalog).some(issue=>issue.code==='logic-order'));
+test('числа и текст после действия требуют событийного пути от источника', () => {
+ let project=nodes(mounted(),timer,serial,serial);
+ let graph=connectNodes(project.logic,catalog,edge(project.logic,0,'tick',1,'trigger'));
+ graph=connectNodes(graph,catalog,edge(graph,1,'text',2,'text'));
+ project=withLogic(project,graph);assert.ok(validateGraph(project,catalog).some(issue=>issue.code==='logic-order'));
+ project=withLogic(project,connectNodes(graph,catalog,edge(graph,1,'done',2,'trigger')));
+ assert.ok(!validateGraph(project,catalog).some(issue=>issue.code==='logic-order'));
 });
 test('удалённый компонент, неправильный тип компонента и GPIO без монтажа видны', () => {
   const project=blink(), node=project.logic.nodes[1];
@@ -81,7 +86,7 @@ test('несовместимая версия и неверный сохранё
   assert.ok(validateGraph({...project,logic:{...project.logic,edges:project.logic.edges.map(edge=>({...edge,dataType:'number'}))}},catalog).some(issue=>issue.code==='logic-type'));
 });
 test('копирование создаёт новые ID и переносит только связи внутри выделения', () => {
-  const project=nodes(mounted(),timer,toggle,serial); let graph=connectNodes(project.logic,catalog,edge(project.logic,0,'tick',1,'trigger'));
+  const project=nodes(mounted(),timer,toggle,serial); let graph=connectNodes(project.logic,catalog,edge(project.logic,0,'tick',1,'toggle'));
   graph=connectNodes(graph,catalog,edge(graph,1,'done',2,'trigger'));
   const snapshot=selectionSnapshot(graph,[graph.nodes[0].id,graph.nodes[1].id]), pasted=pasteNodes(graph,snapshot);
   assert.equal(snapshot.edges.length,1); assert.equal(pasted.graph.nodes.length,5); assert.equal(pasted.graph.edges.length,3);
@@ -112,11 +117,11 @@ test('история не меняет переданный граф и огра
   for(const intervalMs of [1000,2000,3000]) history.change(graph=>({...graph,nodes:graph.nodes.map((node,index)=>index===0?{...node,parameters:{intervalMs}}:node)}));
   assert.equal(original.nodes[0].parameters.intervalMs,500); history.undo(); history.undo(); assert.equal(history.current.nodes[0].parameters.intervalMs,1000); assert.equal(history.canUndo,false);
 });
-test('формат 2 с монтажом обновляется в памяти, будущие версии и осиротевшие связи отклоняются', () => {
-  const project=mounted(), legacy={...project,formatVersion:2}; const migrated=parseProject(JSON.stringify(legacy));
-  assert.equal(migrated.formatVersion,3); assert.deepEqual(migrated.assembly,legacy.assembly); assert.equal(legacy.formatVersion,2);
-  const valid=blink(); assert.throws(()=>serializeProject({...valid,logic:{...valid.logic,edges:[{...valid.logic.edges[0],target:'missing'}]}}));
-  assert.throws(()=>parseProject(JSON.stringify({...valid,formatVersion:2})),/неподдерживаемый граф/);
+test('старые и будущие форматы отклоняются без изменения исходного проекта', () => {
+ const project=blink(),before=JSON.stringify(project);
+ for(const version of [1,2,3,5,999])assert.throws(()=>parseProject(JSON.stringify({...project,formatVersion:version})),/не поддерживается/);
+ assert.equal(JSON.stringify(project),before);
+ assert.throws(()=>serializeProject({...project,logic:{...project.logic,edges:[{...project.logic.edges[0],target:'missing'}]}}));
 });
 test('сохранённые узлы не содержат runtime-данные React Flow', () => {
   const project=parseProject(serializeProject(blink()));

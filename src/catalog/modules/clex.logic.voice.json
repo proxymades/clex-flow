@@ -13,26 +13,30 @@
     {
       "id": "recognized",
       "name": "Команда распознана",
-      "type": "event"
+      "type": "event",
+      "description": "Сигнал: Команда распознана."
     },
     {
       "id": "phrase",
       "name": "Текст команды",
       "type": "text",
-      "readyOn": "recognized"
+      "readyOn": "recognized",
+      "description": "Передаёт текст: Текст команды."
     },
     {
       "id": "commandId",
       "name": "ID команды",
       "type": "text",
       "readyOn": "recognized",
-      "additional": true
+      "additional": true,
+      "description": "Передаёт текст: ID команды."
     },
     {
       "id": "activated",
       "name": "Активация",
       "type": "event",
-      "additional": true
+      "additional": true,
+      "description": "Сигнал: Активация."
     },
     {
       "id": "uncertain",
@@ -45,20 +49,23 @@
       "id": "closed",
       "name": "Окно закрыто",
       "type": "event",
-      "additional": true
+      "additional": true,
+      "description": "Сигнал: Окно закрыто."
     },
     {
       "id": "failed",
       "name": "Ошибка",
       "type": "event",
-      "additional": true
+      "additional": true,
+      "description": "Сигнал: Ошибка."
     },
     {
       "id": "error",
       "name": "Описание ошибки",
       "type": "text",
       "readyOn": "failed",
-      "additional": true
+      "additional": true,
+      "description": "Передаёт текст: Описание ошибки."
     }
   ],
   "parameters": {
@@ -77,7 +84,7 @@
     }
   },
   "compatibility": {
-    "projectFormat": 3,
+    "projectFormat": 4,
     "targets": [
       "esp32p4",
       "esp32s3"

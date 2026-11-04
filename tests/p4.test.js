@@ -24,7 +24,7 @@ test('P4 dynamic LVGL firmware keeps Cyrillic, normal graph updates, RISC-V targ
   assert.match(bundle.files['sdkconfig.defaults'],/CONFIG_ESP_CONSOLE_UART_DEFAULT=y/);
   assert.match(bundle.files['sdkconfig.defaults'],/CONFIG_ESP32P4_SELECTS_REV_LESS_V3=y/);
   assert.match(bundle.files['sdkconfig.defaults'],/CONFIG_ESPTOOLPY_FLASHSIZE_16MB=y/);
-  assert.equal(parseProject(serializeProject(project)).formatVersion,3);
+  assert.equal(parseProject(serializeProject(project)).formatVersion,4);
   const modern=generateFirmware(p4Project(false,'v3'),catalog);
   // IDs are identical for a revision-only change, so fingerprint must still invalidate build.
   const changed=generateFirmware({...project,boardSettings:{chipRevision:'v3'}},catalog);

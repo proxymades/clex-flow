@@ -26,9 +26,9 @@ export function espNowButtonProject(){
  p=addHardware(p,catalog.modules.find(m=>m.id==='clex.hardware.button'),catalog);const button=p.components.find(c=>c.moduleId==='clex.hardware.button');p=connectTerminal(p,catalog,button.id,'signal','P26');p=connectTerminal(p,catalog,button.id,'ground','P33');
  let graph={...p.logic,nodes:p.logic.nodes.filter(n=>n.id!==nodes.timer.id),edges:p.logic.edges.filter(e=>e.source!==nodes.timer.id)};
  graph=addNode(graph,catalog.modules.find(m=>m.id==='clex.logic.gpio-edge'),p.components,p,catalog);const input=graph.nodes.at(-1);input.parameters.componentId=button.id;
- graph=connectNodes(graph,catalog,{source:input.id,sourceHandle:'falling',target:nodes.send.id,targetHandle:'trigger'},{...p,logic:graph});
+ graph=connectNodes(graph,catalog,{source:input.id,sourceHandle:'active',target:nodes.send.id,targetHandle:'trigger'},{...p,logic:graph});
  graph=addNode(graph,catalog.modules.find(m=>m.id==='clex.logic.espnow-send'),p.components,p,catalog);const normalSend=graph.nodes.at(-1);normalSend.parameters={...nodes.send.parameters,command:'SET_NORMAL'};
  graph=addNode(graph,catalog.modules.find(m=>m.id==='clex.logic.espnow-control'),p.components,p,catalog);const normalMode=graph.nodes.at(-1);normalMode.parameters.action='mode';normalMode.parameters.mode='normal';
- graph=connectNodes(graph,catalog,{source:input.id,sourceHandle:'rising',target:normalSend.id,targetHandle:'trigger'},{...p,logic:graph});graph=connectNodes(graph,catalog,{source:normalSend.id,sourceHandle:'completed',target:normalMode.id,targetHandle:'trigger'},{...p,logic:graph});
+ graph=connectNodes(graph,catalog,{source:input.id,sourceHandle:'inactive',target:normalSend.id,targetHandle:'trigger'},{...p,logic:graph});graph=connectNodes(graph,catalog,{source:normalSend.id,sourceHandle:'completed',target:normalMode.id,targetHandle:'trigger'},{...p,logic:graph});
  return {...result,project:withLogic(p,graph),button,input};
 }

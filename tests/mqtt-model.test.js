@@ -155,7 +155,7 @@ test('MQTT 5 user properties are UTF-8 bounded and metadata changes can drive di
  for(const row of [{key:'я'.repeat(65),value:''},{key:'',value:'😀'.repeat(129)},{key:'a\0',value:'b'},{key:'a',value:'\ud800'},{key:1,value:'b'}]){
   send.parameters.userProperties=JSON.stringify([row]);assert.ok(mqttLogicIssues(send,project).some(message=>message.includes('User Properties')));
  }
- for(const id of ['state','isConnected'])assert.equal(nodePorts(control,catalog,project).outputs.find(port=>port.id===id).readyOn,'changed');
+ for(const id of ['state'])assert.equal(nodePorts(control,catalog,project).outputs.find(port=>port.id===id).readyOn,'changed');
 });
 
 test('shared MQTT filters can target literal topics beginning with $share',()=>{

@@ -9,5 +9,5 @@ export const button = catalog.modules.find(module => module.id === 'clex.hardwar
 export const timer = catalog.modules.find(module => module.id === 'clex.logic.timer');
 export const read = catalog.modules.find(module => module.id === 'clex.logic.gpio-read');
 export const set = catalog.modules.find(module => module.id === 'clex.logic.gpio-set');
-export const toggle = catalog.modules.find(module => module.id === 'clex.logic.gpio-toggle');
+export const toggle = catalog.modules.find(module => module.id === 'clex.logic.gpio-set');
 export const serial = catalog.modules.find(module => module.id === 'clex.logic.serial');

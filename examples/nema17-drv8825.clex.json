@@ -2,7 +2,7 @@
   "id": "90b42fd4-0214-4a9f-b43a-17dcac9afbae",
   "name": "NEMA 17 – DRV8825",
   "description": "ESP32-S3-ETH: 200 импульсов STEP каждые 5 секунд. Проверьте подключение обмоток A/B, GPIO, микрошаг и полярность ENABLE. Силовое питание подключите вручную, ограничение тока настройте на драйвере.",
-  "formatVersion": 3,
+  "formatVersion": 4,
   "createdAt": "2026-10-17T15:24:12.671Z",
   "updatedAt": "2026-10-17T15:24:12.671Z",
   "boardId": "waveshare-esp32-s3-eth",

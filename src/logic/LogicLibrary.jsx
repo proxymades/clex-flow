@@ -1,14 +1,25 @@
 import MicAudioLines from '../components/MicAudioLines.jsx';
-import { Mic } from 'lucide-react';
-import { formatCount } from '../utils/plural.js';
-import { useState } from 'react';
-import { Gauge, Wifi, ToggleRight, RotateCw, Search, Plus, Timer, ScanLine, ArrowUpRight, Repeat2, Terminal, Box, Layers, Monitor, Hash , Network, Globe , Camera, Volume2, Radio, GitBranch, Thermometer } from 'lucide-react';
-import { TYPE_COLORS, TYPE_NAMES, logicAdditionProblem } from './model.js';
-const icons = { MicAudioLines, Mic, Gauge, Wifi, ToggleRight, RotateCw, Timer, ScanLine, ArrowUpRight, Repeat2, Terminal, Monitor, Hash, Network, Globe, Camera, Volume2, Radio, GitBranch, Thermometer };
-export default function LogicLibrary({ modules, project, catalog, busy, onAdd }) {
-  const [search, setSearch] = useState(''), [category, setCategory] = useState('all');
-  const categories = [...new Map(modules.map(module => [module.category, module.categoryName])).entries()];
-  const visible = modules.filter(module => (category === 'all' || module.category === category) && `${module.name} ${module.description}`.toLocaleLowerCase('ru').includes(search.toLocaleLowerCase('ru')));
-  const ordered = category === 'all' ? categories.flatMap(([id]) => visible.filter(module => module.category === id)) : visible;
-  return <><div className="panel-label">ЛОГИЧЕСКИЕ БЛОКИ</div><label className="search component-search"><Search size={14} /><input aria-label="Поиск блоков" value={search} onChange={event => setSearch(event.target.value)} placeholder="Найти блок…" /></label><div className="category-filter"><button className={category === 'all' ? 'active' : ''} onClick={() => setCategory('all')}>Все</button>{categories.map(([id, name]) => <button key={id} className={category === id ? 'active' : ''} onClick={() => setCategory(id)}>{name}</button>)}</div><div className="logic-library">{ordered.map(module => { const Icon = icons[module.icon] || Box, problem = logicAdditionProblem(module, project, catalog); return <button key={module.id} className="hardware-library-item" onClick={() => onAdd(module)} disabled={busy || Boolean(problem)} title={problem || undefined} aria-label={`Добавить блок: ${module.name}`}><span style={{ color: module.color }}><Icon size={20} /></span><div><strong>{module.name}</strong><small>{module.categoryName}</small></div><Plus size={14} /></button>; })}{!visible.length && <p className="panel-note">Блоки не найдены.</p>}</div><div className="panel-label library-title">ТИПЫ КОНТАКТОВ</div><div className="logic-type-legend">{Object.entries(TYPE_NAMES).map(([type, name]) => <span key={type}><i style={{ background: TYPE_COLORS[type] }} />{name}</span>)}</div><p className="panel-note">Цвет контакта обозначает тип. Цвет линии помогает проследить связь. Пунктир передает сигнал действия, сплошная линия – данные. Нажмите линию или блок, чтобы выделить его связи.</p><div className="library-bottom"><Layers size={14} />{formatCount(modules.length, ['тип блоков', 'типа блоков', 'типов блоков'])} · локально</div></>;
+import {useState} from 'react';
+import {Mic,Gauge,Wifi,ToggleRight,RotateCw,Search,Plus,Timer,ScanLine,ArrowUpRight,Repeat2,Terminal,Box,Layers,Monitor,Hash,Network,Globe,Camera,Volume2,Radio,GitBranch,Thermometer} from 'lucide-react';
+import {TYPE_COLORS,TYPE_NAMES} from './model.js';
+import {logicLibraryEntries} from './library.js';
+const icons={MicAudioLines,Mic,Gauge,Wifi,ToggleRight,RotateCw,Timer,ScanLine,ArrowUpRight,Repeat2,Terminal,Monitor,Hash,Network,Globe,Camera,Volume2,Radio,GitBranch,Thermometer};
+export default function LogicLibrary({modules,project,catalog,busy,onAdd}){
+ const [search,setSearch]=useState(''),[category,setCategory]=useState('all');
+ const entries=logicLibraryEntries(modules,project,catalog);
+ const categories=[...new Map(entries.map(({module})=>[module.category,module.categoryName])).entries()];
+ const query=search.trim().toLocaleLowerCase('ru');
+ const visible=entries.filter(entry=>(category==='all'||entry.module.category===category)&&[entry.name,entry.group,entry.module.name,entry.module.description].join(' ').toLocaleLowerCase('ru').includes(query));
+ const groups=[...project.components.map(component=>component.name),'Общие блоки'].filter((name,index,items)=>items.indexOf(name)===index);
+ return <><div className="panel-label">ДЕЙСТВИЯ И СОБЫТИЯ</div>
+  <label className="search component-search"><Search size={14}/><input aria-label="Поиск блоков" value={search} onChange={event=>setSearch(event.target.value)} placeholder="Кнопка, светодиод, таймер…"/></label>
+  <div className="category-filter"><button className={category==='all'?'active':''} onClick={()=>setCategory('all')}>Все</button>{categories.map(([id,name])=><button key={id} className={category===id?'active':''} onClick={()=>setCategory(id)}>{name}</button>)}</div>
+  <div className="logic-library">{groups.map(group=>{
+   const items=visible.filter(entry=>entry.group===group);if(!items.length)return null;
+   return <section className="logic-library-group" key={group}><div className="panel-label library-title">{group}</div>{items.map(entry=>{const Icon=icons[entry.module.icon]||Box;return <button key={entry.key} className="hardware-library-item" onClick={()=>onAdd(entry.module,entry.component?.id)} disabled={busy||Boolean(entry.problem)} title={entry.problem||entry.module.description} aria-label={'Добавить блок: '+entry.name+(entry.component?' · '+entry.component.name:'')}><span style={{color:entry.module.color}}><Icon size={20}/></span><div><strong>{entry.name}</strong></div><Plus size={14}/></button>;})}</section>;
+  })}{!visible.length&&<p className="panel-note">Блоки не найдены.</p>}</div>
+  {!project.components.length&&<p className="panel-note">Добавьте устройства в «Монтаже». Здесь появятся их события и действия.</p>}
+  <div className="panel-label library-title">СВЯЗИ</div><div className="logic-type-legend">{Object.entries(TYPE_NAMES).map(([type,name])=><span key={type}><i style={{background:TYPE_COLORS[type]}}/>{name}</span>)}</div>
+  <p className="panel-note">Соедините событие с нужным действием. Например, «Кнопка нажата» → «Переключить».</p><div className="library-bottom"><Layers size={14}/>Действия устройств из монтажа</div>
+ </>;
 }

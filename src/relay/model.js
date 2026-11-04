@@ -1,7 +1,6 @@
 export const RELAY_MODULE='clex.hardware.relay';
 export const RELAY_SUPPLY_VOLTAGES=['3.3','5','6','9','12','24','48'];
-// Relay 1.0 projects created before selectable supply voltage used 5 V.
-export const relayParameters=component=>({supplyVoltage:'5',...component?.parameters});
+export const relayParameters=component=>component?.parameters||{};
 export function relaySupplyVoltage(component){
  const value=relayParameters(component).supplyVoltage;
  return RELAY_SUPPLY_VOLTAGES.includes(value)?Number(value):0;

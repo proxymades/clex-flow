@@ -2,7 +2,7 @@
   "id": "3271cdc8-8855-4e9b-9b69-2a2e1ebf5141",
   "name": "Сетевые индикаторы",
   "description": "Ethernet, настоящий IP и проверка HTTP/HTTPS-ресурса",
-  "formatVersion": 3,
+  "formatVersion": 4,
   "createdAt": "2026-10-11T07:20:03.239Z",
   "updatedAt": "2026-10-11T07:20:03.239Z",
   "boardId": "waveshare-esp32-s3-eth",

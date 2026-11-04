@@ -24,27 +24,7 @@
       "type": "event",
       "required": false,
       "description": "Сигнал после успешной или неудачной попытки проверки.",
-      "additional": false
-    },
-    {
-      "id": "available",
-      "name": "Ресурс доступен?",
-      "type": "boolean",
-      "required": false,
-      "readyOn": "changed",
-      "description": "Да при успешном ответе. Во время ожидания и новой проверки – Нет.",
-      "additional": false,
-      "displayUpdateEvents": [
-        {
-          "id": "done",
-          "label": "После завершения проверки",
-          "resetNetwork": true
-        },
-        {
-          "id": "changed",
-          "label": "Показывать ход проверки"
-        }
-      ]
+      "additional": true
     },
     {
       "id": "state",
@@ -151,6 +131,18 @@
           "label": "Показывать ход проверки"
         }
       ]
+    },
+    {
+      "id": "available",
+      "name": "Ресурс доступен",
+      "type": "event",
+      "description": "Сигнал после успешной проверки ресурса."
+    },
+    {
+      "id": "unavailable",
+      "name": "Ресурс недоступен",
+      "type": "event",
+      "description": "Сигнал после завершённой проверки, если ресурс недоступен."
     }
   ],
   "parameters": {
@@ -200,7 +192,7 @@
     "network": true
   },
   "compatibility": {
-    "projectFormat": 3,
+    "projectFormat": 4,
     "targets": [
       "esp32",
       "esp32s3",

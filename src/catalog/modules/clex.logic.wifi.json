@@ -14,32 +14,32 @@
       "name": "Обновить состояние",
       "type": "event",
       "required": false,
-      "additional": false,
-      "description": ""
+      "additional": true,
+      "description": "Запускает действие «Обновить состояние»."
     },
     {
       "id": "connect",
       "name": "Подключиться",
       "type": "event",
       "required": false,
-      "additional": true,
-      "description": ""
+      "additional": false,
+      "description": "Запускает действие «Подключиться»."
     },
     {
       "id": "disconnect",
       "name": "Отключиться",
       "type": "event",
       "required": false,
-      "additional": true,
-      "description": ""
+      "additional": false,
+      "description": "Запускает действие «Отключиться»."
     },
     {
       "id": "reconnect",
       "name": "Переподключиться",
       "type": "event",
       "required": false,
-      "additional": true,
-      "description": ""
+      "additional": false,
+      "description": "Запускает действие «Переподключиться»."
     }
   ],
   "outputs": [
@@ -48,24 +48,24 @@
       "name": "Данные сети обновлены",
       "type": "event",
       "required": false,
-      "additional": false,
-      "description": ""
+      "additional": true,
+      "description": "Сигнал: Данные сети обновлены."
     },
     {
       "id": "connected",
-      "name": "Соединение установлено",
+      "name": "IP-адрес получен",
       "type": "event",
       "required": false,
-      "additional": true,
+      "additional": false,
       "description": "Сеть доступна и IP-адрес получен."
     },
     {
       "id": "disconnected",
-      "name": "Соединение потеряно",
+      "name": "Сеть отключена",
       "type": "event",
       "required": false,
-      "additional": true,
-      "description": ""
+      "additional": false,
+      "description": "Сигнал: Соединение потеряно."
     },
     {
       "id": "ipChanged",
@@ -73,24 +73,15 @@
       "type": "event",
       "required": false,
       "additional": true,
-      "description": ""
+      "description": "Сигнал: IP-адрес обновлен."
     },
     {
       "id": "failed",
       "name": "Ошибка подключения",
       "type": "event",
       "required": false,
-      "additional": true,
-      "description": ""
-    },
-    {
-      "id": "isConnected",
-      "name": "Есть подключение?",
-      "type": "boolean",
-      "required": false,
-      "additional": true,
-      "description": "",
-      "readyOn": "changed"
+      "additional": false,
+      "description": "Сигнал: Ошибка подключения."
     },
     {
       "id": "state",
@@ -98,7 +89,7 @@
       "type": "number",
       "required": false,
       "additional": false,
-      "description": "",
+      "description": "Передаёт число: Состояние подключения.",
       "readyOn": "changed",
       "valueStates": {
         "initialValue": 0,
@@ -138,7 +129,7 @@
       "type": "text",
       "required": false,
       "additional": false,
-      "description": "",
+      "description": "Передаёт текст: IP-адрес устройства.",
       "readyOn": "changed"
     },
     {
@@ -147,7 +138,7 @@
       "type": "text",
       "required": false,
       "additional": true,
-      "description": "",
+      "description": "Передаёт текст: Маска подсети.",
       "readyOn": "changed"
     },
     {
@@ -156,7 +147,7 @@
       "type": "text",
       "required": false,
       "additional": true,
-      "description": "",
+      "description": "Передаёт текст: Шлюз.",
       "readyOn": "changed"
     },
     {
@@ -165,7 +156,7 @@
       "type": "text",
       "required": false,
       "additional": true,
-      "description": "",
+      "description": "Передаёт текст: DNS-сервер.",
       "readyOn": "changed"
     },
     {
@@ -174,7 +165,7 @@
       "type": "number",
       "required": false,
       "additional": true,
-      "description": "",
+      "description": "Передаёт число: Код причины отключения.",
       "readyOn": "changed"
     },
     {
@@ -183,7 +174,7 @@
       "type": "text",
       "required": false,
       "additional": true,
-      "description": "",
+      "description": "Передаёт текст: Ошибка подключения.",
       "readyOn": "changed"
     }
   ],
@@ -203,7 +194,7 @@
     }
   },
   "compatibility": {
-    "projectFormat": 3,
+    "projectFormat": 4,
     "targets": [
       "esp32",
       "esp32s3",

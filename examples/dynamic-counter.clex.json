@@ -2,7 +2,7 @@
   "id": "cd22e89c-4eda-45b3-bb62-1ce5fbd271d6",
   "name": "Динамический счётчик",
   "description": "Таймер 1000 мс → счётчик → текст дисплея. Подключение TFT SPI 240×320 на ST7789 к Waveshare ESP32-S3-ETH.",
-  "formatVersion": 3,
+  "formatVersion": 4,
   "createdAt": "2026-10-10T17:35:21.988Z",
   "updatedAt": "2026-10-10T17:35:24.904Z",
   "boardId": "waveshare-esp32-s3-eth",

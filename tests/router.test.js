@@ -3,6 +3,9 @@ import assert from 'node:assert/strict';
 import {routerProject} from './router-fixture.js';
 import {catalog} from './catalog-fixture.js';
 import {routerIssues,overlap} from '../src/router/model.js';
+import {runHostC} from './host-c.js';
+import {routerFirmware} from '../src/firmware/drivers/router.js';
+import {cString} from '../src/firmware/generator.js';
 import {generateFirmware} from '../src/firmware/generator.js';
 import {serializeProject,parseProject} from '../src/projects/model.js';
 import {addHardware} from '../src/assembly/model.js';
@@ -45,4 +48,12 @@ test('router WAN IP and client count use ordinary display bindings, alongside ex
  for(const [sourceHandle,targetHandle] of [['changed','trigger'],['wanIp',field.id]])project=withLogic(project,connectNodes(project.logic,catalog,{source:source.id,sourceHandle,target:view.id,targetHandle},project));
  const bundle=generateFirmware(project,catalog);assert.match(bundle.mainC,/clex_graphics_set_text\([^\n]*router_value_\d+\.wan_ip/);assert.match(bundle.mainC,/esp_eth_mac_new_w5500/);assert.equal(bundle.graphicsRuntime,'lvgl-9.2.2');
  project=withLogic(project,addNode(project.logic,catalog.modules.find(m=>m.id==='clex.logic.internet-check'),project.components,project,catalog));project.logic.nodes.at(-1).parameters.url='https://www.espressif.com/';assert.match(generateFirmware(project,catalog).mainC,/clex_probe_start/);
+});
+
+test('access point events are emitted once per actual state transition, independent of status polling',()=>{
+ const {project}=routerProject(),nodes=project.logic.nodes,index=new Map(nodes.map((n,i)=>[n.id,i])),driver=routerFirmware(project,catalog,nodes,index,cString);
+ const flags=['RT_STARTED','RT_WAN_UP','RT_WAN_DOWN','RT_IP','RT_INTERNET_UP','RT_INTERNET_DOWN','RT_CLIENT_UP','RT_CLIENT_DOWN','RT_ERROR'];
+ const events=catalog.modules.find(m=>m.id==='clex.logic.router').outputs.filter(p=>p.type==='event');
+ const declarations=nodes.map((n,i)=>'static clex_rt_snapshot_t router_value_'+i+';\n'+events.map(p=>'static void node_'+i+'_emit_'+p.id+'(void){'+(p.id==='apStarted'?'on_count++;':p.id==='apStopped'?'off_count++;':'')+'}').join('\n')).join('\n');
+ runHostC('#include <assert.h>\n#include <stdbool.h>\ntypedef struct{bool ap_enabled;}clex_rt_snapshot_t;\nstatic unsigned on_count,off_count;\n'+flags.map((f,i)=>'#define '+f+' '+(1<<i)).join('\n')+'\n'+declarations+'\n'+driver.notify+'\nint main(void){clex_rt_notify(0,(clex_rt_snapshot_t){false});assert(on_count==0&&off_count==0);clex_rt_notify(0,(clex_rt_snapshot_t){true});clex_rt_notify(0,(clex_rt_snapshot_t){true});assert(on_count==1&&off_count==0);clex_rt_notify(0,(clex_rt_snapshot_t){false});clex_rt_notify(0,(clex_rt_snapshot_t){false});assert(on_count==1&&off_count==1);return 0;}','clex-router-events-');
 });

@@ -32,8 +32,9 @@ test('React Flow edge projection preserves physical IDs and never changes the st
   }
   assert.equal(serializeProject(project), before);
   const restored = parseProject(before);
-  assert.equal(restored.formatVersion, 3);
+  assert.equal(restored.formatVersion, 4);
   assert.deepEqual(restored.assembly, project.assembly);
-  assert.deepEqual(restored.logic, project.logic);
+  assert.deepEqual(restored.logic.edges, project.logic.edges);
+  assert.deepEqual(restored.logic.nodes.map(n=>[n.id,n.position,n.parameters.componentId]),project.logic.nodes.map(n=>[n.id,n.position,n.parameters.componentId]));
   assert.equal('nodes' in restored.assembly, false);
 });

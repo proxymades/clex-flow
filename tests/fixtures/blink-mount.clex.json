@@ -1,8 +1,8 @@
 {
   "id": "00000000-0000-4000-8000-000000000004",
   "name": "Blink mount fixture",
-  "description": "Тестовая схема формата 2; аппаратно не проверена.",
-  "formatVersion": 2,
+  "description": "Тестовая схема монтажа; аппаратно не проверена.",
+  "formatVersion": 4,
   "createdAt": "2026-01-01T00:00:00.000Z",
   "updatedAt": "2026-01-01T00:00:00.000Z",
   "boardId": "waveshare-esp32-s3-eth",

@@ -17,8 +17,9 @@ test('counter step labels match signed and zero steps without changing IDs or pr
  const p=dynamicDisplayProject(),node=count(p),port=catalog.modules.find(m=>m.id===node.moduleId).inputs[0];
  for(const [step,name] of [[1,'Прибавить 1'],[5,'Прибавить 5'],[-2,'Вычесть 2'],[0,'Применить шаг 0']]){node.parameters.step=step;const before=serializeProject(p),shown=presentPort(port,node,p,catalog);assert.equal(shown.name,name);assert.equal(shown.id,'increment');assert.equal(shown.type,'event');assert.equal(serializeProject(p),before);}
 });
-test('all contacts stay visible before connection and after serialization',()=>{
- let p=dynamicDisplayProject();assert.equal(visiblePorts(count(p),p,catalog).inputs.find(p=>p.id==='reset').hidden,false);
+test('additional contacts stay hidden until enabled or connected and then survive serialization',()=>{
+ let p=dynamicDisplayProject();assert.equal(visiblePorts(count(p),p,catalog).inputs.find(p=>p.id==='reset').hidden,true);
+ count(p).showAdditionalPorts=true;assert.equal(visiblePorts(count(p),p,catalog).inputs.find(p=>p.id==='reset').hidden,false);count(p).showAdditionalPorts=false;
  const clock=p.logic.nodes.find(n=>n.moduleId===timer.id);p=withLogic(p,connectNodes(p.logic,catalog,{source:clock.id,sourceHandle:'tick',target:count(p).id,targetHandle:'reset'},p));
  p=parseProject(serializeProject(p));assert.equal(visiblePorts(count(p),p,catalog).inputs.find(p=>p.id==='reset').hidden,false);
 });
@@ -53,8 +54,8 @@ test('network reset block is added only when needed and existing manual events a
 });
 test('hardware-specific port meanings come from equipment metadata with a generic GPIO fallback',()=>{
  const p=networkProject(),module=catalog.modules.find(m=>m.id==='clex.logic.gpio-read'),node={id:'read',moduleId:module.id,parameters:{componentId:'button'}};
- p.components.push({id:'button',moduleId:'clex.hardware.button'});const port=presentPort(module.outputs[1],node,p,catalog);assert.equal(port.name,'Кнопка отпущена?');assert.match(port.description,/Нет, если нажата/);
- const generic={...catalog,modules:catalog.modules.map(m=>{const copy={...m};if(m.id==='clex.hardware.button')delete copy.logicPresentation;return copy;})};assert.equal(presentPort(module.outputs[1],node,p,generic).name,'Высокий уровень?');
+ p.components.push({id:'button',moduleId:'clex.hardware.button'});const port=presentPort(module.outputs[1],node,p,catalog);assert.equal(port.name,'Кнопка отпущена');assert.ok(port.description);
+ const generic={...catalog,modules:catalog.modules.map(m=>{const copy={...m};if(m.id==='clex.hardware.button')delete copy.logicPresentation;return copy;})};assert.equal(presentPort(module.outputs[1],node,p,generic).name,'Вход неактивен');
 });
 test('UI names and extra metadata do not change generated firmware',()=>{
  const p=networkProject(),plain={...catalog,modules:catalog.modules.map(m=>({...m,inputs:m.inputs.map(port=>({...port,name:'legacy'})),outputs:m.outputs.map(port=>({...port,name:'legacy'}))}))};

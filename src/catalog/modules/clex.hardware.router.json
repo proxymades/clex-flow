@@ -5,7 +5,7 @@
   "icon": "Network",
   "color": "#38bdf8",
   "compatibility": {
-    "projectFormat": 3,
+    "projectFormat": 4,
     "targets": [
       "esp32",
       "esp32s2",

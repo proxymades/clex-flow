@@ -3,7 +3,7 @@ import {screenBindings,screenFor} from '../displays/model.js';
 export function equipmentPresentation(node,project,catalog){
  const component=project.components.find(item=>item.id===node.parameters.componentId);
  const hardware=catalog.modules.find(item=>item.id===component?.moduleId);
- const operation=graphModule(node,catalog)?.firmware?.generatorKey?.replace('gpio-','');
+ const operation=node.moduleId==='clex.logic.gpio-set'?'output':graphModule(node,catalog)?.firmware?.generatorKey?.replace('gpio-','');
  return {component,metadata:hardware?.logicPresentation,operation};
 }
 export function presentPort(port,node,project,catalog){
@@ -23,7 +23,7 @@ export function presentPort(port,node,project,catalog){
   if(port.id==='trigger'){name='Обновить все значения';description='Обновляет все динамические элементы из связанных источников.';}
   else if(binding){
    const action=port.type==='event',caption=binding.channel==='caption',state=binding.channel==='state';
-   name=(action?caption?'Обновить надпись: ':state?'Обновить состояние: ':'Обновить: ':caption?'Надпись: ':state?'Состояние: ':({number:'Число: ',boolean:'Да/Нет: ',text:'Текст: '}[binding.type]))+(binding.element.name||binding.name);
+   name=(action?caption?'Обновить надпись: ':state?'Обновить состояние: ':'Обновить: ':caption?'Надпись: ':state?'Состояние: ':({number:'Число: ',text:'Текст: '}[binding.type]))+(binding.element.name||binding.name);
    description=action?'Обновляет этот элемент текущими данными источника.':caption?'Принимает надпись индикатора; оформление зависит от состояния.':state?'Выбирает настроенное оформление индикатора по полученному значению.':'Принимает данные для элемента. Сигнал обновления подключается автоматически; его также можно настроить вручную.';
   }
  }
@@ -36,7 +36,7 @@ export function visiblePorts(node,project,catalog,{connection=null}={}){
   const candidate=connection&&connection.nodeId!==node.id&&connection.direction!==(direction==='inputs'?'input':'output');
   const link=candidate?(direction==='inputs'?{source:connection.nodeId,sourceHandle:connection.portId,target:node.id,targetHandle:port.id}:{source:node.id,sourceHandle:port.id,target:connection.nodeId,targetHandle:connection.portId}):null;
   const reason=link?connectionProblem(project.logic,catalog,link,null,project):null,compatible=Boolean(link&&!reason);
-  return {...presentPort(port,node,project,catalog),connected,compatible,incompatible:Boolean(connection&&!compatible&&!(connection.nodeId===node.id&&connection.portId===port.id)),reason,hidden:false};
+  return {...presentPort(port,node,project,catalog),connected,compatible,incompatible:Boolean(connection&&!compatible&&!(connection.nodeId===node.id&&connection.portId===port.id)),reason,hidden:Boolean(port.additional&&!connected&&!node.showAdditionalPorts&&!compatible)};
  })]));
 }
 export function friendlyConnectionProblem(project,catalog,connection){
@@ -45,7 +45,7 @@ export function friendlyConnectionProblem(project,catalog,connection){
  if(!source||!target)return problem;
  const output=nodePorts(source,catalog,project).outputs.find(port=>port.id===connection.sourceHandle),input=nodePorts(target,catalog,project).inputs.find(port=>port.id===connection.targetHandle);
  if(output&&input&&output.type!==input.type){
-  const types={event:'сигнал действия',number:'число',boolean:'Да/Нет',text:'текст'};
+  const types={event:'сигнал действия',number:'число',text:'текст'};
   return 'Вход «'+presentPort(input,target,project,catalog).name+'» принимает '+types[input.type]+', а выход «'+presentPort(output,source,project,catalog).name+'» передает '+types[output.type]+'.';
  }
  return problem;
@@ -63,6 +63,6 @@ export function friendlyIssue(issue,project,catalog){
 }
 export function nodeDisplayName(node,project,catalog){
  const definition=graphModule(node,catalog),hardware=equipmentPresentation(node,project,catalog);
- const prefix=[definition?.name,...(definition?.legacyNames||[])].find(name=>name&&node.name.startsWith(name+' ')&&/^\d+$/.test(node.name.slice(name.length+1)));
+ const prefix=[definition?.name].find(name=>name&&node.name.startsWith(name+' ')&&/^\d+$/.test(node.name.slice(name.length+1)));
  return prefix?(hardware.metadata?.[hardware.operation]?.title||definition.name)+' '+node.name.slice(prefix.length+1):node.name;
 }

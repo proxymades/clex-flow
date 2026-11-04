@@ -5,7 +5,7 @@
   "icon": "Network",
   "color": "#2dd4bf",
   "compatibility": {
-    "projectFormat": 3,
+    "projectFormat": 4,
     "targets": [
       "esp32",
       "esp32s2",
@@ -25,22 +25,23 @@
       "id": "trigger",
       "name": "Отправить",
       "type": "event",
-      "description": "",
-      "required": true
+      "description": "Запускает действие «Отправить».",
+      "required": true,
+      "additional": false
     },
     {
       "id": "topic",
-      "name": "Topic",
+      "name": "Тема сообщения",
       "type": "text",
       "description": "Необязательный topic вместо настройки блока.",
       "additional": true
     },
     {
       "id": "payload",
-      "name": "Payload",
+      "name": "Текст сообщения",
       "type": "text",
       "description": "Payload в выбранной кодировке: текст UTF-8, Base64 или HEX.",
-      "additional": true
+      "additional": false
     }
   ],
   "outputs": [
@@ -48,13 +49,15 @@
       "id": "sent",
       "name": "Отправлено",
       "type": "event",
-      "description": "QoS 0: сообщение принято в локальную очередь передачи. QoS 1/2: получено подтверждение брокера."
+      "description": "QoS 0: сообщение принято в локальную очередь передачи. QoS 1/2: получено подтверждение брокера.",
+      "additional": false
     },
     {
       "id": "failed",
       "name": "Ошибка",
       "type": "event",
-      "description": ""
+      "description": "Сигнал: Ошибка.",
+      "additional": false
     },
     {
       "id": "messageId",
@@ -68,8 +71,9 @@
       "id": "error",
       "name": "Описание ошибки",
       "type": "text",
-      "description": "",
-      "readyOn": "failed"
+      "description": "Передаёт текст: Описание ошибки.",
+      "readyOn": "failed",
+      "additional": true
     },
     {
       "id": "reasonCode",

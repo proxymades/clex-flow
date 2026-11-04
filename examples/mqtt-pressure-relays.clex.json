@@ -2,7 +2,7 @@
   "id": "ec46d407-13eb-4934-8a84-eefef53971c7",
   "name": "MQTT – Реле по диапазону",
   "description": "Преобразование текстового давления в Па и управление двумя реле: ниже -10000 Па, от -10000 до 10000 Па, выше 10000 Па. Настройте Wi-Fi и MQTT перед сборкой.",
-  "formatVersion": 3,
+  "formatVersion": 4,
   "createdAt": "2026-10-26T13:07:07.022Z",
   "updatedAt": "2026-10-26T13:07:07.022Z",
   "boardId": "doit-esp32-devkit-v1-30pin",
@@ -146,7 +146,7 @@
       },
       {
         "id": "c3bf9c48-a195-4f96-90d0-1910e3f76199",
-        "moduleId": "clex.logic.relay",
+        "moduleId": "clex.logic.gpio-set",
         "moduleVersion": "1.0.0",
         "name": "Управлять реле 1",
         "position": {
@@ -155,14 +155,12 @@
         },
         "parameters": {
           "componentId": "33ded1c9-6797-4e74-96bc-bf49cbfefd6d",
-          "channel": "1",
-          "action": "set",
-          "defaultValue": false
+          "channel": "1"
         }
       },
       {
         "id": "941b5ba6-4313-481c-a5ab-b116d97f1744",
-        "moduleId": "clex.logic.relay",
+        "moduleId": "clex.logic.gpio-set",
         "moduleVersion": "1.0.0",
         "name": "Управлять реле 2",
         "position": {
@@ -171,9 +169,7 @@
         },
         "parameters": {
           "componentId": "33ded1c9-6797-4e74-96bc-bf49cbfefd6d",
-          "channel": "2",
-          "action": "set",
-          "defaultValue": false
+          "channel": "2"
         }
       }
     ],
@@ -211,36 +207,68 @@
         "dataType": "number"
       },
       {
-        "id": "fc298e17-fd8a-48cd-97c1-c32da16cd1fc",
+        "id": "c2d8d883-c143-4844-813d-ec936c96fab8",
         "source": "5aaca776-a4ff-4dcf-be1d-eeccd6091aae",
+        "sourceHandle": "below",
         "target": "c3bf9c48-a195-4f96-90d0-1910e3f76199",
-        "sourceHandle": "changed",
-        "targetHandle": "trigger",
+        "targetHandle": "on",
         "dataType": "event"
       },
       {
-        "id": "204e710c-06e5-440f-b926-101ef801970e",
+        "id": "57c7f256-de1f-4e2e-b12a-f2477f9fbbb9",
         "source": "5aaca776-a4ff-4dcf-be1d-eeccd6091aae",
-        "target": "941b5ba6-4313-481c-a5ab-b116d97f1744",
-        "sourceHandle": "changed",
-        "targetHandle": "trigger",
+        "sourceHandle": "inside",
+        "target": "c3bf9c48-a195-4f96-90d0-1910e3f76199",
+        "targetHandle": "off",
         "dataType": "event"
       },
       {
-        "id": "1f7f4767-f0b3-4054-821c-987638474932",
+        "id": "17b2b881-1f49-4486-a8fc-4cc78bcaa4b4",
         "source": "5aaca776-a4ff-4dcf-be1d-eeccd6091aae",
+        "sourceHandle": "above",
         "target": "c3bf9c48-a195-4f96-90d0-1910e3f76199",
-        "sourceHandle": "isBelow",
-        "targetHandle": "value",
-        "dataType": "boolean"
+        "targetHandle": "off",
+        "dataType": "event"
       },
       {
-        "id": "674dd5f7-f881-48f8-9d1f-924588d52ada",
+        "id": "9d77cecd-09f0-4ae7-ba46-9d25bd8704d0",
         "source": "5aaca776-a4ff-4dcf-be1d-eeccd6091aae",
+        "sourceHandle": "failed",
+        "target": "c3bf9c48-a195-4f96-90d0-1910e3f76199",
+        "targetHandle": "off",
+        "dataType": "event"
+      },
+      {
+        "id": "63ce92b2-6480-4c5e-9bb3-ae006bf52b4f",
+        "source": "5aaca776-a4ff-4dcf-be1d-eeccd6091aae",
+        "sourceHandle": "below",
         "target": "941b5ba6-4313-481c-a5ab-b116d97f1744",
-        "sourceHandle": "isAbove",
-        "targetHandle": "value",
-        "dataType": "boolean"
+        "targetHandle": "off",
+        "dataType": "event"
+      },
+      {
+        "id": "1983a525-d736-43d4-a923-3bd62fcc573e",
+        "source": "5aaca776-a4ff-4dcf-be1d-eeccd6091aae",
+        "sourceHandle": "inside",
+        "target": "941b5ba6-4313-481c-a5ab-b116d97f1744",
+        "targetHandle": "off",
+        "dataType": "event"
+      },
+      {
+        "id": "46341c4c-8d6c-4197-aa07-a8c4f56984c5",
+        "source": "5aaca776-a4ff-4dcf-be1d-eeccd6091aae",
+        "sourceHandle": "above",
+        "target": "941b5ba6-4313-481c-a5ab-b116d97f1744",
+        "targetHandle": "on",
+        "dataType": "event"
+      },
+      {
+        "id": "d0c4f5ec-6172-4ea4-ad26-5c448b24af9a",
+        "source": "5aaca776-a4ff-4dcf-be1d-eeccd6091aae",
+        "sourceHandle": "failed",
+        "target": "941b5ba6-4313-481c-a5ab-b116d97f1744",
+        "targetHandle": "off",
+        "dataType": "event"
       }
     ],
     "viewport": {
@@ -301,6 +329,6 @@
     "clex.logic.mqtt-receive": "1.0.0",
     "clex.logic.text-to-number": "1.0.0",
     "clex.logic.compare-number": "1.0.0",
-    "clex.logic.relay": "1.0.0"
+    "clex.logic.gpio-set": "1.0.0"
   }
 }

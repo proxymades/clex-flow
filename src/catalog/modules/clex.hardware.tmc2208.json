@@ -157,7 +157,7 @@
   "inputs": [],
   "outputs": [],
   "compatibility": {
-    "projectFormat": 3,
+    "projectFormat": 4,
     "targets": [
       "esp32",
       "esp32s3",
@@ -165,7 +165,9 @@
       "atmega328p"
     ],
     "espIdf": "5.4.4",
-    "platforms": { "arduino-avr": "1.8.6" }
+    "platforms": {
+      "arduino-avr": "1.8.6"
+    }
   },
   "firmware": {
     "status": "implemented",

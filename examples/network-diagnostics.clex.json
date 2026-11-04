@@ -2,7 +2,7 @@
   "id": "d55b95da-2259-497a-afad-caed92a5275f",
   "name": "Сетевые индикаторы – диагностика",
   "description": "Ethernet, настоящий IP и проверка HTTP/HTTPS-ресурса",
-  "formatVersion": 3,
+  "formatVersion": 4,
   "createdAt": "2026-10-11T07:45:47.136Z",
   "updatedAt": "2026-10-11T07:45:47.136Z",
   "boardId": "waveshare-esp32-s3-eth",

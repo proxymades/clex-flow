@@ -89,7 +89,7 @@ test('monitor exposes loss metrics and a reset event that generates a real reset
  let {project,nodes}=espNowProject({receiver:false,peerHealth:true});
  const monitor=nodes.peer;
  const ports=nodePorts(monitor,catalog,project);
- for(const id of ['testSent','testReceived','testLost','lossPercent','statisticsValid','statisticsText','pendingPackets','testSendErrors'])assert.ok(ports.outputs.some(p=>p.id===id));
+ for(const id of ['testSent','testReceived','testLost','lossPercent','statisticsText','pendingPackets','testSendErrors'])assert.ok(ports.outputs.some(p=>p.id===id));
  project=withLogic(project,connectNodes(project.logic,catalog,{source:nodes.senderMode.id,sourceHandle:'done',target:monitor.id,targetHandle:'resetStatistics'},project));
  assert.deepEqual(validateGraph(project,catalog).filter(i=>i.severity==='error'),[]);
  const bundle=generateFirmware(project,catalog),i=[...project.logic.nodes].sort((a,b)=>a.id<b.id?-1:a.id>b.id?1:0).findIndex(n=>n.id===monitor.id);

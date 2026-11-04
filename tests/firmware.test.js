@@ -29,10 +29,10 @@ test('semantic parameters and USB/UART console invalidate fingerprint',async()=>
  assert.notEqual(await firmwareFingerprint(generateFirmware(project,catalog,'uart')),await firmwareFingerprint(generateFirmware(project,catalog)));
  assert.match(generateFirmware(project,catalog,'uart').files['sdkconfig.defaults'],/UART_DEFAULT=y/);
 });
-test('all five block implementations support boolean, numeric and text values safely',()=>{
+test('GPIO commands and branches execute alongside numeric and text values',()=>{
  const bundle=generateFirmware(firmwareProject(true),catalog);
- assert.match(bundle.mainC,/value_\d+ = input_stable_/);
- assert.match(bundle.mainC,/gpio_state_\d+ = value_/);
+ assert.match(bundle.mainC,/if\(input_stable_/);
+ assert.match(bundle.mainC,/gpio_state_\d+ = !gpio_state_/);
  assert.match(bundle.mainC,/snprintf\(text_\d+, sizeof\(text_\d+\), "%s %.15g"/);
  assert.match(bundle.mainC,/snprintf\(text_\d+, sizeof\(text_\d+\), "%s", text_/);
  assert.match(bundle.mainC,/atomic_fetch_add/);
@@ -45,7 +45,7 @@ test('C strings escape quotes, backslash, newline, UTF-8 and preserve percent as
 test('invalid assembly, unsupported implementation and empty logic block generation',()=>{
  const project=firmwareProject();project.assembly.connections=[];project.gpioAssignments=[];
  assert.throws(()=>generateFirmware(project,catalog),/Исправьте схему/);
- const bad=structuredClone(catalog);bad.modules.find(module=>module.id===toggle.id).firmware.generatorKey='gpio-set';
+ const bad=structuredClone(catalog);bad.modules.find(module=>module.id===toggle.id).firmware.generatorKey='unsupported';
  assert.throws(()=>generateFirmware(firmwareProject(),bad),/Нет проверенной реализации/);
  const empty=firmwareProject();empty.logic={nodes:[],edges:[],viewport:{x:0,y:0,zoom:1}};
  assert.throws(()=>generateFirmware(empty,catalog),/таймер/);

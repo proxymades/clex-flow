@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {catalog} from './catalog-fixture.js';
 import {xgzpProject,mountXgzp,XGZP_BOARDS} from './xgzp-fixture.js';
 import {generateFirmware} from '../src/firmware/generator.js';
-import {serializeProject,parseProject,migrateProject} from '../src/projects/model.js';
+import {serializeProject,parseProject} from '../src/projects/model.js';
 import {validateAssembly,connectionProblem,addHardware} from '../src/assembly/model.js';
 import {addNode,withLogic,validateGraph} from '../src/logic/model.js';
 import {connectDisplayData} from '../src/logic/displayBindings.js';
@@ -115,22 +115,11 @@ test('DIP6 pinout matches XGZP6847D and NC contacts cannot be wired',()=>{
   c.parameters.kFactor='4';assert.deepEqual(errors(p),[]);assert.match(generateFirmware(p,catalog).mainC,/\.k=4/);
  }
 });
-test('saved sensor projects migrate IDs and generated names without changing wires, parameters or custom names',()=>{
- const {project:p}=xgzpProject();
- const expected=generateFirmware(p,catalog).mainC;
- const legacy=structuredClone(p);
- for(const item of [...legacy.components,...legacy.logic.nodes])if(item.moduleId.includes('xgzp6847d')){item.moduleId=item.moduleId.replace('6847','6897');item.name=item.name.replace('6847','6897');}
- legacy.moduleVersions=Object.fromEntries(Object.entries(legacy.moduleVersions).map(([id,v])=>[id.replace('6847','6897'),v]));
- const before=JSON.stringify(legacy),migrated=migrateProject(legacy);
- assert.equal(JSON.stringify(legacy),before);
- assert.equal(migrated.components[0].name,'XGZP6847D 1');
- assert.equal(migrated.logic.nodes[0].name,'XGZP6847D – Измерение 1');
- assert.deepEqual(migrated.assembly,p.assembly);assert.deepEqual(migrated.gpioAssignments,p.gpioAssignments);
- assert.deepEqual(migrated.logic.edges,p.logic.edges);assert.deepEqual(migrated.components[0].parameters,p.components[0].parameters);
- assert.deepEqual(migrated.moduleVersions,p.moduleVersions);
- assert.deepEqual(errors(migrated),[]);assert.equal(generateFirmware(migrated,catalog).mainC,expected);
- legacy.components[0].name='Давление насоса';legacy.logic.nodes[0].name='Измерить давление';
- const loaded=parseProject(JSON.stringify(legacy));
- assert.equal(loaded.components[0].name,'Давление насоса');assert.equal(loaded.logic.nodes[0].name,'Измерить давление');
- assert.deepEqual(parseProject(serializeProject(loaded)),loaded);
+test('sensor projects preserve exact module identity and reject unknown sensor profiles',()=>{
+ const {project}=xgzpProject(),restored=parseProject(serializeProject(project));
+ assert.deepEqual(restored,project);assert.deepEqual(errors(restored),[]);
+ const old=structuredClone(project);
+ for(const item of [...old.components,...old.logic.nodes])if(item.moduleId.includes('xgzp6847d'))item.moduleId=item.moduleId.replace('6847','6897');
+ old.moduleVersions=Object.fromEntries(Object.entries(old.moduleVersions).map(([id,v])=>[id.replace('6847','6897'),v]));
+ assert.throws(()=>generateFirmware(old,catalog));
 });

@@ -42,7 +42,7 @@ const { chromium } = require('playwright');
  await page.locator('.assembly-validation').getByText('Ошибок монтажа нет',{exact:true}).waitFor();
  await page.getByRole('button',{name:'Сохранить',exact:true}).first().click();
  await page.getByText('Проект сохранен',{exact:true}).waitFor();
- const initial=await data(); assert.equal(initial.formatVersion,3); assert.equal(initial.components.length,2); assert.equal(initial.assembly.connections.length,4); assert.deepEqual(initial.gpioAssignments.map(item=>item.gpio).sort((a,b)=>a-b),[16,17]);
+ const initial=await data(); assert.equal(initial.formatVersion,4); assert.equal(initial.components.length,2); assert.equal(initial.assembly.connections.length,4); assert.deepEqual(initial.gpioAssignments.map(item=>item.gpio).sort((a,b)=>a-b),[16,17]);
  await page.getByRole('button',{name:'Увеличить монтаж',exact:true}).click();
  assert.equal(await saved(),false);
  await page.getByRole('button',{name:'Показать весь монтаж',exact:true}).click();

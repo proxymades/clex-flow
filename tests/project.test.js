@@ -8,7 +8,7 @@ test('создание проекта и JSON round-trip сохраняют ст
   const project = createProject('  Blink Test  ', 'Внешний светодиод');
   assert.equal(project.name, 'Blink Test');
   assert.equal(project.boardId, 'waveshare-esp32-s3-eth');
-  assert.equal(project.formatVersion, 3);
+  assert.equal(project.formatVersion, 4);
   assert.deepEqual(parseProject(serializeProject(project)), project);
   assert.notEqual(createProject('Другой').id, project.id);
 });
@@ -18,7 +18,7 @@ test('пустое и слишком длинное название не при
 });
 test('повреждённые и будущие проекты не открываются', () => {
   assert.throws(() => parseProject('{broken'), /JSON/);
-  for (const value of [null, [], {}, { ...createProject('Тест'), formatVersion: 4 }]) assert.throws(() => parseProject(JSON.stringify(value)));
+  for (const value of [null, [], {}, { ...createProject('Тест'), formatVersion: 5 }]) assert.throws(() => parseProject(JSON.stringify(value)));
 });
 test('неверные поля и небезопасный ID отклоняются', () => {
   for (const patch of [{ id: '../../test' }, { createdAt: 'yesterday' }, { boardId: '../../board' }, { description: 'x'.repeat(4001) }, { gpioAssignments: {} }, { moduleVersions: { timer: 5 } }, { logic: { nodes: [], edges: [], viewport: { x: 0, y: 0, zoom: 0 } } }]) assert.throws(() => serializeProject({ ...createProject('Тест'), ...patch }));
@@ -39,13 +39,12 @@ test('последние проекты сортируются без измен
   const older = { ...createProject('Старый'), updatedAt: '2025-01-01T00:00:00Z' }, newer = { ...createProject('Новый'), updatedAt: '2026-01-01T00:00:00Z' };
   const source = [older, newer]; assert.deepEqual(sortedProjects(source), [newer, older]); assert.deepEqual(source, [older, newer]);
 });
-test('проект этапа 1 обновляется в памяти без смены ID и переписывания исходника', () => {
-  const legacy = { ...createProject('Старый'), formatVersion: 1, boardId: 'esp32-s3-generic', assembly: { positions: {}, connections: [] } };
-  delete legacy.boardSettings;
-  const raw = JSON.stringify(legacy), migrated = parseProject(raw);
-  assert.equal(migrated.id, legacy.id); assert.equal(migrated.formatVersion, 3); assert.equal(migrated.boardId, 'esp32-s3-generic');
-  assert.equal(legacy.formatVersion, 1); assert.deepEqual(migrated.assembly.positions.board, { x: 100, y: 40 });
-  assert.equal(JSON.parse(raw).formatVersion, 1);
+test('old project formats are rejected without changing the source', () => {
+ for(const formatVersion of [1,2,3,5]){
+  const project={...createProject('Old'),formatVersion},raw=JSON.stringify(project);
+  assert.throws(()=>parseProject(raw),/Версия формата/);
+  assert.equal(JSON.stringify(project),raw);
+ }
 });
 test('полный монтаж, параметры и камера сохраняются через JSON round-trip', () => {
   let project = addHardware(selectBoard(createProject('LED'), devkit), led);

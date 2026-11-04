@@ -29,7 +29,7 @@
     "interface": "i2s"
   },
   "compatibility": {
-    "projectFormat": 3,
+    "projectFormat": 4,
     "targets": [
       "esp32p4"
     ],

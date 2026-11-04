@@ -13,13 +13,17 @@
       "id": "trigger",
       "name": "Преобразовать",
       "type": "event",
-      "required": true
+      "required": true,
+      "additional": false,
+      "description": "Запускает действие «Преобразовать»."
     },
     {
       "id": "text",
       "name": "Исходный текст",
       "type": "text",
-      "required": true
+      "required": true,
+      "additional": false,
+      "description": "Передаёт текст: Исходный текст."
     }
   ],
   "outputs": [
@@ -27,37 +31,38 @@
       "id": "changed",
       "name": "Преобразование завершено",
       "type": "event",
-      "description": "После каждой попытки, включая ошибку."
+      "description": "После каждой попытки, включая ошибку.",
+      "additional": true
     },
     {
       "id": "done",
       "name": "Число получено",
-      "type": "event"
+      "type": "event",
+      "additional": false,
+      "description": "Сигнал: Число получено."
     },
     {
       "id": "failed",
       "name": "Ошибка преобразования",
-      "type": "event"
+      "type": "event",
+      "additional": false,
+      "description": "Сигнал: Ошибка преобразования."
     },
     {
       "id": "value",
       "name": "Число",
       "type": "number",
-      "readyOn": "changed"
-    },
-    {
-      "id": "valid",
-      "name": "Число корректно?",
-      "type": "boolean",
       "readyOn": "changed",
-      "additional": true
+      "additional": false,
+      "description": "Передаёт число: Число."
     },
     {
       "id": "error",
       "name": "Описание ошибки",
       "type": "text",
       "readyOn": "changed",
-      "additional": true
+      "additional": true,
+      "description": "Передаёт текст: Описание ошибки."
     }
   ],
   "parameters": {
@@ -122,7 +127,7 @@
   },
   "constraints": {},
   "compatibility": {
-    "projectFormat": 3,
+    "projectFormat": 4,
     "targets": [
       "esp32",
       "esp32s3",

@@ -2,7 +2,7 @@
   "id": "f73d9ac5-5ab7-48fe-80be-2b05ea5a9650",
   "name": "Wi-Fi маршрутизатор – P4 IP101 и SoftAP",
   "description": "Заполните собственные пароли SoftAP и администратора, а для Wi-Fi WAN также SSID и пароль внешней сети. Подключение Ethernet и микроконтроллер заданы профилем платы. Настройки: docs/router.md.",
-  "formatVersion": 3,
+  "formatVersion": 4,
   "createdAt": "2026-10-18T06:17:08.261Z",
   "updatedAt": "2026-10-18T06:17:08.261Z",
   "boardId": "waveshare-esp32-p4-nano",

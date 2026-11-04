@@ -1,0 +1,292 @@
+{
+  "id": "clex.hardware.mosfet",
+  "version": "1.0.0",
+  "kind": "hardware",
+  "name": "MOSFET-ключ",
+  "category": "actuators",
+  "categoryName": "Исполнительные устройства",
+  "icon": "ToggleRight",
+  "color": "#F59E0B",
+  "description": "Управление нагрузкой постоянного тока через MOSFET-модуль. Настраиваются количество каналов и активный уровень управляющих входов.",
+  "compatibility": {
+    "projectFormat": 4,
+    "targets": [
+      "esp32",
+      "esp32s3",
+      "esp32p4",
+      "atmega328p"
+    ],
+    "espIdf": "5.4.4",
+    "platforms": {
+      "arduino-avr": "1.8.6"
+    }
+  },
+  "inputs": [],
+  "outputs": [],
+  "visual": {
+    "svg": "mosfet.svg",
+    "width": 280,
+    "height": 195
+  },
+  "parameters": {
+    "channels": {
+      "label": "Количество каналов",
+      "type": "select",
+      "default": "1",
+      "options": [
+        {
+          "value": "1",
+          "label": "1"
+        },
+        {
+          "value": "2",
+          "label": "2"
+        },
+        {
+          "value": "3",
+          "label": "3"
+        },
+        {
+          "value": "4",
+          "label": "4"
+        },
+        {
+          "value": "5",
+          "label": "5"
+        },
+        {
+          "value": "6",
+          "label": "6"
+        },
+        {
+          "value": "7",
+          "label": "7"
+        },
+        {
+          "value": "8",
+          "label": "8"
+        },
+        {
+          "value": "9",
+          "label": "9"
+        },
+        {
+          "value": "10",
+          "label": "10"
+        },
+        {
+          "value": "11",
+          "label": "11"
+        },
+        {
+          "value": "12",
+          "label": "12"
+        },
+        {
+          "value": "13",
+          "label": "13"
+        },
+        {
+          "value": "14",
+          "label": "14"
+        },
+        {
+          "value": "15",
+          "label": "15"
+        },
+        {
+          "value": "16",
+          "label": "16"
+        }
+      ]
+    },
+    "activeLevel": {
+      "label": "Уровень включения",
+      "type": "select",
+      "default": "high",
+      "options": [
+        {
+          "value": "high",
+          "label": "HIGH – высокий уровень"
+        },
+        {
+          "value": "low",
+          "label": "LOW – низкий уровень"
+        }
+      ],
+      "description": "Уровень входа IN, при котором канал включен. Выбирается по схеме модуля."
+    }
+  },
+  "terminals": [
+    {
+      "id": "ground",
+      "label": "GND",
+      "kind": "ground",
+      "x": 280,
+      "y": 160
+    },
+    {
+      "id": "in1",
+      "label": "IN1",
+      "kind": "gpio-output",
+      "channel": 1,
+      "optional": true,
+      "x": 0,
+      "y": 125
+    },
+    {
+      "id": "in2",
+      "label": "IN2",
+      "kind": "gpio-output",
+      "channel": 2,
+      "optional": true,
+      "x": 0,
+      "y": 160
+    },
+    {
+      "id": "in3",
+      "label": "IN3",
+      "kind": "gpio-output",
+      "channel": 3,
+      "optional": true,
+      "x": 0,
+      "y": 195
+    },
+    {
+      "id": "in4",
+      "label": "IN4",
+      "kind": "gpio-output",
+      "channel": 4,
+      "optional": true,
+      "x": 0,
+      "y": 230
+    },
+    {
+      "id": "in5",
+      "label": "IN5",
+      "kind": "gpio-output",
+      "channel": 5,
+      "optional": true,
+      "x": 0,
+      "y": 265
+    },
+    {
+      "id": "in6",
+      "label": "IN6",
+      "kind": "gpio-output",
+      "channel": 6,
+      "optional": true,
+      "x": 0,
+      "y": 300
+    },
+    {
+      "id": "in7",
+      "label": "IN7",
+      "kind": "gpio-output",
+      "channel": 7,
+      "optional": true,
+      "x": 0,
+      "y": 335
+    },
+    {
+      "id": "in8",
+      "label": "IN8",
+      "kind": "gpio-output",
+      "channel": 8,
+      "optional": true,
+      "x": 0,
+      "y": 370
+    },
+    {
+      "id": "in9",
+      "label": "IN9",
+      "kind": "gpio-output",
+      "channel": 9,
+      "optional": true,
+      "x": 0,
+      "y": 405
+    },
+    {
+      "id": "in10",
+      "label": "IN10",
+      "kind": "gpio-output",
+      "channel": 10,
+      "optional": true,
+      "x": 0,
+      "y": 440
+    },
+    {
+      "id": "in11",
+      "label": "IN11",
+      "kind": "gpio-output",
+      "channel": 11,
+      "optional": true,
+      "x": 0,
+      "y": 475
+    },
+    {
+      "id": "in12",
+      "label": "IN12",
+      "kind": "gpio-output",
+      "channel": 12,
+      "optional": true,
+      "x": 0,
+      "y": 510
+    },
+    {
+      "id": "in13",
+      "label": "IN13",
+      "kind": "gpio-output",
+      "channel": 13,
+      "optional": true,
+      "x": 0,
+      "y": 545
+    },
+    {
+      "id": "in14",
+      "label": "IN14",
+      "kind": "gpio-output",
+      "channel": 14,
+      "optional": true,
+      "x": 0,
+      "y": 580
+    },
+    {
+      "id": "in15",
+      "label": "IN15",
+      "kind": "gpio-output",
+      "channel": 15,
+      "optional": true,
+      "x": 0,
+      "y": 615
+    },
+    {
+      "id": "in16",
+      "label": "IN16",
+      "kind": "gpio-output",
+      "channel": 16,
+      "optional": true,
+      "x": 0,
+      "y": 650
+    }
+  ],
+  "constraints": {},
+  "firmware": {
+    "status": "implemented",
+    "generatorKey": "gpio-output",
+    "dependencies": [
+      "esp_driver_gpio"
+    ]
+  },
+  "logicPresentation": {
+    "deviceLabel": "MOSFET-ключ",
+    "output": {
+      "title": "Управлять MOSFET-ключом"
+    }
+  },
+  "manualWiring": [
+    "Каждый используемый вход IN подключается к отдельному выходному GPIO. Активный уровень выбирается по схеме модуля. При запуске прошивки подключенные каналы выключены.",
+    "Напряжение силового питания и ток нагрузки определяются характеристиками модуля. Подключите нагрузку и ее источник к силовым клеммам; они не соединяются с GPIO. GND модуля и платы должен быть общим, если схема модуля не предусматривает гальваническую развязку.",
+    "Настройка HIGH/LOW не меняет напряжение GPIO. Проверьте совместимость управляющего входа с уровнем 3,3 или 5 В выбранной платы. Для обычного IRF520 полное открытие от GPIO не гарантировано; может потребоваться драйвер затвора."
+  ]
+}

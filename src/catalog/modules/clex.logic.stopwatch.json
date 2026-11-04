@@ -53,14 +53,6 @@
       "readyOn": "changed",
       "additional": true,
       "description": "Количество полных секунд для других блоков."
-    },
-    {
-      "id": "running",
-      "name": "Секундомер работает?",
-      "type": "boolean",
-      "readyOn": "changed",
-      "additional": true,
-      "description": "Да во время отсчета, Нет на паузе."
     }
   ],
   "parameters": {
@@ -75,7 +67,7 @@
   },
   "constraints": {},
   "compatibility": {
-    "projectFormat": 3,
+    "projectFormat": 4,
     "targets": [
       "esp32",
       "esp32s3",

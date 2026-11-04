@@ -16,23 +16,23 @@
       "type": "event",
       "required": false,
       "description": "Сообщает, что доступны актуальные состояние и адреса сети.",
-      "additional": false
+      "additional": true
     },
     {
       "id": "connected",
-      "name": "Соединение установлено",
+      "name": "Кабель подключён",
       "type": "event",
       "required": false,
       "description": "Сигнал при установлении физического Ethernet-соединения.",
-      "additional": true
+      "additional": false
     },
     {
       "id": "disconnected",
-      "name": "Соединение потеряно",
+      "name": "Кабель отключён",
       "type": "event",
       "required": false,
       "description": "Сигнал при потере ранее установленного соединения.",
-      "additional": true
+      "additional": false
     },
     {
       "id": "ipChanged",
@@ -40,24 +40,6 @@
       "type": "event",
       "required": false,
       "description": "Сигнал при получении или потере IP-адреса и обновлении IP-данных.",
-      "additional": true
-    },
-    {
-      "id": "link",
-      "name": "Есть соединение?",
-      "type": "boolean",
-      "required": false,
-      "readyOn": "changed",
-      "description": "Да, если физическое Ethernet-соединение установлено.",
-      "additional": true
-    },
-    {
-      "id": "hasIp",
-      "name": "Есть IP-адрес?",
-      "type": "boolean",
-      "required": false,
-      "readyOn": "changed",
-      "description": "Да, если у платы есть действительный IP-адрес.",
       "additional": true
     },
     {
@@ -158,7 +140,7 @@
     }
   },
   "compatibility": {
-    "projectFormat": 3,
+    "projectFormat": 4,
     "targets": [
       "esp32s3",
       "esp32p4"

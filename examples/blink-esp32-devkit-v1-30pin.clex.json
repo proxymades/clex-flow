@@ -2,7 +2,7 @@
   "id": "b0561018-f515-4a8d-bcf8-29a492b10fba",
   "name": "Тест Blink – ESP32 DevKit V1",
   "description": "Внешний светодиод: GPIO25 → резистор 330 Ом → анод LED; катод → GND. Таймер переключает светодиод каждые 500 мс: 0,5 с включён, 0,5 с выключен. Питание и прошивка платы через USB.",
-  "formatVersion": 3,
+  "formatVersion": 4,
   "createdAt": "2026-10-21T10:34:42.255Z",
   "updatedAt": "2026-10-21T10:34:42.255Z",
   "boardId": "doit-esp32-devkit-v1-30pin",
@@ -45,7 +45,7 @@
       },
       {
         "id": "e2326323-7212-44f5-8b03-008438600477",
-        "moduleId": "clex.logic.gpio-toggle",
+        "moduleId": "clex.logic.gpio-set",
         "moduleVersion": "1.0.0",
         "name": "Переключить светодиод",
         "position": {
@@ -63,7 +63,7 @@
         "source": "e7748c79-b3ef-443f-a59d-9b98c898abf9",
         "target": "e2326323-7212-44f5-8b03-008438600477",
         "sourceHandle": "tick",
-        "targetHandle": "trigger",
+        "targetHandle": "toggle",
         "dataType": "event"
       }
     ],
@@ -113,6 +113,6 @@
   "moduleVersions": {
     "clex.hardware.led": "1.0.0",
     "clex.logic.timer": "1.0.0",
-    "clex.logic.gpio-toggle": "1.0.0"
+    "clex.logic.gpio-set": "1.0.0"
   }
 }

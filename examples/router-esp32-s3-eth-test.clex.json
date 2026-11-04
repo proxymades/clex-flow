@@ -2,7 +2,7 @@
   "id": "9eb35324-6c55-496b-b4ec-b5910b0a1ba3",
   "name": "Тест роутера ESP32-S3-ETH",
   "description": "Ethernet W5500 → Wi-Fi SoftAP на ESP32-S3-ETH. Дисплей ST7789 показывает состояние сети, WAN/LAN IP, число клиентов, время работы и температуру кристалла. Перед сборкой задайте собственные пароли SoftAP и администратора. Подключение и запуск: docs/router.md.",
-  "formatVersion": 3,
+  "formatVersion": 4,
   "createdAt": "2026-10-18T19:13:54.985Z",
   "updatedAt": "2026-10-18T19:13:54.985Z",
   "boardId": "waveshare-esp32-s3-eth",
@@ -389,36 +389,12 @@
         "dataType": "event"
       },
       {
-        "id": "47a67731-be47-4cfc-99a2-7cf497e5acbe",
-        "source": "e526714e-9d7b-4b25-ad5b-c38e2f7f3b15",
-        "target": "2873cfc6-0b1d-4ac1-92b3-2e636d39907a",
-        "sourceHandle": "wanUp",
-        "targetHandle": "wan-state",
-        "dataType": "boolean"
-      },
-      {
         "id": "a8b882e8-6e86-4de9-9a7d-815f70016804",
         "source": "e526714e-9d7b-4b25-ad5b-c38e2f7f3b15",
         "target": "2873cfc6-0b1d-4ac1-92b3-2e636d39907a",
         "sourceHandle": "wanIp",
         "targetHandle": "wan-ip",
         "dataType": "text"
-      },
-      {
-        "id": "5f06092a-f2cf-4007-90ad-a594b7b483a8",
-        "source": "e526714e-9d7b-4b25-ad5b-c38e2f7f3b15",
-        "target": "2873cfc6-0b1d-4ac1-92b3-2e636d39907a",
-        "sourceHandle": "internet",
-        "targetHandle": "internet-state",
-        "dataType": "boolean"
-      },
-      {
-        "id": "224aac7e-8766-4228-9f77-efcf7d66f396",
-        "source": "e526714e-9d7b-4b25-ad5b-c38e2f7f3b15",
-        "target": "2873cfc6-0b1d-4ac1-92b3-2e636d39907a",
-        "sourceHandle": "apEnabled",
-        "targetHandle": "softap-state",
-        "dataType": "boolean"
       },
       {
         "id": "83f26663-f88d-410d-9ac4-0114a66c8497",
@@ -458,6 +434,54 @@
         "target": "2873cfc6-0b1d-4ac1-92b3-2e636d39907a",
         "sourceHandle": "changed",
         "targetHandle": "update.chip-temperature",
+        "dataType": "event"
+      },
+      {
+        "id": "13c04680-e820-4b90-8e9f-e9a960d6e037",
+        "source": "e526714e-9d7b-4b25-ad5b-c38e2f7f3b15",
+        "sourceHandle": "wanDisconnected",
+        "target": "2873cfc6-0b1d-4ac1-92b3-2e636d39907a",
+        "targetHandle": "show.wan-state.wan-state-off",
+        "dataType": "event"
+      },
+      {
+        "id": "98bd584d-2d1b-4685-87f4-a82b535b08f0",
+        "source": "e526714e-9d7b-4b25-ad5b-c38e2f7f3b15",
+        "sourceHandle": "wanConnected",
+        "target": "2873cfc6-0b1d-4ac1-92b3-2e636d39907a",
+        "targetHandle": "show.wan-state.wan-state-on",
+        "dataType": "event"
+      },
+      {
+        "id": "edf78655-9021-4aed-a74d-1638ff963ac4",
+        "source": "e526714e-9d7b-4b25-ad5b-c38e2f7f3b15",
+        "sourceHandle": "internetDown",
+        "target": "2873cfc6-0b1d-4ac1-92b3-2e636d39907a",
+        "targetHandle": "show.internet-state.internet-state-off",
+        "dataType": "event"
+      },
+      {
+        "id": "e495a4e4-5b36-4d00-8d5d-d9f124c7bb97",
+        "source": "e526714e-9d7b-4b25-ad5b-c38e2f7f3b15",
+        "sourceHandle": "internetUp",
+        "target": "2873cfc6-0b1d-4ac1-92b3-2e636d39907a",
+        "targetHandle": "show.internet-state.internet-state-on",
+        "dataType": "event"
+      },
+      {
+        "id": "788fc445-10cf-4f35-a363-54f7baf33a6c",
+        "source": "e526714e-9d7b-4b25-ad5b-c38e2f7f3b15",
+        "sourceHandle": "apStopped",
+        "target": "2873cfc6-0b1d-4ac1-92b3-2e636d39907a",
+        "targetHandle": "show.softap-state.softap-state-off",
+        "dataType": "event"
+      },
+      {
+        "id": "e464f8ef-3ee7-41b2-a2c1-3aede6c887fb",
+        "source": "e526714e-9d7b-4b25-ad5b-c38e2f7f3b15",
+        "sourceHandle": "apStarted",
+        "target": "2873cfc6-0b1d-4ac1-92b3-2e636d39907a",
+        "targetHandle": "show.softap-state.softap-state-on",
         "dataType": "event"
       }
     ],
@@ -576,9 +600,9 @@
           "dotSize": 8,
           "dotPosition": "left",
           "align": "left",
-          "mode": "dynamic",
-          "valueType": "boolean",
-          "initialValue": false,
+          "mode": "events",
+          "valueType": "number",
+          "initialValue": 0,
           "prefix": "",
           "suffix": "",
           "captionDynamic": false,
@@ -589,7 +613,7 @@
             {
               "id": "wan-state-off",
               "name": "WAN: нет IP",
-              "value": false,
+              "value": 0,
               "text": "WAN: нет IP",
               "background": "#251e2d",
               "color": "#fecaca",
@@ -598,7 +622,7 @@
             {
               "id": "wan-state-on",
               "name": "WAN: IP получен",
-              "value": true,
+              "value": 1,
               "text": "WAN: IP получен",
               "background": "#10352c",
               "color": "#a7f3d0",
@@ -639,9 +663,9 @@
           "dotSize": 8,
           "dotPosition": "left",
           "align": "left",
-          "mode": "dynamic",
-          "valueType": "boolean",
-          "initialValue": false,
+          "mode": "events",
+          "valueType": "number",
+          "initialValue": 0,
           "prefix": "",
           "suffix": "",
           "captionDynamic": false,
@@ -652,7 +676,7 @@
             {
               "id": "internet-state-off",
               "name": "Интернет: недоступен",
-              "value": false,
+              "value": 0,
               "text": "Интернет: недоступен",
               "background": "#251e2d",
               "color": "#fecaca",
@@ -661,7 +685,7 @@
             {
               "id": "internet-state-on",
               "name": "Интернет: доступен",
-              "value": true,
+              "value": 1,
               "text": "Интернет: доступен",
               "background": "#10352c",
               "color": "#a7f3d0",
@@ -687,9 +711,9 @@
           "dotSize": 8,
           "dotPosition": "left",
           "align": "left",
-          "mode": "dynamic",
-          "valueType": "boolean",
-          "initialValue": false,
+          "mode": "events",
+          "valueType": "number",
+          "initialValue": 0,
           "prefix": "",
           "suffix": "",
           "captionDynamic": false,
@@ -700,7 +724,7 @@
             {
               "id": "softap-state-off",
               "name": "Wi-Fi: выключен",
-              "value": false,
+              "value": 0,
               "text": "Wi-Fi: выключен",
               "background": "#251e2d",
               "color": "#fecaca",
@@ -709,7 +733,7 @@
             {
               "id": "softap-state-on",
               "name": "Wi-Fi: включен",
-              "value": true,
+              "value": 1,
               "text": "Wi-Fi: включен",
               "background": "#10352c",
               "color": "#a7f3d0",

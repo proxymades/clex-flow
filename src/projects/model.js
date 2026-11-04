@@ -1,12 +1,11 @@
 import {AUDIO_PLAY_MODULE,readRecording} from '../audio/model.js';
-import {VOICE_MODULE,readVoiceProfile,voiceProfileProblem,readWakeProfile,wakeProfileProblem,migrateVoiceProject} from '../voice/model.js';
-import {migrateXgzpProject} from '../pressure/model.js';
+import {VOICE_MODULE,readVoiceProfile,voiceProfileProblem,readWakeProfile,wakeProfileProblem} from '../voice/model.js';
 import { imageIssues } from '../displays/image.js';
 import { indicatorIssues } from '../displays/indicator.js';
 import { dynamicTextValid, screenPorts } from '../displays/model.js';
 import { DEFAULT_BOARD_POSITION, DEFAULT_VIEWPORT } from '../assembly/model.js';
 
-export const FORMAT_VERSION = 3;
+export const FORMAT_VERSION = 4;
 export const MAX_PROJECT_BYTES = 2 * 1024 * 1024;
 const ID_PATTERN = /^[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12}$/i;
 const KEY_PATTERN = /^[a-zA-Z0-9][a-zA-Z0-9._-]{0,99}$/;
@@ -34,22 +33,9 @@ export function createProject(name, description = '', boardId = 'waveshare-esp32
   };
 }
 
-export function migrateProject(project) {
-  if (!isObject(project)) throw new Error('Ожидался объект проекта JSON.');
-  if (project.formatVersion === 1) {
-    if (project.boardId !== 'esp32-s3-generic' || !Array.isArray(project.components) || project.components.length || !Array.isArray(project.gpioAssignments) || project.gpioAssignments.length || !isObject(project.assembly) || !isObject(project.assembly.positions) || Object.keys(project.assembly.positions).length || !Array.isArray(project.assembly.connections) || project.assembly.connections.length || !isObject(project.moduleVersions) || Object.keys(project.moduleVersions).length) throw new Error('Неподдерживаемая схема в проекте формата 1. Исходный файл не изменен.');
-    project = { ...project, formatVersion: 2, boardSettings: {}, assembly: { ...project.assembly, positions: { board: { ...DEFAULT_BOARD_POSITION } }, viewport: { ...DEFAULT_VIEWPORT } } };
-  }
-  if (project.formatVersion === 2) {
-    if (!isObject(project.logic) || !Array.isArray(project.logic.nodes) || !Array.isArray(project.logic.edges) || project.logic.nodes.length || project.logic.edges.length) throw new Error('Проект формата 2 содержит неподдерживаемый граф. Исходный файл не изменен.');
-    project = { ...project, formatVersion: 3 };
-  }
-  return migrateVoiceProject(migrateXgzpProject(project));
-}
-
 export function validateProject(project) {
   if (!isObject(project)) throw new Error('Ожидался объект проекта JSON.');
-  if (project.formatVersion !== FORMAT_VERSION) throw new Error(`Версия формата ${String(project.formatVersion)} не поддерживается. Ожидается версия 1, 2 или 3.`);
+  if (project.formatVersion !== FORMAT_VERSION) throw new Error(`Версия формата ${String(project.formatVersion)} не поддерживается. Ожидается версия 4. Создайте новый проект.`);
   if (typeof project.id !== 'string' || !ID_PATTERN.test(project.id)) throw new Error('Некорректный ID проекта.');
   validateName(project.name);
   if (typeof project.description !== 'string' || project.description.length > 4000) throw new Error('Описание должно содержать не более 4000 символов.');
@@ -66,17 +52,18 @@ export function validateProject(project) {
   }
   if (!isObject(project.logic) || !Array.isArray(project.logic.nodes) || !Array.isArray(project.logic.edges) || !viewportValid(project.logic.viewport)) throw new Error('Некорректный граф логики или масштаб.');
   if (project.logic.nodes.length > 100 || project.logic.edges.length > 300) throw new Error('Превышен лимит графа логики.');
-  const nodeIds = new Set(), edgeIds = new Set(), inputs = new Set();
+  const nodeIds = new Set(), edgeIds = new Set(), inputs = new Set(), links = new Set();
   for (const node of project.logic.nodes) {
     if (!isObject(node) || !validKey(node.id) || nodeIds.has(node.id) || !validKey(node.moduleId) || !semver(node.moduleVersion) || !point(node.position) || !isObject(node.parameters)) throw new Error('Некорректный или повторяющийся блок логики.');
     if(node.moduleId===AUDIO_PLAY_MODULE)readRecording(node);
     validateName(node.name); nodeIds.add(node.id);
+    if(node.showAdditionalPorts!==undefined&&typeof node.showAdditionalPorts!=='boolean')throw new Error('Некорректная настройка дополнительных контактов.');
     if (!Object.entries(node.parameters).every(([key, value]) => validKey(key) && (typeof value === 'string' || typeof value === 'boolean' || Number.isFinite(value)))) throw new Error('Некорректные параметры логического блока.');
   }
   for (const edge of project.logic.edges) {
-    const input = `${edge?.target}/${edge?.targetHandle}`;
-    if (!isObject(edge) || !validKey(edge.id) || edgeIds.has(edge.id) || !nodeIds.has(edge.source) || !nodeIds.has(edge.target) || !validPortKey(edge.sourceHandle) || !validPortKey(edge.targetHandle) || !['event','boolean','number','text'].includes(edge.dataType) || inputs.has(input)) throw new Error('Некорректная, повторяющаяся или осиротевшая связь логики.');
-    edgeIds.add(edge.id); inputs.add(input);
+    const input = edge?.target+'/'+edge?.targetHandle, link=JSON.stringify([edge?.source,edge?.sourceHandle,edge?.target,edge?.targetHandle]);
+    if (!isObject(edge) || !validKey(edge.id) || edgeIds.has(edge.id) || links.has(link) || !nodeIds.has(edge.source) || !nodeIds.has(edge.target) || !validPortKey(edge.sourceHandle) || !validPortKey(edge.targetHandle) || !['event','number','text'].includes(edge.dataType) || edge.dataType !== 'event' && inputs.has(input)) throw new Error('Некорректная, повторяющаяся или осиротевшая связь логики.');
+    edgeIds.add(edge.id); links.add(link); if (edge.dataType !== 'event') inputs.add(input);
   }
   if (project.screens !== undefined) {
     if (!isObject(project.screens) || Object.entries(project.screens).some(([id, screen]) => !ids.has(id) || !isObject(screen) || screen.formatVersion !== 1 || typeof screen.background !== 'string' || !/^#[0-9a-f]{6}$/i.test(screen.background) || !Array.isArray(screen.elements) || screen.elements.length > 100)) throw new Error('Некорректные интерфейсы экранов.');
@@ -90,7 +77,7 @@ export function validateProject(project) {
           elementIds.add(element.id); continue;
         }
         if (!validKey(element.fontId) || typeof element.text !== 'string' || element.text.length > 500 || !/^#[0-9a-f]{6}$/i.test(element.color)) throw new Error('Некорректный текстовый элемент интерфейса экрана.');
-        if (element.mode !== undefined && !['static', 'dynamic'].includes(element.mode) || element.name !== undefined && (typeof element.name !== 'string' || element.name.length > 80) || element.mode === 'dynamic' && !dynamicTextValid(element)) throw new Error('Некорректная настройка динамического текста.');
+        if (element.mode !== undefined && !(element.type==='indicator'?['static','dynamic','events']:['static','dynamic']).includes(element.mode) || element.name !== undefined && (typeof element.name !== 'string' || element.name.length > 80) || element.mode === 'dynamic' && !dynamicTextValid(element)) throw new Error('Некорректная настройка динамического текста.');
         if (element.type === 'indicator' && indicatorIssues(element).length) throw new Error('Некорректный индикатор состояния.');
         elementIds.add(element.id);
       }
@@ -134,7 +121,7 @@ export function parseProject(contents) {
   if (new TextEncoder().encode(contents).length > MAX_PROJECT_BYTES) throw new Error('Размер проекта превышает 2 МБ.');
   let project;
   try { project = JSON.parse(contents); } catch { throw new Error('Файл не содержит корректный JSON.'); }
-  return validateProject(migrateProject(project));
+  return validateProject(project);
 }
 
 export function sortedProjects(projects) {

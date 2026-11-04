@@ -5,7 +5,7 @@ import {catalog} from './catalog-fixture.js';
 import {generateFirmware} from '../src/firmware/generator.js';
 import {validateAssembly,addHardware} from '../src/assembly/model.js';
 import {validateGraph,connectNodes,withLogic,connectionProblem} from '../src/logic/model.js';
-import {elementUpdatePort,saveScreen} from '../src/displays/model.js';
+import {screenCommands,elementUpdatePort,saveScreen} from '../src/displays/model.js';
 import {serializeProject,parseProject} from '../src/projects/model.js';
 import {indicatorState,newIndicator} from '../src/displays/indicator.js';
 import {probeUrl,ipv4} from '../src/network/model.js';
@@ -27,10 +27,10 @@ test('display and Ethernet can exchange SPI controllers; collisions and unavaila
  network.parameters.spiHost='2';assert.ok(validateAssembly(project,catalog).some(issue=>issue.code==='spi-conflict'));assert.throws(()=>generateFirmware(project,catalog),/свободный SPI/);
  const unsupported={...displayProject(),boardId:'espressif-devkitc-1-v1-1-n8r8'};assert.throws(()=>addHardware(unsupported,ethernetModule,catalog),/нет описанного/);
 });
-test('indicator state names and colors are user-defined and boolean mappings are exact',()=>{
- const indicator=newIndicator(catalog.modules.find(module=>module.display).display);indicator.mode='dynamic';indicator.valueType='boolean';indicator.initialValue=false;
- indicator.states[0].value=false;indicator.states[0].text='Холодно';indicator.states[0].dotColor='#112233';indicator.states[1].value=true;indicator.states[1].text='Горячо';
- assert.equal(indicatorState(indicator,true).text,'Горячо');assert.equal(indicatorState(indicator,false).dotColor,'#112233');
+test('numeric indicator state names and colors are user-defined',()=>{
+ const indicator=newIndicator(catalog.modules.find(m=>m.display).display);indicator.mode='dynamic';
+ indicator.states[0].text='Холодно';indicator.states[0].dotColor='#112233';indicator.states[1].text='Горячо';
+ assert.equal(indicatorState(indicator,1).text,'Горячо');assert.equal(indicatorState(indicator,0).dotColor,'#112233');
 });
 test('static addressing and probe URLs are validated before generating firmware',()=>{
  const project=networkProject(),network=project.components.find(component=>component.moduleId===ethernetModule.id);
@@ -50,20 +50,24 @@ test('one indicator accepts independent state and arbitrary text through existin
  project=withLogic(project,graph);assert.deepEqual(validateGraph(project,catalog).filter(issue=>issue.severity==='error'),[]);
  assert.deepEqual(parseProject(serializeProject(project)),project);
  const source=generateFirmware(project,catalog).mainC;assert.match(source,/clex_graphics_set_indicator_caption/);
- assert.match(connectionProblem(graph,catalog,{source:ethernet.id,sourceHandle:'link',target:view.id,targetHandle:caption},null,project),/Несовместимые типы/);
+ assert.match(connectionProblem(graph,catalog,{source:ethernet.id,sourceHandle:'state',target:view.id,targetHandle:caption},null,project),/Несовместимые типы/);
  const screen=structuredClone(project.screens[display.id]);screen.elements.find(element=>element.id===indicator.id).captionDynamic=false;
  const saved=saveScreen(project,display.id,screen);
  assert.ok(!saved.logic.edges.some(edge=>edge.targetHandle===caption||edge.targetHandle===elementUpdatePort(caption)));
  assert.ok(saved.logic.edges.some(edge=>edge.targetHandle===indicator.id));
 });
-test('several Ethernet output ports keep independent values and boolean state keys',()=>{
- const project=networkProject(),display=project.components.find(component=>component.moduleId!==ethernetModule.id),screen=project.screens[display.id];
- const indicator=screen.elements.find(element=>element.type==='indicator');indicator.valueType='boolean';indicator.initialValue=false;
- indicator.states=indicator.states.slice(0,2);indicator.states[0].value=false;indicator.states[1].value=true;indicator.fallbackStateId=indicator.states[0].id;
- const stateEdge=project.logic.edges.find(edge=>edge.targetHandle===indicator.id);stateEdge.sourceHandle='link';stateEdge.dataType='boolean';
- const ipElement=screen.elements.find(element=>element.name==='IP-адрес');project.logic.edges.find(edge=>edge.targetHandle===ipElement.id).sourceHandle='gateway';
+test('Ethernet connection events select indicator states while IP text stays independently bound',()=>{
+ const project=networkProject(),display=project.components.find(c=>c.moduleId!==ethernetModule.id),screen=project.screens[display.id];
+ const indicator=screen.elements.find(e=>e.type==='indicator');indicator.mode='events';
+ const ethernet=project.logic.nodes.find(n=>n.moduleId==='clex.logic.ethernet'),view=project.logic.nodes.find(n=>n.moduleId==='clex.logic.display');
+ project.logic.edges=project.logic.edges.filter(e=>e.targetHandle!==indicator.id&&e.targetHandle!==elementUpdatePort(indicator.id));
+ const commands=screenCommands(screen).filter(c=>c.element.id===indicator.id);
+ for(const [sourceHandle,command]of [['disconnected',commands[0]],['connected',commands[1]]])project.logic=connectNodes(project.logic,catalog,{source:ethernet.id,sourceHandle,target:view.id,targetHandle:command.id},project);
+ assert.deepEqual(validateGraph(project,catalog).filter(i=>i.severity==='error'),[]);
  const source=generateFirmware(project,catalog).mainC;
- assert.match(source,/\(ethernet_value_\d+\.link\) \? "true" : "false"/);assert.match(source,/clex_graphics_set_text\([^;]+ethernet_value_\d+\.gateway\)/);
+ assert.match(source,/static void node_\d+_state_\d+\(void\)/);
+ assert.match(source,/clex_graphics_set_text\([^;]+ethernet_value_\d+\.ip\)/);
+ assert.deepEqual(parseProject(serializeProject(project)),project);
 });
 
 test('completion-only indicator updates remain valid with a separate IP-change reset event',()=>{
@@ -73,5 +77,5 @@ test('completion-only indicator updates remain valid with a separate IP-change r
  assert.deepEqual(validateGraph(steady,catalog).filter(issue=>issue.severity==='error'),[]);
  assert.deepEqual(parseProject(serializeProject(steady)),steady);
  assert.ok(!steady.logic.edges.some(edge=>edge.source===probe.id&&edge.dataType==='event'&&edge.sourceHandle==='changed'));
- assert.match(generateFirmware(steady,catalog).mainC,/if \(event.flags\) node_\d+_emit_done\(\)/);
+ assert.match(generateFirmware(steady,catalog).mainC,/if \(event.flags\) \{ node_\d+_emit_done\(\)/);
 });

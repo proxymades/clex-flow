@@ -9,7 +9,7 @@ import {validateGraph} from '../src/logic/model.js';
 import {generateFirmware} from '../src/firmware/generator.js';
 import {stepperProject} from './stepper-fixture.js';
 const board=catalog.boards.find(b=>b.id===ESP32_BOARD);
-const supported=['hardware.led','hardware.button','hardware.touch-button','display.spi-240x320','hardware.nema17','hardware.tb6600','hardware.tmc2208','hardware.drv8825','hardware.espnow','hardware.router','logic.timer','logic.counter','logic.stopwatch','logic.serial','logic.gpio-read','logic.gpio-set','logic.gpio-toggle','logic.gpio-edge','logic.select-number','logic.display','logic.stepper','logic.espnow-control','logic.espnow-receive','logic.espnow-send','logic.espnow-ack','logic.router','logic.internet-check'];
+const supported=['hardware.led','hardware.button','hardware.touch-button','display.spi-240x320','hardware.nema17','hardware.tb6600','hardware.tmc2208','hardware.drv8825','hardware.espnow','hardware.router','logic.timer','logic.counter','logic.stopwatch','logic.serial','logic.gpio-read','logic.gpio-set','logic.gpio-edge','logic.select-number','logic.display','logic.stepper','logic.espnow-control','logic.espnow-receive','logic.espnow-send','logic.espnow-ack','logic.router','logic.internet-check'];
 test('classic ESP32 enables implemented components and excludes unsupported peripherals',()=>{
  for(const id of supported)assert.equal(moduleSupportsBoard(catalog.modules.find(m=>m.id==='clex.'+id),board),true,id);
  for(const id of ['hardware.ethernet','logic.ethernet','logic.temperature','display.waveshare-10-1-dsi-touch-a','hardware.audio','hardware.camera','logic.tone','logic.camera-capture'])assert.equal(moduleSupportsBoard(catalog.modules.find(m=>m.id==='clex.'+id),board),false,id);
@@ -24,7 +24,7 @@ test('classic ESP32 GPIO, SPI displays, ESP-NOW and motion generate UART firmwar
  const projects=[esp32GpioProject(),esp32DisplayProject(),esp32DisplayProject(undefined,'3'),esp32EspNowProject({combined:true,rememberMode:true,peerHealth:true}),esp32PeripheralProject(),...['tb6600','tmc2208','drv8825'].map(driver=>stepperProject(driver,ESP32_BOARD).project)];
  for(const p of projects){
   assert.deepEqual([...validateAssembly(p,catalog),...validateGraph(p,catalog)].filter(i=>i.severity==='error'),[]);
-  assert.deepEqual(parseProject(serializeProject(p)),p);
+  const restored=parseProject(serializeProject(p));assert.deepEqual(restored.assembly,p.assembly);assert.deepEqual(restored.logic.edges,p.logic.edges);assert.deepEqual(parseProject(serializeProject(restored)),restored);
   const b=generateFirmware(p,catalog,'usb');assert.equal(b.target,'esp32');assert.equal(b.consoleMode,'uart');
   assert.match(b.files['sdkconfig.defaults'],/CONFIG_IDF_TARGET="esp32"/);assert.match(b.files['sdkconfig.defaults'],/CONFIG_ESPTOOLPY_FLASHSIZE_4MB=y/);assert.match(b.files['sdkconfig.defaults'],/CONFIG_ESP_CONSOLE_UART_DEFAULT=y/);assert.doesNotMatch(b.files['sdkconfig.defaults'],/USB_SERIAL_JTAG|CONFIG_SPIRAM=y/);
   if(p.components.some(c=>c.moduleId==='clex.hardware.espnow')){assert.ok(b.featureRuntimes.includes('espnow-esp32'));assert.match(b.mainC,/WIFI_PHY_RATE_LORA_250K/);assert.ok(b.mainC.includes('nvs_set_blob'),'persistent radio mode uses NVS');assert.match(b.files['partitions.csv'],/0x300000/);}

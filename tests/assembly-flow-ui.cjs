@@ -13,7 +13,7 @@ const { chromium } = require('playwright');
     const setItem = Storage.prototype.setItem;
     Storage.prototype.setItem = function(key, value) { if (key === 'clex-flow:projects:v1') window.__writes++; return setItem.call(this, key, value); };
   });
-  const source = await fs.readFile('tests/fixtures/blink-mount-v2.clex.json', 'utf8');
+  const source = await fs.readFile('tests/fixtures/blink-mount.clex.json', 'utf8');
   const stored = () => page.evaluate(() => JSON.parse(Object.values(JSON.parse(localStorage.getItem('clex-flow:projects:v1')))[0]));
   const save = async () => { await page.getByRole('button', { name: 'Сохранить', exact: true }).first().click(); await page.getByText('Проект сохранен', { exact: true }).waitFor(); };
   const boardPort = id => page.locator('.react-flow__node-physicalBoard .assembly-handle[data-handleid="' + id + '"]');
@@ -30,7 +30,7 @@ const { chromium } = require('playwright');
   try {
     await page.goto(process.env.CLEX_PREVIEW_URL || 'http://127.0.0.1:1420');
     const chooser = page.waitForEvent('filechooser'); await page.getByRole('button', { name: 'Открыть JSON', exact: true }).click();
-    await (await chooser).setFiles('tests/fixtures/blink-mount-v2.clex.json');
+    await (await chooser).setFiles('tests/fixtures/blink-mount.clex.json');
     await page.getByRole('button', { name: 'Монтаж', exact: true }).click();
     await page.locator('.assembly-flow-region[data-ready="true"]').waitFor();
     assert.equal(await page.locator('.react-flow__node-physicalBoard').count(), 1);
@@ -55,7 +55,7 @@ const { chromium } = require('playwright');
     await drag(componentPort(led.id, 'anode'), boardPort('P34')); await save();
     result = await stored();
     assert.equal(result.assembly.connections.find(wire => wire.componentId === led.id && wire.terminalId === 'anode').boardPinId, 'P34');
-    assert.equal(result.formatVersion, 3); assert.equal('nodes' in result.assembly, false);
+    assert.equal(result.formatVersion, 4); assert.equal('nodes' in result.assembly, false);
     assert.equal(result.gpioAssignments.find(item => item.componentId === led.id).gpio, 17);
 
     const beforeInvalid = await stored(), beforeInvalidWrites = await page.evaluate(() => window.__writes);
@@ -98,7 +98,7 @@ const { chromium } = require('playwright');
     await page.getByRole('button', { name: 'Показать весь монтаж', exact: true }).click();
     await page.clock.fastForward(100);
     await page.screenshot({ path: '.artifacts/assembly-react-flow.png' });
-    assert.equal(await fs.readFile('tests/fixtures/blink-mount-v2.clex.json', 'utf8'), source);
+    assert.equal(await fs.readFile('tests/fixtures/blink-mount.clex.json', 'utf8'), source);
     assert.deepEqual(errors, []);
     console.log('PASS: real React Flow nodes/edges, physical handle geometry, forward/reverse native wire drags, invalid power/component links rejected, round-handle clicks, wire deletion, format compatibility, same wheel factor, source untouched.');
   } finally { await browser.close(); }

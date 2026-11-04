@@ -1,3 +1,4 @@
+import {resolveMosfetModule,MOSFET_MODULE,isMosfet,mosfetChannelCount} from '../mosfet/model.js';
 import {isMicrophone,microphoneConnectionProblem,microphoneIssues} from '../microphone/model.js';
 import {VOICE_MODULE,voiceIssues} from '../voice/model.js';
 import {isXgzp,xgzpPowerProblem,i2cConnectionProblem,i2cClaimAllows,xgzpIssues} from '../pressure/model.js';
@@ -17,7 +18,7 @@ export const DEFAULT_BOARD_POSITION = { x: 100, y: 40 };
 export const DEFAULT_VIEWPORT = { x: 0, y: 0, zoom: 1 };
 const lookup = (items, id) => items.find(item => item.id === id);
 export const boardFor = (project, catalog) => lookup(catalog.boards, project.boardId);
-export const moduleFor = (component, catalog) => resolveRelayModule(component,lookup(catalog.modules, component.moduleId));
+export const moduleFor = (component, catalog) => resolveMosfetModule(component,resolveRelayModule(component,lookup(catalog.modules, component.moduleId)));
 
 export function transformAssembly(project,catalog,transform){
  const previous=project.assembly.positions,positions={...previous,...transform.positions},board=boardFor(project,catalog);
@@ -48,7 +49,7 @@ export function moduleProblem(component, catalog, board = null) {
   if (module.version !== component.moduleVersion) return `Требуется модуль ${component.moduleId} версии ${component.moduleVersion}; установлен ${module.version}.`;
   if (board && !moduleSupportsBoard(module,board)) return 'Для выбранной платформы нет реализованного драйвера этого компонента.';
   if (module.network && board && !board.networkInterfaces?.some(provider=>provider.family===module.network.family)) return 'Для выбранной платы нет описанного сетевого интерфейса этого типа.';
-  if (module.kind !== 'hardware' || module.compatibility.projectFormat !== 3 || !module.compatibility.targets.includes(board?.target || 'esp32s3')) return 'Модуль несовместим с этим редактором монтажа.';
+  if (module.kind !== 'hardware' || module.compatibility.projectFormat !== 4 || !module.compatibility.targets.includes(board?.target || 'esp32s3')) return 'Модуль несовместим с этим редактором монтажа.';
   return null;
 }
 
@@ -126,7 +127,7 @@ export function updateHardware(project,catalog,id,patch){
   component={...component,parameters};
  }
  let updated={...project,components:project.components.map(item=>item.id===id?component:item)};
- if(component.moduleId===RELAY_MODULE&&relayChannelCount(component)&&(component.parameters.channels!==previous.parameters.channels||component.parameters.powerSource!==previous.parameters.powerSource||relaySupplyVoltage(component)!==relaySupplyVoltage(previous))){
+ if((isMosfet(component)&&mosfetChannelCount(component)&&component.parameters.channels!==previous.parameters.channels)||component.moduleId===RELAY_MODULE&&relayChannelCount(component)&&(component.parameters.channels!==previous.parameters.channels||component.parameters.powerSource!==previous.parameters.powerSource||relaySupplyVoltage(component)!==relaySupplyVoltage(previous))){
   const definition=moduleFor(component,catalog);
   const terminals=new Set(definition.terminals.map(terminal=>terminal.id)),wired=new Set(definition.terminals.filter(terminal=>!terminal.externalPower).map(terminal=>terminal.id));
   const connections=project.assembly.connections.filter(wire=>{
@@ -253,6 +254,9 @@ export function validateAssembly(project, catalog) {
     if (module.constraints.signalVoltageParameter && Number(component.parameters[module.constraints.signalVoltageParameter]) > Number(component.parameters[module.constraints.supplyVoltageParameter])) issue('error','input-voltage',`${component.name}: напряжение OUT не может превышать выбранное питание VCC.`,fields);
     if(module.id===RELAY_MODULE&&relaySupplyVoltage(component)>5&&component.parameters.powerSource==='board')issue('error','relay-power-source',component.name+': для питания '+relayVoltageLabel(component)+' выберите внешний источник.',fields);
     if(module.id===RELAY_MODULE&&relaySupplyVoltage(component)>0&&(board.logicVoltage||3.3)>relaySupplyVoltage(component))issue('warning','relay-logic-level',component.name+': GPIO платы имеют уровень '+String(board.logicVoltage).replace('.',',')+' В. Проверьте совместимость входов IN модуля с питанием '+relayVoltageLabel(component)+'; может потребоваться согласование уровней.',fields);
+    if(module.id===MOSFET_MODULE){
+      if(!project.assembly.connections.some(wire=>wire.componentId===component.id&&/^in\d+$/.test(wire.terminalId)))issue('error','mosfet-channel',component.name+': подключите хотя бы один IN к выходному GPIO.',fields);
+    }
     if(module.id===RELAY_MODULE&&!project.assembly.connections.some(wire=>wire.componentId===component.id&&/^in\d+$/.test(wire.terminalId)))issue('error','relay-channel',component.name+': подключите хотя бы один вход IN к GPIO.',fields);
     for(const message of microphoneIssues(component,project,board))issue('error','microphone-config',component.name+': '+message,fields);
     for(const message of xgzpIssues(component,project,board))issue('error','xgzp-config',component.name+': '+message,fields);

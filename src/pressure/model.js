@@ -43,27 +43,3 @@ export function xgzpIssues(component, project, board) {
   if (sda !== undefined && sda === scl) issues.push('SDA и SCL должны использовать разные GPIO.');
   return issues;
 }
-
-// Preserve saved mounting and logic links when opening the initial sensor profile.
-export function migrateXgzpProject(project) {
-  const aliases={'clex.hardware.xgzp6897d':XGZP_MODULE,'clex.logic.xgzp6897d':XGZP_LOGIC};
-  if(project.formatVersion!==3 || !Array.isArray(project.components) || !Array.isArray(project.logic?.nodes) || !project.moduleVersions)return project;
-  const migrated=new Set();
-  const entry=item=>{
-    const id=Object.hasOwn(aliases,item?.moduleId)?aliases[item.moduleId]:null;
-    if(!id || item.moduleVersion!=='1.0.0')return item;
-    migrated.add(item.moduleId);
-    const name=typeof item.name==='string' && /^XGZP6897D(?: – Измерение)? \d+$/.test(item.name)?item.name.replace('XGZP6897D','XGZP6847D'):item.name;
-    return {...item,moduleId:id,name};
-  };
-  const components=project.components.map(entry),nodes=project.logic.nodes.map(entry);
-  if(!migrated.size)return project;
-  const moduleVersions={...project.moduleVersions};
-  for(const legacy of migrated){
-    const id=aliases[legacy];
-    if(moduleVersions[id] && moduleVersions[id]!==moduleVersions[legacy])throw new Error('В проекте нельзя смешивать версии одного модуля.');
-    moduleVersions[id]=moduleVersions[legacy];
-    if(![...components,...nodes].some(item=>item.moduleId===legacy))delete moduleVersions[legacy];
-  }
-  return {...project,components,logic:{...project.logic,nodes},moduleVersions};
-}

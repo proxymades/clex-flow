@@ -2,7 +2,7 @@
   "id": "34eaf05e-e40d-4aab-851f-a7c4a5e8afe5",
   "name": "Wi-Fi маршрутизатор – Station и SoftAP",
   "description": "Заполните собственные пароли SoftAP и администратора, а для Wi-Fi WAN также SSID и пароль внешней сети. Подключение Ethernet и микроконтроллер заданы профилем платы. Настройки: docs/router.md.",
-  "formatVersion": 3,
+  "formatVersion": 4,
   "createdAt": "2026-10-18T06:17:08.258Z",
   "updatedAt": "2026-10-18T06:17:08.258Z",
   "boardId": "waveshare-esp32-s3-eth",

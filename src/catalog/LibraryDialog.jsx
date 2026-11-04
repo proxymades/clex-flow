@@ -7,7 +7,7 @@ const icons = { MicAudioLines, Mic, GitBranch, Gauge, Wifi, ToggleRight, RotateC
 const kinds = { hardware: 'Аппаратные компоненты', logic: 'Блоки логики', board: 'Платы' };
 export default function LibraryDialog({ catalog, onClose }) {
   const [kind, setKind] = useState('hardware'), [query, setQuery] = useState('');
-  const items = kind === 'board' ? catalog.boards.filter(board => board.pins.length) : catalog.modules.filter(module => module.kind === kind);
+  const items = kind === 'board' ? catalog.boards.filter(board => board.pins.length) : catalog.modules.filter(module => module.kind === kind && !module.hidden);
   const visible = items.filter(item => [item.name, item.description, item.manufacturer, item.categoryName].filter(Boolean).join(' ').toLocaleLowerCase('ru').includes(query.toLocaleLowerCase('ru')));
   return <Modal title="Библиотека компонентов" className="library-modal" onClose={onClose}>
     <div className="library-catalog-tabs" role="tablist" aria-label="Раздел библиотеки">{Object.entries(kinds).map(([id, name]) => <button key={id} role="tab" aria-selected={kind === id} onClick={() => { setKind(id); setQuery(''); }}>{name}</button>)}</div>

@@ -1,12 +1,12 @@
 import { indicatorIssues, indicatorCaption } from './indicator.js';
 import { imageIssues, MAX_IMAGE_PIXELS } from './image.js';
-export const VALUE_TYPES = ['number', 'boolean', 'text'];
+export const VALUE_TYPES = ['number', 'text'];
 export const isDynamicText = element => element.type !== 'image' && element.mode === 'dynamic' || element.type === 'indicator' && element.captionDynamic;
 export const elementName = (element, index) => element.name?.trim() || `${element.type === 'image' ? 'Изображение' : element.type === 'indicator' ? 'Индикатор' : 'Текст'} ${index + 1}`;
 export function elementPreviewText(element) {
   if (element.type === 'indicator') return indicatorCaption(element);
   if (!isDynamicText(element)) return element.text;
-  const value = element.valueType === 'boolean' ? (element.initialValue ? 'Да' : 'Нет') : String(element.initialValue ?? '');
+  const value = String(element.initialValue ?? '');
   return (element.prefix || '') + value + (element.suffix || '');
 }
 export const elementUpdatePort = id => 'update.' + id;
@@ -18,16 +18,21 @@ export function elementBindings(element, index = 0) {
   return bindings;
 }
 export function screenBindings(screen) { return screen.elements.flatMap(elementBindings); }
+export function screenCommands(screen) {
+  return screen.elements.filter(element=>element.type==='indicator'&&element.mode==='events').flatMap(element=>element.states.map(state=>({
+    id:'show.'+element.id+'.'+state.id, name:'Показать «'+state.name+'»: '+element.name, type:'event',
+    description:'Показывает состояние «'+state.name+'» индикатора «'+element.name+'».', element, state
+  })));
+}
 export function screenPorts(screen) {
   const bindings = screenBindings(screen);
-  if (!bindings.length) return [];
-  return [{id:'trigger',name:'Обновить',type:'event',required:false}, ...bindings.flatMap(binding => [{id:binding.id,name:binding.name,type:binding.type,required:true},{id:elementUpdatePort(binding.id),name:'Обновить: ' + binding.name,type:'event',required:false}])];
+  return [...(bindings.length ? [{id:'trigger',name:'Обновить все значения',type:'event',required:false,additional:true}, ...bindings.flatMap(binding => [{id:binding.id,name:binding.name,type:binding.type,required:true},{id:elementUpdatePort(binding.id),name:'Обновить: ' + binding.name,type:'event',required:false,additional:true}])] : []), ...screenCommands(screen).map(({id,name,type,description})=>({id,name,type,description}))];
 }
 export function dynamicTextValid(element) {
   return VALUE_TYPES.includes(element.valueType)
     && typeof element.prefix === 'string' && element.prefix.length <= 200
     && typeof element.suffix === 'string' && element.suffix.length <= 200
-    && (element.valueType === 'number' ? Number.isFinite(element.initialValue) : element.valueType === 'boolean' ? typeof element.initialValue === 'boolean' : typeof element.initialValue === 'string' && element.initialValue.length <= 500)
+    && (element.valueType === 'number' ? Number.isFinite(element.initialValue) : typeof element.initialValue === 'string' && element.initialValue.length <= 500)
     && element.id !== 'trigger';
 }
 export const colorValid = value => typeof value === 'string' && /^#[0-9a-f]{6}$/i.test(value);
@@ -46,7 +51,7 @@ export function screenIssues(screen, display) {
     if (!['text','indicator','image'].includes(element.type) || typeof element.id !== 'string' || !element.id || ids.has(element.id)) issues.push('Некорректный или повторяющийся элемент экрана.');
     ids.add(element.id);
     if (!Number.isInteger(element.x) || !Number.isInteger(element.y) || element.x < 0 || element.y < 0 || element.x >= display.resolution.width || element.y >= display.resolution.height) issues.push('Координаты элемента находятся вне экрана.');
-    if (element.mode !== undefined && !['static', 'dynamic'].includes(element.mode)) issues.push('Неизвестный режим текстового элемента.');
+    if (element.mode !== undefined && !(element.type==='indicator'?['static','dynamic','events']:['static','dynamic']).includes(element.mode)) issues.push('Неизвестный режим текстового элемента.');
     if (element.name !== undefined && (typeof element.name !== 'string' || element.name.length > 80)) issues.push('Название элемента не должно превышать 80 символов.');
     if (element.type === 'image') {
       issues.push(...imageIssues(element));

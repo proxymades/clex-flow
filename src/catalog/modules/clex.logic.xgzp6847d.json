@@ -13,7 +13,9 @@
       "id": "trigger",
       "name": "Измерить",
       "type": "event",
-      "required": false
+      "required": false,
+      "additional": false,
+      "description": "Запускает действие «Измерить»."
     }
   ],
   "outputs": [
@@ -21,66 +23,70 @@
       "id": "changed",
       "name": "Измерение завершено",
       "type": "event",
-      "description": "После каждой попытки, включая ошибку."
+      "description": "После каждой попытки, включая ошибку.",
+      "additional": true
     },
     {
       "id": "done",
       "name": "Данные получены",
       "type": "event",
-      "additional": true
+      "additional": false,
+      "description": "Сигнал: Данные получены."
     },
     {
       "id": "failed",
       "name": "Ошибка измерения",
       "type": "event",
-      "additional": true
+      "additional": false,
+      "description": "Сигнал: Ошибка измерения."
     },
     {
       "id": "pressure",
       "name": "Давление",
       "type": "number",
       "readyOn": "done",
-      "description": "В единицах, выбранных в настройках блока."
+      "description": "В единицах, выбранных в настройках блока.",
+      "additional": false
     },
     {
       "id": "temperature",
       "name": "Температура, °C",
       "type": "number",
-      "readyOn": "done"
+      "readyOn": "done",
+      "additional": false,
+      "description": "Передаёт число: Температура, °C."
     },
     {
       "id": "text",
       "name": "Давление с единицей",
       "type": "text",
-      "readyOn": "changed"
+      "readyOn": "changed",
+      "additional": true,
+      "description": "Передаёт текст: Давление с единицей."
     },
     {
       "id": "temperatureText",
       "name": "Температура с единицей",
       "type": "text",
       "readyOn": "changed",
-      "additional": true
+      "additional": true,
+      "description": "Передаёт текст: Температура с единицей."
     },
     {
       "id": "pressurePa",
       "name": "Давление, Па",
       "type": "number",
       "readyOn": "done",
-      "additional": true
-    },
-    {
-      "id": "valid",
-      "name": "Показания достоверны?",
-      "type": "boolean",
-      "readyOn": "changed",
-      "additional": true
+      "additional": true,
+      "description": "Передаёт число: Давление, Па."
     },
     {
       "id": "error",
       "name": "Ошибка датчика",
       "type": "text",
       "readyOn": "changed",
-      "additional": true
+      "additional": true,
+      "description": "Передаёт текст: Ошибка датчика."
     }
   ],
   "parameters": {
@@ -145,7 +151,7 @@
     }
   },
   "compatibility": {
-    "projectFormat": 3,
+    "projectFormat": 4,
     "targets": [
       "esp32",
       "esp32s3",

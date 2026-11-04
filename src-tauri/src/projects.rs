@@ -208,10 +208,7 @@ fn validate_contents(contents: &str, id: Option<&str>) -> Result<(), String> {
     if !valid_id(stored_id) || id.is_some_and(|id| id != stored_id) {
         return Err("ID проекта не совпадает с именем файла".into());
     }
-    if !matches!(
-        value.get("formatVersion").and_then(|v| v.as_u64()),
-        Some(1 | 2 | 3)
-    ) {
+    if !matches!(value.get("formatVersion").and_then(|v| v.as_u64()), Some(4)) {
         return Err("Неподдерживаемая версия проекта".into());
     }
     Ok(())
@@ -385,24 +382,19 @@ mod tests {
 
     #[test]
     fn validates_identity_and_size() {
-        let json = r#"{"id":"01234567-89ab-4cde-8fab-0123456789ab","formatVersion":1}"#;
+        let json = r#"{"id":"01234567-89ab-4cde-8fab-0123456789ab","formatVersion":4}"#;
         assert!(validate_contents(json, Some("01234567-89ab-4cde-8fab-0123456789ab")).is_ok());
         assert!(validate_contents(json, Some("ffffffff-89ab-4cde-8fab-0123456789ab")).is_err());
-        assert!(validate_contents(
-            &json.replace("\"formatVersion\":1", "\"formatVersion\":2"),
-            None
-        )
-        .is_ok());
-        assert!(validate_contents(
-            &json.replace("\"formatVersion\":1", "\"formatVersion\":3"),
-            None
-        )
-        .is_ok());
-        assert!(validate_contents(
-            &json.replace("\"formatVersion\":1", "\"formatVersion\":4"),
-            None
-        )
-        .is_err());
+        for version in [1, 2, 3, 5] {
+            assert!(validate_contents(
+                &json.replace(
+                    "\"formatVersion\":4",
+                    &format!("\"formatVersion\":{version}")
+                ),
+                None
+            )
+            .is_err());
+        }
         assert!(validate_contents(&"x".repeat(MAX_SIZE as usize + 1), None).is_err());
     }
 

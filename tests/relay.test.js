@@ -52,7 +52,7 @@ test('reducing relay channels frees only removed wires and sides; invalid logic 
  assert.ok(!project.assembly.connections.some(w=>w.id===removed.id));assert.ok(project.assembly.connections.some(w=>w.id===remaining.id));
  assert.deepEqual(project.assembly.portSides[component.id],{in1:'left'});
  assert.equal(project.gpioAssignments.length,1);assert.equal(project.gpioAssignments[0].terminalId,'in1');
- for(const block of project.logic.nodes.filter(n=>n.moduleId==='clex.logic.relay'))assert.equal(Boolean(hardwareBinding(block,project,catalog).error),block.parameters.channel==='8');
+ for(const block of project.logic.nodes.filter(n=>n.moduleId==='clex.logic.gpio-set'))assert.equal(Boolean(hardwareBinding(block,project,catalog).error),block.parameters.channel==='8');
  assert.throws(()=>generateFirmware(project,catalog),/существующий канал/);
  const restored=updateHardware(project,catalog,component.id,{parameters:{...project.components[0].parameters,channels:'8'}});
  assert.ok(!restored.assembly.connections.some(w=>w.terminalId==='in8'));
@@ -77,7 +77,7 @@ test('several relay modules keep separate bindings and duplicate GPIO is rejecte
  const pin=project.assembly.connections.find(w=>w.terminalId==='in1').boardPinId;
  assert.throws(()=>connectTerminal(project,catalog,other.id,'in1',pin),/уже назначен/);
  assert.equal(hardwareBinding(blocks[0],project,catalog).component.id,component.id);
- assert.ok(logicAdditionProblem(catalog.modules.find(m=>m.id==='clex.logic.relay'),createProject('Empty'),catalog));
+ assert.ok(logicAdditionProblem(catalog.modules.find(m=>m.id==='clex.logic.gpio-set'),createProject('Empty'),catalog));
 });
 test('relay settings affect firmware while visual placement does not',async()=>{
  const {project,component}=relayProject(),before=await firmwareFingerprint(generateFirmware(project,catalog));
@@ -168,15 +168,10 @@ test('supply changes remove only incompatible VCC wiring and select external pow
  project=updateHardware(project,catalog,component.id,{parameters:{...project.components[0].parameters,supplyVoltage:'24'}});
  assert.deepEqual(errors(project),[]);assert.deepEqual(project.gpioAssignments,before);
 });
-test('legacy relay projects retain 5V without rewriting files or changing firmware',()=>{
- const {project,component}=relayProject();const source=generateFirmware(project,catalog).mainC;
- delete component.parameters.supplyVoltage;
- const restored=parseProject(serializeProject(project)),old=restored.components[0];
- assert.equal(Object.hasOwn(old.parameters,'supplyVoltage'),false);
- assert.equal(relayParameters(old).supplyVoltage,'5');assert.equal(relaySupplyVoltage(old),5);
- assert.deepEqual(errors(restored),[]);assert.equal(generateFirmware(restored,catalog).mainC,source);
- assert.equal(moduleFor(old,catalog).terminals.find(t=>t.id==='power').voltage,5);
- assert.equal(Object.hasOwn(old.parameters,'supplyVoltage'),false);
+test('a missing relay supply setting is diagnosed before firmware generation',()=>{
+ const {project,component}=relayProject();delete component.parameters.supplyVoltage;
+ assert.equal(relayParameters(component).supplyVoltage,undefined);assert.equal(relaySupplyVoltage(component),0);
+ assert.ok(errors(project).some(i=>i.code==='parameter-option'));assert.throws(()=>generateFirmware(project,catalog));
 });
 test('invalid relay supply values cannot bypass validation and 5V GPIO to a 3.3V module is diagnosed',()=>{
  const {project,component}=relayProject({powerSource:'external'});

@@ -1,7 +1,7 @@
+import {OUTPUT_MODULE,outputChannelCount,outputTerminalId} from '../gpio/model.js';
 import {recordingIssues} from '../audio/model.js';
 import {VOICE_LOGIC,voicePorts} from '../voice/model.js';
 import {numericLogicIssues} from './numeric.js';
-import {relayChannelCount} from '../relay/model.js';
 import {mqttLogicIssues} from '../mqtt/model.js';
 import {stepperLogicIssues} from '../stepper/model.js';
 import {ESPNOW_MODULE,espNowSupported,espNowLogicIssues,espNowAckIssues} from '../espnow/model.js';
@@ -9,16 +9,17 @@ import { moduleSupportsBoard,moduleIsEventSource } from '../catalog/compatibilit
 import { formatCount } from '../utils/plural.js';
 import { hardwareProvider } from '../hardware/resources.js';
 import { networkProvider, probeUrl } from '../network/model.js';
-import { displayDescription, screenFor, screenIssues, screenPorts, screenBindings, elementUpdatePort } from '../displays/model.js';
+import { displayDescription, screenFor, screenIssues, screenPorts, screenBindings, screenCommands, elementUpdatePort } from '../displays/model.js';
 import { connectionProblem as physicalConnectionProblem, moduleProblem, boardFor } from '../assembly/model.js';
 
-export const PORT_TYPES = ['event', 'boolean', 'number', 'text'];
-export const TYPE_NAMES = { event: 'Сигнал', boolean: 'Да/Нет', number: 'Число', text: 'Текст' };
-export const TYPE_COLORS = { event: '#34d399', boolean: '#38bdf8', number: '#fbbf24', text: '#a78bfa' };
+export const PORT_TYPES = ['event', 'number', 'text'];
+export const TYPE_NAMES = { event: 'Сигнал', number: 'Число', text: 'Текст' };
+export const TYPE_COLORS = { event: '#34d399', number: '#fbbf24', text: '#a78bfa' };
 export const graphModule = (node, catalog) => catalog.modules.find(module => module.id === node.moduleId && module.kind === 'logic');
 export function nodePorts(node, catalog, project) {
   const module = graphModule(node, catalog);
-  const active=port=>!port.when||node.parameters[port.when.field]===port.when.value;
+  const parameters=node.parameters;
+  const active=port=>!port.when||parameters[port.when.field]===port.when.value;
   let inputs = (module?.inputs || []).filter(active);
   let outputs = (module?.outputs || []).filter(active);
   if(node.moduleId===VOICE_LOGIC&&project)outputs=[...voicePorts(project.components.find(c=>c.id===node.parameters.componentId)),...outputs];
@@ -44,7 +45,7 @@ export function hardwareMatches(component,requirement,catalog){
  if(!component||!requirement)return false;
  const definition=catalog?.modules.find(module=>module.id===component.moduleId);
  if(requirement.kind==='display')return Boolean(definition?.display);
- if(requirement.kind==='gpio')return !definition?.i2c&&!definition?.stepper&&!definition?.microphone&&Boolean(definition?.terminals?.some(terminal=>terminal.kind===(requirement.mode==='input'?'gpio-input':'gpio-output')));
+ if(requirement.kind==='gpio')return !definition?.display&&!definition?.i2c&&!definition?.stepper&&!definition?.microphone&&!definition?.hardwareInterface&&!definition?.softwareInterface&&Boolean(definition?.terminals?.some(terminal=>terminal.kind===(requirement.mode==='input'?'gpio-input':'gpio-output')));
  return Boolean(requirement.modules?.includes(component.moduleId));
 }
 
@@ -72,7 +73,7 @@ export function addNode(graph, module, components = [], project = null, catalog 
   const parameters = Object.fromEntries(Object.entries(module.parameters).map(([key, parameter]) => [key, parameter.default]));
   if (module.constraints.hardware) parameters.componentId = components.find(component => hardwareMatches(component,module.constraints.hardware,catalog))?.id || '';
   let number = 1;
-  while (graph.nodes.some(node => [module.name,...(module.legacyNames||[])].some(name=>node.name === `${name} ${number}`))) number++;
+  while (graph.nodes.some(node => node.name === `${module.name} ${number}`)) number++;
   const height = node => {
     const definition = node && catalog ? graphModule(node, catalog) : node ? null : module;
     const ports = catalog ? nodePorts(node||{moduleId:module.id,parameters},catalog,project) : definition || { inputs: [], outputs: [] };
@@ -92,6 +93,10 @@ export function updateNode(graph, id, patch, catalog = null, project = null) {
     const module=graphModule(previous,catalog);
     patch={...patch,parameters:{...patch.parameters}};
     for(const [key,parameter] of Object.entries(module?.parameters||{}))if(parameter.when?.field==='action'&&parameter.when.value==='peer'&&patch.parameters[key]===undefined)patch.parameters[key]=parameter.default;
+  }
+  if(catalog&&previous&&patch.parameters){
+    const component=project?.components.find(component=>component.id===patch.parameters.componentId);
+    for(const [key,parameter] of Object.entries(graphModule(previous,catalog)?.parameters||{}))if((parameter.componentModules?.includes(component?.moduleId)||parameter.componentChannels&&outputChannelCount(component))&&patch.parameters[key]===undefined)patch={...patch,parameters:{...patch.parameters,[key]:parameter.default}};
   }
   const next={...graph,nodes:graph.nodes.map(node=>node.id===id?{...node,...patch}:node)};
   if(!catalog||!previous||!patch.parameters)return next;
@@ -145,7 +150,7 @@ export function connectionProblem(graph, catalog, connection, ignoreId = null, p
   if (output.type !== input.type) return `Несовместимые типы: ${TYPE_NAMES[output.type]} → ${TYPE_NAMES[input.type]}.`;
   const remaining = graph.edges.filter(edge => edge.id !== ignoreId);
   if (remaining.some(edge => edge.source === source.id && edge.target === target.id && edge.sourceHandle === output.id && edge.targetHandle === input.id)) return 'Такое соединение уже существует.';
-  if (remaining.some(edge => edge.target === target.id && edge.targetHandle === input.id)) return 'У входа может быть только одно соединение.';
+  if (input.type !== 'event' && remaining.some(edge => edge.target === target.id && edge.targetHandle === input.id)) return 'У входа может быть только одно соединение.';
   if (hasPath(remaining, target.id, source.id)) return 'Циклические связи не поддерживаются в первой версии.';
   return null;
 }
@@ -179,8 +184,8 @@ export function hardwareBinding(node, project, catalog) {
   if (!requirement) return { component: null, gpio: null, error: null };
   const component = project.components.find(component => component.id === node.parameters.componentId);
   if (!component || !hardwareMatches(component,requirement,catalog)) return { component: null, gpio: null, error: 'Выберите подходящий компонент монтажа.' };
-  if(requirement.kind==='relay'&&(!/^(?:[1-9]|1[0-6])$/.test(node.parameters.channel)||Number(node.parameters.channel)>relayChannelCount(component)))return {component,gpio:null,error:'Выберите существующий канал модуля реле.'};
-  const terminalId=(requirement.kind==='relay'?'in'+node.parameters.channel:requirement.terminal)||catalog.modules.find(module=>module.id===component.moduleId)?.terminals.find(terminal=>terminal.kind===(requirement.mode==='input'?'gpio-input':'gpio-output'))?.id;
+  if(node.moduleId===OUTPUT_MODULE&&outputChannelCount(component)&&!outputTerminalId(node,component,catalog))return {component,gpio:null,error:'Выберите существующий канал выходного компонента.'};
+  const terminalId=(node.moduleId===OUTPUT_MODULE?outputTerminalId(node,component,catalog):requirement.terminal)||catalog.modules.find(module=>module.id===component.moduleId)?.terminals.find(terminal=>terminal.kind===(requirement.mode==='input'?'gpio-input':'gpio-output'))?.id;
   const assignment = project.gpioAssignments.find(assignment => assignment.componentId === component.id && assignment.terminalId === terminalId);
   if (!assignment || assignment.mode !== requirement.mode) return { component, gpio: null, error: 'Сначала назначьте GPIO этому компоненту во вкладке «Монтаж».' };
   const wire = project.assembly.connections.find(wire => wire.componentId === component.id && wire.terminalId === terminalId && wire.boardPinId === assignment.pinId);
@@ -200,10 +205,12 @@ export function validateGraph(project, catalog) {
   if (!graph.nodes.length) add('warning', 'logic-empty', 'Добавьте блоки во вкладке «Логика».');
   for (const node of graph.nodes) {
     const module = graphModule(node, catalog), fields = { nodeId: node.id };
-    if (!module || module.version !== node.moduleVersion || module.compatibility.projectFormat !== 3 || !moduleSupportsBoard(module,boardFor(project,catalog))) { add('error', 'logic-module', module&&module.version!==node.moduleVersion?`${node.name}: в проекте версия блока v${node.moduleVersion}, установлена v${module.version}.`:`${node.name}: модуль отсутствует или несовместим с выбранной платой.`, fields); continue; }
+    if (!module || module.version !== node.moduleVersion || module.compatibility.projectFormat !== 4 || !moduleSupportsBoard(module,boardFor(project,catalog))) { add('error', 'logic-module', module&&module.version!==node.moduleVersion?`${node.name}: в проекте версия блока v${node.moduleVersion}, установлена v${module.version}.`:`${node.name}: модуль отсутствует или несовместим с выбранной платой.`, fields); continue; }
     if (!node.name.trim()) add('error', 'logic-name', 'Укажите название блока.', fields);
     for (const [key, parameter] of Object.entries(module.parameters)) {
       if(parameter.when&&node.parameters[parameter.when.field]!==parameter.when.value)continue;
+      const component=project.components.find(component=>component.id===node.parameters.componentId);
+      if(parameter.componentModules&&!parameter.componentModules.includes(component?.moduleId)||parameter.componentChannels&&!outputChannelCount(component))continue;
       const value = node.parameters[key];
       if (parameter.type === 'integer' && (!Number.isInteger(value) || value < parameter.min || value > parameter.max)) add('error', 'logic-parameter', `${node.name}: «${parameter.label}» должен быть целым числом ${parameter.min}-${parameter.max}.`, fields);
       if (parameter.type === 'number' && (!Number.isFinite(value) || value < parameter.min || value > parameter.max)) add('error', 'logic-parameter', node.name+': «'+parameter.label+'» должен быть конечным числом от '+parameter.min+' до '+parameter.max+'.', fields);
@@ -224,10 +231,15 @@ export function validateGraph(project, catalog) {
       else {
         const screen = screenFor(project, binding.component.id);
         for (const message of screenIssues(screen, displayDescription(binding.component, catalog))) add('error', 'display-interface', node.name + ': ' + message, fields);
+        for(const element of screen.elements.filter(element=>element.type==='indicator'&&element.mode==='events')){
+          const commands=screenCommands(screen).filter(command=>command.element.id===element.id);
+          if(!graph.edges.some(edge=>edge.target===node.id&&commands.some(command=>command.id===edge.targetHandle)))add('error','logic-input',node.name+': подключите событие к состоянию индикатора «'+element.name+'».',fields);
+        }
         const dynamic = screenBindings(screen);
         for (const element of dynamic) if (!graph.edges.some(edge => edge.target === node.id && edge.dataType === 'event' && ['trigger', elementUpdatePort(element.id)].includes(edge.targetHandle))) add('error', 'logic-input', node.name + ': подключите событие обновления элемента «' + (element.name || 'Текст') + '».', fields);
       }
     }
+    if (module.id === OUTPUT_MODULE && !graph.edges.some(edge => edge.target === node.id && ['on','off','toggle'].includes(edge.targetHandle))) add('error','logic-input',node.name + ': подключите команду включения, выключения или переключения.',fields);
     if (binding.error) add('error', 'logic-hardware', `${node.name}: ${binding.error}`, fields);
     for (const port of nodePorts(node, catalog, project).inputs.filter(port => port.required)) if (!graph.edges.some(edge => edge.target === node.id && edge.targetHandle === port.id)) add('error', 'logic-input', `${node.name}: подключите вход «${port.name}».`, fields);
     if (module.id === 'clex.logic.timer' && !graph.edges.some(edge => edge.source === node.id && edge.dataType === 'event')) add('warning', 'timer-unused', `${node.name}: такт пока не подключен к действию.`, fields);

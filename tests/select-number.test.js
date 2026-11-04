@@ -50,7 +50,7 @@ test('ESP-NOW chooses explicit opposite commands from the current radio state',(
   graph=addNode(graph,catalog.modules.find(module=>module.id==='clex.logic.select-number'),project.components,project,catalog);
   const select=graph.nodes.at(-1),normal=graph.nodes.find(node=>node.moduleId==='clex.logic.espnow-send'&&node.parameters.command==='SET_NORMAL');
   for(const [source,sourceHandle,target,targetHandle] of [
-    [fixture.input,'falling',select,'trigger'],[fixture.nodes.status,'mode',select,'value'],
+    [fixture.input,'active',select,'trigger'],[fixture.nodes.status,'mode',select,'value'],
     [select,'first',fixture.nodes.send,'trigger'],[select,'second',normal,'trigger'],
   ])graph=connectNodes(graph,catalog,{source:source.id,sourceHandle,target:target.id,targetHandle},{...project,logic:graph});
   project=withLogic(project,graph);

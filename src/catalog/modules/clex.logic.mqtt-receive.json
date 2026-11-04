@@ -5,7 +5,7 @@
   "icon": "Network",
   "color": "#2dd4bf",
   "compatibility": {
-    "projectFormat": 3,
+    "projectFormat": 4,
     "targets": [
       "esp32",
       "esp32s2",
@@ -25,13 +25,15 @@
       "id": "subscribe",
       "name": "Подписаться",
       "type": "event",
-      "description": "Включает все подписки из настроек блока."
+      "description": "Включает все подписки из настроек блока.",
+      "additional": false
     },
     {
       "id": "unsubscribe",
       "name": "Отписаться",
       "type": "event",
-      "description": "Удаляет подписки этого блока, сохраняя подписки других блоков."
+      "description": "Удаляет подписки этого блока, сохраняя подписки других блоков.",
+      "additional": false
     }
   ],
   "outputs": [
@@ -39,53 +41,51 @@
       "id": "received",
       "name": "Получено",
       "type": "event",
-      "description": ""
+      "description": "Сигнал: Получено.",
+      "additional": false
     },
     {
       "id": "subscribed",
       "name": "Подписки подтверждены",
       "type": "event",
-      "description": ""
+      "description": "Сигнал: Подписки подтверждены.",
+      "additional": true
     },
     {
       "id": "unsubscribed",
       "name": "Отписка подтверждена",
       "type": "event",
-      "description": ""
+      "description": "Сигнал: Отписка подтверждена.",
+      "additional": true
     },
     {
       "id": "failed",
       "name": "Ошибка",
       "type": "event",
-      "description": ""
+      "description": "Сигнал: Ошибка.",
+      "additional": false
     },
     {
       "id": "topic",
-      "name": "Topic",
+      "name": "Тема сообщения",
       "type": "text",
       "description": "Topic полученного сообщения.",
-      "readyOn": "received"
+      "readyOn": "received",
+      "additional": false
     },
     {
       "id": "payload",
-      "name": "Payload",
+      "name": "Текст сообщения",
       "type": "text",
       "description": "Payload в выбранной кодировке: текст UTF-8, Base64 или HEX.",
-      "readyOn": "received"
+      "readyOn": "received",
+      "additional": false
     },
     {
       "id": "qos",
       "name": "QoS",
       "type": "number",
-      "description": "",
-      "readyOn": "received",
-      "additional": true
-    },
-    {
-      "id": "retain",
-      "name": "Retain",
-      "type": "boolean",
-      "description": "",
+      "description": "Передаёт число: QoS.",
       "readyOn": "received",
       "additional": true
     },
@@ -93,7 +93,7 @@
       "id": "messageId",
       "name": "ID сообщения",
       "type": "number",
-      "description": "",
+      "description": "Передаёт число: ID сообщения.",
       "readyOn": "received",
       "additional": true
     },
@@ -101,7 +101,7 @@
       "id": "error",
       "name": "Описание ошибки",
       "type": "text",
-      "description": "",
+      "description": "Передаёт текст: Описание ошибки.",
       "readyOn": "failed",
       "additional": true
     },
@@ -109,7 +109,7 @@
       "id": "reasonCode",
       "name": "Код причины",
       "type": "number",
-      "description": "",
+      "description": "Передаёт число: Код причины.",
       "additional": true
     },
     {

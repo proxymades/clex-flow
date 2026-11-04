@@ -4,16 +4,25 @@ import {spawnSync} from 'node:child_process';
 import process from 'node:process';
 import {displayProject} from './display-fixture.js';
 import {catalog} from './catalog-fixture.js';
+import {addNode,connectNodes,withLogic} from '../src/logic/model.js';
+import {screenCommands} from '../src/displays/model.js';
 import {newIndicator} from '../src/displays/indicator.js';
 import {applyValueStates} from '../src/logic/valueStates.js';
 import {generateFirmware,cString} from '../src/firmware/generator.js';
 const project=displayProject(),component=project.components[0],screen=project.screens[component.id],display=catalog.modules.find(module=>module.display).display;
 const first=newIndicator(display);first.y=80;first.states[0].text='Ожидание';first.states[1].text='Готово';first.states[1].background='#005544';first.states[1].dotColor='#11ff22';
-const second=newIndicator(display);second.y=170;second.dotVisible=false;second.dotPosition='bottom';second.align='right';second.states[1].text='Другой';
+const second=newIndicator(display);second.mode='static';second.y=170;second.dotVisible=false;second.dotPosition='bottom';second.align='right';second.states[1].text='Другой';
 const sourcePort=catalog.modules.find(m=>m.id==='clex.logic.ethernet').outputs.find(p=>p.id==='state');
 const sourceIndicator=applyValueStates(newIndicator(display),sourcePort);sourceIndicator.mode='static';sourceIndicator.y=240;screen.elements.push(first,second,sourceIndicator);
-const bundle=generateFirmware(project,catalog),source=bundle.mainC,output=resolve('.artifacts/indicator-runtime');mkdirSync(output,{recursive:true});
+let graph=project.logic;
+for(const command of screenCommands(screen)){
+ graph=addNode(graph,catalog.modules.find(m=>m.id==='clex.logic.timer'),project.components,project,catalog);
+ graph=connectNodes(graph,catalog,{source:graph.nodes.at(-1).id,sourceHandle:'tick',target:graph.nodes.find(n=>n.moduleId==='clex.logic.display').id,targetHandle:command.id},project);
+}
+const bundle=generateFirmware(withLogic(project,graph),catalog),source=bundle.mainC,output=resolve('.artifacts/indicator-runtime');mkdirSync(output,{recursive:true});
 const declarations=source.slice(source.indexOf('/* CLEX indicators'),source.indexOf('static uint32_t clex_graphics_tick'));
+const commands=[...source.matchAll(/static void node_\d+_state_\d+\(void\) \{[^}]+\}/g)].map(m=>m[0]).join('\n');
+const commandIndex=[...graph.nodes].sort((a,b)=>a.id<b.id?-1:1).findIndex(n=>n.moduleId==='clex.logic.display');
 const fonts=[...source.matchAll(/^LV_FONT_DECLARE\([^\n]+$/gm)].map(match=>match[0]).join('\n');
 const initialize=source.slice(source.indexOf('  lv_obj_t *screen = lv_screen_active();'),source.indexOf('\n}\nstatic QueueHandle_t timer_queue;'));
 const files=Object.entries(bundle.files).filter(([name])=>name.startsWith('main/clex_font_')).map(([name,text])=>{const path=join(output,name.slice(5));writeFileSync(path,text);return path;});
@@ -25,13 +34,14 @@ const c=`#include <assert.h>
 #include "lvgl.h"
 ${fonts}
 ${declarations}
+${commands}
 static uint8_t buffer[240*20*2], image[240*320*2]; static unsigned rendered;
 static void capture(lv_display_t *display,const lv_area_t *area,uint8_t *pixels){unsigned width=area->x2-area->x1+1;for(int y=area->y1;y<=area->y2;y++)memcpy(image+(y*240+area->x1)*2,pixels+(y-area->y1)*width*2,width*2);rendered+=width*(area->y2-area->y1+1);lv_display_flush_ready(display);}
 static void refresh(void){lv_tick_inc(40);lv_timer_handler();}
 int main(void){lv_init();lv_display_t *display=lv_display_create(240,320);lv_display_set_color_format(display,LV_COLOR_FORMAT_RGB565);lv_display_set_buffers(display,buffer,NULL,sizeof(buffer),LV_DISPLAY_RENDER_MODE_PARTIAL);lv_display_set_flush_cb(display,capture);
 ${initialize}
 refresh();lv_obj_t *original=clex_indicators[0].object;rendered=0;
-clex_graphics_set_indicator_state(${cString(component.id)},${cString(first.id)},"1");refresh();
+node_${commandIndex}_state_1();refresh();
 assert(strcmp(lv_label_get_text(clex_indicators[0].label),${cString('Готово')})==0);assert(lv_color_eq(lv_obj_get_style_bg_color(original,LV_PART_MAIN),lv_color_hex(0x005544)));assert(lv_color_eq(lv_obj_get_style_bg_color(clex_indicators[0].dot,LV_PART_MAIN),lv_color_hex(0x11ff22)));assert(rendered>0&&rendered<240*320);
 rendered=0;clex_graphics_set_indicator_state(${cString(component.id)},${cString(first.id)},"1");refresh();assert(rendered==0);
 clex_graphics_set_indicator_caption(${cString(component.id)},${cString(first.id)},${cString('Своя надпись')});clex_graphics_set_indicator_state(${cString(component.id)},${cString(first.id)},"0");refresh();assert(strcmp(lv_label_get_text(clex_indicators[0].label),${cString('Своя надпись')})==0);assert(original==clex_indicators[0].object);

@@ -88,7 +88,7 @@
     "family": "ethernet"
   },
   "compatibility": {
-    "projectFormat": 3,
+    "projectFormat": 4,
     "targets": [
       "esp32s3",
       "esp32p4"

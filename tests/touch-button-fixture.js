@@ -15,7 +15,7 @@ export function touchButtonProject(boardId='waveshare-esp32-s3-eth',activeLevel=
   graph=addNode(graph,catalog.modules.find(m=>m.id==='clex.logic.'+id),project.components,project,catalog);nodes[name]=graph.nodes.at(-1);
  }
  nodes.serial.parameters.message='Касаний:';nodes.off.parameters.message='Сенсор выключен';
- for(const [source,sourceHandle,target,targetHandle]of [['edge','rising','counter','increment'],['counter','done','serial','trigger'],['counter','value','serial','number'],['edge','changed','read','trigger'],['edge','falling','off','trigger']]){
+ for(const [source,sourceHandle,target,targetHandle]of [['edge','active','counter','increment'],['counter','done','serial','trigger'],['counter','value','serial','number'],['edge','active','read','trigger'],['edge','inactive','read','trigger'],['read','inactive','off','trigger']]){
   graph=connectNodes(graph,catalog,{source:nodes[source].id,sourceHandle,target:nodes[target].id,targetHandle},{...project,logic:graph});
  }
  return {project:withLogic(project,graph),component,nodes};

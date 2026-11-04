@@ -30,15 +30,15 @@ test('range validation supports fractional limits, dynamic bounds and rejects em
  nodes.condition.parameters.lower=-1;nodes.condition.parameters.upper=Infinity;
  assert.ok(errors(project).some(i=>i.code==='logic-parameter'));
 });
-test('changing condition mode removes inactive bindings and preserves completion wiring',()=>{
+test('changing condition mode removes inapplicable range branches while preserving failure commands',()=>{
  const {project,nodes}=numericProject();
  const graph=updateNode(project.logic,nodes.condition.id,{parameters:{...nodes.condition.parameters,mode:'compare'}},catalog,project);
  const p=withLogic(project,graph),condition=p.logic.nodes.find(n=>n.id===nodes.condition.id);
  assert.deepEqual(errors(p),[]);
- assert.ok(nodePorts(condition,catalog,p).outputs.some(port=>port.id==='result'));
- assert.ok(!nodePorts(condition,catalog,p).outputs.some(port=>port.id==='isBelow'));
- assert.ok(!graph.edges.some(e=>e.source===condition.id&&e.sourceHandle==='isBelow'));
- assert.equal(graph.edges.filter(e=>e.source===condition.id&&e.sourceHandle==='changed').length,2);
+ assert.ok(nodePorts(condition,catalog,p).outputs.some(port=>port.id==='matched'));
+ assert.ok(!nodePorts(condition,catalog,p).outputs.some(port=>port.id==='below'));
+ assert.ok(!graph.edges.some(e=>e.source===condition.id&&['below','inside','above'].includes(e.sourceHandle)));
+ assert.equal(graph.edges.filter(e=>e.source===condition.id&&e.sourceHandle==='failed').length,2);
 });
 test('MQTT text requires explicit conversion and invalid affixes cannot enter generated C',()=>{
  const {project,nodes}=numericProject(undefined,{mqtt:true});

@@ -114,7 +114,7 @@
   "constraints": {},
   "softwareInterface": "voice",
   "compatibility": {
-    "projectFormat": 3,
+    "projectFormat": 4,
     "targets": [
       "esp32p4",
       "esp32s3"

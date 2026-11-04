@@ -14,7 +14,8 @@
       "name": "Сделать кадр",
       "type": "event",
       "required": true,
-      "description": "Запускает действие при получении сигнала."
+      "description": "Запускает действие при получении сигнала.",
+      "additional": false
     }
   ],
   "outputs": [
@@ -22,28 +23,22 @@
       "id": "changed",
       "name": "Результат обновлен",
       "type": "event",
-      "description": "Передает сигнал после завершения действия или ошибки."
+      "description": "Передает сигнал после завершения действия или ошибки.",
+      "additional": true
     },
     {
       "id": "done",
       "name": "Кадр получен",
       "type": "event",
-      "additional": true,
+      "additional": false,
       "description": "Срабатывает после успешного выполнения."
     },
     {
       "id": "failed",
       "name": "Ошибка",
       "type": "event",
-      "additional": true,
+      "additional": false,
       "description": "Срабатывает, если действие выполнить не удалось."
-    },
-    {
-      "id": "success",
-      "name": "Успешно?",
-      "type": "boolean",
-      "readyOn": "changed",
-      "description": "Да, если действие выполнено успешно."
     },
     {
       "id": "error",
@@ -58,28 +53,32 @@
       "name": "Получено кадров",
       "type": "number",
       "readyOn": "changed",
-      "description": "Передает измеренное значение после получения кадра."
+      "description": "Передает измеренное значение после получения кадра.",
+      "additional": true
     },
     {
       "id": "width",
       "name": "Ширина кадра",
       "type": "number",
       "readyOn": "changed",
-      "description": "Передает измеренное значение после получения кадра."
+      "description": "Передает измеренное значение после получения кадра.",
+      "additional": true
     },
     {
       "id": "height",
       "name": "Высота кадра",
       "type": "number",
       "readyOn": "changed",
-      "description": "Передает измеренное значение после получения кадра."
+      "description": "Передает измеренное значение после получения кадра.",
+      "additional": true
     },
     {
       "id": "bytes",
       "name": "Размер кадра, байт",
       "type": "number",
       "readyOn": "changed",
-      "description": "Передает измеренное значение после получения кадра."
+      "description": "Передает измеренное значение после получения кадра.",
+      "additional": true
     }
   ],
   "parameters": {
@@ -98,7 +97,7 @@
     }
   },
   "compatibility": {
-    "projectFormat": 3,
+    "projectFormat": 4,
     "targets": [
       "esp32p4"
     ],

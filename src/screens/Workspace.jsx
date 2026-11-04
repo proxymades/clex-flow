@@ -57,11 +57,12 @@ export default function Workspace({ project, setProject, dirty, busy, onExport, 
     if (component && displayDescription(component, catalog)) {setBindingNodeId(null);setEditingScreen(component.id);}
     else { setLogicSelection({ nodes: [node.id], edges: [] }); setLogicError('Сначала выберите дисплей монтажа в свойствах блока.'); }
   }
-  function addLogic(module) {
+  function addLogic(module, componentId) {
     try {
       const problem = logicAdditionProblem(module, project, catalog);
       if (problem) throw new Error(problem);
-      const next = addNode(project.logic, module, project.components, project, catalog); if (module.editor === 'screen') next.nodes.at(-1).parameters.componentId = project.components.find(component => displayDescription(component, catalog))?.id || '';
+      const candidates = componentId ? project.components.filter(component=>component.id===componentId) : project.components;
+      const next = addNode(project.logic, module, candidates, project, catalog);
       history.change(next);
       setLogicSelection({ nodes: [next.nodes.at(-1).id], edges: [] }); setLogicPending(null); setLogicError(''); setTab('logic');
     } catch (error) { setLogicError(error.message); }

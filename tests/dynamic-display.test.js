@@ -1,9 +1,10 @@
+import {newIndicator} from '../src/displays/indicator.js';
 import { addHardware, connectTerminal, connectionProblem as mountConnectionProblem } from '../src/assembly/model.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { dynamicDisplayProject } from './dynamic-display-fixture.js';
 import { catalog, timer, serial, read, button, eth } from './catalog-fixture.js';
-import { screenPorts, screenIssues, saveScreen, elementPreviewText, elementUpdatePort } from '../src/displays/model.js';
+import { screenCommands, screenPorts, screenIssues, saveScreen, elementPreviewText, elementUpdatePort } from '../src/displays/model.js';
 import { validateGraph, connectionProblem, connectNodes, addNode, withLogic } from '../src/logic/model.js';
 import { createProject, serializeProject, parseProject } from '../src/projects/model.js';
 import { generateFirmware, firmwareFingerprint, cString } from '../src/firmware/generator.js';
@@ -55,7 +56,7 @@ test('firmware updates just the bound LVGL object in the worker and retains stat
   assert.match(bundle.mainC, /next > INT32_MAX.*next < INT32_MIN/);
   assert.match(bundle.mainC, /static void node_\d+_reset/);
 });
-test('boolean and UTF-8 text use the same screen ports and firmware update mechanism', () => {
+test('UTF-8 text uses typed screen bindings; boolean values are rejected', () => {
   let project = dynamicDisplayProject();
   const id = project.components[0].id, dynamic = elements(project)[1];
   dynamic.valueType = 'text'; dynamic.initialValue = 'готов'; dynamic.prefix = 'Состояние: ';
@@ -69,8 +70,8 @@ test('boolean and UTF-8 text use the same screen ports and firmware update mecha
   assert.match(generateFirmware(project, catalog).mainC, /clex_graphics_set_text\("[^" ]+", "[^" ]+", text_\d+\)/);
   source.parameters.message = '🌍'; assert.throws(() => generateFirmware(project, catalog), /шрифт/);
   dynamic.valueType = 'boolean'; dynamic.initialValue = false;
-  assert.equal(elementPreviewText(dynamic), 'Состояние: Нет');
-  assert.equal(screenPorts(project.screens[id])[1].type, 'boolean');
+  assert.ok(screenIssues(project.screens[id],catalog.modules.find(m=>m.display).display).length);
+  assert.throws(()=>serializeProject(project),/динамического/);
 });
 test('invalid dynamic metadata and unsupported prefix glyphs are rejected', () => {
   const project = dynamicDisplayProject(), screen = project.screens[project.components[0].id];
@@ -86,28 +87,27 @@ test('moving nodes preserves the build; changing a binding or formatting changes
   assert.notEqual(await firmwareFingerprint(generateFirmware(moved, catalog)), await firmwareFingerprint(bundle));
 });
 
-test('boolean output binds to a dynamic label through GPIO read events without numeric coercion', () => {
-  let project = dynamicDisplayProject();
-  const dynamic = elements(project)[1]; dynamic.valueType = 'boolean'; dynamic.initialValue = false;
-  project.logic.edges = project.logic.edges.filter(edge => edge.target !== view(project).id);
-  project = addHardware(project, button);
-  const component = project.components.at(-1);
-  const pin = eth.pins.find(pin => !mountConnectionProblem(project, catalog, component.id, 'signal', pin.id));
-  assert.ok(pin, 'Select a documented free input pin from the board profile');
-  project = connectTerminal(project, catalog, component.id, 'signal', pin.id);
-  project = connectTerminal(project, catalog, component.id, 'ground', 'P28');
-  let graph = addNode(project.logic, read, project.components);
-  const source = graph.nodes.at(-1); source.parameters.componentId = component.id;
-  const clock = graph.nodes.find(node => node.moduleId === timer.id);
-  for (const connection of [
-    { source: clock.id, sourceHandle: 'tick', target: source.id, targetHandle: 'trigger' },
-    { source: source.id, sourceHandle: 'done', target: view(project).id, targetHandle: 'trigger' },
-    { source: source.id, sourceHandle: 'level', target: view(project).id, targetHandle: dynamic.id },
-  ]) graph = connectNodes(graph, catalog, connection, project);
-  project = withLogic(project, graph);
-  assert.deepEqual(validateGraph(project, catalog).filter(issue => issue.severity === 'error'), []);
-  const sourceCode = generateFirmware(project, catalog).mainC;
-  assert.ok(sourceCode.includes(`? ${cString('Да')} : ${cString('Нет')}`));
+test('button result events select named indicator states with one connection per result',()=>{
+ let project=dynamicDisplayProject();const displayId=project.components[0].id,screen=project.screens[displayId];
+ const indicator=newIndicator(catalog.modules.find(m=>m.id===project.components[0].moduleId).display);
+ screen.elements=[indicator];project.logic.edges=project.logic.edges.filter(e=>e.target!==view(project).id);
+ project=addHardware(project,button);
+ const component=project.components.at(-1),pin=eth.pins.find(p=>!mountConnectionProblem(project,catalog,component.id,'signal',p.id));
+ project=connectTerminal(project,catalog,component.id,'signal',pin.id);
+ project=connectTerminal(project,catalog,component.id,'ground','P28');
+ let graph=addNode(project.logic,read,project.components,project,catalog);
+ const source=graph.nodes.at(-1),clock=graph.nodes.find(n=>n.moduleId===timer.id),commands=screenCommands(screen);
+ for(const [from,sourceHandle,to,targetHandle]of [[clock.id,'tick',source.id,'trigger'],[source.id,'active',view(project).id,commands[1].id],[source.id,'inactive',view(project).id,commands[0].id]])graph=connectNodes(graph,catalog,{source:from,sourceHandle,target:to,targetHandle},project);
+ project=withLogic(project,graph);
+ assert.deepEqual(validateGraph(project,catalog).filter(i=>i.severity==='error'),[]);
+ assert.deepEqual(parseProject(serializeProject(project)),project);
+ assert.ok(screenPorts(screen).every(p=>p.type==='event'));
+ const code=generateFirmware(project,catalog).mainC;
+ assert.match(code,/static void node_\d+_state_0\(void\)/);
+ assert.match(code,/clex_graphics_set_indicator_state\([^;]+"1"\)/);
+ const changed=saveScreen(project,displayId,{...screen,elements:[{...indicator,states:indicator.states.slice(0,1)}]});
+ assert.ok(!changed.logic.edges.some(e=>e.targetHandle===commands[1].id));
+ assert.ok(changed.logic.edges.some(e=>e.targetHandle===commands[0].id));
 });
 
 test('counter is a standalone number source for existing Serial blocks without a display', () => {

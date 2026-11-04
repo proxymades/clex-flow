@@ -1,7 +1,7 @@
 import test from'node:test';import assert from'node:assert/strict';import{inputEdgeProject}from'./input-edge-fixture.js';import{catalog}from'./catalog-fixture.js';import{generateFirmware}from'../src/firmware/generator.js';import{nodeDisplayName,presentPort}from'../src/logic/presentation.js';
 test('input change is universal for S3, P4 and Nano, with equipment-specific button labels',()=>{
  for(const id of['waveshare-esp32-s3-eth','waveshare-esp32-p4-nano','arduino-nano-atmega328p-ch340']){
-  const p=inputEdgeProject(id),node=p.logic.nodes.find(n=>n.moduleId==='clex.logic.gpio-edge'),m=catalog.modules.find(m=>m.id===node.moduleId),b=generateFirmware(p,catalog);assert.match(nodeDisplayName(node,p,catalog),/События кнопки/);assert.equal(presentPort(m.outputs.find(o=>o.id==='falling'),node,p,catalog).name,'Кнопка нажата');assert.match(b.mainC,/input_stable_/);assert.equal(p.logic.nodes.some(n=>n.moduleId==='clex.logic.timer'),false);
+  const p=inputEdgeProject(id),node=p.logic.nodes.find(n=>n.moduleId==='clex.logic.gpio-edge'),m=catalog.modules.find(m=>m.id===node.moduleId),b=generateFirmware(p,catalog);assert.match(nodeDisplayName(node,p,catalog),/События кнопки/);assert.equal(presentPort(m.outputs.find(o=>o.id==='active'),node,p,catalog).name,'Кнопка нажата');assert.match(b.mainC,/input_stable_/);assert.equal(p.logic.nodes.some(n=>n.moduleId==='clex.logic.timer'),false);
  }
 });
 test('generic input binding uses a terminal capability rather than a button module ID',async()=>{

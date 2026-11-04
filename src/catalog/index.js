@@ -7,7 +7,7 @@ const allBoards = Object.values(boardFiles).sort((a, b) => a.id.localeCompare(b.
 export const boards = allBoards.filter(board => board.pins.length > 0);
 export const modules = Object.values(moduleFiles).sort((a, b) => a.id.localeCompare(b.id));
 export const hardwareModules = modules.filter(module => module.kind === 'hardware');
-export const logicModules = modules.filter(module => module.kind === 'logic');
+export const logicModules = modules.filter(module => module.kind === 'logic' && !module.hidden);
 export const controllers = Object.values(controllerFiles);
 export const catalog = { boards: allBoards, modules, controllers };
 export const getBoard = id => allBoards.find(board => board.id === id);

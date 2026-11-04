@@ -123,36 +123,3 @@ export function voiceDeviceError(line){
   const code=line.replace(/^CLEX_VOICE_ERROR\s*/, '').trim();
   return ({audio_busy:'Аудиоинтерфейс занят. Дождитесь окончания сигнала и повторите запись.',model_not_ready:'На плате нет подготовленной модели. Соберите и запишите обновлённую прошивку.',invalid_gain:'Не удалось настроить усиление микрофона. Перезапустите плату и повторите запись.',microphone_read:'Ошибка чтения микрофона. Проверьте аудиоинтерфейс и перезапустите плату.',microphone_timeout:'Микрофон не передал запись. Перезапустите плату и повторите попытку.',microphone_restart:'Перезапустите плату перед следующей записью.',no_memory:'Недостаточно памяти для аудиозаписи.',capture_mismatch:'Ошибка аудиобуфера. Перезапустите плату.'})[code]||'Ошибка голосового компонента: '+code;
 }
-
-// Keep recordings and command connections when opening projects that combined
-// microphone capture and speaker playback in the voice component.
-export function migrateVoiceProject(project){
-  if(project.formatVersion!==3||!Array.isArray(project.components)||!Array.isArray(project.logic?.nodes)||!project.assembly?.positions||!project.moduleVersions)return project;
-  const legacy=project.components.filter(c=>c?.moduleId===VOICE_MODULE&&object(c.parameters)&&!Object.hasOwn(c.parameters,'activationSound')&&Object.hasOwn(c.parameters,'volume'));
-  const needsDefaults=project.components.some(c=>c?.moduleId===VOICE_MODULE&&object(c.parameters)&&(!Object.hasOwn(c.parameters,'activationSoundType')||!Object.hasOwn(c.parameters,'activationAudio')||!Object.hasOwn(c.parameters,'microphoneId')||!Object.hasOwn(c.parameters,'wakeMode')||!Object.hasOwn(c.parameters,'wakeProfile')));
-  if(!legacy.length&&!needsDefaults)return project;
-  const components=project.components.map(c=>({...c,parameters:{...c.parameters}})),positions={...project.assembly.positions},nodes=project.logic.nodes.map(n=>({...n,parameters:{...n.parameters}})),moduleVersions={...project.moduleVersions};
-  for(const old of legacy){
-    const voice=components.find(c=>c.id===old.id),{volume,...parameters}=voice.parameters;
-    const hasTones=nodes.some(n=>n.moduleId==='clex.logic.tone'&&n.parameters.componentId===voice.id);
-    let speaker=voiceSpeakers({components},voice)[0];
-    if((volume>0||hasTones)&&!speaker){
-      if(components.length>=100)throw Error('Для переноса звука активации нужен отдельный компонент «Динамик». Уменьшите число компонентов в проекте.');
-      let number=1;while(components.some(c=>c.name==='Динамик '+number))number++;
-      const base=voice.id.slice(0,80)+'-speaker';let id=base,suffix=1;while(components.some(c=>c.id===id))id=base+'-'+suffix++;
-      speaker={id,moduleId:SPEAKER_MODULE,moduleVersion:'1.0.0',name:'Динамик '+number,parameters:{interfaceId:parameters.interfaceId}};
-      const origin=positions[voice.id]||positions.board;
-      // Put the separate speaker near the existing voice component.
-      const candidates=[];
-      const rows=[0,...Array.from({length:20},(_,i)=>[i+1,-i-1]).flat()],cols=[1,-1,0,...Array.from({length:8},(_,i)=>[i+2,-i-2]).flat()];
-      for(const row of rows)for(const col of cols)if(row||col)candidates.push({x:origin.x+col*300,y:origin.y+row*225});
-      const position=candidates.find(p=>Math.abs(p.x)<=5000&&Math.abs(p.y)<=5000&&Object.values(positions).every(v=>Math.abs(v.x-p.x)>=280||Math.abs(v.y-p.y)>=210));
-      if(!position)throw Error('Не удалось разместить компонент «Динамик» рядом с голосовым компонентом.');
-      components.push(speaker);positions[speaker.id]=position;moduleVersions[SPEAKER_MODULE]='1.0.0';
-    }
-    voice.parameters={...parameters,activationSound:volume>0,speakerId:speaker?.id||'',activationVolume:volume};
-    for(const node of nodes)if(node.moduleId==='clex.logic.tone'&&node.parameters.componentId===voice.id)node.parameters.componentId=speaker.id;
-  }
-  for(const voice of components.filter(c=>c.moduleId===VOICE_MODULE)){voice.parameters={activationSoundType:'tone',activationAudio:'',microphoneId:'',wakeMode:'builtin',wakeProfile:'',...voice.parameters};}
-  return {...project,components,moduleVersions,assembly:{...project.assembly,positions},logic:{...project.logic,nodes}};
-}

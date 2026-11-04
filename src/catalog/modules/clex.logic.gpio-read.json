@@ -2,39 +2,33 @@
   "id": "clex.logic.gpio-read",
   "version": "1.0.0",
   "kind": "logic",
-  "name": "Считать вход",
-  "description": "Считывает состояние выбранного входного контакта по сигналу.",
+  "name": "Проверить вход",
+  "description": "По сигналу проверяет кнопку или другой цифровой вход и запускает подходящую ветвь результата.",
   "category": "gpio",
-  "categoryName": "Контакты",
+  "categoryName": "Кнопки и выходы",
   "icon": "ScanLine",
   "color": "#38BDF8",
   "inputs": [
     {
       "id": "trigger",
-      "name": "Считать состояние",
+      "name": "Проверить",
       "type": "event",
-      "required": true,
-      "description": "Считывает состояние выбранного входного контакта.",
-      "additional": false
+      "description": "Проверяет текущее состояние с учётом защиты от дребезга.",
+      "required": true
     }
   ],
   "outputs": [
     {
-      "id": "done",
-      "name": "Состояние считано",
+      "id": "active",
+      "name": "Вход активен",
       "type": "event",
-      "required": false,
-      "description": "Отправляет сигнал после считывания состояния контакта.",
-      "additional": false
+      "description": "Сигнал, если при проверке вход активен."
     },
     {
-      "id": "level",
-      "name": "Высокий уровень?",
-      "type": "boolean",
-      "required": false,
-      "readyOn": "done",
-      "description": "Передает Да для высокого уровня контакта и Нет для низкого.",
-      "additional": false
+      "id": "inactive",
+      "name": "Вход неактивен",
+      "type": "event",
+      "description": "Сигнал, если при проверке вход неактивен."
     }
   ],
   "parameters": {
@@ -52,7 +46,7 @@
     }
   },
   "compatibility": {
-    "projectFormat": 3,
+    "projectFormat": 4,
     "targets": [
       "esp32",
       "esp32s3",
@@ -70,8 +64,5 @@
     "dependencies": [
       "esp_driver_gpio"
     ]
-  },
-  "legacyNames": [
-    "Чтение GPIO"
-  ]
+  }
 }

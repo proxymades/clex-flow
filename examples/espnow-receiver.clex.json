@@ -2,7 +2,7 @@
   "id": "8f2232ac-80c9-4ed2-8606-80b4e58c8d91",
   "name": "ESP-NOW: приемник",
   "description": "Укажите MAC второй платы и общий LMK в настройках ESP-NOW. Инструкция: docs/espnow.md",
-  "formatVersion": 3,
+  "formatVersion": 4,
   "createdAt": "2026-10-16T18:00:04.052Z",
   "updatedAt": "2026-10-16T18:00:04.052Z",
   "boardId": "waveshare-esp32-s3-eth",

@@ -16,7 +16,7 @@ const {chromium}=require('playwright');
   await page.locator('.assembly-flow-region[data-ready="true"]').waitFor();await page.screenshot({path:'.artifacts/nano-support/nano-board.png'});
   assert.equal(await page.getByRole('button',{name:'Добавить: TFT 240×320 · SPI',exact:true}).isDisabled(),true);
   await page.getByRole('button',{name:'Логика',exact:true}).click();
-  assert.equal(await page.getByRole('button',{name:'Добавить блок: Экран дисплея',exact:true}).isDisabled(),true);
+  assert.equal(await page.getByRole('button',{name:/^Добавить блок: Экран дисплея · /}).count(),0);
   assert.equal(await page.getByRole('button',{name:'Добавить блок: Счетчик',exact:true}).isDisabled(),false);
   const p=nanoProject({blink:true});await page.evaluate(p=>localStorage.setItem('clex-flow:projects:v1',JSON.stringify({[p.id]:JSON.stringify(p)})),p);await page.reload();
   await page.locator('.project-open').click();await page.getByRole('button',{name:'Посмотреть исходники прошивки',exact:true}).click();

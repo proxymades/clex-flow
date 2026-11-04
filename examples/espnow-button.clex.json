@@ -2,7 +2,7 @@
   "id": "da432735-d423-47f4-9043-fbf9894f1b75",
   "name": "ESP-NOW: отправитель",
   "description": "Укажите MAC второй платы и общий LMK в настройках ESP-NOW. Инструкция: docs/espnow.md",
-  "formatVersion": 3,
+  "formatVersion": 4,
   "createdAt": "2026-10-16T18:00:04.055Z",
   "updatedAt": "2026-10-16T18:00:04.055Z",
   "boardId": "waveshare-esp32-s3-eth",
@@ -127,7 +127,7 @@
         "id": "1e9f9bbc-23ad-45f4-a554-7aa375b623fb",
         "moduleId": "clex.logic.gpio-edge",
         "moduleVersion": "1.0.0",
-        "name": "Изменение входа 1",
+        "name": "События кнопки",
         "position": {
           "x": 390,
           "y": 1650
@@ -198,7 +198,7 @@
         "id": "e02a1618-a91d-4ca5-8f3f-135376758b59",
         "source": "1e9f9bbc-23ad-45f4-a554-7aa375b623fb",
         "target": "9e00085f-fd93-48ee-a6e4-cb9d8f78861a",
-        "sourceHandle": "falling",
+        "sourceHandle": "active",
         "targetHandle": "trigger",
         "dataType": "event"
       },
@@ -206,7 +206,7 @@
         "id": "f89e1f44-5c36-4b8b-bd82-5423d5cd9f12",
         "source": "1e9f9bbc-23ad-45f4-a554-7aa375b623fb",
         "target": "17f0081c-812c-4801-b5da-cd4ce1fb1e3f",
-        "sourceHandle": "rising",
+        "sourceHandle": "inactive",
         "targetHandle": "trigger",
         "dataType": "event"
       },

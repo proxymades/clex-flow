@@ -26,7 +26,7 @@ const { chromium } = require('playwright');
     for (const terminal of displayModule.terminals) await page.getByRole('combobox', { name: 'Подключение: ' + terminal.label, exact: true }).selectOption(pins[terminal.id]);
     await save(); const mounted = await saved();
     await page.getByRole('button', { name: 'Логика', exact: true }).click();
-    await page.getByRole('button', { name: 'Добавить блок: Экран дисплея', exact: true }).click();
+    await page.getByRole('button', { name: /^Добавить блок: Экран дисплея · / }).click();
     await page.locator('.logic-node').dblclick(); await dialog.waitFor();
     await dialog.getByRole('button', { name: 'Добавить текст', exact: true }).click();
     await dialog.getByLabel('Координата X', { exact: true }).fill('8');

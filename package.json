@@ -70,7 +70,8 @@
     "test:xgzp-ui": "node tests/xgzp-ui.cjs",
     "test:numeric-ui": "node tests/numeric-ui.cjs",
     "test:numeric-mqtt": "node tests/mqtt-host/numeric-runtime.mjs",
-    "test:voice-ui": "node tests/voice-settings-ui.cjs"
+    "test:voice-ui": "node tests/voice-settings-ui.cjs",
+    "test:gpio-output-ui": "node tests/gpio-output-ui.cjs"
   },
   "dependencies": {
     "@tauri-apps/api": "2.10.1",

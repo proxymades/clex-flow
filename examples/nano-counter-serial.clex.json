@@ -2,7 +2,7 @@
   "id": "16b905dc-fa28-4672-a11f-d739f806587c",
   "name": "Nano: счетчик",
   "description": "Таймер каждую секунду увеличивает счетчик. Serial выводит число в монитор на скорости 115200 бод.",
-  "formatVersion": 3,
+  "formatVersion": 4,
   "createdAt": "2026-10-16T10:09:42.930Z",
   "updatedAt": "2026-10-16T10:09:42.930Z",
   "boardId": "arduino-nano-atmega328p-ch340",

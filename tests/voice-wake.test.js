@@ -38,9 +38,9 @@ test('custom wake tables deploy to P4 and S3 and are disabled for a changed micr
   assert.equal(wakeModelReady(voice,p,board),false);assert.match(generateFirmware(p,catalog).mainC,/\.wake_reference_count=0/);
  }
 });
-test('old projects keep the original model bytes and use the built-in wake phrase',()=>{
- const p=voiceProject(),voice=p.components[0],bytes=voice.parameters.profile;
- delete voice.parameters.wakeMode;delete voice.parameters.wakeProfile;
- const restored=parseProject(JSON.stringify(p));assert.equal(restored.components[0].parameters.wakeMode,'builtin');assert.equal(restored.components[0].parameters.wakeProfile,'');assert.equal(restored.components[0].parameters.profile,bytes);
+test('built-in wake configuration round-trips with the trained command model',()=>{
+ const p=voiceProject(),restored=parseProject(serializeProject(p));
+ assert.equal(restored.components[0].parameters.wakeMode,'builtin');
+ assert.equal(restored.components[0].parameters.profile,p.components[0].parameters.profile);
  assert.equal(voiceModelReady(readVoiceProfile(restored.components[0])),true);
 });

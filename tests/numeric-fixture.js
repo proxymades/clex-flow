@@ -24,15 +24,16 @@ export function numericProject(boardId=NUMERIC_BOARDS[0],{mqtt=false,mode='range
  }
  add('parse','text-to-number',{format:'affixes',suffix:'Па'});
  add('condition','compare-number',{mode,lower:-10000,upper:10000});
- add('low','relay',{componentId:component.id,channel:'1',action:'set'});
- add('high','relay',{componentId:component.id,channel:'2',action:'set'});
+ add('low','gpio-set',{componentId:component.id,channel:'1'});
+ add('high','gpio-set',{componentId:component.id,channel:'2'});
  const link=(from,output,to,input)=>{project=withLogic(project,connectNodes(project.logic,catalog,{source:nodes[from].id,sourceHandle:output,target:nodes[to].id,targetHandle:input},project));};
  if(!mqtt)link('timer','tick','source','trigger');
  link('source',mqtt?'received':'done','parse','trigger');link('source',mqtt?'payload':'text','parse','text');
  link('parse','changed','condition','trigger');link('parse','value','condition','value');
- link('condition','changed','low','trigger');link('condition','changed','high','trigger');
- if(mode==='range'){link('condition','isBelow','low','value');link('condition','isAbove','high','value');}
- else link('condition','result','low','value');
+ const result=(event,low,high)=>{link('condition',event,'low',low?'on':'off');link('condition',event,'high',high?'on':'off');};
+ if(mode==='range'){result('below',true,false);result('inside',false,false);result('above',false,true);}
+ else {result('matched',true,false);result('unmatched',false,false);}
+ result('failed',false,false);
  for(const [key,x,y]of [['timer',-300,0],['source',0,0],['parse',360,0],['condition',720,0],['low',1120,0],['high',1120,390]])if(nodes[key])nodes[key].position={x,y};
  return {project,nodes,component};
 }

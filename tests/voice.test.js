@@ -107,42 +107,12 @@ test('recognition works without a speaker and activation sound requires a select
  assert.ok(validateAssembly(shared,catalog).some(i=>i.code==='voice-microphone'));
 });
 
-test('legacy voice projects keep recordings, models, graph links and speaker playback',()=>{
- const legacy=voiceProject(),voice=legacy.components[0],originalProfile=voice.parameters.profile;
- delete voice.parameters.activationSound;delete voice.parameters.speakerId;delete voice.parameters.activationVolume;voice.parameters.volume=72;
- // An old tone block was bound directly to the voice component.
- legacy.logic.nodes.push({id:crypto.randomUUID(),moduleId:'clex.logic.tone',moduleVersion:'1.0.0',name:'Звуковой сигнал 1',position:{x:100,y:100},parameters:{componentId:voice.id,frequencyHz:800,durationMs:200,volume:50}});
- legacy.moduleVersions['clex.logic.tone']='1.0.0';
- legacy.logic=connectNodes(legacy.logic,catalog,{source:legacy.logic.nodes[0].id,sourceHandle:'recognized',target:legacy.logic.nodes.at(-1).id,targetHandle:'trigger'},legacy);
- const edges=structuredClone(legacy.logic.edges);
- const migrated=parseProject(JSON.stringify(legacy)),speaker=migrated.components.find(c=>c.moduleId===SPEAKER_MODULE),next=migrated.components[0];
- assert.equal(parseProject(JSON.stringify(legacy)).components.find(c=>c.moduleId===SPEAKER_MODULE).id,speaker.id);
- assert.ok(speaker);assert.equal(next.parameters.profile,originalProfile);assert.equal(voiceModelReady(readVoiceProfile(next)),true);
- assert.equal(next.parameters.activationSound,true);assert.equal(next.parameters.activationVolume,72);assert.equal(next.parameters.speakerId,speaker.id);assert.equal(next.parameters.volume,undefined);
- assert.deepEqual(migrated.logic.edges,edges);assert.equal(migrated.logic.nodes.at(-1).parameters.componentId,speaker.id);
- assert.deepEqual(parseProject(serializeProject(migrated)),migrated);
- assert.equal(validateAssembly(migrated,catalog).filter(i=>i.severity==='error').length,0);
- assert.equal(validateGraph(migrated,catalog).filter(i=>i.severity==='error').length,0);
- assert.match(generateFirmware(migrated,catalog).mainC,/\.speaker_enabled=true,\.activation_sound=true/);
- assert.equal(legacy.components.length,1);assert.equal(legacy.components[0].parameters.volume,72);
-});
-
-test('a legacy muted voice project does not require a speaker and migration reuses an existing speaker',()=>{
+test('current voice projects preserve recordings, model, speaker binding and command connections',()=>{
  for(const speaker of [false,true]){
-  const legacy=voiceProject({speaker}),voice=legacy.components[0];
-  delete voice.parameters.activationSound;delete voice.parameters.speakerId;delete voice.parameters.activationVolume;voice.parameters.volume=speaker?85:0;
-  const migrated=parseProject(JSON.stringify(legacy));
-  assert.equal(migrated.components.length,speaker?2:1);assert.equal(migrated.components[0].parameters.activationSound,speaker);
-  if(speaker)assert.equal(migrated.components[0].parameters.speakerId,legacy.components[1].id);
-  assert.equal(validateAssembly(migrated,catalog).filter(i=>i.severity==='error').length,0);
+  const project=voiceProject({speaker,activationSound:speaker}),raw=serializeProject(project),restored=parseProject(raw);
+  assert.deepEqual(restored,project);assert.equal(voiceModelReady(readVoiceProfile(restored.components[0])),true);
+  assert.deepEqual(validateAssembly(restored,catalog).filter(i=>i.severity==='error'),[]);
+  generateFirmware(restored,catalog);
+  assert.throws(()=>parseProject(JSON.stringify({...project,formatVersion:3})),/Версия формата/);
  }
-});
-
-test('legacy speaker placement stays within the canvas near its right edge',()=>{
- const legacy=voiceProject(),voice=legacy.components[0];
- delete voice.parameters.activationSound;delete voice.parameters.speakerId;delete voice.parameters.activationVolume;voice.parameters.volume=85;
- legacy.assembly.positions[voice.id]={x:4900,y:4900};
- const migrated=parseProject(JSON.stringify(legacy)),speaker=migrated.components.find(c=>c.moduleId===SPEAKER_MODULE),position=migrated.assembly.positions[speaker.id];
- assert.ok(Math.abs(position.x)<=5000&&Math.abs(position.y)<=5000);
- assert.equal(migrated.components[0].parameters.profile,voice.parameters.profile);
 });

@@ -5,7 +5,7 @@
   "icon": "Network",
   "color": "#2dd4bf",
   "compatibility": {
-    "projectFormat": 3,
+    "projectFormat": 4,
     "targets": [
       "esp32",
       "esp32s2",
@@ -25,13 +25,15 @@
       "id": "connect",
       "name": "Подключить",
       "type": "event",
-      "description": "Запускает соединение или возобновляет его после ручного отключения."
+      "description": "Запускает соединение или возобновляет его после ручного отключения.",
+      "additional": false
     },
     {
       "id": "disconnect",
       "name": "Отключить",
       "type": "event",
-      "description": "Отключает соединение и приостанавливает автоматическое переподключение до следующей команды подключения."
+      "description": "Отключает соединение и приостанавливает автоматическое переподключение до следующей команды подключения.",
+      "additional": false
     }
   ],
   "outputs": [
@@ -39,46 +41,45 @@
       "id": "changed",
       "name": "Состояние изменилось",
       "type": "event",
-      "description": ""
+      "description": "Сигнал: Состояние изменилось.",
+      "additional": true
     },
     {
       "id": "connected",
       "name": "Подключено",
       "type": "event",
-      "description": ""
+      "description": "Сигнал: Подключено.",
+      "additional": false
     },
     {
       "id": "disconnected",
       "name": "Отключено",
       "type": "event",
-      "description": ""
+      "description": "Сигнал: Отключено.",
+      "additional": false
     },
     {
       "id": "failed",
       "name": "Ошибка",
       "type": "event",
-      "description": ""
+      "description": "Сигнал: Ошибка.",
+      "additional": false
     },
     {
       "id": "state",
       "name": "Состояние",
       "type": "number",
       "description": "0 – отключено, 1 – подключение, 2 – подключено, 3 – переподключение, 4 – ошибка.",
-      "readyOn": "changed"
-    },
-    {
-      "id": "isConnected",
-      "name": "Есть соединение",
-      "type": "boolean",
-      "description": "Текущее соединение с брокером.",
-      "readyOn": "changed"
+      "readyOn": "changed",
+      "additional": true
     },
     {
       "id": "error",
       "name": "Описание ошибки",
       "type": "text",
       "description": "Последняя ошибка подключения.",
-      "readyOn": "failed"
+      "readyOn": "failed",
+      "additional": true
     },
     {
       "id": "reasonCode",

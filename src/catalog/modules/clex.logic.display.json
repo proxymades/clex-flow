@@ -25,7 +25,7 @@
   },
   "editor": "screen",
   "compatibility": {
-    "projectFormat": 3,
+    "projectFormat": 4,
     "targets": [
       "esp32",
       "esp32s3",

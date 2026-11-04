@@ -16,10 +16,10 @@ export function relayProject({boardId='waveshare-esp32-s3-eth',channels='8',acti
   project=connectTerminal(project,catalog,component.id,terminal,pin.id);
  }
  let graph=addNode(project.logic,definition('clex.logic.timer'),project.components,project,catalog);const timer=graph.nodes.at(-1),blocks=[];
- for(const channel of connected)for(const action of ['on','off','toggle','set']){
-  graph=addNode(graph,definition('clex.logic.relay'),project.components,{...project,logic:graph},catalog);
-  const node=graph.nodes.at(-1);Object.assign(node.parameters,{componentId:component.id,channel:String(channel),action,defaultValue:false});blocks.push(node);
-  graph=connectNodes(graph,catalog,{source:timer.id,sourceHandle:'tick',target:node.id,targetHandle:'trigger'},{...project,logic:graph});
+ for(const channel of connected){
+  graph=addNode(graph,definition('clex.logic.gpio-set'),project.components,{...project,logic:graph},catalog);
+  const node=graph.nodes.at(-1);Object.assign(node.parameters,{componentId:component.id,channel:String(channel)});blocks.push(node);
+  graph=connectNodes(graph,catalog,{source:timer.id,sourceHandle:'tick',target:node.id,targetHandle:'toggle'},{...project,logic:graph});
  }
  project=withLogic(project,graph);
  return {project,component,blocks,timer};

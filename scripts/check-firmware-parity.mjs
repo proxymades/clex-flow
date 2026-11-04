@@ -1,3 +1,5 @@
+import {eventIndicatorProject} from '../tests/event-indicator-fixture.js';
+import {mosfetProject,MOSFET_BOARDS} from '../tests/mosfet-fixture.js';
 import {audioPlayProject} from '../tests/audio-play-fixture.js';
 import {microphoneProject,MICROPHONE_BOARDS} from '../tests/microphone-fixture.js';
 import {voiceProject,withCustomWake} from '../tests/voice-fixture.js';
@@ -45,6 +47,7 @@ function mediaProject(family) {
 }
 
 const cases = [
+  ['s3-event-indicator',eventIndicatorProject(),'usb'],
   ['p4-voice-custom-wake',withCustomWake(voiceProject()),'uart'],
   ['p4-voice-wake-capture',withCustomWake(voiceProject(),{trained:false}),'uart'],
   ['p4-voice-confirmation',audioPlayProject({customWake:true}),'uart'],
@@ -75,6 +78,8 @@ const cases = [
   ['nano-old',nanoProject({bootloader:'old'}),'uart'],
   ['nano-gpio',nanoProject({blink:true}),'uart'],
   ['nano-watch',nanoProject({watch:true}),'uart'],
+  ['s3-unified-output',firmwareProject(),'usb'],
+  ['nano-unified-output',nanoProject({blink:true}),'uart'],
   ['s3-gpio-usb', firmwareProject(), 'usb'],
   ['s3-gpio-uart', firmwareProject(), 'uart'],
   ['s3-spi-network', networkProject(), 'usb'],
@@ -117,6 +122,7 @@ for(const network of ['wifi','router']){
 for(const board of MICROPHONE_BOARDS)for(const chip of ['max9814','max4466','inmp441'])cases.push([board+'-mic-'+chip,microphoneProject(board,chip),'uart']);
 {const p=addHardware(microphoneProject('waveshare-esp32-s3-eth','inmp441'),catalog.modules.find(m=>m.id==='clex.hardware.wifi'),catalog);p.components.at(-1).parameters.ssid='Voice network';cases.push(['s3-microphone-wifi',p,'uart']);}
 cases.push(['s3-custom-wake',withCustomWake(microphoneProject('waveshare-esp32-s3-eth','inmp441')),'uart']);
+for(const boardId of MOSFET_BOARDS)for(const activeLevel of ['high','low'])cases.push([boardId+'-mosfet-'+activeLevel,mosfetProject({boardId,activeLevel}).project,boardId==='waveshare-esp32-s3-eth'?'usb':'uart']);
 const temporary = mkdtempSync(join(tmpdir(), 'clex-firmware-parity-'));
 try {
   for (const [name, project, consoleMode] of cases) {

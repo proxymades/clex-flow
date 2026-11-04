@@ -22,9 +22,9 @@ export function esp32GpioProject({touch=false,inputGpio=26,ledGpio=25}={}){
  p=wire(p,led,'anode',gpio(ledGpio));p=wire(p,led,'cathode',ground());
  p=wire(p,input,'signal',gpio(inputGpio));p=wire(p,input,'ground',ground());
  if(touch)p=wire(p,input,'power',board().pins.find(p=>p.kind==='power'&&p.voltage===3.3));
- let nodes;[p,nodes]=logic(p,['clex.logic.timer','clex.logic.gpio-read','clex.logic.gpio-toggle','clex.logic.counter','clex.logic.serial']);
+ let nodes;[p,nodes]=logic(p,['clex.logic.timer','clex.logic.gpio-read','clex.logic.gpio-set','clex.logic.counter','clex.logic.serial']);
  const [timer,read,toggle,counter,serial]=nodes;read.parameters.componentId=input.id;toggle.parameters.componentId=led.id;
- for(const [s,sh,t,th]of [[timer,'tick',read,'trigger'],[read,'done',toggle,'trigger'],[toggle,'done',counter,'increment'],[counter,'done',serial,'trigger'],[counter,'value',serial,'number']])p=connect(p,s,sh,t,th);
+ for(const [s,sh,t,th]of [[timer,'tick',read,'trigger'],[read,'active',toggle,'toggle'],[toggle,'done',counter,'increment'],[counter,'done',serial,'trigger'],[counter,'value',serial,'number']])p=connect(p,s,sh,t,th);
  return p;
 }
 

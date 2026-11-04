@@ -3,36 +3,49 @@
   "version": "1.0.0",
   "kind": "logic",
   "name": "Управлять выходом",
-  "description": "Устанавливает состояние выбранного выходного контакта по сигналу.",
+  "description": "Включает, выключает или переключает светодиод, MOSFET-ключ или реле. Подключите событие к нужной команде. При запуске выход выключен.",
   "category": "gpio",
-  "categoryName": "Контакты",
+  "categoryName": "Кнопки и выходы",
   "icon": "ArrowUpRight",
   "color": "#8B5CF6",
   "inputs": [
     {
-      "id": "trigger",
-      "name": "Применить состояние",
+      "id": "on",
+      "name": "Включить",
       "type": "event",
-      "required": true,
-      "description": "Устанавливает полученное состояние выбранного выходного контакта.",
-      "additional": false
+      "description": "Включает выбранный выход."
     },
     {
-      "id": "value",
-      "name": "Высокий уровень?",
-      "type": "boolean",
-      "required": false,
-      "description": "Да задает высокий уровень, Нет – низкий. Без связи используется настройка блока.",
-      "additional": true
+      "id": "off",
+      "name": "Выключить",
+      "type": "event",
+      "description": "Выключает выбранный выход."
+    },
+    {
+      "id": "toggle",
+      "name": "Переключить",
+      "type": "event",
+      "description": "Включает выключенный выход или выключает включённый."
     }
   ],
   "outputs": [
     {
-      "id": "done",
-      "name": "Состояние установлено",
+      "id": "on",
+      "name": "Выход включён",
       "type": "event",
-      "required": false,
-      "description": "Отправляет сигнал после установки состояния контакта.",
+      "description": "Сигнал после команды, если выход включён. Это заданное состояние, обратная связь от нагрузки не считывается."
+    },
+    {
+      "id": "off",
+      "name": "Выход выключен",
+      "type": "event",
+      "description": "Сигнал после команды, если выход выключен. Это заданное состояние, обратная связь от нагрузки не считывается."
+    },
+    {
+      "id": "done",
+      "name": "Команда выполнена",
+      "type": "event",
+      "description": "Сигнал после любой команды выхода.",
       "additional": true
     }
   ],
@@ -43,24 +56,87 @@
       "default": "",
       "description": "Выберите компонент для управления из монтажа."
     },
-    "defaultValue": {
-      "label": "Состояние без входной связи",
-      "type": "boolean",
-      "default": true,
-      "description": "Используется, если состояние не поступает от другого блока."
+    "channel": {
+      "label": "Канал",
+      "type": "select",
+      "default": "1",
+      "options": [
+        {
+          "value": "1",
+          "label": "Канал 1 · IN1"
+        },
+        {
+          "value": "2",
+          "label": "Канал 2 · IN2"
+        },
+        {
+          "value": "3",
+          "label": "Канал 3 · IN3"
+        },
+        {
+          "value": "4",
+          "label": "Канал 4 · IN4"
+        },
+        {
+          "value": "5",
+          "label": "Канал 5 · IN5"
+        },
+        {
+          "value": "6",
+          "label": "Канал 6 · IN6"
+        },
+        {
+          "value": "7",
+          "label": "Канал 7 · IN7"
+        },
+        {
+          "value": "8",
+          "label": "Канал 8 · IN8"
+        },
+        {
+          "value": "9",
+          "label": "Канал 9 · IN9"
+        },
+        {
+          "value": "10",
+          "label": "Канал 10 · IN10"
+        },
+        {
+          "value": "11",
+          "label": "Канал 11 · IN11"
+        },
+        {
+          "value": "12",
+          "label": "Канал 12 · IN12"
+        },
+        {
+          "value": "13",
+          "label": "Канал 13 · IN13"
+        },
+        {
+          "value": "14",
+          "label": "Канал 14 · IN14"
+        },
+        {
+          "value": "15",
+          "label": "Канал 15 · IN15"
+        },
+        {
+          "value": "16",
+          "label": "Канал 16 · IN16"
+        }
+      ],
+      "componentChannels": true
     }
   },
   "constraints": {
     "hardware": {
-      "modules": [
-        "clex.hardware.led"
-      ],
-      "terminal": "anode",
+      "kind": "gpio",
       "mode": "output"
     }
   },
   "compatibility": {
-    "projectFormat": 3,
+    "projectFormat": 4,
     "targets": [
       "esp32",
       "esp32s3",
@@ -78,8 +154,5 @@
     "dependencies": [
       "esp_driver_gpio"
     ]
-  },
-  "legacyNames": [
-    "Установка GPIO"
-  ]
+  }
 }
