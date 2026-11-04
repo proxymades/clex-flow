@@ -39,6 +39,8 @@ pub fn run() {
             voice::voice_test,
             projects::list_projects,
             projects::save_project,
+            projects::upgrade_project,
+            projects::backup_project,
             projects::delete_project,
             projects::import_project,
             projects::export_project,

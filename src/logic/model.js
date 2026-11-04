@@ -148,8 +148,8 @@ export function connectionProblem(graph, catalog, connection, ignoreId = null, p
   const output = nodePorts(source, catalog, project).outputs.find(port => port.id === connection.sourceHandle), input = nodePorts(target, catalog, project).inputs.find(port => port.id === connection.targetHandle);
   if (!output || !input) return 'Соединяйте выход блока со входом; выбранный порт отсутствует.';
   if (output.type !== input.type) return `Несовместимые типы: ${TYPE_NAMES[output.type]} → ${TYPE_NAMES[input.type]}.`;
-  const remaining = graph.edges.filter(edge => edge.id !== ignoreId);
-  if (remaining.some(edge => edge.source === source.id && edge.target === target.id && edge.sourceHandle === output.id && edge.targetHandle === input.id)) return 'Такое соединение уже существует.';
+  const remaining = graph.edges.filter(edge => edge.id !== ignoreId && !edge.legacy);
+  if (graph.edges.some(edge => edge.id !== ignoreId && edge.source === source.id && edge.target === target.id && edge.sourceHandle === output.id && edge.targetHandle === input.id)) return 'Такое соединение уже существует.';
   if (input.type !== 'event' && remaining.some(edge => edge.target === target.id && edge.targetHandle === input.id)) return 'У входа может быть только одно соединение.';
   if (hasPath(remaining, target.id, source.id)) return 'Циклические связи не поддерживаются в первой версии.';
   return null;
@@ -205,6 +205,7 @@ export function validateGraph(project, catalog) {
   if (!graph.nodes.length) add('warning', 'logic-empty', 'Добавьте блоки во вкладке «Логика».');
   for (const node of graph.nodes) {
     const module = graphModule(node, catalog), fields = { nodeId: node.id };
+    if (node.legacy) { add('warning','logic-legacy-block',node.name + ': ' + node.legacy,fields); continue; }
     if (!module || module.version !== node.moduleVersion || module.compatibility.projectFormat !== 4 || !moduleSupportsBoard(module,boardFor(project,catalog))) { add('error', 'logic-module', module&&module.version!==node.moduleVersion?`${node.name}: в проекте версия блока v${node.moduleVersion}, установлена v${module.version}.`:`${node.name}: модуль отсутствует или несовместим с выбранной платой.`, fields); continue; }
     if (!node.name.trim()) add('error', 'logic-name', 'Укажите название блока.', fields);
     for (const [key, parameter] of Object.entries(module.parameters)) {
@@ -239,12 +240,13 @@ export function validateGraph(project, catalog) {
         for (const element of dynamic) if (!graph.edges.some(edge => edge.target === node.id && edge.dataType === 'event' && ['trigger', elementUpdatePort(element.id)].includes(edge.targetHandle))) add('error', 'logic-input', node.name + ': подключите событие обновления элемента «' + (element.name || 'Текст') + '».', fields);
       }
     }
-    if (module.id === OUTPUT_MODULE && !graph.edges.some(edge => edge.target === node.id && ['on','off','toggle'].includes(edge.targetHandle))) add('error','logic-input',node.name + ': подключите команду включения, выключения или переключения.',fields);
+    if (module.id === OUTPUT_MODULE && !graph.edges.some(edge => edge.target === node.id && (['on','off','toggle'].includes(edge.targetHandle) || edge.legacy))) add('error','logic-input',node.name + ': подключите команду включения, выключения или переключения.',fields);
     if (binding.error) add('error', 'logic-hardware', `${node.name}: ${binding.error}`, fields);
     for (const port of nodePorts(node, catalog, project).inputs.filter(port => port.required)) if (!graph.edges.some(edge => edge.target === node.id && edge.targetHandle === port.id)) add('error', 'logic-input', `${node.name}: подключите вход «${port.name}».`, fields);
     if (module.id === 'clex.logic.timer' && !graph.edges.some(edge => edge.source === node.id && edge.dataType === 'event')) add('warning', 'timer-unused', `${node.name}: такт пока не подключен к действию.`, fields);
   }
   for (const edge of graph.edges) {
+    if (edge.legacy) { add('warning','logic-legacy-connection',edge.legacy.sourceName + ' → ' + edge.legacy.targetName + ': ' + edge.legacy.message,{edgeId:edge.id,nodeId:edge.target}); continue; }
     const problem = connectionProblem(graph, catalog, edge, edge.id, project);
     if (problem) { add('error', 'logic-connection', problem, { edgeId: edge.id, nodeId: edge.target }); continue; }
     const source = graph.nodes.find(node => node.id === edge.source), port = nodePorts(source,catalog,project).outputs.find(port => port.id === edge.sourceHandle);

@@ -1,3 +1,4 @@
+import {legacyPorts} from '../projects/legacy.js';
 import {graphModule,nodePorts,connectionProblem} from './model.js';
 import {screenBindings,screenFor} from '../displays/model.js';
 export function equipmentPresentation(node,project,catalog){
@@ -8,6 +9,7 @@ export function equipmentPresentation(node,project,catalog){
 }
 export function presentPort(port,node,project,catalog){
  const module=graphModule(node,catalog),{metadata,operation}=equipmentPresentation(node,project,catalog);
+ if(port.legacy)return port;
  let name=metadata?.[operation]?.[port.id]||port.name,description=metadata?.[operation]?.descriptions?.[port.id]||port.description;
  if(module?.firmware?.generatorKey==='counter'&&port.id==='increment'){
   const step=node.parameters.step;name=step>0?'Прибавить '+step:step<0?'Вычесть '+Math.abs(step):'Применить шаг 0';
@@ -30,7 +32,7 @@ export function presentPort(port,node,project,catalog){
  return {...port,name,description:description||'Передает данные или сигнал между блоками.'};
 }
 export function visiblePorts(node,project,catalog,{connection=null}={}){
- const raw=nodePorts(node,catalog,project);
+ const raw=legacyPorts(node,project.logic,nodePorts(node,catalog,project));
  return Object.fromEntries(['inputs','outputs'].map(direction=>[direction,raw[direction].map(port=>{
   const connected=project.logic.edges.some(edge=>direction==='inputs'?edge.target===node.id&&edge.targetHandle===port.id:edge.source===node.id&&edge.sourceHandle===port.id);
   const candidate=connection&&connection.nodeId!==node.id&&connection.direction!==(direction==='inputs'?'input':'output');

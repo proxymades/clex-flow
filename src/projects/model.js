@@ -13,6 +13,8 @@ const validKey = value => typeof value === 'string' && KEY_PATTERN.test(value) &
 const validPortKey = value => typeof value === 'string' && /^[a-zA-Z0-9][a-zA-Z0-9._-]{0,199}$/.test(value) && !['constructor', 'prototype', '__proto__'].includes(value);
 const semver = value => typeof value === 'string' && /^\d+\.\d+\.\d+$/.test(value);
 const isObject = value => value !== null && typeof value === 'object' && !Array.isArray(value);
+const legacyText = value => typeof value === 'string' && value.length > 0 && value.length <= 500;
+const legacyEdge = value => isObject(value) && ['message','sourceName','targetName'].every(key => legacyText(value[key]));
 const point = value => isObject(value) && ['x', 'y'].every(key => Number.isFinite(value[key]) && Math.abs(value[key]) <= 5000);
 const viewportValid = value => isObject(value) && ['x', 'y', 'zoom'].every(key => Number.isFinite(value[key])) && Math.abs(value.x) <= 50000 && Math.abs(value.y) <= 50000 && value.zoom >= 0.2 && value.zoom <= 3;
 
@@ -35,7 +37,7 @@ export function createProject(name, description = '', boardId = 'waveshare-esp32
 
 export function validateProject(project) {
   if (!isObject(project)) throw new Error('Ожидался объект проекта JSON.');
-  if (project.formatVersion !== FORMAT_VERSION) throw new Error(`Версия формата ${String(project.formatVersion)} не поддерживается. Ожидается версия 4. Создайте новый проект.`);
+  if (project.formatVersion !== FORMAT_VERSION) throw new Error(`Версия формата ${String(project.formatVersion)} не поддерживается. Поддерживаются проекты форматов 1–4 при открытии через студию.`);
   if (typeof project.id !== 'string' || !ID_PATTERN.test(project.id)) throw new Error('Некорректный ID проекта.');
   validateName(project.name);
   if (typeof project.description !== 'string' || project.description.length > 4000) throw new Error('Описание должно содержать не более 4000 символов.');
@@ -57,13 +59,15 @@ export function validateProject(project) {
     if (!isObject(node) || !validKey(node.id) || nodeIds.has(node.id) || !validKey(node.moduleId) || !semver(node.moduleVersion) || !point(node.position) || !isObject(node.parameters)) throw new Error('Некорректный или повторяющийся блок логики.');
     if(node.moduleId===AUDIO_PLAY_MODULE)readRecording(node);
     validateName(node.name); nodeIds.add(node.id);
+    if (node.legacy !== undefined && !legacyText(node.legacy)) throw new Error('Некорректное предупреждение старого блока.');
     if(node.showAdditionalPorts!==undefined&&typeof node.showAdditionalPorts!=='boolean')throw new Error('Некорректная настройка дополнительных контактов.');
     if (!Object.entries(node.parameters).every(([key, value]) => validKey(key) && (typeof value === 'string' || typeof value === 'boolean' || Number.isFinite(value)))) throw new Error('Некорректные параметры логического блока.');
   }
   for (const edge of project.logic.edges) {
     const input = edge?.target+'/'+edge?.targetHandle, link=JSON.stringify([edge?.source,edge?.sourceHandle,edge?.target,edge?.targetHandle]);
-    if (!isObject(edge) || !validKey(edge.id) || edgeIds.has(edge.id) || links.has(link) || !nodeIds.has(edge.source) || !nodeIds.has(edge.target) || !validPortKey(edge.sourceHandle) || !validPortKey(edge.targetHandle) || !['event','number','text'].includes(edge.dataType) || edge.dataType !== 'event' && inputs.has(input)) throw new Error('Некорректная, повторяющаяся или осиротевшая связь логики.');
-    edgeIds.add(edge.id); links.add(link); if (edge.dataType !== 'event') inputs.add(input);
+    if (!isObject(edge) || !validKey(edge.id) || edgeIds.has(edge.id) || links.has(link) || !nodeIds.has(edge.source) || !nodeIds.has(edge.target) || !validPortKey(edge.sourceHandle) || !validPortKey(edge.targetHandle) || (!['event','number','text'].includes(edge.dataType) && !(edge.dataType === 'boolean' && legacyEdge(edge.legacy))) || edge.dataType !== 'event' && !edge.legacy && inputs.has(input)) throw new Error('Некорректная, повторяющаяся или осиротевшая связь логики.');
+    if (edge.legacy !== undefined && !legacyEdge(edge.legacy)) throw new Error('Некорректное предупреждение старой связи.');
+    edgeIds.add(edge.id); links.add(link); if (edge.dataType !== 'event' && !edge.legacy) inputs.add(input);
   }
   if (project.screens !== undefined) {
     if (!isObject(project.screens) || Object.entries(project.screens).some(([id, screen]) => !ids.has(id) || !isObject(screen) || screen.formatVersion !== 1 || typeof screen.background !== 'string' || !/^#[0-9a-f]{6}$/i.test(screen.background) || !Array.isArray(screen.elements) || screen.elements.length > 100)) throw new Error('Некорректные интерфейсы экранов.');

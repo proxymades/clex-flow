@@ -55,7 +55,7 @@ test('mounted devices appear with their own actions and exact component binding 
  assert.ok(entries.some(e=>e.name==='Управлять светодиодом'));
  assert.ok(!entries.some(e=>e.module.id==='clex.logic.mqtt-send'));
 });
-test('removed blue connections and old formats are rejected rather than converted',()=>{
+test('strict current-format validation rejects unmarked Boolean edges; opening old files uses the upgrader',()=>{
  const project=firmwareProject();
  for(const formatVersion of [1,2,3,5])assert.throws(()=>parseProject(JSON.stringify({...project,formatVersion})),/Версия формата/);
  project.logic.edges[0].dataType='boolean';assert.throws(()=>serializeProject(project),/связь/);

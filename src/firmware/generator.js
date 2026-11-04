@@ -1,3 +1,4 @@
+import {assertNoLegacy} from '../projects/legacy.js';
 import {outputTerminals} from '../gpio/model.js';
 import {MICROPHONE_MODULES} from '../microphone/model.js';
 import {voiceFirmware,VOICE_TYPES} from './drivers/voice.js';
@@ -62,6 +63,7 @@ export function cString(value) {
 
 export function generateFirmware(project, catalog, consoleMode = 'usb') {
   validateProject(project);
+  assertNoLegacy(project);
   if (!['usb','uart'].includes(consoleMode)) throw new Error('Неизвестный режим последовательной консоли.');
   const issues = [...validateAssembly(project,catalog), ...validateGraph(project,catalog)];
   const errors = issues.filter(issue=>issue.severity==='error');

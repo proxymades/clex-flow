@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use sha2::{Digest, Sha256};
 use std::{
     fs,
     io::{Read, Write},
@@ -195,7 +196,7 @@ fn read_project(path: &Path) -> Result<String, String> {
     Ok(contents)
 }
 
-fn validate_contents(contents: &str, id: Option<&str>) -> Result<(), String> {
+fn readable_version(contents: &str, id: Option<&str>) -> Result<u64, String> {
     if contents.len() as u64 > MAX_SIZE {
         return Err("JSON проекта превышает 2 МБ".into());
     }
@@ -208,10 +209,110 @@ fn validate_contents(contents: &str, id: Option<&str>) -> Result<(), String> {
     if !valid_id(stored_id) || id.is_some_and(|id| id != stored_id) {
         return Err("ID проекта не совпадает с именем файла".into());
     }
-    if !matches!(value.get("formatVersion").and_then(|v| v.as_u64()), Some(4)) {
-        return Err("Неподдерживаемая версия проекта".into());
+    match value.get("formatVersion").and_then(|v| v.as_u64()) {
+        Some(version @ 1..=4) => Ok(version),
+        _ => Err("Неподдерживаемая версия проекта".into()),
+    }
+}
+
+fn validate_contents(contents: &str, id: Option<&str>) -> Result<(), String> {
+    if readable_version(contents, id)? != 4 {
+        return Err("Перед сохранением преобразуйте проект в текущий формат".into());
     }
     Ok(())
+}
+
+// Backups contain exact original bytes, including formatting. Content addressing
+// makes retries harmless and never replaces a different original with the same ID.
+fn backup_original(dir: &Path, contents: &str) -> Result<PathBuf, String> {
+    let version = readable_version(contents, None)?;
+    if version == 4 {
+        return Err("Проект уже использует текущий формат".into());
+    }
+    let value: serde_json::Value = serde_json::from_str(contents).map_err(|e| e.to_string())?;
+    let id = value["id"].as_str().ok_or("Не указан ID проекта")?;
+    let backup_dir = dir.join("project-backups");
+    fs::create_dir_all(&backup_dir)
+        .map_err(|e| format!("Не удалось создать резервную копию: {e}"))?;
+    let digest = format!("{:x}", Sha256::digest(contents.as_bytes()));
+    let path = backup_dir.join(format!("{id}.v{version}.{digest}.json"));
+    if !path.try_exists().map_err(|e| e.to_string())? {
+        let mut temp = tempfile::NamedTempFile::new_in(&backup_dir).map_err(|e| e.to_string())?;
+        temp.write_all(contents.as_bytes())
+            .map_err(|e| e.to_string())?;
+        temp.as_file().sync_all().map_err(|e| e.to_string())?;
+        temp.persist_noclobber(&path).map_err(|e| e.to_string())?;
+    }
+    if !fs::symlink_metadata(&path)
+        .map_err(|e| e.to_string())?
+        .is_file()
+        || read_project(&path)? != contents
+    {
+        return Err("Не удалось проверить резервную копию. Исходный проект не заменён.".into());
+    }
+    Ok(path)
+}
+
+fn save_contents(
+    dir: &Path,
+    id: &str,
+    contents: &str,
+    expected: Option<&str>,
+) -> Result<(), String> {
+    validate_contents(contents, Some(id))?;
+    let path = dir.join(format!("{id}.json"));
+    let current = match fs::symlink_metadata(&path) {
+        Ok(metadata) if metadata.is_file() => Some(read_project(&path)?),
+        Ok(_) => return Err("Файл проекта должен быть обычным JSON-файлом".into()),
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => None,
+        Err(error) => return Err(error.to_string()),
+    };
+    if let Some(expected) = expected {
+        if current.as_deref() != Some(expected) && current.as_deref() != Some(contents) {
+            return Err("Исходный проект изменился. Откройте его заново; файл не заменён.".into());
+        }
+        backup_original(dir, expected)?;
+    }
+    if let Some(original) = &current {
+        if readable_version(original, Some(id))? < 4 {
+            backup_original(dir, original)?;
+        }
+    }
+    let latest = if path.try_exists().map_err(|e| e.to_string())? {
+        Some(read_project(&path)?)
+    } else {
+        None
+    };
+    if latest != current {
+        return Err("Исходный проект изменился во время сохранения. Файл не заменён.".into());
+    }
+    atomic_write(&path, contents)
+}
+
+#[tauri::command]
+pub fn upgrade_project(
+    app: tauri::AppHandle,
+    id: String,
+    original: String,
+    contents: String,
+) -> Result<String, String> {
+    let _lock = STORAGE_LOCK
+        .lock()
+        .map_err(|_| "Хранилище проектов занято")?;
+    readable_version(&original, Some(&id))?;
+    let dir = project_dir(&app)?;
+    save_contents(&dir, &id, &contents, Some(&original))?;
+    Ok(backup_original(&dir, &original)?.display().to_string())
+}
+
+#[tauri::command]
+pub fn backup_project(app: tauri::AppHandle, contents: String) -> Result<String, String> {
+    let _lock = STORAGE_LOCK
+        .lock()
+        .map_err(|_| "Хранилище проектов занято")?;
+    Ok(backup_original(&project_dir(&app)?, &contents)?
+        .display()
+        .to_string())
 }
 
 fn atomic_write(path: &Path, contents: &str) -> Result<(), String> {
@@ -260,7 +361,7 @@ pub fn list_projects(app: tauri::AppHandle) -> Result<Vec<ProjectFile>, String> 
             .unwrap_or_default()
             .to_string();
         let loaded = read_project(&path).and_then(|contents| {
-            validate_contents(&contents, Some(&id))?;
+            readable_version(&contents, Some(&id))?;
             Ok(contents)
         });
         let (contents, error) = match loaded {
@@ -281,8 +382,7 @@ pub fn save_project(app: tauri::AppHandle, id: String, contents: String) -> Resu
     let _lock = STORAGE_LOCK
         .lock()
         .map_err(|_| "Хранилище проектов занято")?;
-    validate_contents(&contents, Some(&id))?;
-    atomic_write(&project_path(&app, &id)?, &contents)
+    save_contents(&project_dir(&app)?, &id, &contents, None)
 }
 
 #[tauri::command]
@@ -372,6 +472,95 @@ pub async fn export_project(app: tauri::AppHandle, contents: String) -> Result<b
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn reads_previous_formats_but_only_writes_current_format() {
+        for version in 1..=4 {
+            let contents = format!(
+                r#"{{"id":"01234567-89ab-4cde-8fab-0123456789ab","formatVersion":{version}}}"#
+            );
+            assert_eq!(readable_version(&contents, None).unwrap(), version);
+            assert_eq!(validate_contents(&contents, None).is_ok(), version == 4);
+        }
+    }
+
+    #[test]
+    fn upgrade_keeps_exact_original_and_is_idempotent() {
+        let dir = tempfile::tempdir().unwrap();
+        let id = "01234567-89ab-4cde-8fab-0123456789ab";
+        let original = format!("{{\n  \"id\": \"{id}\", \"formatVersion\": 3\n}}\n");
+        let current = original.replace(": 3", ": 4");
+        let path = dir.path().join(format!("{id}.json"));
+        fs::write(&path, &original).unwrap();
+        save_contents(dir.path(), id, &current, Some(&original)).unwrap();
+        let backup = backup_original(dir.path(), &original).unwrap();
+        assert_eq!(read_project(&backup).unwrap(), original);
+        assert_eq!(read_project(&path).unwrap(), current);
+        save_contents(dir.path(), id, &current, Some(&original)).unwrap();
+        assert_eq!(
+            fs::read_dir(dir.path().join("project-backups"))
+                .unwrap()
+                .count(),
+            1
+        );
+        let edited = original.replace(": 3", ": 2");
+        let second = backup_original(dir.path(), &edited).unwrap();
+        assert_ne!(backup, second);
+        assert_eq!(read_project(&backup).unwrap(), original);
+        assert_eq!(read_project(&second).unwrap(), edited);
+    }
+
+    #[test]
+    fn ordinary_save_also_backs_up_an_old_project() {
+        let dir = tempfile::tempdir().unwrap();
+        let id = "01234567-89ab-4cde-8fab-0123456789ab";
+        let original = format!(r#"{{"id":"{id}","formatVersion":3}}"#);
+        let current = original.replace(":3", ":4");
+        fs::write(dir.path().join(format!("{id}.json")), &original).unwrap();
+        save_contents(dir.path(), id, &current, None).unwrap();
+        assert_eq!(
+            read_project(&backup_original(dir.path(), &original).unwrap()).unwrap(),
+            original
+        );
+    }
+
+    #[test]
+    fn failed_backup_or_changed_source_never_overwrites_original() {
+        let dir = tempfile::tempdir().unwrap();
+        let id = "01234567-89ab-4cde-8fab-0123456789ab";
+        let original = format!(r#"{{"id":"{id}","formatVersion":3}}"#);
+        let current = original.replace(":3", ":4");
+        let path = dir.path().join(format!("{id}.json"));
+        fs::write(&path, &original).unwrap();
+        fs::write(
+            dir.path().join("project-backups"),
+            "blocks directory creation",
+        )
+        .unwrap();
+        assert!(save_contents(dir.path(), id, &current, Some(&original)).is_err());
+        assert_eq!(read_project(&path).unwrap(), original);
+        fs::remove_file(dir.path().join("project-backups")).unwrap();
+        let concurrent = original.replace(":3", ":2");
+        fs::write(&path, &concurrent).unwrap();
+        assert!(save_contents(dir.path(), id, &current, Some(&original)).is_err());
+        assert_eq!(read_project(&path).unwrap(), concurrent);
+        assert!(!dir.path().join("project-backups").exists());
+    }
+
+    #[test]
+    fn damaged_backup_is_not_replaced_or_used_to_overwrite_original() {
+        let dir = tempfile::tempdir().unwrap();
+        let id = "01234567-89ab-4cde-8fab-0123456789ab";
+        let original = format!(r#"{{"id":"{id}","formatVersion":3}}"#);
+        let current = original.replace(":3", ":4");
+        let path = dir.path().join(format!("{id}.json"));
+        fs::write(&path, &original).unwrap();
+        let backup = backup_original(dir.path(), &original).unwrap();
+        fs::write(&backup, "changed backup").unwrap();
+        assert!(save_contents(dir.path(), id, &current, Some(&original)).is_err());
+        assert_eq!(read_project(&path).unwrap(), original);
+        assert_eq!(read_project(&backup).unwrap(), "changed backup");
+    }
 
     #[test]
     fn prevents_path_traversal() {

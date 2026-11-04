@@ -1,3 +1,4 @@
+import {LEGACY_COLOR} from '../projects/legacy.js';
 import {OUTPUT_MODULE,outputChannelCount} from '../gpio/model.js';
 import MicAudioLines from '../components/MicAudioLines.jsx';
 import {numericSummary} from './numeric.js';
@@ -25,10 +26,10 @@ function LogicNode({id,data,selected}){
  const title=nodeDisplayName(node,project,catalog);
  function portView(port,direction){
   const active=pending?.nodeId===id&&pending.portId===port.id&&pending.direction===direction,tip=id+'-'+direction+'-'+encodeURIComponent(port.id);
-  return <div key={direction+'-'+port.id} data-port-id={port.id} data-port-type={port.type} className={`logic-port ${direction} ${active?'pending-port':''} ${port.compatible?'compatible-port':''} ${port.incompatible?'incompatible-port':''}`} style={{'--port-color':TYPE_COLORS[port.type]}}>
-   <Handle type={direction==='output'?'source':'target'} position={direction==='output'?Position.Right:Position.Left} id={port.id} aria-label={`${direction==='output'?'Выход':'Вход'} ${port.name}: ${title}`} aria-describedby={tip} title={port.description} tabIndex={0} onKeyDown={event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();event.stopPropagation();onPort({nodeId:id,portId:port.id,direction});}}}/>
-   <button className="logic-port-name nodrag" aria-describedby={tip} aria-label={`${direction==='output'?'Выход':'Вход'}: ${title} / ${port.name}`} onClick={event=>{event.stopPropagation();onPort({nodeId:id,portId:port.id,direction});}}><span className="port-type-dot"/><span className="port-label-copy">{port.name}</span></button>
-   <div className="port-tooltip" id={tip} role="tooltip"><strong>{port.name} · {TYPE_NAMES[port.type]}</strong>{port.description}<PortValueStates port={port}/>{port.reason&&<em>{port.reason}</em>}</div>
+  return <div key={direction+'-'+port.id} data-port-id={port.id} data-port-type={port.type} className={`logic-port ${direction} ${active?'pending-port':''} ${port.compatible?'compatible-port':''} ${port.incompatible?'incompatible-port':''}`} style={{'--port-color':port.legacy?LEGACY_COLOR:TYPE_COLORS[port.type]}}>
+   <Handle isConnectable={!port.legacy} type={direction==='output'?'source':'target'} position={direction==='output'?Position.Right:Position.Left} id={port.id} aria-label={`${direction==='output'?'Выход':'Вход'} ${port.name}: ${title}`} aria-describedby={tip} title={port.description} tabIndex={port.legacy?-1:0} onKeyDown={event=>{if(!port.legacy&&(event.key==='Enter'||event.key===' ')){event.preventDefault();event.stopPropagation();onPort({nodeId:id,portId:port.id,direction});}}}/>
+   <button disabled={port.legacy} className="logic-port-name nodrag" aria-describedby={tip} aria-label={`${direction==='output'?'Выход':'Вход'}: ${title} / ${port.name}`} onClick={event=>{event.stopPropagation();onPort({nodeId:id,portId:port.id,direction});}}><span className="port-type-dot"/><span className="port-label-copy">{port.name}</span></button>
+   <div className="port-tooltip" id={tip} role="tooltip"><strong>{port.name} · {port.legacy?'Старая связь':TYPE_NAMES[port.type]}</strong>{port.description}<PortValueStates port={port}/>{port.reason&&<em>{port.reason}</em>}</div>
   </div>;
  }
  return <article className={`logic-node ${selected?'node-selected':''} ${issueCount?'node-invalid':''}`} style={{'--node-color':definition?.color||'#fb7185'}}>
@@ -36,6 +37,7 @@ function LogicNode({id,data,selected}){
   <div className="logic-node-summary" title={summary}>{summary}</div>
   {definition?.editor==='screen'&&display&&<><div className="logic-display-preview nodrag" title="Двойное нажатие открывает редактор экрана"><ScreenPreview display={display} screen={screen||{background:'#000000',elements:[]}}/></div>{screen?.elements.some(element=>element.mode==='dynamic'||element.captionDynamic)&&<button className="node-bind-button nodrag" disabled={data.busy} onClick={()=>onBindData(node)}><Link2 size={13}/>Подключить данные</button>}</>}
   {extraCount>0&&<p className="panel-note">Ещё контакты: {extraCount}. Откройте свойства блока.</p>}
+  {node.legacy&&<p className="panel-note">{node.legacy}</p>}
   {!definition&&<p className="logic-missing">Точная версия модуля отсутствует в библиотеке.</p>}
   <div className="logic-ports">{Array.from({length:rows},(_,index)=><div className={'logic-port-row'+(!inputs[index]||!outputs[index]?' single-port-row':'')} key={index}>{inputs[index]&&portView(inputs[index],'input')}{outputs[index]&&portView(outputs[index],'output')}</div>)}</div>
  </article>;

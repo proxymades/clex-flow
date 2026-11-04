@@ -16,6 +16,7 @@ export function useProjects() {
   const [loading, setLoading] = useState(true), [busy, setBusy] = useState(false);
   const [error, setError] = useState(''), [damaged, setDamaged] = useState([]);
   const [notice, setNotice] = useState(''), [path, setPath] = useState('');
+  const [conversionNotices,setConversionNotices] = useState([]);
   const [autoState, setAutoState] = useState(autoSaveEnabled ? 'idle' : 'disabled'), [autoSaving, setAutoSaving] = useState(false);
   const activeRef = useRef(null), projectsRef = useRef([]), inFlight = useRef(false), autoInFlight = useRef(0);
   const timer = useRef(null), generation = useRef(0), paused = useRef(false), interacting = useRef(false), live = useRef(true);
@@ -34,7 +35,7 @@ export function useProjects() {
     live.current = true;
     let current = true;
     Promise.all([storage.listProjects(), storage.storagePath()]).then(([data, path]) => {
-      if (current) { projectsRef.current = sortedProjects(data.projects); setProjects(projectsRef.current); setDamaged(data.errors); setPath(path); }
+      if (current) { projectsRef.current = sortedProjects(data.projects); setProjects(projectsRef.current); setDamaged(data.errors); setConversionNotices(data.notices || []); setPath(path); }
     }).catch(error => { if (current) setError(String(error.message || error)); }).finally(() => { if (current) setLoading(false); });
     return () => { current = false; live.current = false; cancelAuto(); };
   }, [cancelAuto]);
@@ -139,10 +140,13 @@ export function useProjects() {
     setNotice('Проект удален'); return true;
   });
   const openFile = () => run(async () => {
-    let project = await storage.importProject();
-    if (!project) return false;
+    const imported = await storage.importProject();
+    if (!imported) return false;
+    let project = imported.project;
     project = { ...project, id: crypto.randomUUID() };
-    project = await persist(project); setActive(project); setNotice('Локальная копия проекта открыта'); return true;
+    project = await persist(project); setActive(project); setNotice(imported.notice);
+    if (imported.conversionNotice) setConversionNotices(previous => [...previous,imported.conversionNotice]);
+    return true;
   });
   const exportFile = () => run(async () => {
     if (!activeRef.current) return false;
@@ -161,7 +165,7 @@ export function useProjects() {
       if (!selected) return false;
       setPath(selected);
       const data = await storage.listProjects();
-      projectsRef.current = sortedProjects(data.projects); setProjects(projectsRef.current); setDamaged(data.errors);
+      projectsRef.current = sortedProjects(data.projects); setProjects(projectsRef.current); setDamaged(data.errors); setConversionNotices(data.notices || []);
       setAutoState(autoEnabled.current ? 'saved' : 'disabled');
       setNotice('Папка проектов изменена. Исходные файлы сохранены в прежней папке.');
       return true;
@@ -170,5 +174,5 @@ export function useProjects() {
       if (!wasPaused) armAuto(activeRef.current);
     }
   });
-  return { projects, active, setActive, loading, busy, error, setError, damaged, notice, path, dirty, changeDirectory, create, save, rename, remove, openFile, exportFile, updateLogic, setInteracting, autoSaveEnabled, setAutoSaveEnabled, autoState, autoSaving, isWriting, pauseAutosave, resumeAutosave };
+  return { projects, active, setActive, loading, busy, error, setError, damaged, notice, path, conversionNotices, dirty, changeDirectory, create, save, rename, remove, openFile, exportFile, updateLogic, setInteracting, autoSaveEnabled, setAutoSaveEnabled, autoState, autoSaving, isWriting, pauseAutosave, resumeAutosave };
 }

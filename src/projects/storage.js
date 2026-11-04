@@ -1,49 +1,36 @@
 import { invoke, isTauri } from '@tauri-apps/api/core';
-import { parseProject, serializeProject, MAX_PROJECT_BYTES } from './model.js';
+import { serializeProject, MAX_PROJECT_BYTES } from './model.js';
+
+import {catalog} from '../catalog/index.js';
+import {PROJECT_KEY, browserRecords, backupBrowserProject, saveBrowserProject} from './browserStorage.js';
+import {loadProjectFiles, readImportedProject} from './projectFiles.js';
 
 export const desktop = isTauri();
-const KEY = 'clex-flow:projects:v1';
-
-function browserRecords() {
-  const raw = localStorage.getItem(KEY);
-  if (!raw) return {};
-  let records;
-  try { records = JSON.parse(raw); } catch { throw new Error('Хранилище предпросмотра повреждено. Данные сохранены без изменений.'); }
-  if (!records || typeof records !== 'object' || Array.isArray(records)) throw new Error('Некорректное хранилище предпросмотра.');
-  return records;
-}
 
 export async function listProjects() {
   const files = desktop ? await invoke('list_projects') : Object.entries(browserRecords()).map(([id, contents]) => ({ id, contents }));
-  const projects = [], errors = [];
-  for (const file of files) {
-    try {
-      if (file.error) throw new Error(file.error);
-      const project = parseProject(file.contents);
-      if (project.id !== file.id) throw new Error('ID проекта не совпадает с именем файла.');
-      projects.push(project);
-    } catch (error) { errors.push(`${file.id}: ${error.message}`); }
-  }
-  return { projects, errors };
+  return loadProjectFiles(files,catalog,(id,original,contents) => desktop
+    ? invoke('upgrade_project',{id,original,contents})
+    : saveBrowserProject(id,contents,original));
 }
 
 export async function saveProject(project) {
   const contents = serializeProject(project);
   if (desktop) return invoke('save_project', { id: project.id, contents });
-  localStorage.setItem(KEY, JSON.stringify({ ...browserRecords(), [project.id]: contents }));
+  return saveBrowserProject(project.id,contents);
 }
 
 export async function deleteProject(id) {
   if (desktop) return invoke('delete_project', { id });
   const records = browserRecords();
   delete records[id];
-  localStorage.setItem(KEY, JSON.stringify(records));
+  localStorage.setItem(PROJECT_KEY, JSON.stringify(records));
 }
 
 export async function importProject() {
   if (desktop) {
     const contents = await invoke('import_project');
-    return contents === null ? null : parseProject(contents);
+    return contents === null ? null : readImportedProject(contents,catalog,contents => invoke('backup_project',{contents}));
   }
   return new Promise((resolve, reject) => {
     const input = document.createElement('input');
@@ -54,7 +41,7 @@ export async function importProject() {
       if (!file) return resolve(null);
       try {
         if (file.size > MAX_PROJECT_BYTES) throw new Error('Размер проекта превышает 2 МБ.');
-        resolve(parseProject(await file.text()));
+        resolve(await readImportedProject(await file.text(),catalog,backupBrowserProject));
       } catch (error) { reject(error); }
     }, { once: true });
     input.click();

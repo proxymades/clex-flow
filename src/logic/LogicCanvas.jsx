@@ -69,16 +69,16 @@ export default function LogicCanvas({ project, catalog, history, selection, setS
     const selected = new Set(selection.edges), errors = new Set(issues.filter(issue => issue.severity === 'error').map(issue => issue.edgeId));
     const colors = logicEdgeColors(project.logic.edges), selectedNodes = new Set(selection.nodes);
     const hasFocus = selected.size > 0 || selectedNodes.size > 0;
-    const portLabel = (nodeId, handleId, direction) => {
+    const portLabel = (nodeId, handleId, direction, legacyLabel) => {
       const node = project.logic.nodes.find(item => item.id === nodeId);
       if (!node) return handleId;
       const port = nodePorts(node, catalog, project)[direction].find(item => item.id === handleId);
-      return `${nodeDisplayName(node, project, catalog)}: ${port ? presentPort(port, node, project, catalog).name : handleId}`;
+      return `${nodeDisplayName(node, project, catalog)}: ${legacyLabel || (port ? presentPort(port, node, project, catalog).name : handleId)}`;
     };
     return project.logic.edges.map(edge => {
       const focused = selected.has(edge.id) || selectedNodes.has(edge.source) || selectedNodes.has(edge.target);
       const color = errors.has(edge.id) ? '#fb7185' : colors[edge.id];
-      return { ...edge, type: 'default', selected: selected.has(edge.id), ariaLabel: `Связь: ${portLabel(edge.source, edge.sourceHandle, 'outputs')} → ${portLabel(edge.target, edge.targetHandle, 'inputs')}`, style: { stroke: color, strokeWidth: focused ? 3 : 2, strokeDasharray: edge.dataType === 'event' ? '7 4' : undefined, opacity: hasFocus && !focused ? 0.25 : 1 }, markerEnd: { type: MarkerType.ArrowClosed, color, width: 16, height: 16 } };
+      return { ...edge, type: 'default', selected: selected.has(edge.id), ariaLabel: `${edge.legacy?'Старая связь':'Связь'}: ${portLabel(edge.source, edge.sourceHandle, 'outputs',edge.legacy?.sourceName)} → ${portLabel(edge.target, edge.targetHandle, 'inputs',edge.legacy?.targetName)}`, style: { stroke: color, strokeWidth: focused ? 3 : 2, strokeDasharray: edge.dataType === 'event' ? '7 4' : undefined, opacity: hasFocus && !focused ? 0.25 : 1 }, markerEnd: { type: MarkerType.ArrowClosed, color, width: 16, height: 16 } };
     });
   }, [project, catalog, selection.edges, selection.nodes, issues]);
   const commitPositions = useCallback(updates => {
