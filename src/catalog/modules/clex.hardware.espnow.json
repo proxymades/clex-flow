@@ -9,7 +9,6 @@
   "icon": "Radio",
   "color": "#f472b6",
   "visual": {
-    "svg": "espnow.svg",
     "width": 230,
     "height": 160
   },

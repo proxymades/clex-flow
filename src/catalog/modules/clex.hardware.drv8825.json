@@ -9,7 +9,6 @@
   "icon": "RotateCw",
   "color": "#f59e0b",
   "visual": {
-    "svg": "stepper-driver.svg",
     "width": 290,
     "height": 335
   },

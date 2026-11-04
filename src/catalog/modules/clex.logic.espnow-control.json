@@ -28,8 +28,7 @@
       "when": {
         "field": "action",
         "value": "peer"
-      },
-      "additional": true
+      }
     }
   ],
   "outputs": [
@@ -92,7 +91,6 @@
       "type": "number",
       "description": "Число принятых драйвером попыток передачи сообщений и команд.",
       "readyOn": "changed",
-      "additional": true,
       "when": {
         "field": "action",
         "value": "status"
@@ -104,7 +102,6 @@
       "type": "number",
       "description": "Принятые уникальные сообщения и команды от разрешенных устройств.",
       "readyOn": "changed",
-      "additional": true,
       "when": {
         "field": "action",
         "value": "status"
@@ -116,7 +113,6 @@
       "type": "number",
       "description": "Обмены, для которых после повторов не получено подтверждение. Это не измерение всех потерянных радиопакетов.",
       "readyOn": "changed",
-      "additional": true,
       "when": {
         "field": "action",
         "value": "status"
@@ -128,7 +124,6 @@
       "type": "text",
       "description": "Причина последней ошибки обмена или настройки.",
       "readyOn": "changed",
-      "additional": true,
       "when": {
         "field": "action",
         "value": "status"
@@ -160,7 +155,6 @@
       "type": "text",
       "description": "Ошибка настройки радио или сохранения режима.",
       "readyOn": "failed",
-      "additional": true,
       "when": {
         "field": "action",
         "value": "mode"
@@ -174,8 +168,7 @@
       "when": {
         "field": "action",
         "value": "peer"
-      },
-      "additional": true
+      }
     },
     {
       "id": "connected",
@@ -243,8 +236,7 @@
       "when": {
         "field": "action",
         "value": "peer"
-      },
-      "additional": true
+      }
     },
     {
       "id": "rssiText",
@@ -266,8 +258,7 @@
       "when": {
         "field": "action",
         "value": "peer"
-      },
-      "additional": true
+      }
     },
     {
       "id": "testReceived",
@@ -278,8 +269,7 @@
       "when": {
         "field": "action",
         "value": "peer"
-      },
-      "additional": true
+      }
     },
     {
       "id": "testLost",
@@ -290,8 +280,7 @@
       "when": {
         "field": "action",
         "value": "peer"
-      },
-      "additional": true
+      }
     },
     {
       "id": "lossPercent",
@@ -302,8 +291,7 @@
       "when": {
         "field": "action",
         "value": "peer"
-      },
-      "additional": true
+      }
     },
     {
       "id": "statisticsText",
@@ -322,7 +310,6 @@
       "type": "number",
       "description": "Отправленные проверочные пакеты после последнего отчета. Их доставка пока неизвестна; они не включены в потери.",
       "readyOn": "peerChanged",
-      "additional": true,
       "when": {
         "field": "action",
         "value": "peer"
@@ -334,7 +321,6 @@
       "type": "number",
       "description": "Проверки, которые местный драйвер не принял к отправке. Не включены в число переданных или потерянных пакетов.",
       "readyOn": "peerChanged",
-      "additional": true,
       "when": {
         "field": "action",
         "value": "peer"
@@ -349,8 +335,7 @@
       "when": {
         "field": "action",
         "value": "peer"
-      },
-      "additional": true
+      }
     }
   ],
   "parameters": {

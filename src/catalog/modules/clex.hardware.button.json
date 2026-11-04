@@ -28,10 +28,9 @@
   "category": "input",
   "categoryName": "Кнопки",
   "description": "Нормально разомкнутая кнопка: GPIO ↔ GND, внутренняя подтяжка вверх.",
-  "icon": "MousePointer2",
+  "icon": "MousePointerClick",
   "color": "#8B5CF6",
   "visual": {
-    "svg": "button.svg",
     "width": 230,
     "height": 185
   },

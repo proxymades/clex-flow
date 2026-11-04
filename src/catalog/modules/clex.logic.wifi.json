@@ -14,7 +14,6 @@
       "name": "Обновить состояние",
       "type": "event",
       "required": false,
-      "additional": true,
       "description": "Запускает действие «Обновить состояние»."
     },
     {
@@ -22,7 +21,6 @@
       "name": "Подключиться",
       "type": "event",
       "required": false,
-      "additional": false,
       "description": "Запускает действие «Подключиться»."
     },
     {
@@ -30,7 +28,6 @@
       "name": "Отключиться",
       "type": "event",
       "required": false,
-      "additional": false,
       "description": "Запускает действие «Отключиться»."
     },
     {
@@ -38,7 +35,6 @@
       "name": "Переподключиться",
       "type": "event",
       "required": false,
-      "additional": false,
       "description": "Запускает действие «Переподключиться»."
     }
   ],
@@ -48,7 +44,6 @@
       "name": "Данные сети обновлены",
       "type": "event",
       "required": false,
-      "additional": true,
       "description": "Сигнал: Данные сети обновлены."
     },
     {
@@ -56,7 +51,6 @@
       "name": "IP-адрес получен",
       "type": "event",
       "required": false,
-      "additional": false,
       "description": "Сеть доступна и IP-адрес получен."
     },
     {
@@ -64,7 +58,6 @@
       "name": "Сеть отключена",
       "type": "event",
       "required": false,
-      "additional": false,
       "description": "Сигнал: Соединение потеряно."
     },
     {
@@ -72,7 +65,6 @@
       "name": "IP-адрес обновлен",
       "type": "event",
       "required": false,
-      "additional": true,
       "description": "Сигнал: IP-адрес обновлен."
     },
     {
@@ -80,7 +72,6 @@
       "name": "Ошибка подключения",
       "type": "event",
       "required": false,
-      "additional": false,
       "description": "Сигнал: Ошибка подключения."
     },
     {
@@ -88,7 +79,6 @@
       "name": "Состояние подключения",
       "type": "number",
       "required": false,
-      "additional": false,
       "description": "Передаёт число: Состояние подключения.",
       "readyOn": "changed",
       "valueStates": {
@@ -128,7 +118,6 @@
       "name": "IP-адрес устройства",
       "type": "text",
       "required": false,
-      "additional": false,
       "description": "Передаёт текст: IP-адрес устройства.",
       "readyOn": "changed"
     },
@@ -137,7 +126,6 @@
       "name": "Маска подсети",
       "type": "text",
       "required": false,
-      "additional": true,
       "description": "Передаёт текст: Маска подсети.",
       "readyOn": "changed"
     },
@@ -146,7 +134,6 @@
       "name": "Шлюз",
       "type": "text",
       "required": false,
-      "additional": true,
       "description": "Передаёт текст: Шлюз.",
       "readyOn": "changed"
     },
@@ -155,7 +142,6 @@
       "name": "DNS-сервер",
       "type": "text",
       "required": false,
-      "additional": true,
       "description": "Передаёт текст: DNS-сервер.",
       "readyOn": "changed"
     },
@@ -164,7 +150,6 @@
       "name": "Код причины отключения",
       "type": "number",
       "required": false,
-      "additional": true,
       "description": "Передаёт число: Код причины отключения.",
       "readyOn": "changed"
     },
@@ -173,7 +158,6 @@
       "name": "Ошибка подключения",
       "type": "text",
       "required": false,
-      "additional": true,
       "description": "Передаёт текст: Ошибка подключения.",
       "readyOn": "changed"
     }

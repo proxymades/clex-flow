@@ -28,35 +28,30 @@
       "name": "ID команды",
       "type": "text",
       "readyOn": "recognized",
-      "additional": true,
       "description": "Передаёт текст: ID команды."
     },
     {
       "id": "activated",
       "name": "Активация",
       "type": "event",
-      "additional": true,
       "description": "Сигнал: Активация."
     },
     {
       "id": "uncertain",
       "name": "Повторить команду",
       "type": "event",
-      "additional": true,
       "description": "Срабатывает, когда команда неизвестна или распознана неуверенно во время приёма команд. Можно подключить блок «Воспроизвести запись» с просьбой повторить."
     },
     {
       "id": "closed",
       "name": "Окно закрыто",
       "type": "event",
-      "additional": true,
       "description": "Сигнал: Окно закрыто."
     },
     {
       "id": "failed",
       "name": "Ошибка",
       "type": "event",
-      "additional": true,
       "description": "Сигнал: Ошибка."
     },
     {
@@ -64,7 +59,6 @@
       "name": "Описание ошибки",
       "type": "text",
       "readyOn": "failed",
-      "additional": true,
       "description": "Передаёт текст: Описание ошибки."
     }
   ],

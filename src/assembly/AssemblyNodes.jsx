@@ -1,3 +1,4 @@
+import ModuleIcon from '../components/ModuleIcon.jsx';
 import {isMosfet,mosfetChannelCount} from '../mosfet/model.js';
 import {relayChannelCount} from '../relay/model.js';
 import {formatCount} from '../utils/plural.js';
@@ -51,7 +52,7 @@ function HardwareNode({ id, data }) {
       <rect x="0" y={14 + headerOffset} width="3" height="29" rx="1" fill={module?.color || '#fb7185'} />
       <text x="16" y={30 + headerOffset} fill="#e2e8f0" fontSize="12" fontWeight="550">{component.name.length > 28 ? component.name.slice(0, 27) + '…' : component.name}</text>
       <text x="16" y={49 + headerOffset} fill="#72869f" fontSize="8" fontFamily="monospace">{module?.id==='clex.hardware.relay'||isMosfet(component)?formatCount(isMosfet(component)?mosfetChannelCount(component):relayChannelCount(component),['канал','канала','каналов'])+' · '+String(component.parameters.activeLevel||'').toUpperCase()+' / v'+component.moduleVersion:module ? module.categoryName.toUpperCase() + ' / v' + component.moduleVersion : 'МОДУЛЬ НЕ УСТАНОВЛЕН'}</text>
-      {module && <image href={getAsset(module.visual.svg)} x={(width - 180) / 2} y={57 + headerOffset} width="180" height="56" />}
+      <ModuleIcon name={module?.icon} x={(width - 48) / 2} y={61 + headerOffset} size={48} strokeWidth={1.5} color={module?.color || '#94a3b8'} className="component-icon" aria-hidden="true" />
       {terminals.map(({ terminal, pin, active, candidate, color, connected }) => {
         const vertical = terminal.side === 'top' || terminal.side === 'bottom';
         const labelY = terminal.side === 'top' ? 14 : terminal.side === 'bottom' ? height - 24 : terminal.y + (splitSides?-3:3);

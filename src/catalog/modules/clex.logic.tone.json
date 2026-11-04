@@ -14,8 +14,7 @@
       "name": "Воспроизвести",
       "type": "event",
       "required": true,
-      "description": "Запускает действие при получении сигнала.",
-      "additional": false
+      "description": "Запускает действие при получении сигнала."
     }
   ],
   "outputs": [
@@ -23,21 +22,18 @@
       "id": "changed",
       "name": "Результат обновлен",
       "type": "event",
-      "description": "Передает сигнал после завершения действия или ошибки.",
-      "additional": true
+      "description": "Передает сигнал после завершения действия или ошибки."
     },
     {
       "id": "done",
       "name": "Звук завершен",
       "type": "event",
-      "additional": false,
       "description": "Срабатывает после успешного выполнения."
     },
     {
       "id": "failed",
       "name": "Ошибка",
       "type": "event",
-      "additional": false,
       "description": "Срабатывает, если действие выполнить не удалось."
     },
     {
@@ -45,7 +41,6 @@
       "name": "Описание ошибки",
       "type": "text",
       "readyOn": "changed",
-      "additional": true,
       "description": "Сообщение об ошибке подключения или выполнения."
     }
   ],

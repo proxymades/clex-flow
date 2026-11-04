@@ -14,16 +14,14 @@
       "name": "Изменить число",
       "type": "event",
       "required": true,
-      "description": "Изменяет число на настроенный шаг при получении сигнала.",
-      "additional": false
+      "description": "Изменяет число на настроенный шаг при получении сигнала."
     },
     {
       "id": "reset",
       "name": "Вернуть начальное число",
       "type": "event",
       "required": false,
-      "description": "Возвращает счетчик к числу из настройки «Начальное число».",
-      "additional": true
+      "description": "Возвращает счетчик к числу из настройки «Начальное число»."
     }
   ],
   "outputs": [
@@ -32,8 +30,7 @@
       "name": "Счетчик обновлен",
       "type": "event",
       "required": false,
-      "description": "Сигнал после шага или сброса. Число может остаться прежним.",
-      "additional": false
+      "description": "Сигнал после шага или сброса. Число может остаться прежним."
     },
     {
       "id": "value",
@@ -42,7 +39,6 @@
       "readyOn": "done",
       "required": false,
       "description": "Передает текущее число счетчика другому блоку.",
-      "additional": false,
       "bindingLabel": "Показывать значение счетчика"
     }
   ],

@@ -31,7 +31,6 @@
   "icon": "Lightbulb",
   "color": "#34D399",
   "visual": {
-    "svg": "led.svg",
     "width": 230,
     "height": 185
   },

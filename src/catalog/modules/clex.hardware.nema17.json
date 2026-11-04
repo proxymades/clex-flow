@@ -9,7 +9,6 @@
   "icon": "RotateCw",
   "color": "#f59e0b",
   "visual": {
-    "svg": "nema17.svg",
     "width": 290,
     "height": 265
   },

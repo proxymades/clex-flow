@@ -1,9 +1,8 @@
-import MicAudioLines from '../components/MicAudioLines.jsx';
+import ModuleIcon from '../components/ModuleIcon.jsx';
 import { formatCount } from '../utils/plural.js';
 import { useState } from 'react';
-import { Mic, GitBranch, Gauge, Wifi, ToggleRight, RotateCw, Cpu, Search, Lightbulb, MousePointer2, Monitor, Timer, ScanLine, ArrowUpRight, Repeat2, Terminal, Hash, Box , Network, Globe , Camera, Volume2, Radio, Thermometer } from 'lucide-react';
+import { Search } from 'lucide-react';
 import Modal from '../components/Modal.jsx';
-const icons = { MicAudioLines, Mic, GitBranch, Gauge, Wifi, ToggleRight, RotateCw, Lightbulb, MousePointer2, Monitor, Timer, ScanLine, ArrowUpRight, Repeat2, Terminal, Hash, Network, Globe, Camera,Volume2,Radio,Thermometer };
 const kinds = { hardware: 'Аппаратные компоненты', logic: 'Блоки логики', board: 'Платы' };
 export default function LibraryDialog({ catalog, onClose }) {
   const [kind, setKind] = useState('hardware'), [query, setQuery] = useState('');
@@ -14,10 +13,9 @@ export default function LibraryDialog({ catalog, onClose }) {
     <label className="search library-catalog-search"><Search size={16} /><input aria-label="Поиск в библиотеке" placeholder="Название, производитель или категория" value={query} onChange={event => setQuery(event.target.value)} /></label>
     <div className="library-catalog-results" role="tabpanel" aria-label={kinds[kind]}>
       {visible.map(item => {
-        const Icon = kind === 'board' ? Cpu : icons[item.icon] || Box;
         const controller = item.display && catalog.controllers.find(controller => controller.id === item.display.controllerId);
         return <article className="library-catalog-card" key={item.id}>
-          <header><span style={{ color: item.color || '#a78bfa' }}><Icon size={23} /></span><div><h3>{item.name}</h3><small>{item.manufacturer || item.categoryName || item.mcu}</small></div></header>
+          <header><span style={{ color: item.color || '#a78bfa' }}><ModuleIcon name={kind === 'board' ? 'Cpu' : item.icon} size={23} /></span><div><h3>{item.name}</h3><small>{item.manufacturer || item.categoryName || item.mcu}</small></div></header>
           <p>{kind === 'board' ? `${item.mcu} · ${formatCount(item.pins.length, ['физический контакт', 'физических контакта', 'физических контактов'])}` : item.description}</p>
           {item.display && <div className="library-catalog-details"><span>{controller?.name || item.display.controllerId}</span><span>{item.display.interface.toUpperCase()}</span><span>{item.display.resolution.width} × {item.display.resolution.height}</span></div>}
           {kind === 'hardware' && <div className="library-catalog-details">{item.terminals.map(terminal => <span key={terminal.id}>{terminal.label}</span>)}</div>}

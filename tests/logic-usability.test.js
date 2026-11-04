@@ -5,7 +5,7 @@ import {dynamicDisplayProject} from './dynamic-display-fixture.js';
 import {networkProject} from './network-fixture.js';
 import {presentPort,visiblePorts,friendlyConnectionProblem} from '../src/logic/presentation.js';
 import {displaySources,planDisplayBinding,connectDisplayData} from '../src/logic/displayBindings.js';
-import {connectNodes,validateGraph,withLogic} from '../src/logic/model.js';
+import {connectNodes,validateGraph,withLogic,nodePorts} from '../src/logic/model.js';
 import {generateFirmware} from '../src/firmware/generator.js';
 import {parseProject,serializeProject} from '../src/projects/model.js';
 const view=p=>p.logic.nodes.find(n=>n.moduleId==='clex.logic.display');
@@ -17,17 +17,24 @@ test('counter step labels match signed and zero steps without changing IDs or pr
  const p=dynamicDisplayProject(),node=count(p),port=catalog.modules.find(m=>m.id===node.moduleId).inputs[0];
  for(const [step,name] of [[1,'Прибавить 1'],[5,'Прибавить 5'],[-2,'Вычесть 2'],[0,'Применить шаг 0']]){node.parameters.step=step;const before=serializeProject(p),shown=presentPort(port,node,p,catalog);assert.equal(shown.name,name);assert.equal(shown.id,'increment');assert.equal(shown.type,'event');assert.equal(serializeProject(p),before);}
 });
-test('additional contacts stay hidden until enabled or connected and then survive serialization',()=>{
- let p=dynamicDisplayProject();assert.equal(visiblePorts(count(p),p,catalog).inputs.find(p=>p.id==='reset').hidden,true);
- count(p).showAdditionalPorts=true;assert.equal(visiblePorts(count(p),p,catalog).inputs.find(p=>p.id==='reset').hidden,false);count(p).showAdditionalPorts=false;
- const clock=p.logic.nodes.find(n=>n.moduleId===timer.id);p=withLogic(p,connectNodes(p.logic,catalog,{source:clock.id,sourceHandle:'tick',target:count(p).id,targetHandle:'reset'},p));
- p=parseProject(serializeProject(p));assert.equal(visiblePorts(count(p),p,catalog).inputs.find(p=>p.id==='reset').hidden,false);
+test('all contacts are visible before connecting and after reopening, regardless of old visibility settings',()=>{
+ for(const fixture of [dynamicDisplayProject,networkProject])for(const flag of [undefined,false,true]){
+  let p=fixture();for(const node of p.logic.nodes)if(flag!==undefined)node.showAdditionalPorts=flag;
+  p=parseProject(serializeProject(p));
+  for(const node of p.logic.nodes){
+   const shown=visiblePorts(node,p,catalog),available=nodePorts(node,catalog,p);
+   for(const direction of ['inputs','outputs']){
+    assert.deepEqual(shown[direction].map(port=>port.id),available[direction].map(port=>port.id));
+    assert.ok(shown[direction].every(port=>!port.hidden));
+   }
+  }
+ }
 });
 test('all outputs remain visible and compatible contacts have a plain reason',()=>{
  const p=dynamicDisplayProject(),clock=p.logic.nodes.find(n=>n.moduleId===timer.id),binding=screen(p).elements[1];
  p.logic.edges=p.logic.edges.filter(edge=>edge.targetHandle!==binding.id);
  const ports=visiblePorts(clock,p,catalog,{connection:{nodeId:view(p).id,portId:binding.id,direction:'input'}});
- assert.equal(ports.outputs.find(port=>port.id==='interval').compatible,true);assert.equal(ports.outputs.find(port=>port.id==='interval').hidden,false);
+ assert.equal(ports.outputs.find(port=>port.id==='interval').compatible,true);assert.ok(ports.outputs.find(port=>port.id==='interval'));
  assert.match(friendlyConnectionProblem(p,catalog,{source:clock.id,sourceHandle:'tick',target:view(p).id,targetHandle:binding.id}),/принимает число.*передает сигнал/);
 });
 test('counter helper creates value and ready event together and is idempotent',()=>{

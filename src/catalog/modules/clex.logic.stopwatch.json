@@ -51,7 +51,6 @@
       "name": "Прошло секунд",
       "type": "number",
       "readyOn": "changed",
-      "additional": true,
       "description": "Количество полных секунд для других блоков."
     }
   ],

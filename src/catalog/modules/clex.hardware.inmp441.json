@@ -10,8 +10,7 @@
     "width": 300,
     "height": 285,
     "terminalStartY": 130,
-    "terminalPitch": 42,
-    "svg": "inmp441.svg"
+    "terminalPitch": 42
   },
   "inputs": [],
   "outputs": [],

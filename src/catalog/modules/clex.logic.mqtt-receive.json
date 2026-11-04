@@ -25,15 +25,13 @@
       "id": "subscribe",
       "name": "Подписаться",
       "type": "event",
-      "description": "Включает все подписки из настроек блока.",
-      "additional": false
+      "description": "Включает все подписки из настроек блока."
     },
     {
       "id": "unsubscribe",
       "name": "Отписаться",
       "type": "event",
-      "description": "Удаляет подписки этого блока, сохраняя подписки других блоков.",
-      "additional": false
+      "description": "Удаляет подписки этого блока, сохраняя подписки других блоков."
     }
   ],
   "outputs": [
@@ -41,84 +39,73 @@
       "id": "received",
       "name": "Получено",
       "type": "event",
-      "description": "Сигнал: Получено.",
-      "additional": false
+      "description": "Сигнал: Получено."
     },
     {
       "id": "subscribed",
       "name": "Подписки подтверждены",
       "type": "event",
-      "description": "Сигнал: Подписки подтверждены.",
-      "additional": true
+      "description": "Сигнал: Подписки подтверждены."
     },
     {
       "id": "unsubscribed",
       "name": "Отписка подтверждена",
       "type": "event",
-      "description": "Сигнал: Отписка подтверждена.",
-      "additional": true
+      "description": "Сигнал: Отписка подтверждена."
     },
     {
       "id": "failed",
       "name": "Ошибка",
       "type": "event",
-      "description": "Сигнал: Ошибка.",
-      "additional": false
+      "description": "Сигнал: Ошибка."
     },
     {
       "id": "topic",
       "name": "Тема сообщения",
       "type": "text",
       "description": "Topic полученного сообщения.",
-      "readyOn": "received",
-      "additional": false
+      "readyOn": "received"
     },
     {
       "id": "payload",
       "name": "Текст сообщения",
       "type": "text",
       "description": "Payload в выбранной кодировке: текст UTF-8, Base64 или HEX.",
-      "readyOn": "received",
-      "additional": false
+      "readyOn": "received"
     },
     {
       "id": "qos",
       "name": "QoS",
       "type": "number",
       "description": "Передаёт число: QoS.",
-      "readyOn": "received",
-      "additional": true
+      "readyOn": "received"
     },
     {
       "id": "messageId",
       "name": "ID сообщения",
       "type": "number",
       "description": "Передаёт число: ID сообщения.",
-      "readyOn": "received",
-      "additional": true
+      "readyOn": "received"
     },
     {
       "id": "error",
       "name": "Описание ошибки",
       "type": "text",
       "description": "Передаёт текст: Описание ошибки.",
-      "readyOn": "failed",
-      "additional": true
+      "readyOn": "failed"
     },
     {
       "id": "reasonCode",
       "name": "Код причины",
       "type": "number",
-      "description": "Передаёт число: Код причины.",
-      "additional": true
+      "description": "Передаёт число: Код причины."
     },
     {
       "id": "properties",
       "name": "Свойства MQTT 5 (JSON)",
       "type": "text",
       "description": "Content Type, Response Topic, Correlation Data и User Properties полученного сообщения.",
-      "readyOn": "received",
-      "additional": true
+      "readyOn": "received"
     }
   ],
   "parameters": {

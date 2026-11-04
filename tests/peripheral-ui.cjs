@@ -1,4 +1,4 @@
-/* global document, Image */
+/* global document */
 const assert=require('node:assert/strict');
 const {chromium}=require('playwright');
 (async()=>{
@@ -31,10 +31,11 @@ const {chromium}=require('playwright');
   await page.getByRole('button',{name:'Добавить: 10.1″ DSI Touch (A) · 800×1280',exact:true}).click();
   assert.equal(await page.getByRole('combobox',{name:'Разъем дисплея',exact:true}).inputValue(),'mipi-display');await selectedVisible();
 
-  const imageErrors=await page.locator('.assembly-hardware-node image').evaluateAll(images=>Promise.all(images.map(image=>new Promise(resolve=>{
-   const probe=new Image();probe.onload=()=>resolve(null);probe.onerror=()=>resolve(image.href.baseVal.slice(0,80));probe.src=image.href.baseVal;
-  }))));
-  assert.deepEqual(imageErrors.filter(Boolean),[],'hardware SVG images load successfully');
+  const components=await page.locator('.assembly-hardware-node').count();
+  assert.ok(components>=3);
+  assert.equal(await page.locator('.assembly-hardware-node .component-icon').count(),components,'every component uses its library icon');
+  assert.equal(await page.locator('.assembly-hardware-node image').count(),0);
+  assert.equal(await page.locator('.assembly-board-node image.board-drawing').count(),1,'the board retains its SVG drawing');
 
   await page.screenshot({path:'.artifacts/p4-redraw/new-component-visible.png'});
   const power=page.getByRole('combobox',{name:'Подключение: Питание · 5 В',exact:true});await power.selectOption('P1-2');await page.getByRole('combobox',{name:'Подключение: GND',exact:true}).selectOption('P1-9');

@@ -14,8 +14,7 @@ const icons={ MicAudioLines, Mic, Gauge, Wifi, ToggleRight, RotateCw,Timer,ScanL
 function LogicNode({id,data,selected}){
  const {definition,node,binding,issueCount,onPort,pending,display,screen,project,catalog,connection,onBindData}=data;
  const ports=visiblePorts(node,project,catalog,{connection});
- const inputs=ports.inputs.filter(port=>!port.hidden),outputs=ports.outputs.filter(port=>!port.hidden),rows=Math.max(inputs.length,outputs.length);
- const extraCount=ports.inputs.concat(ports.outputs).filter(port=>port.hidden).length;
+ const inputs=ports.inputs,outputs=ports.outputs,rows=Math.max(inputs.length,outputs.length);
  const layout=JSON.stringify([inputs,outputs].map(items=>items.map(port=>[port.id,port.name])));
  const updateNodeInternals=useUpdateNodeInternals();useEffect(()=>{updateNodeInternals(id);},[id,layout,updateNodeInternals]);
  const Icon=icons[definition?.icon]||Box;
@@ -36,7 +35,6 @@ function LogicNode({id,data,selected}){
   <header className="logic-drag-handle"><span className="logic-node-icon"><Icon size={19}/></span><div><strong title={title}>{title}</strong><small>{definition?.categoryName||'Модуль не установлен'} · v{node.moduleVersion}</small></div>{issueCount>0&&<span className="node-issue-count" title={formatCount(issueCount, ['ошибка', 'ошибки', 'ошибок'])}><TriangleAlert size={12}/>{issueCount}</span>}</header>
   <div className="logic-node-summary" title={summary}>{summary}</div>
   {definition?.editor==='screen'&&display&&<><div className="logic-display-preview nodrag" title="Двойное нажатие открывает редактор экрана"><ScreenPreview display={display} screen={screen||{background:'#000000',elements:[]}}/></div>{screen?.elements.some(element=>element.mode==='dynamic'||element.captionDynamic)&&<button className="node-bind-button nodrag" disabled={data.busy} onClick={()=>onBindData(node)}><Link2 size={13}/>Подключить данные</button>}</>}
-  {extraCount>0&&<p className="panel-note">Ещё контакты: {extraCount}. Откройте свойства блока.</p>}
   {node.legacy&&<p className="panel-note">{node.legacy}</p>}
   {!definition&&<p className="logic-missing">Точная версия модуля отсутствует в библиотеке.</p>}
   <div className="logic-ports">{Array.from({length:rows},(_,index)=><div className={'logic-port-row'+(!inputs[index]||!outputs[index]?' single-port-row':'')} key={index}>{inputs[index]&&portView(inputs[index],'input')}{outputs[index]&&portView(outputs[index],'output')}</div>)}</div>

@@ -15,8 +15,7 @@
       "name": "Сработал",
       "type": "event",
       "required": false,
-      "description": "Отправляет сигнал через каждый заданный интервал.",
-      "additional": false
+      "description": "Отправляет сигнал через каждый заданный интервал."
     },
     {
       "id": "interval",
@@ -24,8 +23,7 @@
       "type": "number",
       "required": false,
       "static": true,
-      "description": "Передает заданный период таймера в миллисекундах.",
-      "additional": true
+      "description": "Передает заданный период таймера в миллисекундах."
     }
   ],
   "parameters": {

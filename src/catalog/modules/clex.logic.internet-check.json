@@ -15,16 +15,14 @@
       "name": "Данные проверки обновлены",
       "type": "event",
       "required": false,
-      "description": "Отправляет сигнал при ожидании, начале и результате проверки.",
-      "additional": true
+      "description": "Отправляет сигнал при ожидании, начале и результате проверки."
     },
     {
       "id": "done",
       "name": "Проверка завершена",
       "type": "event",
       "required": false,
-      "description": "Сигнал после успешной или неудачной попытки проверки.",
-      "additional": true
+      "description": "Сигнал после успешной или неудачной попытки проверки."
     },
     {
       "id": "state",
@@ -33,7 +31,6 @@
       "required": false,
       "readyOn": "changed",
       "description": "Передает числовой код состояния. Расшифровка кодов приведена ниже.",
-      "additional": false,
       "displayUpdateEvents": [
         {
           "id": "done",
@@ -79,7 +76,6 @@
       "required": false,
       "readyOn": "changed",
       "description": "Время всей попытки. Значение −1 означает отсутствие измерения.",
-      "additional": true,
       "displayUpdateEvents": [
         {
           "id": "done",
@@ -99,7 +95,6 @@
       "required": false,
       "readyOn": "changed",
       "description": "Код HTTP-ответа. Ноль означает, что ответ не получен.",
-      "additional": true,
       "displayUpdateEvents": [
         {
           "id": "done",
@@ -119,7 +114,6 @@
       "required": false,
       "readyOn": "changed",
       "description": "Показывает причину неудачной попытки: DNS, соединение, TLS или таймаут.",
-      "additional": true,
       "displayUpdateEvents": [
         {
           "id": "done",

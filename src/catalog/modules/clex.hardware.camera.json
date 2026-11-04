@@ -9,7 +9,6 @@
   "icon": "Camera",
   "color": "#60a5fa",
   "visual": {
-    "svg": "camera.svg",
     "width": 250,
     "height": 185
   },

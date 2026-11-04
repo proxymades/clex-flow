@@ -14,24 +14,21 @@
       "name": "Вывести сообщение",
       "type": "event",
       "required": true,
-      "description": "Выводит подготовленное сообщение в монитор порта.",
-      "additional": false
+      "description": "Выводит подготовленное сообщение в монитор порта."
     },
     {
       "id": "text",
       "name": "Текст сообщения",
       "type": "text",
       "required": false,
-      "description": "Принимает текст вместо текста из настроек.",
-      "additional": true
+      "description": "Принимает текст вместо текста из настроек."
     },
     {
       "id": "number",
       "name": "Число в сообщении",
       "type": "number",
       "required": false,
-      "description": "Добавляет число к сообщению через пробел.",
-      "additional": true
+      "description": "Добавляет число к сообщению через пробел."
     }
   ],
   "outputs": [
@@ -40,8 +37,7 @@
       "name": "Сообщение выведено",
       "type": "event",
       "required": false,
-      "description": "Отправляет сигнал после вывода сообщения.",
-      "additional": true
+      "description": "Отправляет сигнал после вывода сообщения."
     },
     {
       "id": "text",
@@ -49,8 +45,7 @@
       "type": "text",
       "required": false,
       "readyOn": "done",
-      "description": "Передает полный сформированный текст сообщения.",
-      "additional": true
+      "description": "Передает полный сформированный текст сообщения."
     }
   ],
   "parameters": {

@@ -9,7 +9,6 @@
   "icon": "Network",
   "color": "#38bdf8",
   "visual": {
-    "svg": "ethernet.svg",
     "width": 230,
     "height": 185
   },

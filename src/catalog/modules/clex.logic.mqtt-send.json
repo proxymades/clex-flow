@@ -26,22 +26,19 @@
       "name": "Отправить",
       "type": "event",
       "description": "Запускает действие «Отправить».",
-      "required": true,
-      "additional": false
+      "required": true
     },
     {
       "id": "topic",
       "name": "Тема сообщения",
       "type": "text",
-      "description": "Необязательный topic вместо настройки блока.",
-      "additional": true
+      "description": "Необязательный topic вместо настройки блока."
     },
     {
       "id": "payload",
       "name": "Текст сообщения",
       "type": "text",
-      "description": "Payload в выбранной кодировке: текст UTF-8, Base64 или HEX.",
-      "additional": false
+      "description": "Payload в выбранной кодировке: текст UTF-8, Base64 или HEX."
     }
   ],
   "outputs": [
@@ -49,38 +46,33 @@
       "id": "sent",
       "name": "Отправлено",
       "type": "event",
-      "description": "QoS 0: сообщение принято в локальную очередь передачи. QoS 1/2: получено подтверждение брокера.",
-      "additional": false
+      "description": "QoS 0: сообщение принято в локальную очередь передачи. QoS 1/2: получено подтверждение брокера."
     },
     {
       "id": "failed",
       "name": "Ошибка",
       "type": "event",
-      "description": "Сигнал: Ошибка.",
-      "additional": false
+      "description": "Сигнал: Ошибка."
     },
     {
       "id": "messageId",
       "name": "ID сообщения",
       "type": "number",
       "description": "Идентификатор публикации; для QoS 0 равен 0.",
-      "readyOn": "sent",
-      "additional": true
+      "readyOn": "sent"
     },
     {
       "id": "error",
       "name": "Описание ошибки",
       "type": "text",
       "description": "Передаёт текст: Описание ошибки.",
-      "readyOn": "failed",
-      "additional": true
+      "readyOn": "failed"
     },
     {
       "id": "reasonCode",
       "name": "Код причины",
       "type": "number",
-      "description": "Код результата публикации.",
-      "additional": true
+      "description": "Код результата публикации."
     }
   ],
   "parameters": {

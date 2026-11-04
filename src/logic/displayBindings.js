@@ -68,7 +68,7 @@ export function planDisplayBinding(project,catalog,choice){
  if(fresh.length)throw new Error(fresh[0].message);
  // Make room only for contacts newly exposed by this binding. Existing manual
  // overlaps are left alone; positions are part of the same Undo transaction.
- const height=(node,context)=>{const ports=visiblePorts(node,context,catalog);return (graphModule(node,catalog)?.editor==='screen'?360:160)+Math.max(...['inputs','outputs'].map(key=>ports[key].filter(port=>!port.hidden).length))*44;};
+ const height=(node,context)=>{const ports=visiblePorts(node,context,catalog);return (graphModule(node,catalog)?.editor==='screen'?360:160)+Math.max(...['inputs','outputs'].map(key=>ports[key].length))*44;};
  const after={...project,logic:graph};
  const queue=graph.nodes.flatMap(node=>{const old=project.logic.nodes.find(item=>item.id===node.id);return old&&height(node,after)>height(old,project)?[{id:node.id,y:old.position.y,height:height(old,project)}]:[];});
  let passes=0;

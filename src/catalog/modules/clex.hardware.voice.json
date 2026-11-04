@@ -9,7 +9,6 @@
   "icon": "MicAudioLines",
   "color": "#a78bfa",
   "visual": {
-    "svg": "voice.svg",
     "width": 250,
     "height": 185
   },

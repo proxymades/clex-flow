@@ -24,7 +24,6 @@
   "inputs": [],
   "outputs": [],
   "visual": {
-    "svg": "mosfet.svg",
     "width": 280,
     "height": 195
   },

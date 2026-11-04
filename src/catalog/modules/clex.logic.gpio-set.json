@@ -45,8 +45,7 @@
       "id": "done",
       "name": "Команда выполнена",
       "type": "event",
-      "description": "Сигнал после любой команды выхода.",
-      "additional": true
+      "description": "Сигнал после любой команды выхода."
     }
   ],
   "parameters": {

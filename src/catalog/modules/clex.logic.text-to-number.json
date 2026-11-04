@@ -14,7 +14,6 @@
       "name": "Преобразовать",
       "type": "event",
       "required": true,
-      "additional": false,
       "description": "Запускает действие «Преобразовать»."
     },
     {
@@ -22,7 +21,6 @@
       "name": "Исходный текст",
       "type": "text",
       "required": true,
-      "additional": false,
       "description": "Передаёт текст: Исходный текст."
     }
   ],
@@ -31,21 +29,18 @@
       "id": "changed",
       "name": "Преобразование завершено",
       "type": "event",
-      "description": "После каждой попытки, включая ошибку.",
-      "additional": true
+      "description": "После каждой попытки, включая ошибку."
     },
     {
       "id": "done",
       "name": "Число получено",
       "type": "event",
-      "additional": false,
       "description": "Сигнал: Число получено."
     },
     {
       "id": "failed",
       "name": "Ошибка преобразования",
       "type": "event",
-      "additional": false,
       "description": "Сигнал: Ошибка преобразования."
     },
     {
@@ -53,7 +48,6 @@
       "name": "Число",
       "type": "number",
       "readyOn": "changed",
-      "additional": false,
       "description": "Передаёт число: Число."
     },
     {
@@ -61,7 +55,6 @@
       "name": "Описание ошибки",
       "type": "text",
       "readyOn": "changed",
-      "additional": true,
       "description": "Передаёт текст: Описание ошибки."
     }
   ],

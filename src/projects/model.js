@@ -60,7 +60,6 @@ export function validateProject(project) {
     if(node.moduleId===AUDIO_PLAY_MODULE)readRecording(node);
     validateName(node.name); nodeIds.add(node.id);
     if (node.legacy !== undefined && !legacyText(node.legacy)) throw new Error('Некорректное предупреждение старого блока.');
-    if(node.showAdditionalPorts!==undefined&&typeof node.showAdditionalPorts!=='boolean')throw new Error('Некорректная настройка дополнительных контактов.');
     if (!Object.entries(node.parameters).every(([key, value]) => validKey(key) && (typeof value === 'string' || typeof value === 'boolean' || Number.isFinite(value)))) throw new Error('Некорректные параметры логического блока.');
   }
   for (const edge of project.logic.edges) {

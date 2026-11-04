@@ -38,7 +38,7 @@ export function visiblePorts(node,project,catalog,{connection=null}={}){
   const candidate=connection&&connection.nodeId!==node.id&&connection.direction!==(direction==='inputs'?'input':'output');
   const link=candidate?(direction==='inputs'?{source:connection.nodeId,sourceHandle:connection.portId,target:node.id,targetHandle:port.id}:{source:node.id,sourceHandle:port.id,target:connection.nodeId,targetHandle:connection.portId}):null;
   const reason=link?connectionProblem(project.logic,catalog,link,null,project):null,compatible=Boolean(link&&!reason);
-  return {...presentPort(port,node,project,catalog),connected,compatible,incompatible:Boolean(connection&&!compatible&&!(connection.nodeId===node.id&&connection.portId===port.id)),reason,hidden:Boolean(port.additional&&!connected&&!node.showAdditionalPorts&&!compatible)};
+  return {...presentPort(port,node,project,catalog),connected,compatible,incompatible:Boolean(connection&&!compatible&&!(connection.nodeId===node.id&&connection.portId===port.id)),reason};
  })]));
 }
 export function friendlyConnectionProblem(project,catalog,connection){

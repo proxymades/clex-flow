@@ -10,7 +10,6 @@
   "icon": "Gauge",
   "color": "#2dd4bf",
   "visual": {
-    "svg": "xgzp6847d.svg",
     "width": 300,
     "height": 270,
     "terminalStartY": 140,

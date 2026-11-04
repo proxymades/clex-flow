@@ -14,7 +14,6 @@
       "name": "Измерить",
       "type": "event",
       "required": false,
-      "additional": false,
       "description": "Запускает действие «Измерить»."
     }
   ],
@@ -23,21 +22,18 @@
       "id": "changed",
       "name": "Измерение завершено",
       "type": "event",
-      "description": "После каждой попытки, включая ошибку.",
-      "additional": true
+      "description": "После каждой попытки, включая ошибку."
     },
     {
       "id": "done",
       "name": "Данные получены",
       "type": "event",
-      "additional": false,
       "description": "Сигнал: Данные получены."
     },
     {
       "id": "failed",
       "name": "Ошибка измерения",
       "type": "event",
-      "additional": false,
       "description": "Сигнал: Ошибка измерения."
     },
     {
@@ -45,15 +41,13 @@
       "name": "Давление",
       "type": "number",
       "readyOn": "done",
-      "description": "В единицах, выбранных в настройках блока.",
-      "additional": false
+      "description": "В единицах, выбранных в настройках блока."
     },
     {
       "id": "temperature",
       "name": "Температура, °C",
       "type": "number",
       "readyOn": "done",
-      "additional": false,
       "description": "Передаёт число: Температура, °C."
     },
     {
@@ -61,7 +55,6 @@
       "name": "Давление с единицей",
       "type": "text",
       "readyOn": "changed",
-      "additional": true,
       "description": "Передаёт текст: Давление с единицей."
     },
     {
@@ -69,7 +62,6 @@
       "name": "Температура с единицей",
       "type": "text",
       "readyOn": "changed",
-      "additional": true,
       "description": "Передаёт текст: Температура с единицей."
     },
     {
@@ -77,7 +69,6 @@
       "name": "Давление, Па",
       "type": "number",
       "readyOn": "done",
-      "additional": true,
       "description": "Передаёт число: Давление, Па."
     },
     {
@@ -85,7 +76,6 @@
       "name": "Ошибка датчика",
       "type": "text",
       "readyOn": "changed",
-      "additional": true,
       "description": "Передаёт текст: Ошибка датчика."
     }
   ],

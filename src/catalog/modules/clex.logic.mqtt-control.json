@@ -25,15 +25,13 @@
       "id": "connect",
       "name": "Подключить",
       "type": "event",
-      "description": "Запускает соединение или возобновляет его после ручного отключения.",
-      "additional": false
+      "description": "Запускает соединение или возобновляет его после ручного отключения."
     },
     {
       "id": "disconnect",
       "name": "Отключить",
       "type": "event",
-      "description": "Отключает соединение и приостанавливает автоматическое переподключение до следующей команды подключения.",
-      "additional": false
+      "description": "Отключает соединение и приостанавливает автоматическое переподключение до следующей команды подключения."
     }
   ],
   "outputs": [
@@ -41,52 +39,45 @@
       "id": "changed",
       "name": "Состояние изменилось",
       "type": "event",
-      "description": "Сигнал: Состояние изменилось.",
-      "additional": true
+      "description": "Сигнал: Состояние изменилось."
     },
     {
       "id": "connected",
       "name": "Подключено",
       "type": "event",
-      "description": "Сигнал: Подключено.",
-      "additional": false
+      "description": "Сигнал: Подключено."
     },
     {
       "id": "disconnected",
       "name": "Отключено",
       "type": "event",
-      "description": "Сигнал: Отключено.",
-      "additional": false
+      "description": "Сигнал: Отключено."
     },
     {
       "id": "failed",
       "name": "Ошибка",
       "type": "event",
-      "description": "Сигнал: Ошибка.",
-      "additional": false
+      "description": "Сигнал: Ошибка."
     },
     {
       "id": "state",
       "name": "Состояние",
       "type": "number",
       "description": "0 – отключено, 1 – подключение, 2 – подключено, 3 – переподключение, 4 – ошибка.",
-      "readyOn": "changed",
-      "additional": true
+      "readyOn": "changed"
     },
     {
       "id": "error",
       "name": "Описание ошибки",
       "type": "text",
       "description": "Последняя ошибка подключения.",
-      "readyOn": "failed",
-      "additional": true
+      "readyOn": "failed"
     },
     {
       "id": "reasonCode",
       "name": "Код причины",
       "type": "number",
       "description": "MQTT reason code или код сетевой ошибки.",
-      "additional": true,
       "readyOn": "failed"
     }
   ],

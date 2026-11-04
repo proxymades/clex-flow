@@ -14,7 +14,6 @@
       "name": "Запустить движение",
       "type": "event",
       "required": false,
-      "additional": false,
       "description": "Запускает действие «Запустить движение»."
     },
     {
@@ -22,16 +21,14 @@
       "name": "Остановить",
       "type": "event",
       "required": false,
-      "description": "Прекращает импульсы, сохраняя удержание двигателя. Короткий начатый импульс завершается.",
-      "additional": false
+      "description": "Прекращает импульсы, сохраняя удержание двигателя. Короткий начатый импульс завершается."
     },
     {
       "id": "release",
       "name": "Отключить обмотки",
       "type": "event",
       "required": false,
-      "description": "Останавливает движение и выключает ENABLE. Расчетная позиция больше не подтверждает положение вала.",
-      "additional": false
+      "description": "Останавливает движение и выключает ENABLE. Расчетная позиция больше не подтверждает положение вала."
     }
   ],
   "outputs": [
@@ -39,35 +36,30 @@
       "id": "changed",
       "name": "Состояние обновлено",
       "type": "event",
-      "additional": true,
       "description": "Сигнал: Состояние обновлено."
     },
     {
       "id": "started",
       "name": "Движение запущено",
       "type": "event",
-      "additional": true,
       "description": "Сигнал: Движение запущено."
     },
     {
       "id": "completed",
       "name": "Импульсы выданы",
       "type": "event",
-      "description": "Выдано заданное количество STEP. Не является подтверждением физического поворота вала.",
-      "additional": false
+      "description": "Выдано заданное количество STEP. Не является подтверждением физического поворота вала."
     },
     {
       "id": "stopped",
       "name": "Движение остановлено",
       "type": "event",
-      "additional": false,
       "description": "Сигнал: Движение остановлено."
     },
     {
       "id": "failed",
       "name": "Ошибка движения",
       "type": "event",
-      "additional": false,
       "description": "Сигнал: Ошибка движения."
     },
     {
@@ -75,7 +67,6 @@
       "name": "Расчетная позиция, импульсы",
       "type": "number",
       "readyOn": "changed",
-      "additional": false,
       "description": "Передаёт число: Расчетная позиция, импульсы."
     },
     {
@@ -83,7 +74,6 @@
       "name": "Выдано импульсов в движении",
       "type": "number",
       "readyOn": "changed",
-      "additional": true,
       "description": "Передаёт число: Выдано импульсов в движении."
     },
     {
@@ -91,7 +81,6 @@
       "name": "Причина ошибки",
       "type": "text",
       "readyOn": "changed",
-      "additional": true,
       "description": "Передаёт текст: Причина ошибки."
     }
   ],

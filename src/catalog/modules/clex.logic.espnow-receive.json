@@ -49,8 +49,7 @@
       "name": "RSSI последнего пакета, дБм",
       "type": "number",
       "description": "Измерение в момент приема пакета; сохраняется до следующего пакета и не означает наличие связи. -127: API не передал RSSI. Для текущей связи используйте управление ESP-NOW → Следить за устройством.",
-      "readyOn": "messageReceived",
-      "additional": true
+      "readyOn": "messageReceived"
     },
     {
       "id": "command",

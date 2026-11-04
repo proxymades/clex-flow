@@ -15,32 +15,28 @@
       "name": "Данные сети обновлены",
       "type": "event",
       "required": false,
-      "description": "Сообщает, что доступны актуальные состояние и адреса сети.",
-      "additional": true
+      "description": "Сообщает, что доступны актуальные состояние и адреса сети."
     },
     {
       "id": "connected",
       "name": "Кабель подключён",
       "type": "event",
       "required": false,
-      "description": "Сигнал при установлении физического Ethernet-соединения.",
-      "additional": false
+      "description": "Сигнал при установлении физического Ethernet-соединения."
     },
     {
       "id": "disconnected",
       "name": "Кабель отключён",
       "type": "event",
       "required": false,
-      "description": "Сигнал при потере ранее установленного соединения.",
-      "additional": false
+      "description": "Сигнал при потере ранее установленного соединения."
     },
     {
       "id": "ipChanged",
       "name": "IP-адрес обновлен",
       "type": "event",
       "required": false,
-      "description": "Сигнал при получении или потере IP-адреса и обновлении IP-данных.",
-      "additional": true
+      "description": "Сигнал при получении или потере IP-адреса и обновлении IP-данных."
     },
     {
       "id": "state",
@@ -49,7 +45,6 @@
       "required": false,
       "readyOn": "changed",
       "description": "Передает числовой код состояния. Расшифровка кодов приведена ниже.",
-      "additional": false,
       "valueStates": {
         "initialValue": 0,
         "fallbackValue": 3,
@@ -83,8 +78,7 @@
       "type": "text",
       "required": false,
       "readyOn": "changed",
-      "description": "Передает действительный адрес устройства; после потери адреса строка очищается.",
-      "additional": false
+      "description": "Передает действительный адрес устройства; после потери адреса строка очищается."
     },
     {
       "id": "netmask",
@@ -92,8 +86,7 @@
       "type": "text",
       "required": false,
       "readyOn": "changed",
-      "description": "Передает действительную маску локальной подсети.",
-      "additional": true
+      "description": "Передает действительную маску локальной подсети."
     },
     {
       "id": "gateway",
@@ -101,8 +94,7 @@
       "type": "text",
       "required": false,
       "readyOn": "changed",
-      "description": "Передает адрес устройства, через которое доступны другие сети.",
-      "additional": true
+      "description": "Передает адрес устройства, через которое доступны другие сети."
     },
     {
       "id": "dns",
@@ -110,8 +102,7 @@
       "type": "text",
       "required": false,
       "readyOn": "changed",
-      "description": "Передает адрес сервера поиска сетевых адресов по именам сайтов.",
-      "additional": true
+      "description": "Передает адрес сервера поиска сетевых адресов по именам сайтов."
     },
     {
       "id": "error",
@@ -119,8 +110,7 @@
       "type": "text",
       "required": false,
       "readyOn": "changed",
-      "description": "Показывает причину, если сетевой интерфейс не удалось запустить.",
-      "additional": true
+      "description": "Показывает причину, если сетевой интерфейс не удалось запустить."
     }
   ],
   "parameters": {

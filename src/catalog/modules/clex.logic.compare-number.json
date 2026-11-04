@@ -14,7 +14,6 @@
       "name": "Проверить",
       "type": "event",
       "required": true,
-      "additional": false,
       "description": "Запускает действие «Проверить»."
     },
     {
@@ -23,14 +22,12 @@
       "type": "number",
       "required": true,
       "sample": "latest",
-      "additional": false,
       "description": "Передаёт число: Проверяемое число."
     },
     {
       "id": "reference",
       "name": "Число для сравнения",
       "type": "number",
-      "additional": true,
       "sample": "latest",
       "when": {
         "field": "mode",
@@ -42,7 +39,6 @@
       "id": "lower",
       "name": "Нижняя граница",
       "type": "number",
-      "additional": true,
       "sample": "latest",
       "when": {
         "field": "mode",
@@ -54,7 +50,6 @@
       "id": "upper",
       "name": "Верхняя граница",
       "type": "number",
-      "additional": true,
       "sample": "latest",
       "when": {
         "field": "mode",
@@ -68,8 +63,7 @@
       "id": "changed",
       "name": "Проверка завершена",
       "type": "event",
-      "description": "Сигнал после каждой проверки, включая ошибку. Числовой результат обновлён.",
-      "additional": true
+      "description": "Сигнал после каждой проверки, включая ошибку. Числовой результат обновлён."
     },
     {
       "id": "matched",
@@ -79,7 +73,6 @@
         "field": "mode",
         "value": "compare"
       },
-      "additional": false,
       "description": "Сигнал: Условие выполнено."
     },
     {
@@ -90,7 +83,6 @@
         "field": "mode",
         "value": "compare"
       },
-      "additional": false,
       "description": "Сигнал: Условие не выполнено."
     },
     {
@@ -101,7 +93,6 @@
         "field": "mode",
         "value": "range"
       },
-      "additional": false,
       "description": "Сигнал: Ниже диапазона."
     },
     {
@@ -112,7 +103,6 @@
         "field": "mode",
         "value": "range"
       },
-      "additional": false,
       "description": "Сигнал: В диапазоне."
     },
     {
@@ -123,14 +113,12 @@
         "field": "mode",
         "value": "range"
       },
-      "additional": false,
       "description": "Сигнал: Выше диапазона."
     },
     {
       "id": "failed",
       "name": "Ошибка сравнения",
       "type": "event",
-      "additional": false,
       "description": "Сигнал: Ошибка сравнения."
     },
     {
@@ -138,7 +126,6 @@
       "name": "Проверенное число",
       "type": "number",
       "readyOn": "changed",
-      "additional": true,
       "description": "Передаёт число: Проверенное число."
     },
     {
@@ -146,7 +133,6 @@
       "name": "Описание ошибки",
       "type": "text",
       "readyOn": "changed",
-      "additional": true,
       "description": "Передаёт текст: Описание ошибки."
     }
   ],

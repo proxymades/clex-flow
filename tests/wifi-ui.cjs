@@ -30,7 +30,7 @@ const {chromium}=require('playwright');
   await save();await page.screenshot({path:'.artifacts/wifi/ui/settings.png'});
   await card(mqtt.id).locator('.assembly-hardware-node').click({position:{x:30,y:20}});assert.equal(await page.getByLabel('Сетевое подключение',{exact:true}).inputValue(),wifi.id);
   await page.getByRole('button',{name:'Логика',exact:true}).click();await page.getByRole('button',{name:'Показать весь граф',exact:true}).click();await card(node.id).locator('.logic-drag-handle').click();
-  await page.getByRole('checkbox',{name:'Дополнительные контакты',exact:true}).check();
+  assert.equal(await page.getByRole('checkbox',{name:'Дополнительные контакты',exact:true}).count(),0);
   for(const port of ['trigger','connect','disconnect','reconnect','changed','connected','disconnected','ipChanged','failed','state','ip','reasonCode','error'])assert.equal(await card(node.id).locator('[data-port-id="'+port+'"]').count(),1,port);
   assert.ok(await page.getByText('Подключение настроено в «Монтаже»',{exact:true}).count());await page.screenshot({path:'.artifacts/wifi/ui/logic.png'});
   await page.reload();await page.locator('.project-open').click();await page.getByRole('button',{name:'Монтаж',exact:true}).click();await page.locator('.assembly-flow-region[data-ready="true"]').waitFor();await card(wifi.id).locator('.assembly-hardware-node').click({position:{x:30,y:20}});

@@ -21,10 +21,9 @@
   "category": "input",
   "categoryName": "Кнопки",
   "description": "Емкостный сенсорный модуль с цифровым выходом. Выберите питание и напряжение OUT по документации вашего модуля. Для ESP32 уровень OUT должен быть не выше 3,3 В.",
-  "icon": "MousePointer2",
+  "icon": "MousePointerClick",
   "color": "#38BDF8",
   "visual": {
-    "svg": "touch-button.svg",
     "width": 230,
     "height": 220
   },

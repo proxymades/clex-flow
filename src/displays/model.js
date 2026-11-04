@@ -26,7 +26,7 @@ export function screenCommands(screen) {
 }
 export function screenPorts(screen) {
   const bindings = screenBindings(screen);
-  return [...(bindings.length ? [{id:'trigger',name:'Обновить все значения',type:'event',required:false,additional:true}, ...bindings.flatMap(binding => [{id:binding.id,name:binding.name,type:binding.type,required:true},{id:elementUpdatePort(binding.id),name:'Обновить: ' + binding.name,type:'event',required:false,additional:true}])] : []), ...screenCommands(screen).map(({id,name,type,description})=>({id,name,type,description}))];
+  return [...(bindings.length ? [{id:'trigger',name:'Обновить все значения',type:'event',required:false}, ...bindings.flatMap(binding => [{id:binding.id,name:binding.name,type:binding.type,required:true},{id:elementUpdatePort(binding.id),name:'Обновить: ' + binding.name,type:'event',required:false}])] : []), ...screenCommands(screen).map(({id,name,type,description})=>({id,name,type,description}))];
 }
 export function dynamicTextValid(element) {
   return VALUE_TYPES.includes(element.valueType)

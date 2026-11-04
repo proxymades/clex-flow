@@ -9,7 +9,6 @@
   "icon": "Volume2",
   "color": "#f59e0b",
   "visual": {
-    "svg": "audio.svg",
     "width": 250,
     "height": 185
   },

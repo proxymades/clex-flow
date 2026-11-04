@@ -9,7 +9,6 @@
   "icon": "Wifi",
   "color": "#22d3ee",
   "visual": {
-    "svg": "wifi.svg",
     "width": 250,
     "height": 170
   },
