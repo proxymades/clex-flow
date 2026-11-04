@@ -20,6 +20,7 @@ export function numericSummary(node,project) {
  const display=key=>project?.logic.edges.some(edge=>edge.target===node.id&&edge.targetHandle===key)?'вход':Number.isFinite(p[key])?new Intl.NumberFormat('ru-RU',{maximumSignificantDigits:12}).format(p[key]):'не задано';
  if(node.moduleId===TEXT_TO_NUMBER)return p.format==='affixes'?[p.prefix,'число',p.suffix].filter(Boolean).join(' '):'Текст → число';
  if(node.moduleId!==COMPARE_NUMBER)return null;
+ if(p.mode==='conditions')return (p.combine==='any'?'ИЛИ':'И')+' · проверки чисел, текста и состояний';
  if(p.mode==='range')return display('lower')+' '+(p.includeLower?'≤':'<')+' число '+(p.includeUpper?'≤':'<')+' '+display('upper');
  return 'Число '+({lt:'<',lte:'≤',eq:'=',neq:'≠',gte:'≥',gt:'>'}[p.operator]||'?')+' '+display('reference')+(['eq','neq'].includes(p.operator)&&p.tolerance>0?' · допуск '+p.tolerance:'');
 }

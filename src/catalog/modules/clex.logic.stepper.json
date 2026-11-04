@@ -78,10 +78,22 @@
     },
     {
       "id": "error",
-      "name": "Причина ошибки",
+      "name": "Описание ошибки",
       "type": "text",
       "readyOn": "changed",
       "description": "Передаёт текст: Причина ошибки."
+    },
+    {
+      "id": "moving",
+      "name": "Движение выполняется?",
+      "type": "boolean",
+      "readyOn": "changed"
+    },
+    {
+      "id": "enabled",
+      "name": "Обмотки включены?",
+      "type": "boolean",
+      "readyOn": "changed"
     }
   ],
   "parameters": {

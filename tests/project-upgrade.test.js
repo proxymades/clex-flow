@@ -12,6 +12,7 @@ import {visiblePorts} from '../src/logic/presentation.js';
 import {generateFirmware} from '../src/firmware/generator.js';
 import {loadProjectFiles,readImportedProject} from '../src/projects/projectFiles.js';
 import {PROJECT_KEY,BACKUP_PREFIX,browserRecords,backupBrowserProject,saveBrowserProject} from '../src/projects/browserStorage.js';
+import {addHardware,connectTerminal,connectionProblem as wireProblem} from '../src/assembly/model.js';
 
 import {oldBlink,ambiguousProject,edge,versions} from './project-upgrade-fixture.js';
 const omit = (item,key) => Object.fromEntries(Object.entries(item).filter(([name])=>name!==key));
@@ -87,6 +88,21 @@ test('Boolean numeric comparison becomes output commands, including the invalid-
   }
 });
 
+test('old touch Boolean data retains activation semantics for both electrical active levels',()=>{
+  for(const activeLevel of ['low','high']){
+    let {project:p,nodes}=touchButtonProject(undefined,activeLevel);p.formatVersion=3;
+    p=addHardware(p,catalog.modules.find(m=>m.id==='clex.hardware.led'),catalog);
+    const led=p.components.at(-1),board=catalog.boards.find(b=>b.id===p.boardId);
+    for(const terminal of ['anode','cathode'])p=connectTerminal(p,catalog,led.id,terminal,board.pins.find(pin=>!wireProblem(p,catalog,led.id,terminal,pin.id)).id);
+    nodes.off.moduleId='clex.logic.gpio-set';nodes.off.parameters={componentId:led.id,defaultValue:true};versions(p);
+    p.logic.edges=p.logic.edges.filter(e=>e.target!==nodes.off.id);
+    p.logic.edges.push(edge(nodes.read.id,'level',nodes.off.id,'value','boolean'),edge(nodes.read.id,'done',nodes.off.id,'trigger'));
+    const converted=open(p);
+    assert.ok(converted.logic.edges.some(e=>e.source===nodes.read.id&&e.sourceHandle==='active'&&e.target===nodes.off.id&&e.targetHandle==='on'));
+    assert.ok(!converted.logic.edges.some(e=>e.legacy));generateFirmware(converted,catalog);
+  }
+});
+
 test('ambiguous sampled connections survive save/reopen with warnings and visible nonconnectable old ports',()=>{
   const original=ambiguousProject(),p=open(original),pending=p.logic.edges.filter(e=>e.legacy);
   assert.equal(pending.length,2);
@@ -97,14 +113,14 @@ test('ambiguous sampled connections survive save/reopen with warnings and visibl
   assert.equal(validateGraph(p,catalog).filter(i=>i.severity==='error').length,0);
   assert.throws(()=>generateFirmware(p,catalog),/старые связи/);
   const bool=pending.find(e=>e.dataType==='boolean'),source=p.logic.nodes.find(n=>n.id===bool.source);
-  assert.equal(visiblePorts(source,p,catalog).outputs.find(port=>port.id==='level').legacy,true);
+  assert.equal(visiblePorts(source,p,catalog).outputs.find(port=>port.id==='level').type,'boolean');
   assert.throws(()=>connectNodes(p.logic,catalog,{source:bool.source,sourceHandle:'level',target:bool.target,targetHandle:'value'},p),/порт отсутствует/);
   p.logic=removeElements(p.logic,[],pending.map(e=>e.id));
   p.logic=connectNodes(p.logic,catalog,{source:bool.source,sourceHandle:'active',target:bool.target,targetHandle:'on'},p);
   generateFirmware(p,catalog);
 });
 
-test('old Boolean indicator keeps appearance and unresolved source for manual repair',()=>{
+test('old Boolean indicator keeps appearance and its usable source data',()=>{
   const p=networkProject();p.formatVersion=3;
   const view=p.logic.nodes.find(n=>n.moduleId==='clex.logic.display'),eth=p.logic.nodes.find(n=>n.moduleId==='clex.logic.ethernet');
   const element=p.screens[view.parameters.componentId].elements.find(e=>e.type==='indicator');
@@ -112,9 +128,9 @@ test('old Boolean indicator keeps appearance and unresolved source for manual re
   const oldAppearance=element.states.map(state=>omit(state,'value'));
   const data=p.logic.edges.find(e=>e.targetHandle===element.id);data.sourceHandle='hasIp';data.dataType='boolean';
   const converted=open(p),after=converted.screens[view.parameters.componentId].elements.find(e=>e.id===element.id);
-  assert.deepEqual(after.states.map(state=>omit(state,'value')),oldAppearance);assert.equal(after.valueType,'number');
-  assert.ok(converted.logic.edges.find(e=>e.id===data.id).legacy);
-  assert.equal(visiblePorts(converted.logic.nodes.find(n=>n.id===eth.id),converted,catalog).outputs.find(p=>p.id==='hasIp').legacy,true);
+  assert.deepEqual(after.states.map(state=>omit(state,'value')),oldAppearance);assert.equal(after.valueType,'boolean');
+  assert.ok(!converted.logic.edges.find(e=>e.id===data.id).legacy);
+  assert.equal(visiblePorts(converted.logic.nodes.find(n=>n.id===eth.id),converted,catalog).outputs.find(p=>p.id==='hasIp').type,'boolean');
 });
 
 test('old Boolean text retains its displayed initial value',()=>{
@@ -125,7 +141,7 @@ test('old Boolean text retains its displayed initial value',()=>{
     element.valueType='boolean';element.initialValue=value;
     p.logic.edges=p.logic.edges.filter(e=>e.targetHandle!==element.id);
     const converted=open(p),after=converted.screens[view.parameters.componentId].elements.find(e=>e.id===element.id);
-    assert.equal(after.valueType,'text');assert.equal(after.initialValue,value?'Да':'Нет');
+    assert.equal(after.valueType,'boolean');assert.equal(after.initialValue,value);
   }
 });
 

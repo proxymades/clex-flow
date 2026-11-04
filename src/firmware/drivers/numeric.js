@@ -1,8 +1,10 @@
+import {conditionCode} from './condition-code.js';
+import {readConditions} from '../../logic/conditions.js';
 import {TEXT_TO_NUMBER,NUMERIC_MODULES} from '../../logic/numeric.js';
 import {NUMERIC_RUNTIME} from './numeric-runtime.js';
 
 const literal=value=>/[.e]/i.test(String(value))?String(value):String(value)+'.0';
-export function numericFirmware(nodes,index,cString) {
+export function numericFirmware(nodes,index,cString,{avr=false,project=null}={}) {
  const blocks=nodes.filter(node=>NUMERIC_MODULES.has(node.moduleId));
  const expressions=new Map(),textSizes=new Map(),textGlyphs=new Map(),operations=new Map();
  let ram=0;
@@ -11,9 +13,18 @@ export function numericFirmware(nodes,index,cString) {
   expressions.set(node.id,parse?{value:name+'.value',valid:name+'.valid',error:name+'.error'}:{value:name+'.value',valid:name+'.valid',result:name+'.result',isBelow:name+'.below',isInside:name+'.inside',isAbove:name+'.above',error:name+'.error'});
   textSizes.set(node.id,{error:96});
   textGlyphs.set(node.id,'АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя');
+  if(!parse&&node.parameters.mode==='conditions'){
+   const rows=readConditions(node);
+   const flashBuffers=avr?Math.max(...rows.map(row=>row.type==='text'?['value','reference'].reduce((size,port)=>{
+    const edge=project?.logic.edges.find(e=>e.target===node.id&&e.targetHandle===row.id+'.'+port);
+    return size+(edge?.sourceHandle==='error'&&nodes.find(n=>n.id===edge.source)?.moduleId==='clex.logic.stepper'?128:0);
+   },0):0)):0;
+   ram+=rows.reduce((sum,row)=>sum+(row.type==='text'?new TextEncoder().encode(row.reference).length+1:0),0)+flashBuffers+(avr&&rows.some(row=>row.type==='number')?112:0);
+  }
   ram+=parse?112+new TextEncoder().encode((node.parameters.prefix||'')+(node.parameters.suffix||'')).length+2:112;
   operations.set(node.id,({inputEdge,dataExpression,emit})=>{
    const p=node.parameters;
+   if(!parse&&p.mode==='conditions')return conditionCode(node,name,{inputEdge,dataExpression,emit},cString,nodes,avr);
    if(parse){
     const prefix=p.format==='affixes'?p.prefix:'',suffix=p.format==='affixes'?p.suffix:'';
     return '  clex_text_number_parse(&'+name+','+dataExpression(inputEdge(node,'text'))+','+cString(prefix)+','+cString(suffix)+','+({either:0,dot:1,comma:2}[p.decimalSeparator])+');\n'+emit('changed')+'\n  if('+name+'.valid){\n'+emit('done')+'\n  }else{\n'+emit('failed')+'\n  }';

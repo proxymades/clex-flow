@@ -1,3 +1,5 @@
+import {conditionPorts,conditionIssues,CONDITION_MODULE} from './conditions.js';
+import {portRowCount} from './portGroups.js';
 import {OUTPUT_MODULE,outputChannelCount,outputTerminalId} from '../gpio/model.js';
 import {recordingIssues} from '../audio/model.js';
 import {VOICE_LOGIC,voicePorts} from '../voice/model.js';
@@ -12,16 +14,17 @@ import { networkProvider, probeUrl } from '../network/model.js';
 import { displayDescription, screenFor, screenIssues, screenPorts, screenBindings, screenCommands, elementUpdatePort } from '../displays/model.js';
 import { connectionProblem as physicalConnectionProblem, moduleProblem, boardFor } from '../assembly/model.js';
 
-export const PORT_TYPES = ['event', 'number', 'text'];
-export const TYPE_NAMES = { event: 'Сигнал', number: 'Число', text: 'Текст' };
-export const TYPE_COLORS = { event: '#34d399', number: '#fbbf24', text: '#a78bfa' };
+export const PORT_TYPES = ['event', 'number', 'text', 'boolean'];
+export const TYPE_NAMES = { event: 'Сигнал', number: 'Число', text: 'Текст', boolean: 'Да/Нет' };
+export const TYPE_COLORS = { event: '#34d399', number: '#fbbf24', text: '#a78bfa', boolean: '#60a5fa' };
 export const graphModule = (node, catalog) => catalog.modules.find(module => module.id === node.moduleId && module.kind === 'logic');
 export function nodePorts(node, catalog, project) {
   const module = graphModule(node, catalog);
   const parameters=node.parameters;
-  const active=port=>!port.when||parameters[port.when.field]===port.when.value;
+  const active=port=>!port.when||(port.when.values||[port.when.value]).includes(parameters[port.when.field]);
   let inputs = (module?.inputs || []).filter(active);
   let outputs = (module?.outputs || []).filter(active);
+  if(node.moduleId===CONDITION_MODULE&&parameters.mode==='conditions')inputs=[...inputs.filter(port=>port.type==='event'),...conditionPorts(node)];
   if(node.moduleId===VOICE_LOGIC&&project)outputs=[...voicePorts(project.components.find(c=>c.id===node.parameters.componentId)),...outputs];
   if(node.moduleId==='clex.logic.espnow-receive'&&node.parameters.transferType==='command')outputs=outputs.map(port=>port.readyOn==='messageReceived'?{...port,readyOn:'commandReceived'}:port);
   if (module?.editor === 'screen' && project) {
@@ -77,8 +80,7 @@ export function addNode(graph, module, components = [], project = null, catalog 
   const height = node => {
     const definition = node && catalog ? graphModule(node, catalog) : node ? null : module;
     const ports = catalog ? nodePorts(node||{moduleId:module.id,parameters},catalog,project) : definition || { inputs: [], outputs: [] };
-    const count = direction => ports[direction].length;
-    return (definition?.editor === 'screen' ? 360 : 160) + Math.max(count('inputs'), count('outputs')) * 44;
+    return (definition?.editor === 'screen' ? 360 : 160) + portRowCount(ports) * 44 + 48;
   };
   const newHeight = height(null), width = 246, gap = 32;
   let slot = 0, position;
@@ -98,9 +100,14 @@ export function updateNode(graph, id, patch, catalog = null, project = null) {
     const component=project?.components.find(component=>component.id===patch.parameters.componentId);
     for(const [key,parameter] of Object.entries(graphModule(previous,catalog)?.parameters||{}))if((parameter.componentModules?.includes(component?.moduleId)||parameter.componentChannels&&outputChannelCount(component))&&patch.parameters[key]===undefined)patch={...patch,parameters:{...patch.parameters,[key]:parameter.default}};
   }
+  if(catalog&&previous?.moduleId===CONDITION_MODULE&&patch.parameters?.mode==='conditions'){
+    patch={...patch,parameters:{...patch.parameters}};
+    const module=graphModule(previous,catalog);
+    for(const key of ['conditions','combine'])if(patch.parameters[key]===undefined)patch.parameters[key]=module.parameters[key].default;
+  }
   const next={...graph,nodes:graph.nodes.map(node=>node.id===id?{...node,...patch}:node)};
   if(!catalog||!previous||!patch.parameters)return next;
-  const changedPorts=previous.moduleId==='clex.logic.compare-number'?previous.parameters.mode!==patch.parameters.mode:previous.moduleId.startsWith('clex.logic.espnow-')&&['transferType','action'].some(key=>previous.parameters[key]!==patch.parameters[key]);
+  const changedPorts=previous.moduleId==='clex.logic.compare-number'?['mode','conditions'].some(key=>previous.parameters[key]!==patch.parameters[key]):previous.moduleId.startsWith('clex.logic.espnow-')&&['transferType','action'].some(key=>previous.parameters[key]!==patch.parameters[key]);
   if(!changedPorts)return next;
   const current=next.nodes.find(node=>node.id===id), before=nodePorts(previous,catalog,project), after=nodePorts(current,catalog,project);
   // Different purposes have different port IDs; retain only the same purpose and data type.
@@ -221,7 +228,7 @@ export function validateGraph(project, catalog) {
     }
     if (module.id === 'clex.logic.select-number' && node.parameters.firstValue === node.parameters.secondValue) add('error', 'logic-parameter', node.name + ': укажите два разных значения для выбора.', fields);
     for(const message of recordingIssues(node))add('error','audio-recording',node.name+': '+message,fields);
-    for(const message of numericLogicIssues(node,project))add('error','numeric-logic',node.name+': '+message,fields);
+    for(const message of [...numericLogicIssues(node,project),...conditionIssues(node)])add('error','numeric-logic',node.name+': '+message,fields);
     for(const message of mqttLogicIssues(node,project))add('error','mqtt-logic',node.name+': '+message,fields);
     for(const message of stepperLogicIssues(node,project,catalog))add('error','stepper-logic',node.name+': '+message,fields);
     for(const message of [...espNowLogicIssues(node,project,boardFor(project,catalog)),...espNowAckIssues(node,project,catalog)])add('error','espnow-logic',node.name+': '+message,fields);

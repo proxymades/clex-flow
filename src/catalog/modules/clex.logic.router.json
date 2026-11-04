@@ -231,7 +231,7 @@
     },
     {
       "id": "error",
-      "name": "Ошибка",
+      "name": "Описание ошибки",
       "type": "text",
       "readyOn": "changed",
       "description": "Передаёт текст: Ошибка."
@@ -247,6 +247,30 @@
       "name": "Точка доступа выключена",
       "type": "event",
       "description": "Точка доступа выключена. Сигнал при изменении состояния локальной Wi-Fi-сети."
+    },
+    {
+      "id": "running",
+      "name": "Запущен?",
+      "type": "boolean",
+      "readyOn": "changed"
+    },
+    {
+      "id": "wanUp",
+      "name": "WAN имеет IP?",
+      "type": "boolean",
+      "readyOn": "changed"
+    },
+    {
+      "id": "internet",
+      "name": "Интернет доступен?",
+      "type": "boolean",
+      "readyOn": "changed"
+    },
+    {
+      "id": "apEnabled",
+      "name": "SoftAP включен?",
+      "type": "boolean",
+      "readyOn": "changed"
     }
   ],
   "parameters": {

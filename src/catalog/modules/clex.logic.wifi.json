@@ -155,10 +155,18 @@
     },
     {
       "id": "error",
-      "name": "Ошибка подключения",
+      "name": "Описание ошибки",
       "type": "text",
       "required": false,
       "description": "Передаёт текст: Ошибка подключения.",
+      "readyOn": "changed"
+    },
+    {
+      "id": "isConnected",
+      "name": "Есть подключение?",
+      "type": "boolean",
+      "required": false,
+      "description": "Текущее соединение с сетью Wi-Fi.",
       "readyOn": "changed"
     }
   ],

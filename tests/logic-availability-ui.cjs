@@ -16,7 +16,7 @@ const {chromium}=require('playwright');
   assert.equal(await item('internet-check').isDisabled(),true);
   for(const id of ['timer','counter','serial','stopwatch'])assert.equal(await item(id).isEnabled(),true,id);
   await page.screenshot({path:'.artifacts/espnow-four/logic-without-hardware.png'});
-  const groups=[['clex.hardware.espnow',radio],['clex.hardware.led',['gpio-set']],['clex.hardware.button',['gpio-read','gpio-edge']],['clex.hardware.ethernet',['ethernet','internet-check']]];
+  const groups=[['clex.hardware.espnow',radio],['clex.hardware.led',['gpio-set']],['clex.hardware.button',['gpio-edge']],['clex.hardware.ethernet',['ethernet','internet-check']]];
   const display=catalog.modules.find(m=>m.kind==='hardware'&&m.display?.interface==='spi'&&m.display.resolution.width===240);assert.ok(display);groups.push([display.id,['display']]);
   for(const [hardwareId,ids] of groups){
    await assembly();await page.getByRole('button',{name:'Добавить: '+catalog.modules.find(m=>m.id===hardwareId).name,exact:true}).click();await logic();

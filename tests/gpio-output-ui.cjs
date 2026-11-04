@@ -36,7 +36,7 @@ const {chromium}=require('playwright');
   assert.equal(input.parameters.componentId,button.id);assert.equal(output.parameters.componentId,led.id);
   await fit(page);await port(page,input,'output','active').click();await port(page,output,'input','toggle').click();
   ready=await save(page);assert.equal(ready.logic.edges.length,1);assert.equal(ready.logic.edges[0].targetHandle,'toggle');
-  assert.equal(await page.locator('[data-port-type="boolean"]').count(),0);
+  assert.ok(await page.locator('[data-port-type="boolean"]').count()>0);
   await card(page,output).locator('header').click();assert.equal(await page.getByLabel('Действие',{exact:true}).count(),0);
   assert.equal(await page.getByRole('checkbox',{name:'Дополнительные контакты',exact:true}).count(),0);
   assert.equal(await port(page,output,'output','done').count(),1);

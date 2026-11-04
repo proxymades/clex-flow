@@ -1,7 +1,7 @@
 {
   "name": "clex-flow",
   "private": true,
-  "version": "0.1.11",
+  "version": "0.1.12",
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
@@ -71,7 +71,8 @@
     "test:numeric-ui": "node tests/numeric-ui.cjs",
     "test:numeric-mqtt": "node tests/mqtt-host/numeric-runtime.mjs",
     "test:voice-ui": "node tests/voice-settings-ui.cjs",
-    "test:gpio-output-ui": "node tests/gpio-output-ui.cjs"
+    "test:gpio-output-ui": "node tests/gpio-output-ui.cjs",
+    "test:conditions-ui": "node tests/conditions-ui.cjs"
   },
   "dependencies": {
     "@tauri-apps/api": "2.10.1",

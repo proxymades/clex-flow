@@ -106,11 +106,27 @@
     },
     {
       "id": "error",
-      "name": "Ошибка запуска сети",
+      "name": "Описание ошибки",
       "type": "text",
       "required": false,
       "readyOn": "changed",
       "description": "Показывает причину, если сетевой интерфейс не удалось запустить."
+    },
+    {
+      "id": "link",
+      "name": "Есть соединение?",
+      "type": "boolean",
+      "required": false,
+      "readyOn": "changed",
+      "description": "Да, если физическое Ethernet-соединение установлено."
+    },
+    {
+      "id": "hasIp",
+      "name": "Есть IP-адрес?",
+      "type": "boolean",
+      "required": false,
+      "readyOn": "changed",
+      "description": "Да, если у платы есть действительный IP-адрес."
     }
   ],
   "parameters": {

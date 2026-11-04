@@ -114,6 +114,11 @@ export function generateFirmware(project, catalog, consoleMode = 'usb') {
     if(stepper.expressions.has(edge.source))return stepper.expressions.get(edge.source)[edge.sourceHandle];
     const registered=voice.expressions.get(edge.source)?.[edge.sourceHandle] || mqtt.expressions.get(edge.source)?.[edge.sourceHandle] || wifi.expressions.get(edge.source)?.[edge.sourceHandle] || router.expressions.get(edge.source)?.[edge.sourceHandle] || gpioEdge.expressions.get(edge.source)?.[edge.sourceHandle] || espnow.expressions.get(edge.source)?.[edge.sourceHandle] || network.expressions.get(edge.source)?.[edge.sourceHandle] || media.expressions.get(edge.source)?.[edge.sourceHandle] || stopwatch.expressions.get(edge.source)?.[edge.sourceHandle];if(registered)return registered;
     const producer = nodes[index.get(edge.source)];
+    if(producer.moduleId==='clex.logic.gpio-set'&&edge.sourceHandle==='state')return (outputs.operations.get(producer.id)||relay.operations.get(producer.id)).state;
+    if(['clex.logic.gpio-read','clex.logic.gpio-edge'].includes(producer.moduleId)&&['level','activeState'].includes(edge.sourceHandle)){
+      const component=hardwareBinding(producer,project,catalog).component,state='input_stable_'+hardware.get(component.id);
+      return edge.sourceHandle==='activeState'?state:(component.moduleId==='clex.hardware.button'||component.parameters.activeLevel==='low'?'!':'')+state;
+    }
     if (edge.sourceHandle==='interval' && producer.moduleId==='clex.logic.timer') return `${producer.parameters.intervalMs}.0`;
     if (edge.dataType === 'number') return `value_${index.get(edge.source)}`;
     if (edge.dataType==='text') return `text_${index.get(edge.source)}`;
@@ -143,8 +148,8 @@ export function generateFirmware(project, catalog, consoleMode = 'usb') {
       const element=binding.element;
       const edge = inputEdge(node, binding.id);
       const font = display.graphics.fonts.find(font => font.id === element.fontId);
-      if (binding.type === 'text' && binding.channel !== 'state') {
-        const literal = runtimeTextSizes.has(edge.source) ? runtimeGlyphsFor(edge.source) : textLiteral(nodes[index.get(edge.source)]);
+      if (['text','boolean'].includes(binding.type) && binding.channel !== 'state') {
+        const literal = binding.type==='boolean'?'ДаНет':runtimeTextSizes.has(edge.source) ? runtimeGlyphsFor(edge.source) : textLiteral(nodes[index.get(edge.source)]);
         if ([...literal].some(char => !font.ranges.some(([min, max]) => char.codePointAt(0) >= min && char.codePointAt(0) <= max))) throw new Error('Выбранный шрифт не содержит некоторые символы текста источника.');
       }
       const valueLength = edge.dataType === 'text' ? producerTextLength(edge) : 64;
@@ -214,7 +219,7 @@ export function generateFirmware(project, catalog, consoleMode = 'usb') {
       for (const [j, binding] of elements.entries()) {
         const element=binding.element, edge = inputEdge(node, binding.id), expression = dataExpression(edge);
         const setter = element.type==='indicator' ? binding.channel==='caption' ? 'clex_graphics_set_indicator_caption' : 'clex_graphics_set_indicator_state' : 'clex_graphics_set_text';
-        const statement = binding.type === 'number' ? `  { char number[64]; snprintf(number, sizeof(number), "%.15g", (double)(${expression})); ${setter}(${cString(node.parameters.componentId)}, ${cString(element.id)}, number); }` : `  ${setter}(${cString(node.parameters.componentId)}, ${cString(element.id)}, ${expression});`;
+        const statement = binding.type === 'number' ? `  { char number[64]; snprintf(number, sizeof(number), "%.15g", (double)(${expression})); ${setter}(${cString(node.parameters.componentId)}, ${cString(element.id)}, number); }` : `  ${setter}(${cString(node.parameters.componentId)}, ${cString(element.id)}, ${binding.type==='boolean'?'(('+expression+') ? '+cString(element.type==='indicator'?'true':'Да')+' : '+cString(element.type==='indicator'?'false':'Нет')+')':expression});`;
         operations.push(statement);
         elementFunctions.push(`\nstatic void node_${i}_element_${j}(void) {\n${statement}\n}`);
       }

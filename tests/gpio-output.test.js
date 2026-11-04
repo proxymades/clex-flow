@@ -10,10 +10,10 @@ import {validateGraph,hardwareMatches,nodePorts,connectNodes} from '../src/logic
 import {logicLibraryEntries} from '../src/logic/library.js';
 import {generateFirmware} from '../src/firmware/generator.js';
 
-test('every catalog module exposes only actions, numbers and text; output commands share one block',()=>{
+test('every catalog module exposes actions and typed data; output commands share one block',()=>{
  for(const module of catalog.modules){
   assert.equal(module.compatibility.projectFormat,4,module.id);
-  for(const port of [...module.inputs,...module.outputs])assert.ok(['event','number','text'].includes(port.type),module.id+' '+port.id);
+  for(const port of [...module.inputs,...module.outputs])assert.ok(['event','number','text','boolean'].includes(port.type),module.id+' '+port.id);
  }
  const control=catalog.modules.find(m=>m.id===OUTPUT_MODULE);
  assert.deepEqual(control.inputs.map(p=>p.id),['on','off','toggle']);
@@ -30,8 +30,8 @@ test('independent output commands round-trip without fallback state or a data in
   assert.deepEqual(parseProject(serializeProject(project)),project);
   for(const node of project.logic.nodes.filter(n=>n.moduleId===OUTPUT_MODULE)){
    const ports=nodePorts(node,catalog,project);
-   assert.ok([...ports.inputs,...ports.outputs].every(p=>p.type==='event'));
-   assert.deepEqual(ports.outputs.map(p=>p.id),['on','off','done']);
+   assert.ok(ports.inputs.every(p=>p.type==='event'));assert.equal(ports.outputs.find(p=>p.id==='state').type,'boolean');
+   assert.deepEqual(ports.outputs.map(p=>p.id),['on','off','done','state']);
   }
   assert.deepEqual(validateGraph(project,catalog).filter(i=>i.severity==='error'),[]);generateFirmware(project,catalog);
  }
@@ -51,12 +51,13 @@ test('mounted devices appear with their own actions and exact component binding 
   assert.ok(own.every(e=>e.group===component.name));
  }
  assert.ok(entries.some(e=>e.name==='События кнопки'));
- assert.ok(entries.some(e=>e.name==='Проверить кнопку'));
+ assert.ok(!entries.some(e=>e.module.id==='clex.logic.gpio-read'));
+ assert.ok(entries.some(e=>e.name==='Условие'));
  assert.ok(entries.some(e=>e.name==='Управлять светодиодом'));
  assert.ok(!entries.some(e=>e.module.id==='clex.logic.mqtt-send'));
 });
-test('strict current-format validation rejects unmarked Boolean edges; opening old files uses the upgrader',()=>{
+test('strict current-format validation rejects unknown data types; opening old files uses the upgrader',()=>{
  const project=firmwareProject();
  for(const formatVersion of [1,2,3,5])assert.throws(()=>parseProject(JSON.stringify({...project,formatVersion})),/Версия формата/);
- project.logic.edges[0].dataType='boolean';assert.throws(()=>serializeProject(project),/связь/);
+ project.logic.edges[0].dataType='unknown';assert.throws(()=>serializeProject(project),/связь/);
 });

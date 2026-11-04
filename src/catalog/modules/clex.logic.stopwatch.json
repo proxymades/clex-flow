@@ -52,6 +52,13 @@
       "type": "number",
       "readyOn": "changed",
       "description": "Количество полных секунд для других блоков."
+    },
+    {
+      "id": "running",
+      "name": "Секундомер работает?",
+      "type": "boolean",
+      "readyOn": "changed",
+      "description": "Да во время отсчета, Нет на паузе."
     }
   ],
   "parameters": {

@@ -70,6 +70,13 @@
       "type": "number",
       "readyOn": "changed",
       "description": "Передает измеренное значение после получения кадра."
+    },
+    {
+      "id": "success",
+      "name": "Успешно?",
+      "type": "boolean",
+      "readyOn": "changed",
+      "description": "Да, если действие выполнено успешно."
     }
   ],
   "parameters": {

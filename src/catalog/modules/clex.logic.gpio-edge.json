@@ -21,6 +21,38 @@
       "name": "Вход отключён",
       "type": "event",
       "description": "Одно событие при переходе в неактивное состояние."
+    },
+    {
+      "id": "level",
+      "name": "Высокий уровень?",
+      "type": "boolean",
+      "description": "Текущее электрическое состояние входа после фильтрации дребезга: Да для HIGH, Нет для LOW.",
+      "displayUpdateEvents": [
+        {
+          "id": "active",
+          "label": "Вход активирован"
+        },
+        {
+          "id": "inactive",
+          "label": "Вход отключён"
+        }
+      ]
+    },
+    {
+      "id": "activeState",
+      "name": "Вход активен?",
+      "type": "boolean",
+      "description": "Текущее состояние входа с учётом активного уровня и защиты от дребезга.",
+      "displayUpdateEvents": [
+        {
+          "id": "active",
+          "label": "Вход активирован"
+        },
+        {
+          "id": "inactive",
+          "label": "Вход отключён"
+        }
+      ]
     }
   ],
   "parameters": {

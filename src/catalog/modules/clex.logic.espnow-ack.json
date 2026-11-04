@@ -37,7 +37,7 @@
     },
     {
       "id": "error",
-      "name": "Причина ошибки",
+      "name": "Описание ошибки",
       "type": "text",
       "description": "Ошибка подтверждения.",
       "readyOn": "failed"

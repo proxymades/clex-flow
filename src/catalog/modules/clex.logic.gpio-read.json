@@ -2,6 +2,7 @@
   "id": "clex.logic.gpio-read",
   "version": "1.0.0",
   "kind": "logic",
+  "hidden": true,
   "name": "Проверить вход",
   "description": "По сигналу проверяет кнопку или другой цифровой вход и запускает подходящую ветвь результата.",
   "category": "gpio",
@@ -29,6 +30,39 @@
       "name": "Вход неактивен",
       "type": "event",
       "description": "Сигнал, если при проверке вход неактивен."
+    },
+    {
+      "id": "level",
+      "name": "Высокий уровень?",
+      "type": "boolean",
+      "required": false,
+      "description": "Текущее электрическое состояние входа после фильтрации дребезга: Да для HIGH, Нет для LOW.",
+      "displayUpdateEvents": [
+        {
+          "id": "active",
+          "label": "Вход активирован"
+        },
+        {
+          "id": "inactive",
+          "label": "Вход отключён"
+        }
+      ]
+    },
+    {
+      "id": "activeState",
+      "name": "Вход активен?",
+      "type": "boolean",
+      "description": "Текущее состояние входа с учётом активного уровня и защиты от дребезга.",
+      "displayUpdateEvents": [
+        {
+          "id": "active",
+          "label": "Вход активирован"
+        },
+        {
+          "id": "inactive",
+          "label": "Вход отключён"
+        }
+      ]
     }
   ],
   "parameters": {

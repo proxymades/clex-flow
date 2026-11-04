@@ -52,7 +52,7 @@
     },
     {
       "id": "error",
-      "name": "Причина ошибки",
+      "name": "Описание ошибки",
       "type": "text",
       "description": "Причина неудачного обмена.",
       "readyOn": "failed"

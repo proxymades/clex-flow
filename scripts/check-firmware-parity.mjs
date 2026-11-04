@@ -1,3 +1,4 @@
+import {conditionProject} from '../tests/condition-fixture.js';
 import {eventIndicatorProject} from '../tests/event-indicator-fixture.js';
 import {mosfetProject,MOSFET_BOARDS} from '../tests/mosfet-fixture.js';
 import {audioPlayProject} from '../tests/audio-play-fixture.js';
@@ -96,6 +97,7 @@ const cases = [
  project.logic=connectNodes(project.logic,catalog,{source:nodes.senderMode.id,sourceHandle:'done',target:nodes.peer.id,targetHandle:'resetStatistics'},project);
  cases.push(['s3-espnow-loss-reset',project,'usb']);
 }
+for(const boardId of ['doit-esp32-devkit-v1-30pin','waveshare-esp32-s3-eth','waveshare-esp32-p4-nano','arduino-nano-atmega328p-ch340'])for(const combine of ['all','any'])cases.push([boardId+'-conditions-'+combine,conditionProject(boardId,{combine,negate:true}).project,boardId.includes('s3')?'usb':'uart']);
 const root = fileURLToPath(new URL('../', import.meta.url));
 cases.push(['s3-router-no-ota',routerProject({ota:false}).project,'usb'],['s3-router-display',routerDisplayProject().project,'usb']);
 for(const boardId of ['waveshare-esp32-s3-eth','waveshare-esp32-p4-nano'])for(const mode of [{},{wan:'ethernet',backup:'wifi',staticWan:true},{lan:'ethernet'}])cases.push([boardId+'-router-'+(mode.lan?'lan-'+mode.lan:'wan-'+(mode.wan||'wifi')),routerProject({boardId,...mode}).project,boardId.includes('s3')?'usb':'uart']);

@@ -2,8 +2,8 @@
   "id": "clex.logic.compare-number",
   "version": "1.0.0",
   "kind": "logic",
-  "name": "Сравнение числа",
-  "description": "Сравнивает число с порогом или определяет его положение относительно диапазона. Выдаёт событие результата проверки или ошибки. Выполняется по входному сигналу.",
+  "name": "Условие",
+  "description": "По команде проверяет числа, текст и состояния Да/Нет. Несколько проверок объединяются через И или ИЛИ; отдельную проверку можно инвертировать.",
   "category": "values",
   "categoryName": "Данные",
   "icon": "GitBranch",
@@ -63,7 +63,7 @@
       "id": "changed",
       "name": "Проверка завершена",
       "type": "event",
-      "description": "Сигнал после каждой проверки, включая ошибку. Числовой результат обновлён."
+      "description": "Сигнал после каждой проверки, включая ошибку. Данные результата обновлены."
     },
     {
       "id": "matched",
@@ -71,7 +71,10 @@
       "type": "event",
       "when": {
         "field": "mode",
-        "value": "compare"
+        "values": [
+          "compare",
+          "conditions"
+        ]
       },
       "description": "Сигнал: Условие выполнено."
     },
@@ -81,7 +84,10 @@
       "type": "event",
       "when": {
         "field": "mode",
-        "value": "compare"
+        "values": [
+          "compare",
+          "conditions"
+        ]
       },
       "description": "Сигнал: Условие не выполнено."
     },
@@ -117,16 +123,23 @@
     },
     {
       "id": "failed",
-      "name": "Ошибка сравнения",
+      "name": "Ошибка проверки",
       "type": "event",
-      "description": "Сигнал: Ошибка сравнения."
+      "description": "Срабатывает, если проверку выполнить не удалось."
     },
     {
       "id": "value",
       "name": "Проверенное число",
       "type": "number",
       "readyOn": "changed",
-      "description": "Передаёт число: Проверенное число."
+      "description": "Передаёт число: Проверенное число.",
+      "when": {
+        "field": "mode",
+        "values": [
+          "compare",
+          "range"
+        ]
+      }
     },
     {
       "id": "error",
@@ -134,14 +147,67 @@
       "type": "text",
       "readyOn": "changed",
       "description": "Передаёт текст: Описание ошибки."
+    },
+    {
+      "id": "result",
+      "name": "Условие выполнено?",
+      "type": "boolean",
+      "readyOn": "changed",
+      "when": {
+        "field": "mode",
+        "values": [
+          "compare",
+          "conditions"
+        ]
+      }
+    },
+    {
+      "id": "isBelow",
+      "name": "Ниже диапазона?",
+      "type": "boolean",
+      "readyOn": "changed",
+      "when": {
+        "field": "mode",
+        "value": "range"
+      }
+    },
+    {
+      "id": "isInside",
+      "name": "В диапазоне?",
+      "type": "boolean",
+      "readyOn": "changed",
+      "when": {
+        "field": "mode",
+        "value": "range"
+      }
+    },
+    {
+      "id": "isAbove",
+      "name": "Выше диапазона?",
+      "type": "boolean",
+      "readyOn": "changed",
+      "when": {
+        "field": "mode",
+        "value": "range"
+      }
+    },
+    {
+      "id": "valid",
+      "name": "Проверка корректна?",
+      "type": "boolean",
+      "readyOn": "changed"
     }
   ],
   "parameters": {
     "mode": {
       "label": "Режим проверки",
       "type": "select",
-      "default": "range",
+      "default": "conditions",
       "options": [
+        {
+          "value": "conditions",
+          "label": "Условия: числа, текст, Да/Нет"
+        },
         {
           "value": "range",
           "label": "Диапазон"
@@ -258,6 +324,35 @@
         "field": "mode",
         "value": "range"
       }
+    },
+    "conditions": {
+      "label": "Условия",
+      "type": "text",
+      "default": "[{\"id\":\"c1\",\"type\":\"boolean\",\"operator\":\"eq\",\"reference\":true,\"tolerance\":0,\"negate\":false}]",
+      "maxLength": 8192,
+      "when": {
+        "field": "mode",
+        "value": "conditions"
+      }
+    },
+    "combine": {
+      "label": "Объединение условий",
+      "type": "select",
+      "default": "all",
+      "options": [
+        {
+          "value": "all",
+          "label": "И – выполнены все"
+        },
+        {
+          "value": "any",
+          "label": "ИЛИ – выполнено хотя бы одно"
+        }
+      ],
+      "when": {
+        "field": "mode",
+        "value": "conditions"
+      }
     }
   },
   "constraints": {},
@@ -278,5 +373,9 @@
     "status": "implemented",
     "generatorKey": "compare-number",
     "dependencies": []
-  }
+  },
+  "legacyNames": [
+    "Сравнение числа"
+  ],
+  "settingsEditor": "condition"
 }

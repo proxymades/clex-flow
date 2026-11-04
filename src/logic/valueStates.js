@@ -1,8 +1,8 @@
 import {graphModule,nodePorts} from './model.js';
 import {nodeDisplayName} from './presentation.js';
 export function valueStates(port){
- const descriptor=port?.valueStates,options=descriptor?.options;
- const valid=value=>port.type==='number'?Number.isFinite(value):port.type==='text'&&typeof value==='string'&&value.length<=200;
+ const descriptor=port?.valueStates||(port?.type==='boolean'?{initialValue:false,fallbackValue:false,options:[{value:false,label:'Нет',dotColor:'#97a6bd'},{value:true,label:'Да',dotColor:'#34d399'}]}:null),options=descriptor?.options;
+ const valid=value=>port.type==='boolean'?typeof value==='boolean':port.type==='number'?Number.isFinite(value):port.type==='text'&&typeof value==='string'&&value.length<=200;
  if(!Array.isArray(options)||!options.length||options.length>32||options.some(option=>!option||!valid(option.value)||typeof option.label!=='string'||!option.label.trim()||option.label.length>80||!/^#[0-9a-f]{6}$/i.test(option.dotColor)))return null;
  if(new Set(options.map(option=>JSON.stringify(option.value))).size!==options.length)return null;
  return {...descriptor,options,initialValue:options.some(option=>option.value===descriptor.initialValue)?descriptor.initialValue:options[0].value,fallbackValue:options.some(option=>option.value===descriptor.fallbackValue)?descriptor.fallbackValue:options[0].value};

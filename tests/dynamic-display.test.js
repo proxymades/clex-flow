@@ -56,7 +56,7 @@ test('firmware updates just the bound LVGL object in the worker and retains stat
   assert.match(bundle.mainC, /next > INT32_MAX.*next < INT32_MIN/);
   assert.match(bundle.mainC, /static void node_\d+_reset/);
 });
-test('UTF-8 text uses typed screen bindings; boolean values are rejected', () => {
+test('UTF-8 text and Boolean values use typed screen bindings', () => {
   let project = dynamicDisplayProject();
   const id = project.components[0].id, dynamic = elements(project)[1];
   dynamic.valueType = 'text'; dynamic.initialValue = 'готов'; dynamic.prefix = 'Состояние: ';
@@ -70,8 +70,8 @@ test('UTF-8 text uses typed screen bindings; boolean values are rejected', () =>
   assert.match(generateFirmware(project, catalog).mainC, /clex_graphics_set_text\("[^" ]+", "[^" ]+", text_\d+\)/);
   source.parameters.message = '🌍'; assert.throws(() => generateFirmware(project, catalog), /шрифт/);
   dynamic.valueType = 'boolean'; dynamic.initialValue = false;
-  assert.ok(screenIssues(project.screens[id],catalog.modules.find(m=>m.display).display).length);
-  assert.throws(()=>serializeProject(project),/динамического/);
+  assert.deepEqual(screenIssues(project.screens[id],catalog.modules.find(m=>m.display).display),[]);
+  assert.doesNotThrow(()=>serializeProject(project));assert.ok(validateGraph(project,catalog).some(issue=>issue.code==='logic-connection'));
 });
 test('invalid dynamic metadata and unsupported prefix glyphs are rejected', () => {
   const project = dynamicDisplayProject(), screen = project.screens[project.components[0].id];

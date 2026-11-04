@@ -20,7 +20,7 @@ export function generateArduinoAvr(project,catalog,board,cString,issues){
  const index=new Map(nodes.map((n,i)=>[n.id,i])),hardware=new Map(components.map((c,i)=>[c.id,i]));
  const stepper=stepperFirmware(project,nodes,index,board);
  const xgzp=xgzpFirmware(project,catalog,nodes,index);
- const numeric=numericFirmware(nodes,index,cString);
+ const numeric=numericFirmware(nodes,index,cString,{avr:true,project});
  const edge=(n,port)=>project.logic.edges.find(e=>e.target===n.id&&e.targetHandle===port);
  const textLengths=new Map();
  const textSize=(n,port='text')=>{if(numeric.textSizes.has(n.id))return numeric.textSizes.get(n.id)[port];if(xgzp.textSizes.has(n.id))return xgzp.textSizes.get(n.id)[port];if(n.moduleId==='clex.logic.stepper')return stepper.textSizes.get(n.id).error;if(n.moduleId==='clex.logic.stopwatch')return 24;if(textLengths.has(n.id))return textLengths.get(n.id);const input=edge(n,'text'),size=(input?textSize(nodes[index.get(input.source)],input.sourceHandle):new TextEncoder().encode(n.parameters.message).length+1)+(edge(n,'number')?((xgzp.expressions.has(edge(n,'number').source)||numeric.expressions.has(edge(n,'number').source))?25:13):0);textLengths.set(n.id,size);return size;};
@@ -31,6 +31,11 @@ export function generateArduinoAvr(project,catalog,board,cString,issues){
  if(!xgzp.enabled&&!stepper.enabled&&!timers.length&&!watches.length&&!nodes.some(n=>n.moduleId==='clex.logic.gpio-edge'))throw new Error('Добавьте таймер или секундомер для запуска схемы.');
  const data=e=>{
   const n=nodes[index.get(e.source)],i=index.get(n.id);
+  if(n.moduleId==='clex.logic.gpio-set'&&e.sourceHandle==='state')return (outputs.operations.get(n.id)||relay.operations.get(n.id)).state;
+  if(['clex.logic.gpio-read','clex.logic.gpio-edge'].includes(n.moduleId)&&['level','activeState'].includes(e.sourceHandle)){
+   const component=hardwareBinding(n,project,catalog).component,state='input_stable_'+hardware.get(component.id);
+   return e.sourceHandle==='activeState'?state:(component.moduleId==='clex.hardware.button'||component.parameters.activeLevel==='low'?'!':'')+state;
+  }
   if(numeric.expressions.has(n.id))return numeric.expressions.get(n.id)[e.sourceHandle];
   if(xgzp.expressions.has(n.id))return xgzp.expressions.get(n.id)[e.sourceHandle];
   if(stepper.expressions.has(n.id))return stepper.expressions.get(n.id)[e.sourceHandle];

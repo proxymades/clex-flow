@@ -102,3 +102,14 @@ input:is([type=checkbox],[type=radio],[type=color],[type=range],[type=button],[t
 .workspace-properties .board-sources+.field{margin-top:16px}
 .workspace-properties :is(.panel-note,.board-sources)+.logic-hardware-binding{margin-top:16px}
 .workspace-properties .board-sources>.button+.button{margin-top:10px}
+
+/* Contact purpose is separate from its data type. */
+.logic-port-section+.logic-port-section{border-top:1px solid #303b50;margin-top:8px;padding-top:8px}
+.logic-port-section-titles{display:grid;grid-template-columns:1fr 1fr;padding:5px 13px 6px;color:#7e93b2;font-size:8px;font-weight:600;letter-spacing:.6px;text-transform:uppercase;gap:12px}
+.logic-port-section-titles>span:last-child{text-align:right}
+.condition-settings{display:flex;flex-direction:column;gap:12px;margin:12px 0 20px}
+.condition-row{border:1px solid #35415a;border-radius:8px;padding:12px;background:#141d2c;min-width:0}
+.condition-row>strong{display:block;font-size:11px;margin-bottom:12px;color:#c7d5e8}
+.condition-row .field{margin-bottom:12px}
+.condition-row .checkbox-field{font-size:11px;line-height:1.6}
+.condition-row .text-button{font-size:10px}

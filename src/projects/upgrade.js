@@ -28,10 +28,10 @@ function predicate(node, handle, project) {
     if (!positive || positive.some(id => !results.includes(id))) return null;
     return { ready:['changed'], branches:[...results,'failed'].map(id => [id,positive.includes(id)]) };
   }
-  if (['clex.logic.gpio-read','clex.logic.gpio-edge'].includes(node.moduleId) && handle === 'level') {
+  if (['clex.logic.gpio-read','clex.logic.gpio-edge'].includes(node.moduleId) && ['level','activeState'].includes(handle)) {
     const component = project.components.find(c => c.id === node.parameters.componentId);
     if (!component || !['clex.hardware.button','clex.hardware.touch-button'].includes(component.moduleId)) return null;
-    const high = component.moduleId !== 'clex.hardware.button';
+    const high = handle==='activeState'||component.moduleId !== 'clex.hardware.button';
     return { ready:[node.moduleId === 'clex.logic.gpio-read' ? 'done' : 'changed'], branches:[['active',high],['inactive',!high]] };
   }
   if (['clex.logic.gpio-toggle','clex.logic.relay'].includes(node.moduleId) && handle === 'state')
@@ -63,6 +63,11 @@ function upgrade(project, catalog) {
       if (/^XGZP6897D(?: – Измерение)? \d+$/.test(item.name)) item.name = item.name.replace('XGZP6897D','XGZP6847D');
     }
   }
+  for(const edge of p.logic.edges)if(edge.dataType==='boolean'&&edge.sourceHandle==='available'&&p.logic.nodes.some(n=>n.id===edge.source&&n.moduleId==='clex.logic.internet-check'&&n.moduleVersion==='1.0.0'))edge.sourceHandle='isAvailable';
+  for(const edge of p.logic.edges)if(edge.dataType==='boolean'&&edge.sourceHandle==='level'){
+    const source=p.logic.nodes.find(n=>n.id===edge.source);
+    if(source?.moduleVersion==='1.0.0'&&['clex.logic.gpio-read','clex.logic.gpio-edge'].includes(source.moduleId)&&p.components.some(c=>c.id===source.parameters.componentId&&c.moduleId==='clex.hardware.touch-button'&&c.moduleVersion==='1.0.0'))edge.sourceHandle='activeState';
+  }
   const originals = new Map(p.logic.nodes.map(node => [node.id,structuredClone(node)]));
   const nodes = new Map(p.logic.nodes.map(node => [node.id,node]));
   const oldEdges = structuredClone(p.logic.edges);
@@ -83,9 +88,6 @@ function upgrade(project, catalog) {
   for (const [componentId,screen] of Object.entries(p.screens || {})) for (const element of screen.elements || []) {
     if (element.valueType !== 'boolean') continue;
     booleans.add(componentId + '/' + element.id);
-    element.valueType = element.type === 'indicator' ? 'number' : 'text';
-    element.initialValue = element.type === 'indicator' ? Number(element.initialValue) : element.initialValue ? 'Да' : 'Нет';
-    if (element.type === 'indicator') for (const state of element.states || []) state.value = Number(state.value);
   }
   for (const edge of oldEdges.filter(edge => edge.dataType === 'boolean')) {
     const source = originals.get(edge.source), target = originals.get(edge.target);
@@ -100,7 +102,7 @@ function upgrade(project, catalog) {
       const componentId = target.parameters.componentId;
       const element = p.screens?.[componentId]?.elements?.find(e => e.id === edge.targetHandle);
       if (element?.type !== 'indicator' || element.mode !== 'dynamic' || !booleans.has(componentId + '/' + element.id)) continue;
-      const states = [0,1].map(value => element.states.find(state => state.value === value));
+      const states = [false,true].map(value => element.states.find(state => state.value === value));
       const updates = oldEdges.filter(e => e.target === target.id && ['trigger','update.' + element.id].includes(e.targetHandle));
       // Shared screen definitions or externally scheduled refreshes require manual review.
       if (p.logic.nodes.filter(n => n.moduleId === target.moduleId && n.parameters.componentId === componentId).length !== 1 ||
@@ -155,7 +157,7 @@ function upgrade(project, catalog) {
     if (!source || !target) continue;
     const output = nodePorts(source,catalog,p).outputs.find(port => port.id === edge.sourceHandle);
     const input = nodePorts(target,catalog,p).inputs.find(port => port.id === edge.targetHandle);
-    if (edge.dataType === 'boolean' || !output || !input || output.type !== edge.dataType || input.type !== edge.dataType || source.legacy || target.legacy) {
+    if (!output || !input || output.type !== edge.dataType || input.type !== edge.dataType || source.legacy || target.legacy) {
       edge.legacy = { sourceName:label(edge.sourceHandle,output), targetName:label(edge.targetHandle,input), message:LEGACY_MESSAGE };
     }
   }

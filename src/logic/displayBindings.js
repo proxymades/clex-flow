@@ -1,3 +1,4 @@
+import {portRowCount} from './portGroups.js';
 import {addNode,connectNodes,graphModule,nodePorts,hardwareBinding,connectionProblem,validateGraph} from './model.js';
 import {screenBindings,screenFor,elementUpdatePort} from '../displays/model.js';
 import {presentPort,visiblePorts} from './presentation.js';
@@ -68,7 +69,7 @@ export function planDisplayBinding(project,catalog,choice){
  if(fresh.length)throw new Error(fresh[0].message);
  // Make room only for contacts newly exposed by this binding. Existing manual
  // overlaps are left alone; positions are part of the same Undo transaction.
- const height=(node,context)=>{const ports=visiblePorts(node,context,catalog);return (graphModule(node,catalog)?.editor==='screen'?360:160)+Math.max(...['inputs','outputs'].map(key=>ports[key].length))*44;};
+ const height=(node,context)=>{const ports=visiblePorts(node,context,catalog);return (graphModule(node,catalog)?.editor==='screen'?360:160)+portRowCount(ports)*44+48;};
  const after={...project,logic:graph};
  const queue=graph.nodes.flatMap(node=>{const old=project.logic.nodes.find(item=>item.id===node.id);return old&&height(node,after)>height(old,project)?[{id:node.id,y:old.position.y,height:height(old,project)}]:[];});
  let passes=0;

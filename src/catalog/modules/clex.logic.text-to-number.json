@@ -56,6 +56,12 @@
       "type": "text",
       "readyOn": "changed",
       "description": "Передаёт текст: Описание ошибки."
+    },
+    {
+      "id": "valid",
+      "name": "Число корректно?",
+      "type": "boolean",
+      "readyOn": "changed"
     }
   ],
   "parameters": {

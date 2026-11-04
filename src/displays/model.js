@@ -1,12 +1,12 @@
 import { indicatorIssues, indicatorCaption } from './indicator.js';
 import { imageIssues, MAX_IMAGE_PIXELS } from './image.js';
-export const VALUE_TYPES = ['number', 'text'];
+export const VALUE_TYPES = ['number', 'text', 'boolean'];
 export const isDynamicText = element => element.type !== 'image' && element.mode === 'dynamic' || element.type === 'indicator' && element.captionDynamic;
 export const elementName = (element, index) => element.name?.trim() || `${element.type === 'image' ? 'Изображение' : element.type === 'indicator' ? 'Индикатор' : 'Текст'} ${index + 1}`;
 export function elementPreviewText(element) {
   if (element.type === 'indicator') return indicatorCaption(element);
   if (!isDynamicText(element)) return element.text;
-  const value = String(element.initialValue ?? '');
+  const value = element.valueType==='boolean'?(element.initialValue?'Да':'Нет'):String(element.initialValue ?? '');
   return (element.prefix || '') + value + (element.suffix || '');
 }
 export const elementUpdatePort = id => 'update.' + id;
@@ -32,7 +32,7 @@ export function dynamicTextValid(element) {
   return VALUE_TYPES.includes(element.valueType)
     && typeof element.prefix === 'string' && element.prefix.length <= 200
     && typeof element.suffix === 'string' && element.suffix.length <= 200
-    && (element.valueType === 'number' ? Number.isFinite(element.initialValue) : typeof element.initialValue === 'string' && element.initialValue.length <= 500)
+    && (element.valueType === 'boolean' ? typeof element.initialValue==='boolean' : element.valueType === 'number' ? Number.isFinite(element.initialValue) : typeof element.initialValue === 'string' && element.initialValue.length <= 500)
     && element.id !== 'trigger';
 }
 export const colorValid = value => typeof value === 'string' && /^#[0-9a-f]{6}$/i.test(value);

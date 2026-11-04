@@ -13,7 +13,7 @@ const statePort=id=>catalog.modules.find(m=>m.id===id).outputs.find(p=>p.id==='s
 test('Ethernet and resource state metadata match the four actual runtime codes',()=>{
  assert.deepEqual(valueStates(statePort('clex.logic.ethernet')).options.map(o=>o.value),[0,1,2,3]);
  assert.deepEqual(valueStates(statePort('clex.logic.internet-check')).options.map(o=>o.label),['Ожидание сети','Проверка','Ресурс доступен','Ресурс недоступен']);
- const p=networkProject();assert.equal(stateSources(p,catalog).length,2);assert.equal(valueStates(catalog.modules.find(m=>m.id==='clex.logic.counter').outputs[1]),null);
+ const p=networkProject();assert.equal(stateSources(p,catalog).filter(source=>source.port.type==='number').length,2);assert.equal(valueStates(catalog.modules.find(m=>m.id==='clex.logic.counter').outputs[1]),null);
 });
 test('factory indicator gets source labels, correct codes and source colors without changing geometry or ID',()=>{
  const display=catalog.modules.find(m=>m.display).display,before=newIndicator(display),port=statePort('clex.logic.ethernet'),after=applyValueStates(before,port);
@@ -23,8 +23,8 @@ test('custom captions, colors, empty text, existing IDs and extra states survive
  const p=networkProject(),element=Object.values(p.screens)[0].elements.find(e=>e.name==='Ethernet');element.states[0].text='';element.states[0].background='#224466';element.states[0].dotColor='#abcdef';element.states.push({...element.states[0],id:crypto.randomUUID(),value:99,name:'Свое состояние',text:'Свое'});
  const before=structuredClone(element),after=applyValueStates(element,statePort('clex.logic.ethernet'));assert.deepEqual(after.states.find(s=>s.value===0),before.states[0]);assert.deepEqual(after.states.find(s=>s.value===99),before.states.at(-1));assert.deepEqual(element,before);
 });
-test('state metadata supports numbers and text and rejects removed boolean domains',()=>{
- for(const [type,values]of [['text',['offline','online']]]){const port={type,valueStates:{options:values.map((value,i)=>({value,label:'Состояние '+i,dotColor:'#123456'}))}};assert.ok(valueStates(port));const element=newIndicator(catalog.modules.find(m=>m.display).display),after=applyValueStates(element,port);assert.equal(after.valueType,type);assert.deepEqual(after.states.map(s=>s.value),values);assert.deepEqual(indicatorIssues(after),[]);}
+test('state metadata supports numbers, text and Boolean states',()=>{
+ for(const [type,values]of [['text',['offline','online']],['boolean',[false,true]]]){const port={type,valueStates:{options:values.map((value,i)=>({value,label:'Состояние '+i,dotColor:'#123456'}))}};assert.ok(valueStates(port));const element=newIndicator(catalog.modules.find(m=>m.display).display),after=applyValueStates(element,port);assert.equal(after.valueType,type);assert.deepEqual(after.states.map(s=>s.value),values);assert.deepEqual(indicatorIssues(after),[]);}
  assert.equal(valueStates({type:'number',valueStates:{options:[{value:'0',label:'Ноль',dotColor:'#123456'}]}}),null);assert.equal(valueStates({type:'number',valueStates:{options:[{value:0,label:'А',dotColor:'#123456'},{value:0,label:'Б',dotColor:'#123456'}]}}),null);
 });
 test('source preset and binding persist together and generated firmware includes the source captions',()=>{

@@ -15,7 +15,7 @@ test('HIGH/LOW and all bindings persist and generate normalized active states wi
  }
 });
 test('touch labels describe activation while generic read/edge IDs remain unchanged',()=>{
- for(const level of ['high','low']){const{project,nodes}=touchButtonProject(undefined,level);const module=catalog.modules.find(m=>m.id===nodes.edge.moduleId);assert.match(nodeDisplayName(nodes.edge,project,catalog),/События кнопки/);assert.equal(presentPort(module.outputs.find(p=>p.id==='active'),nodes.edge,project,catalog).name,'Кнопка нажата');assert.equal(presentPort(module.outputs.find(p=>p.id==='inactive'),nodes.edge,project,catalog).name,'Кнопка отпущена');assert.ok(!module.outputs.some(p=>p.type==='boolean'));}
+ for(const level of ['high','low']){const{project,nodes}=touchButtonProject(undefined,level);const module=catalog.modules.find(m=>m.id===nodes.edge.moduleId);assert.match(nodeDisplayName(nodes.edge,project,catalog),/События кнопки/);assert.equal(presentPort(module.outputs.find(p=>p.id==='active'),nodes.edge,project,catalog).name,'Кнопка нажата');assert.equal(presentPort(module.outputs.find(p=>p.id==='inactive'),nodes.edge,project,catalog).name,'Кнопка отпущена');assert.ok(module.outputs.some(p=>p.id==='activeState'&&p.type==='boolean'));assert.ok(module.outputs.some(p=>p.id==='level'&&p.type==='boolean'));}
 });
 test('ESP32 rejects 5V OUT and mismatched VCC; Nano accepts 5V configured supply and OUT',()=>{
  for(const id of boards){const{project,component}=touchButtonProject(id);const board=catalog.boards.find(b=>b.id===id),pin=project.assembly.connections.find(w=>w.terminalId==='signal').boardPinId;

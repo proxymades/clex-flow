@@ -64,7 +64,7 @@ export function validateProject(project) {
   }
   for (const edge of project.logic.edges) {
     const input = edge?.target+'/'+edge?.targetHandle, link=JSON.stringify([edge?.source,edge?.sourceHandle,edge?.target,edge?.targetHandle]);
-    if (!isObject(edge) || !validKey(edge.id) || edgeIds.has(edge.id) || links.has(link) || !nodeIds.has(edge.source) || !nodeIds.has(edge.target) || !validPortKey(edge.sourceHandle) || !validPortKey(edge.targetHandle) || (!['event','number','text'].includes(edge.dataType) && !(edge.dataType === 'boolean' && legacyEdge(edge.legacy))) || edge.dataType !== 'event' && !edge.legacy && inputs.has(input)) throw new Error('Некорректная, повторяющаяся или осиротевшая связь логики.');
+    if (!isObject(edge) || !validKey(edge.id) || edgeIds.has(edge.id) || links.has(link) || !nodeIds.has(edge.source) || !nodeIds.has(edge.target) || !validPortKey(edge.sourceHandle) || !validPortKey(edge.targetHandle) || !['event','number','text','boolean'].includes(edge.dataType) || edge.dataType !== 'event' && !edge.legacy && inputs.has(input)) throw new Error('Некорректная, повторяющаяся или осиротевшая связь логики.');
     if (edge.legacy !== undefined && !legacyEdge(edge.legacy)) throw new Error('Некорректное предупреждение старой связи.');
     edgeIds.add(edge.id); links.add(link); if (edge.dataType !== 'event' && !edge.legacy) inputs.add(input);
   }

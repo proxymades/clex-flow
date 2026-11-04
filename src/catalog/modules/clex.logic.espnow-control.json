@@ -151,7 +151,7 @@
     },
     {
       "id": "error",
-      "name": "Причина ошибки",
+      "name": "Описание ошибки",
       "type": "text",
       "description": "Ошибка настройки радио или сохранения режима.",
       "readyOn": "failed",
@@ -331,6 +331,50 @@
       "name": "Секунд после ответа",
       "type": "number",
       "description": "Возраст последнего ответа. -1 означает, что ответа еще не было; при потере связи возраст продолжает расти.",
+      "readyOn": "peerChanged",
+      "when": {
+        "field": "action",
+        "value": "peer"
+      }
+    },
+    {
+      "id": "ready",
+      "name": "Радио готово?",
+      "type": "boolean",
+      "description": "Местное радио запущено. Не означает, что удаленная плата доступна.",
+      "readyOn": "changed",
+      "when": {
+        "field": "action",
+        "value": "status"
+      }
+    },
+    {
+      "id": "online",
+      "name": "Устройство на связи?",
+      "type": "boolean",
+      "description": "Есть актуальный ответ выбранного устройства; не подтверждает выполнение команды.",
+      "readyOn": "peerChanged",
+      "when": {
+        "field": "action",
+        "value": "peer"
+      }
+    },
+    {
+      "id": "rssiValid",
+      "name": "RSSI актуален?",
+      "type": "boolean",
+      "description": "Есть измерение RSSI и не истек таймаут связи.",
+      "readyOn": "peerChanged",
+      "when": {
+        "field": "action",
+        "value": "peer"
+      }
+    },
+    {
+      "id": "statisticsValid",
+      "name": "Статистика актуальна?",
+      "type": "boolean",
+      "description": "Получен свежий отчет с ненулевым количеством пакетов; до первого измерения и после таймаута – нет.",
       "readyOn": "peerChanged",
       "when": {
         "field": "action",

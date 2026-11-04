@@ -1,6 +1,7 @@
 import {LEGACY_COLOR} from '../projects/legacy.js';
 import {OUTPUT_MODULE,outputChannelCount} from '../gpio/model.js';
 import MicAudioLines from '../components/MicAudioLines.jsx';
+import {portSections} from './portGroups.js';
 import {numericSummary} from './numeric.js';
 import { formatCount } from '../utils/plural.js';
 import {memo,useEffect} from 'react';
@@ -14,7 +15,7 @@ const icons={ MicAudioLines, Mic, Gauge, Wifi, ToggleRight, RotateCw,Timer,ScanL
 function LogicNode({id,data,selected}){
  const {definition,node,binding,issueCount,onPort,pending,display,screen,project,catalog,connection,onBindData}=data;
  const ports=visiblePorts(node,project,catalog,{connection});
- const inputs=ports.inputs,outputs=ports.outputs,rows=Math.max(inputs.length,outputs.length);
+ const inputs=ports.inputs,outputs=ports.outputs,sections=portSections(ports);
  const layout=JSON.stringify([inputs,outputs].map(items=>items.map(port=>[port.id,port.name])));
  const updateNodeInternals=useUpdateNodeInternals();useEffect(()=>{updateNodeInternals(id);},[id,layout,updateNodeInternals]);
  const Icon=icons[definition?.icon]||Box;
@@ -37,7 +38,10 @@ function LogicNode({id,data,selected}){
   {definition?.editor==='screen'&&display&&<><div className="logic-display-preview nodrag" title="Двойное нажатие открывает редактор экрана"><ScreenPreview display={display} screen={screen||{background:'#000000',elements:[]}}/></div>{screen?.elements.some(element=>element.mode==='dynamic'||element.captionDynamic)&&<button className="node-bind-button nodrag" disabled={data.busy} onClick={()=>onBindData(node)}><Link2 size={13}/>Подключить данные</button>}</>}
   {node.legacy&&<p className="panel-note">{node.legacy}</p>}
   {!definition&&<p className="logic-missing">Точная версия модуля отсутствует в библиотеке.</p>}
-  <div className="logic-ports">{Array.from({length:rows},(_,index)=><div className={'logic-port-row'+(!inputs[index]||!outputs[index]?' single-port-row':'')} key={index}>{inputs[index]&&portView(inputs[index],'input')}{outputs[index]&&portView(outputs[index],'output')}</div>)}</div>
+  <div className="logic-ports">{sections.map(section=><section className={'logic-port-section '+section.id} data-port-section={section.id} key={section.id}>
+   <div className="logic-port-section-titles"><span>{section.inputs.length>0&&section.inputTitle}</span><span>{section.outputs.length>0&&section.outputTitle}</span></div>
+   {Array.from({length:Math.max(section.inputs.length,section.outputs.length)},(_,index)=><div className={'logic-port-row'+(!section.inputs[index]||!section.outputs[index]?' single-port-row':'')} key={index}>{section.inputs[index]&&portView(section.inputs[index],'input')}{section.outputs[index]&&portView(section.outputs[index],'output')}</div>)}
+  </section>)}</div>
  </article>;
 }
 export default memo(LogicNode);

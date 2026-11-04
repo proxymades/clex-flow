@@ -42,6 +42,13 @@
       "type": "text",
       "readyOn": "changed",
       "description": "Сообщение об ошибке подключения или выполнения."
+    },
+    {
+      "id": "success",
+      "name": "Успешно?",
+      "type": "boolean",
+      "readyOn": "changed",
+      "description": "Да, если действие выполнено успешно."
     }
   ],
   "parameters": {

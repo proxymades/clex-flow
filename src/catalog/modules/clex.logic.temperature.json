@@ -53,10 +53,16 @@
     },
     {
       "id": "error",
-      "name": "Ошибка датчика",
+      "name": "Описание ошибки",
       "type": "text",
       "readyOn": "changed",
       "description": "Передаёт текст: Ошибка датчика."
+    },
+    {
+      "id": "valid",
+      "name": "Показание достоверно?",
+      "type": "boolean",
+      "readyOn": "changed"
     }
   ],
   "parameters": {

@@ -23,7 +23,7 @@ const {chromium}=require('playwright');
  try {
   await page.goto(process.env.CLEX_PREVIEW_URL||'http://127.0.0.1:1457');await page.locator('.project-open').click();
   await page.getByRole('button',{name:'Логика',exact:true}).click();
-  for(const name of ['Текст в число','Сравнение числа'])assert.equal(await page.getByRole('button',{name:'Добавить блок: '+name,exact:true}).isEnabled(),true);
+  for(const name of ['Текст в число','Условие'])assert.equal(await page.getByRole('button',{name:'Добавить блок: '+name,exact:true}).isEnabled(),true);
   await page.getByRole('button',{name:'Показать весь граф',exact:true}).click();
   await card(nodes.parse).locator('.logic-drag-handle').click();
   assert.ok(!(await card(nodes.parse).innerText()).includes('Пустое сообщение'));

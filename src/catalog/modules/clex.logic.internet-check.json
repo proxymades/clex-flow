@@ -109,7 +109,7 @@
     },
     {
       "id": "error",
-      "name": "Причина ошибки",
+      "name": "Описание ошибки",
       "type": "text",
       "required": false,
       "readyOn": "changed",
@@ -137,6 +137,13 @@
       "name": "Ресурс недоступен",
       "type": "event",
       "description": "Сигнал после завершённой проверки, если ресурс недоступен."
+    },
+    {
+      "id": "isAvailable",
+      "name": "Ресурс доступен?",
+      "type": "boolean",
+      "readyOn": "changed",
+      "description": "Результат последней проверки ресурса. При потере сети сбрасывается в Нет."
     }
   ],
   "parameters": {

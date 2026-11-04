@@ -79,6 +79,13 @@
       "type": "number",
       "description": "MQTT reason code или код сетевой ошибки.",
       "readyOn": "failed"
+    },
+    {
+      "id": "isConnected",
+      "name": "Есть соединение",
+      "type": "boolean",
+      "description": "Текущее соединение с брокером.",
+      "readyOn": "changed"
     }
   ],
   "parameters": {

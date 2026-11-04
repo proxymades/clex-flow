@@ -11,14 +11,14 @@ export function indicatorLayout(element) {
 }
 export function indicatorIssues(element) {
   const issues = [];
-  if(!['number','text'].includes(element.valueType))issues.push('Выберите тип значения состояния.');
+  if(!['number','text','boolean'].includes(element.valueType))issues.push('Выберите тип значения состояния.');
   if (!integer(element.width, 16, 4096) || !integer(element.height, 16, 4096) || !integer(element.radius, 0, Math.floor(Math.min(element.width, element.height) / 2)) || !integer(element.padding, 0, 64) || !integer(element.gap, 0, 64) || !integer(element.dotSize, 2, 64) || typeof element.dotVisible !== 'boolean' || !['left','right','top','bottom'].includes(element.dotPosition) || !['left','center','right'].includes(element.align)) issues.push('Проверьте размеры, скругление, отступы и расположение точки.');
   if (typeof element.captionDynamic !== 'boolean' || typeof element.initialCaption !== 'string' || element.initialCaption.length > 500) issues.push('Проверьте динамическую надпись индикатора.');
   if (!Array.isArray(element.states) || !element.states.length || element.states.length > 32) return [...issues, 'Индикатор должен содержать от 1 до 32 состояний.'];
   const ids = new Set(), values = new Set();
   for (const state of element.states) {
     if (!state || typeof state !== 'object') { issues.push('Некорректное состояние индикатора.'); continue; }
-    const validValue = element.valueType === 'number' ? Number.isFinite(state.value) : typeof state.value === 'string' && state.value.length <= 200;
+    const validValue = element.valueType === 'boolean' ? typeof state.value==='boolean' : element.valueType === 'number' ? Number.isFinite(state.value) : typeof state.value === 'string' && state.value.length <= 200;
     if (!state || typeof state.id !== 'string' || !/^[a-zA-Z0-9][a-zA-Z0-9_-]{0,79}$/.test(state.id) || ids.has(state.id) || values.has(JSON.stringify(state.value)) || typeof state.name !== 'string' || !state.name.trim() || state.name.length > 80 || typeof state.text !== 'string' || state.text.length > 500 || !validValue || ![state.background, state.color, state.dotColor].every(color)) issues.push('Проверьте названия, значения и оформление состояний; значения должны отличаться.');
     ids.add(state.id); values.add(JSON.stringify(state.value));
   }

@@ -106,6 +106,13 @@
       "type": "text",
       "description": "Content Type, Response Topic, Correlation Data и User Properties полученного сообщения.",
       "readyOn": "received"
+    },
+    {
+      "id": "retain",
+      "name": "Retain",
+      "type": "boolean",
+      "description": "Значение флага Retain полученного сообщения.",
+      "readyOn": "received"
     }
   ],
   "parameters": {
