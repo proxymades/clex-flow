@@ -47,7 +47,8 @@ esp_err_t cv_audio_read(int16_t *pcm,size_t samples){
   mock_time+=audio_time_step;
   if(audio_faults&&(audio_read_calls==2||audio_read_calls==3))return ESP_FAIL;
  }
- for(size_t i=0;i<samples;i++)pcm[i]=(int16_t)(testing_feed?audio_read_calls:0);return ESP_OK;
+ for(size_t i=0;i<samples;i++){pcm[i]=(int16_t)(testing_feed?audio_read_calls:0);}
+ return ESP_OK;
 }
 esp_err_t cv_audio_gain(unsigned gain){(void)gain;return ESP_OK;}
 esp_err_t cv_audio_chime(unsigned volume,const int16_t *pcm,size_t samples){played_pcm=pcm;played_samples=samples;played_volume=volume;mock_time+=400000;return audio_status;}
@@ -154,18 +155,20 @@ int main(void){
  input_queue=xQueueCreate(64,block_bytes);capture_requests=xQueueCreate(1,sizeof(capture_t));capture_results=xQueueCreate(1,sizeof(capture_t));
  state=WAITING;enabled=true;config.recognition_pcm=NULL;config.recognition_samples=0;config.recognition_volume=0;
  unsigned failed_before=events[CV_FAILED],drops_before=drops;uint32_t epoch_before=epoch;
- testing_feed=true;if(setjmp(feed_end)==0)feed_task(NULL);testing_feed=false;free(feed_buffer);
+ testing_feed=true;if(setjmp(feed_end)==0){feed_task(NULL);}testing_feed=false;free(feed_buffer);
  assert(audio_read_calls==8&&mock_feed_calls==5&&events[CV_FAILED]==failed_before+2);
  assert(drops==drops_before+2&&epoch==epoch_before+2&&state==WAITING&&enabled);
  // A recording must restart after a gap and contain only consecutive good blocks.
  int16_t recorded[1024];capture_t capture={.pcm=recorded,.count=1024},completed;
  assert(xQueueSend(capture_requests,&capture,0)==pdTRUE);recording=true;audio_read_calls=0;testing_feed=true;
- if(setjmp(feed_end)==0)feed_task(NULL);testing_feed=false;recording=false;free(feed_buffer);
+ if(setjmp(feed_end)==0){feed_task(NULL);}
+ testing_feed=false;recording=false;free(feed_buffer);
  assert(xQueueReceive(capture_results,&completed,0)==pdTRUE&&completed.pcm==recorded);
  for(int i=0;i<1024;i++)assert(recorded[i]==(i<512?4:5));
  capture=(capture_t){.pcm=recorded,.count=1024,.speech=true};
  assert(xQueueSend(capture_requests,&capture,0)==pdTRUE);recording=true;audio_read_calls=0;audio_read_limit=400;audio_time_step=32000;audio_faults=false;testing_feed=true;
- if(setjmp(feed_end)==0)feed_task(NULL);testing_feed=false;recording=false;free(feed_buffer);
+ if(setjmp(feed_end)==0){feed_task(NULL);}
+ testing_feed=false;recording=false;free(feed_buffer);
  assert(xQueueReceive(capture_results,&completed,0)==pdTRUE&&completed.error==CAPTURE_NO_SPEECH);
  audio_read_limit=7;audio_time_step=0;audio_faults=true;
  puts("PASS: silence timeout returns a capture result without publishing an empty recording or latching a capture fault.");
