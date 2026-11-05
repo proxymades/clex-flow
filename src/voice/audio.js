@@ -8,6 +8,7 @@ export function activationAudioProblem(audio){
   return null;
 }
 export function readActivationAudio(component){return readAudioAsset(component.parameters.activationAudio);}
+export function readRecognitionAudio(component){return readAudioAsset(component.parameters.recognitionAudio);}
 export function readAudioAsset(text){
   if(text===''||text===undefined)return null;
   try{const audio=JSON.parse(text),problem=activationAudioProblem(audio);if(problem)throw Error(problem);return audio;}catch{throw Error('Повреждена аудиозапись. Загрузите файл повторно.');}

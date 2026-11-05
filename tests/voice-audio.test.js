@@ -41,3 +41,33 @@ test('custom activation audio survives project export and is embedded only when 
  assert.doesNotMatch(generateFirmware(p,catalog).mainC,/static const int16_t voice_activation_pcm/);
  assert.match(generateFirmware(p,catalog).mainC,/\.activation_pcm=NULL,\.activation_samples=0/);
 });
+
+test('recognition response is optional, independent of activation and preserves trained models',()=>{
+ const p=voiceProject({speaker:true}),voice=p.components[0],profile=voice.parameters.profile,wake=voice.parameters.wakeProfile,edges=structuredClone(p.logic.edges);
+ voice.parameters.recognitionSound=true;
+ assert.ok(validateAssembly(p,catalog).some(i=>i.code==='voice-audio'));
+ voice.parameters.recognitionAudio=JSON.stringify(prepareActivationAudio([signal(2400)],16000,'trying.wav'));
+ voice.parameters.recognitionVolume=60;
+ assert.equal(validateAssembly(p,catalog).filter(i=>i.severity==='error').length,0);
+ const bundle=generateFirmware(p,catalog);
+ assert.match(bundle.mainC,/static const int16_t voice_recognition_pcm\[\]/);
+ assert.match(bundle.mainC,/\.recognition_pcm=voice_recognition_pcm,\.recognition_samples=2400,\.recognition_volume=60/);
+ assert.doesNotMatch(bundle.mainC,/static const int16_t voice_activation_pcm/);
+ assert.deepEqual(parseProject(serializeProject(p)),p);
+ voice.parameters.recognitionSound=false;
+ assert.doesNotMatch(generateFirmware(p,catalog).mainC,/static const int16_t voice_recognition_pcm/);
+ assert.equal(voice.parameters.profile,profile);assert.equal(voice.parameters.wakeProfile,wake);assert.deepEqual(p.logic.edges,edges);
+});
+
+test('older voice projects keep their recordings, activation and graph with recognition response disabled',()=>{
+ const p=voiceProject({speaker:true,activationSound:true}),voice=p.components[0];
+ for(const key of ['recognitionSound','recognitionAudio','recognitionVolume'])delete voice.parameters[key];
+ const before=structuredClone(p),opened=parseProject(serializeProject(p));
+ assert.equal(Boolean(opened.components[0].parameters.recognitionSound),false);
+ assert.equal(opened.components[0].parameters.profile,before.components[0].parameters.profile);
+ assert.equal(opened.components[0].parameters.activationSound,true);
+ assert.deepEqual(opened.logic,before.logic);
+ assert.deepEqual(opened,before);
+ assert.equal(validateAssembly(opened,catalog).filter(i=>i.severity==='error').length,0);
+ assert.match(generateFirmware(opened,catalog).mainC,/\.recognition_pcm=NULL,\.recognition_samples=0/);
+});

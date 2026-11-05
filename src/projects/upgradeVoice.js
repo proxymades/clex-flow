@@ -3,7 +3,7 @@ const object = value => value !== null && typeof value === 'object' && !Array.is
 export function upgradeVoice(project){
   if(!Array.isArray(project.components)||!Array.isArray(project.logic?.nodes)||!project.assembly?.positions||!project.moduleVersions)return project;
   const legacy=project.components.filter(c=>c?.moduleId===VOICE_MODULE&&object(c.parameters)&&!Object.hasOwn(c.parameters,'activationSound')&&Object.hasOwn(c.parameters,'volume'));
-  const needsDefaults=project.components.some(c=>c?.moduleId===VOICE_MODULE&&object(c.parameters)&&(!Object.hasOwn(c.parameters,'activationSoundType')||!Object.hasOwn(c.parameters,'activationAudio')||!Object.hasOwn(c.parameters,'microphoneId')||!Object.hasOwn(c.parameters,'wakeMode')||!Object.hasOwn(c.parameters,'wakeProfile')));
+  const needsDefaults=project.components.some(c=>c?.moduleId===VOICE_MODULE&&object(c.parameters)&&['activationSoundType','activationAudio','microphoneId','wakeMode','wakeProfile','recognitionSound','recognitionAudio','recognitionVolume'].some(key=>!Object.hasOwn(c.parameters,key)));
   if(!legacy.length&&!needsDefaults)return project;
   const components=project.components.map(c=>({...c,parameters:{...c.parameters}})),positions={...project.assembly.positions},nodes=project.logic.nodes.map(n=>({...n,parameters:{...n.parameters}})),moduleVersions={...project.moduleVersions};
   for(const old of legacy){
@@ -27,6 +27,6 @@ export function upgradeVoice(project){
     voice.parameters={...parameters,activationSound:volume>0,speakerId:speaker?.id||'',activationVolume:volume};
     for(const node of nodes)if(node.moduleId==='clex.logic.tone'&&node.parameters.componentId===voice.id)node.parameters.componentId=speaker.id;
   }
-  for(const voice of components.filter(c=>c.moduleId===VOICE_MODULE)){voice.parameters={activationSoundType:'tone',activationAudio:'',microphoneId:'',wakeMode:'builtin',wakeProfile:'',...voice.parameters};}
+  for(const voice of components.filter(c=>c.moduleId===VOICE_MODULE)){voice.parameters={activationSoundType:'tone',activationAudio:'',microphoneId:'',wakeMode:'builtin',wakeProfile:'',recognitionSound:false,recognitionAudio:'',recognitionVolume:85,...voice.parameters};}
   return {...project,components,moduleVersions,assembly:{...project.assembly,positions},logic:{...project.logic,nodes}};
 }

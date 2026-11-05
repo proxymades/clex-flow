@@ -1,6 +1,6 @@
 import {AUDIO_PLAY_MODULE,readRecording} from '../../audio/model.js';
 import {microphoneSource} from '../../microphone/model.js';
-import {readActivationAudio,decodeActivationAudio} from '../../voice/audio.js';
+import {readActivationAudio,readRecognitionAudio,decodeActivationAudio} from '../../voice/audio.js';
 import {VOICE_MODULE,VOICE_LOGIC,readVoiceProfile,voiceModelReady,decodeVoiceFeatures,voiceSpeakers,voiceInputMatches,readWakeProfile,wakeModelReady,voiceRuntimeSignature} from '../../voice/model.js';
 import {hardwareProvider} from '../../hardware/resources.js';
 export const VOICE_TYPES='#include "clex_voice.h"\nenum { CLEX_EVENT_VOICE=10 };';
@@ -16,6 +16,7 @@ export function voiceFirmware(project,catalog,nodes,index,cString){
   const pin=value=>Number.isInteger(value)?value:-1;
   const activationSound=component.parameters.activationSound&&speakerIds.has(component.parameters.speakerId)&&component.parameters.activationVolume>0;
   const activationAudio=activationSound&&component.parameters.activationSoundType==='recording'?readActivationAudio(component):null;
+  const recognitionAudio=component.parameters.recognitionSound&&speakerIds.has(component.parameters.speakerId)&&(component.parameters.recognitionVolume??85)>0?readRecognitionAudio(component):null;
   const blocks=nodes.filter(n=>n.moduleId===VOICE_LOGIC&&n.parameters.componentId===component.id),tones=nodes.filter(n=>['clex.logic.tone',AUDIO_PLAY_MODULE].includes(n.moduleId)&&speakerIds.has(n.parameters.componentId));
   const wakeProfile=readWakeProfile(component),customWake=component.parameters.wakeMode==='custom',wakeReady=customWake&&wakeModelReady(component,project,board);
   const wakeReferences=wakeReady?wakeProfile.model.referenceIds.map(id=>wakeProfile.samples.find(s=>s.id===id)):[];
@@ -43,6 +44,7 @@ export function voiceFirmware(project,catalog,nodes,index,cString){
     operations.set(n.id,`  if(!${request}){${name}.success=false;snprintf(${name}.error,sizeof(${name}.error),"Аудиоинтерфейс занят");node_${i}_emit_changed();node_${i}_emit_failed();}`);
   }
   const source=`${activationAudio?'static const int16_t voice_activation_pcm[] = {'+decodeActivationAudio(activationAudio).join(',')+'};':''}
+${recognitionAudio?'static const int16_t voice_recognition_pcm[] = {'+decodeActivationAudio(recognitionAudio).join(',')+'};':''}
 ${arrays}
 ${referenceTable}
 ${wakeArrays}
@@ -57,7 +59,7 @@ static void voice_publish(const clex_voice_event_t *snapshot){
  ${blocks.length?'else{'+blocks.map(n=>'{clex_flow_event_t event={.node='+index.get(n.id)+',.kind=CLEX_EVENT_VOICE};event.payload.voice=*snapshot;if(xQueueSend(timer_queue,&event,0)!=pdTRUE)atomic_fetch_add(&dropped_events,1);}').join('')+'}':''}
 }
 static void voice_initialize(void){
- clex_voice_config_t setup={.bus=${provider?.i2c?'clex_i2c_bus('+provider.i2c.port+')':'NULL'},.i2s_port=${provider?.i2sPort??-1},.address=${provider?.i2cAddress??0},.mclk=${pin(p.mclk)},.bclk=${pin(p.bclk)},.ws=${pin(p.ws)},.dout=${pin(p.dout)},.din=${pin(p.din)},.amplifier=${pin(p.amplifierEnable)},.mic_kind=${{codec:'CV_MIC_CODEC',adc:'CV_MIC_ADC',i2s:'CV_MIC_I2S'}[microphone.kind]},.mic_gpio=${pin(microphone.gpio)},.mic_i2s_port=${microphone.port??-1},.mic_bclk=${pin(microphone.bclk)},.mic_ws=${pin(microphone.ws)},.mic_data=${pin(microphone.sd)},.mic_right=${Boolean(microphone.right)},.gain_db=${component.parameters.gainDb},.speaker_enabled=${speakers.length>0},.activation_sound=${activationSound},.activation_volume=${component.parameters.activationVolume},.activation_pcm=${activationAudio?'voice_activation_pcm':'NULL'},.activation_samples=${activationAudio?.samples||0},.window_ms=${component.parameters.windowMs},.references=voice_references,.reference_count=${references.length},.commands=${ready?commands.length:0},.command_ids=voice_command_ids,.signature=${cString(voiceRuntimeSignature(component,project,board))},.threshold=${ready?profile.model.threshold:0.3},.ratio=${ready?profile.model.ratio:0.97},.custom_wake=${customWake},.wake_references=wake_references,.wake_reference_count=${wakeReferences.length},.wake_threshold=${wakeReady?wakeProfile.model.threshold:0.3},.wake_ratio=${wakeReady?wakeProfile.model.ratio:0.9},.on_event=voice_publish};
+ clex_voice_config_t setup={.bus=${provider?.i2c?'clex_i2c_bus('+provider.i2c.port+')':'NULL'},.i2s_port=${provider?.i2sPort??-1},.address=${provider?.i2cAddress??0},.mclk=${pin(p.mclk)},.bclk=${pin(p.bclk)},.ws=${pin(p.ws)},.dout=${pin(p.dout)},.din=${pin(p.din)},.amplifier=${pin(p.amplifierEnable)},.mic_kind=${{codec:'CV_MIC_CODEC',adc:'CV_MIC_ADC',i2s:'CV_MIC_I2S'}[microphone.kind]},.mic_gpio=${pin(microphone.gpio)},.mic_i2s_port=${microphone.port??-1},.mic_bclk=${pin(microphone.bclk)},.mic_ws=${pin(microphone.ws)},.mic_data=${pin(microphone.sd)},.mic_right=${Boolean(microphone.right)},.gain_db=${component.parameters.gainDb},.speaker_enabled=${speakers.length>0},.activation_sound=${activationSound},.activation_volume=${component.parameters.activationVolume},.activation_pcm=${activationAudio?'voice_activation_pcm':'NULL'},.activation_samples=${activationAudio?.samples||0},.recognition_pcm=${recognitionAudio?'voice_recognition_pcm':'NULL'},.recognition_samples=${recognitionAudio?.samples||0},.recognition_volume=${recognitionAudio?(component.parameters.recognitionVolume??85):0},.window_ms=${component.parameters.windowMs},.references=voice_references,.reference_count=${references.length},.commands=${ready?commands.length:0},.command_ids=voice_command_ids,.signature=${cString(voiceRuntimeSignature(component,project,board))},.threshold=${ready?profile.model.threshold:0.3},.ratio=${ready?profile.model.ratio:0.97},.custom_wake=${customWake},.wake_references=wake_references,.wake_reference_count=${wakeReferences.length},.wake_threshold=${wakeReady?wakeProfile.model.threshold:0.3},.wake_ratio=${wakeReady?wakeProfile.model.ratio:0.9},.on_event=voice_publish};
  esp_err_t error=clex_voice_start(&setup);
  if(error!=ESP_OK){ESP_LOGE("CLEX_VOICE","Initialization failed: %s",esp_err_to_name(error));clex_voice_event_t event={.type=CV_FAILED,.command=-1};snprintf(event.error,sizeof(event.error),"Voice: %s",esp_err_to_name(error));voice_publish(&event);}
 }

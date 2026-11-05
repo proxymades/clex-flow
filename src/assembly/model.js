@@ -247,7 +247,7 @@ export function validateAssembly(project, catalog) {
     const module = moduleFor(component, catalog);
     if (project.moduleVersions[module.id] !== component.moduleVersion) issue('error', 'module-version', `${component.name}: версии экземпляра и библиотеки проекта не совпадают.`, fields);
     for (const [key, parameter] of Object.entries(module.parameters)) {
-      const value = module.id===RELAY_MODULE?relayParameters(component)[key]:component.parameters[key];
+      const value = module.id===RELAY_MODULE?relayParameters(component)[key]:module.id===VOICE_MODULE&&key==='recognitionVolume'?(component.parameters[key]??parameter.default):component.parameters[key];
       if (parameter.type === 'number' && (!Number.isFinite(value) || value < parameter.min || value > parameter.max)) issue('error', 'parameter-range', `${component.name}: «${parameter.label}» должен быть в диапазоне ${parameter.min}-${parameter.max}.`, fields);
       if (parameter.type === 'select' && !parameter.options.some(option => option.value === value)) issue('error', 'parameter-option', `${component.name}: неверный параметр «${parameter.label}».`, fields);
     }

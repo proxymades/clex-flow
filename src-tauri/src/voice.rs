@@ -515,7 +515,7 @@ fn send(port: &mut dyn serialport::SerialPort, command: &str) -> Result<(), Stri
 }
 // USB tools suspend wake detection while they own audio. Restore autonomous
 // listening on completion, cancellation or an error, including during capture.
-struct VoicePort(Box<dyn serialport::SerialPort>);
+struct VoicePort(Box<dyn serialport::SerialPort>, bool);
 impl std::ops::Deref for VoicePort {
     type Target = dyn serialport::SerialPort;
     fn deref(&self) -> &Self::Target {
@@ -567,7 +567,10 @@ fn open_port(path: &str, cancel: &AtomicBool) -> Result<VoicePort, String> {
                 let wait = Instant::now() + Duration::from_secs(3);
                 loop {
                     if read_line(&mut *port, cancel, wait)?.starts_with("CLEX_VOICE_STOPPED") {
-                        return Ok(VoicePort(port));
+                        return Ok(VoicePort(
+                            port,
+                            line.split_whitespace().any(|v| v == "capture=speech"),
+                        ));
                     }
                 }
             }
@@ -593,6 +596,7 @@ fn record(
     }
     progress(app, id, "connecting", "Подключаемся к плате");
     let mut port = open_port(&path, cancel)?;
+    let command = recording_command(&kind, port.1)?;
     send(&mut *port, &format!("GAIN {gain}"))?;
     let gain_deadline = Instant::now() + Duration::from_secs(3);
     loop {
@@ -611,7 +615,7 @@ fn record(
             std::thread::sleep(Duration::from_millis(50));
         }
     }
-    send(&mut *port, "RECORD 3")?;
+    send(&mut *port, command)?;
     let bytes = receive_recording(
         &mut *port,
         cancel,
@@ -678,7 +682,17 @@ fn device_error(line: &str) -> String {
             "Ошибка захвата звука. Перезапустите плату и повторите запись".into()
         }
         "no_memory" => "Недостаточно памяти для аудиозаписи".into(),
+        "speech_timeout" => "Голос не обнаружен. Нажмите запись ещё раз и произнесите фразу".into(),
         _ => format!("Ошибка голосового компонента: {code}"),
+    }
+}
+fn recording_command(kind: &str, speech_capture: bool) -> Result<&'static str, String> {
+    if kind == "background" {
+        Ok("RECORD 3")
+    } else if speech_capture {
+        Ok("RECORD 3 SPEECH")
+    } else {
+        Err("На плате прежняя прошивка записи голоса. Соберите и запишите текущую прошивку кнопками внизу этого окна".into())
     }
 }
 fn receive_recording<R: Read + ?Sized>(
@@ -689,6 +703,12 @@ fn receive_recording<R: Read + ?Sized>(
 ) -> Result<Vec<u8>, String> {
     let header = loop {
         let line = read_line(port, cancel, deadline)?;
+        if line.starts_with("CLEX_VOICE_LISTENING") {
+            notify(
+                "waiting-for-speech",
+                "Произнесите фразу. Запись начнётся с голоса",
+            );
+        }
         if line.starts_with("CLEX_VOICE_RECORDING") {
             notify("recording", "Говорите");
         }
@@ -1010,32 +1030,79 @@ mod tests {
         assert!(model.test.wrong > 0);
     }
     #[test]
+    fn recording_modes_require_speech_capture_only_for_phrases() {
+        assert_eq!(recording_command("background", false).unwrap(), "RECORD 3");
+        assert_eq!(recording_command("background", true).unwrap(), "RECORD 3");
+        for kind in ["command", "unknown"] {
+            assert!(recording_command(kind, false)
+                .unwrap_err()
+                .contains("прежняя прошивка"));
+            assert_eq!(recording_command(kind, true).unwrap(), "RECORD 3 SPEECH");
+        }
+        assert!(device_error("CLEX_VOICE_ERROR speech_timeout").contains("Голос не обнаружен"));
+    }
+    #[test]
     fn usb_recording_validates_frame_format_checksum_footer_and_cancellation() {
         use std::io::Cursor;
-        let bytes = vec![42u8; 96000];
+        let bytes: Vec<u8> = (0..96000).map(|i| i as u8).collect();
         let hash = bytes
             .iter()
             .fold(2166136261u32, |v, &b| (v ^ b as u32).wrapping_mul(16777619));
         let mut frame = format!(
-            "boot message\nCLEX_VOICE_RECORDING 3\nCLEX_VOICE_BEGIN 96000 16000 1 16 {hash:08x}\n"
+            "boot message\nCLEX_VOICE_LISTENING\nCLEX_VOICE_RECORDING 3\nCLEX_VOICE_BEGIN 96000 16000 1 16 {hash:08x}\n"
         )
         .into_bytes();
         frame.extend(&bytes);
         frame.extend(b"\nCLEX_VOICE_END\n");
         let cancel = AtomicBool::new(false);
+        struct Fragmented {
+            inner: Cursor<Vec<u8>>,
+        }
+        impl Read for Fragmented {
+            fn read(&mut self, bytes: &mut [u8]) -> std::io::Result<usize> {
+                let size = bytes.len().min(7);
+                self.inner.read(&mut bytes[..size])
+            }
+        }
         let receive = |data: Vec<u8>| {
             receive_recording(
-                &mut Cursor::new(data),
+                &mut Fragmented {
+                    inner: Cursor::new(data),
+                },
                 &cancel,
-                Instant::now() + Duration::from_millis(30),
+                Instant::now() + Duration::from_secs(1),
                 |_, _| {},
             )
         };
         assert_eq!(receive(frame.clone()).unwrap(), bytes);
+        let notifications = std::cell::RefCell::new(Vec::new());
+        receive_recording(
+            &mut Cursor::new(frame.clone()),
+            &cancel,
+            Instant::now() + Duration::from_secs(1),
+            |state, _| notifications.borrow_mut().push(state.to_string()),
+        )
+        .unwrap();
+        assert_eq!(
+            *notifications.borrow(),
+            ["waiting-for-speech", "recording", "transfer"]
+        );
+        let mut retried =
+            b"CLEX_VOICE_RETRY microphone_read\nCLEX_VOICE_RECOVERED microphone\n".to_vec();
+        retried.extend(&frame);
+        assert_eq!(receive(retried).unwrap(), bytes);
         let mut bad = frame.clone();
-        let start = bad.windows(3).position(|v| v == [42, 42, 42]).unwrap();
-        bad[start] = 41;
+        let start = bad.windows(4).position(|v| v == [0, 1, 2, 3]).unwrap();
+        bad[start] ^= 1;
         assert!(receive(bad).unwrap_err().contains("повреждена"));
+        let mut converted = Vec::new();
+        for &byte in &frame {
+            if byte == b'\n' {
+                converted.push(b'\r');
+            }
+            converted.push(byte);
+        }
+        assert!(receive(converted).unwrap_err().contains("повреждена"));
         assert!(
             receive(b"CLEX_VOICE_BEGIN 96000 48000 1 16 12345678\n".to_vec())
                 .unwrap_err()

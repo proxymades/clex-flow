@@ -965,8 +965,13 @@ pub fn idf_build(
                 sdk_command(&environment)
             };
             if spec.graphics_runtime.is_some() || !spec.feature_runtimes.is_empty() {
-                cmd.env("IDF_COMPONENT_MANAGER", "1")
-                    .env("IDF_COMPONENT_CACHE_PATH", dir.join("component-cache"));
+                cmd.env("IDF_COMPONENT_MANAGER", "1").env(
+                    "IDF_COMPONENT_CACHE_PATH",
+                    app.path()
+                        .app_cache_dir()
+                        .map_err(|e| e.to_string())?
+                        .join("component-cache"),
+                );
                 if environment.arduino.is_none() {
                     if crate::component_progress::configure(&mut cmd, &dir).is_err() {
                         publish(&app,&inner,&id,"build","output","system","Не удалось включить подробный прогресс загрузки. Продолжаем сборку со штатным журналом ESP-IDF.",None);

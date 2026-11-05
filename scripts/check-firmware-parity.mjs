@@ -57,6 +57,7 @@ const cases = [
   ['p4-voice-trained',voiceProject(),'uart'],
   ['p4-voice-shared-speaker',voiceProject({speaker:true,activationSound:true}),'uart'],
   ['p4-voice-custom-audio',voiceProject({speaker:true,activationSound:true,customAudio:true}),'uart'],
+  ['p4-voice-recognition-response',withCustomWake(voiceProject({speaker:true,activationSound:true,customAudio:true,recognitionSound:true})),'uart'],
   ['esp32-gpio',esp32GpioProject(),'uart'],
   ['esp32-display-spi2',esp32DisplayProject(),'uart'],
   ['esp32-display-spi3',esp32DisplayProject(undefined,'3'),'uart'],

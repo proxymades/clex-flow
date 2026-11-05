@@ -5,7 +5,7 @@ import {createProject} from '../src/projects/model.js';
 import {addHardware} from '../src/assembly/model.js';
 import {addNode,connectNodes,withLogic,nodePorts} from '../src/logic/model.js';
 import {emptyVoiceProfile,voiceSignature,emptyWakeProfile,readVoiceProfile,VOICE_MODULE,VOICE_LOGIC,SPEAKER_MODULE} from '../src/voice/model.js';
-export function voiceProject({phrases=['Поднять штору','Опустить штору'],trained=true,serial=true,speaker=false,activationSound=false,customAudio=false}={}){
+export function voiceProject({phrases=['Поднять штору','Опустить штору'],trained=true,serial=true,speaker=false,activationSound=false,customAudio=false,recognitionSound=false}={}){
   let p=createProject('Голосовые команды','','waveshare-esp32-p4-nano');
   p=addHardware(p,catalog.modules.find(m=>m.id===VOICE_MODULE),catalog);
   const component=p.components[0],profile=emptyVoiceProfile();
@@ -22,6 +22,7 @@ export function voiceProject({phrases=['Поднять штору','Опусти
   }
   component.parameters.activationSound=activationSound;
   if(customAudio){component.parameters.activationSoundType='recording';component.parameters.activationAudio=JSON.stringify(prepareActivationAudio([Float32Array.from({length:3200},(_,i)=>.2*Math.sin(i*2*Math.PI*440/16000))],16000,'ready.wav'));}
+  if(recognitionSound){component.parameters.recognitionSound=true;component.parameters.recognitionAudio=JSON.stringify(prepareActivationAudio([Float32Array.from({length:4800},(_,i)=>.2*Math.sin(i*2*Math.PI*330/16000))],16000,'trying.wav'));component.parameters.recognitionVolume=60;}
   let graph=addNode(p.logic,catalog.modules.find(m=>m.id===VOICE_LOGIC),p.components,p,catalog);
   if(serial){
     const voice=graph.nodes[0];graph=addNode(graph,catalog.modules.find(m=>m.id==='clex.logic.serial'),p.components,p,catalog);

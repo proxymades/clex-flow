@@ -21,6 +21,9 @@ const assert=require('node:assert/strict');const {chromium}=require('playwright'
    if(command==='sdk_prepare_all'){setTimeout(()=>emit(args.id,'sdk_install','running','Проверка Arduino AVR'),20);setTimeout(()=>{installed=true;env=avr;emit(args.id,'sdk_install','success','Готово');},80);return null;}
    if(command==='idf_events')return events.filter(e=>e.jobId===args.id);
    if(command==='idf_build'){const build={id:args.id,fingerprint:args.spec.fingerprint,environmentIdentity:avr.identity,projectDir:'X:\\build',binary:'X:\\build\\clex_flow.ino.hex'};setTimeout(()=>emit(args.id,'build','success','Fixture build',build),30);return null;}
+   if(command==='idf_flash'){setTimeout(()=>emit(args.id,'flash','success','Fixture flash'),30);return null;}
+   if(command==='idf_monitor'){setTimeout(()=>emit(args.id,'monitor','connected','Fixture monitor'),30);return null;}
+   if(command==='idf_cancel'){setTimeout(()=>emit(args.id,'monitor','cancelled','Fixture monitor closed'),30);return null;}
    throw new Error('Unexpected RPC '+command);
   }};
  },p);
@@ -34,8 +37,16 @@ const assert=require('node:assert/strict');const {chromium}=require('playwright'
   await modal.getByRole('checkbox',{name:'Разрешаю указанную загрузку и установку инструментов.',exact:true}).check();await modal.getByRole('button',{name:'Подготовить все',exact:true}).click();await page.getByRole('heading',{name:/Инструменты Arduino Nano/}).getByText('Окружение готово',{exact:true}).waitFor();
   const calls=await page.evaluate(()=>window.__toolCalls);const prepare=calls.find(c=>c.command==='sdk_prepare_all');assert.deepEqual(prepare.args.targets,['atmega328p']);assert.equal(prepare.args.target,'atmega328p');assert.equal(prepare.args.confirmed,true);assert.equal(calls.some(c=>c.command==='sdk_install'),false);
   await page.getByRole('button',{name:'Текущий проект',exact:true}).click();await page.getByRole('button',{name:'Собрать',exact:true}).click();await page.waitForFunction(()=>!window.document.querySelector('.topbar-actions button.primary').disabled);
+  await page.getByRole('button',{name:'Собрано',exact:true}).waitFor();
+  await page.getByRole('button',{name:'Прошить',exact:true}).click();
+  const flash=page.getByRole('dialog');await flash.getByRole('checkbox').check();await flash.getByRole('button',{name:'Записать прошивку',exact:true}).click();
+  await page.getByRole('button',{name:'Записано',exact:true}).waitFor();
+  await page.getByRole('button',{name:'Открыть монитор',exact:true}).click();
+  await page.getByRole('button',{name:'Остановить монитор',exact:true}).click();
+  await page.getByRole('button',{name:'Открыть монитор',exact:true}).waitFor();
+  await page.getByRole('button',{name:'Записано',exact:true}).waitFor();
   await page.getByRole('button',{name:'Монтаж',exact:true}).click();await page.getByRole('combobox',{name:'Загрузчик Nano',exact:true}).selectOption('old');await page.waitForFunction(()=>window.document.querySelector('.topbar-actions button.primary').disabled);
-  assert.equal((await page.evaluate(()=>window.__toolCalls)).some(c=>c.command==='idf_flash'),false);
+  assert.equal((await page.evaluate(()=>window.__toolCalls)).filter(c=>c.command==='idf_flash').length,1);
   assert.deepEqual(errors,[]);console.log('PASS: common tool setup, folder selection, estimate/consent, three platforms, reuse of ESP bundles, AVR readiness/port, build UI and stale bootloader gate. Simulated RPCs; no device access.');
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});

@@ -15,6 +15,9 @@ typedef struct {
     unsigned gain_db,activation_volume,window_ms;
     const int16_t *activation_pcm;
     size_t activation_samples;
+    const int16_t *recognition_pcm;
+    size_t recognition_samples;
+    unsigned recognition_volume;
     const cv_template_t *references;
     size_t reference_count;
     int commands;

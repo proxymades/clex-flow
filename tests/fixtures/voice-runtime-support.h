@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdarg.h>
 #include <assert.h>
 #ifdef _WIN32
 #define flockfile _lock_file
@@ -21,6 +22,10 @@ typedef int esp_err_t;
 #define MALLOC_CAP_SPIRAM 1
 #define MALLOC_CAP_8BIT 2
 #define CONFIG_IDF_TARGET "host"
+typedef enum {ESP_LINE_ENDINGS_CRLF,ESP_LINE_ENDINGS_LF,ESP_LINE_ENDINGS_CR} esp_line_endings_t;
+static esp_line_endings_t mock_tx_mode=ESP_LINE_ENDINGS_CRLF;
+static int uart_vfs_dev_port_set_tx_line_endings(int port,esp_line_endings_t mode){assert(port==CONFIG_ESP_CONSOLE_UART_NUM);mock_tx_mode=mode;return 0;}
+static void usb_serial_jtag_vfs_set_tx_line_endings(esp_line_endings_t mode){mock_tx_mode=mode;}
 #define ESP_LOGE(...) ((void)0)
 #define pdTRUE 1
 #define pdPASS 1
@@ -61,7 +66,8 @@ static unsigned mock_enable,mock_disable;
 static void mock_wake_enable(esp_afe_sr_data_t *data){(void)data;mock_enable++;}
 static void mock_wake_disable(esp_afe_sr_data_t *data){(void)data;mock_disable++;}
 static esp_afe_sr_data_t *mock_create(afe_config_t *config){(void)config;static esp_afe_sr_data_t data;return &data;}
-static int mock_feed(esp_afe_sr_data_t *data,const int16_t *pcm){(void)data;(void)pcm;return 0;}
+static unsigned mock_feed_calls;
+static int mock_feed(esp_afe_sr_data_t *data,const int16_t *pcm){(void)data;(void)pcm;mock_feed_calls++;return mock_feed_calls==2?-1:0;}
 static afe_fetch_result_t *mock_fetch(esp_afe_sr_data_t *data,unsigned ticks){(void)data;(void)ticks;return NULL;}
 static int mock_frames(esp_afe_sr_data_t *data){(void)data;return 512;}
 static int mock_channels(esp_afe_sr_data_t *data){(void)data;return 1;}

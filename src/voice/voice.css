@@ -10,3 +10,4 @@
 .voice-wake-settings{display:flex;flex-direction:column;gap:12px;padding:12px;border:1px solid var(--border,#34384a);border-radius:8px}.voice-wake-settings>.button{font-size:10px;min-height:34px}
 
 .audio-recording-settings{display:flex;flex-direction:column;gap:12px;margin:12px 0}.audio-recording-settings>input[type=file]{display:none}.audio-recording-settings .panel-note{margin:0}.audio-recording-settings audio{width:100%;height:36px}.audio-recording-settings>.button{font-size:10px;min-height:34px}
+.modal.voice-modal>footer.voice-dialog-footer{display:block}.voice-firmware-row{display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap}.voice-firmware-row>.voice-port-row{flex:1;min-width:180px}.voice-firmware-row>.voice-actions{gap:8px}.voice-dialog-footer .field{margin:0;font-size:11px}.voice-firmware-status{font-size:11px;line-height:1.6;margin:10px 0 0;overflow-wrap:anywhere}.voice-firmware-row .button{min-height:38px;height:38px;white-space:nowrap}
