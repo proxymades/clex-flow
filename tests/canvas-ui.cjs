@@ -20,7 +20,7 @@ const { chromium } = require('playwright');
   const save = async () => { await page.getByRole('button', { name: 'Сохранить', exact: true }).first().click(); await page.getByText('Проект сохранен', { exact: true }).waitFor(); };
   try {
     await page.goto(process.env.CLEX_PREVIEW_URL || 'http://127.0.0.1:1420');
-    const chooser = page.waitForEvent('filechooser'); await page.getByRole('button', { name: 'Открыть JSON', exact: true }).click();
+    const chooser = page.waitForEvent('filechooser'); await page.getByRole('button', { name: 'Импортировать проект', exact: true }).click();
     await (await chooser).setFiles({ name: 'canvas.clex.json', mimeType: 'application/json', buffer: Buffer.from(serializeProject(firmwareProject())) });
     await page.getByRole('button', { name: 'Монтаж', exact: true }).click();
     const component = page.getByRole('button', { name: 'Компонент Внешний светодиод 1', exact: true }), box = await component.boundingBox();
@@ -46,6 +46,9 @@ const { chromium } = require('playwright');
     assert.ok(Math.abs((await stored()).assembly.viewport.zoom / assemblyZoom - 1.2) < 0.001);
     await page.getByRole('button', { name: 'Уменьшить монтаж', exact: true }).click(); await save();
     assert.ok(Math.abs((await stored()).assembly.viewport.zoom - assemblyZoom) < 0.001);
+    for (let i = 0; i < 25; i++) await page.getByRole('button', { name: 'Уменьшить монтаж', exact: true }).click();
+    await save();
+    assert.equal((await stored()).assembly.viewport.zoom, 0.1, 'Assembly can reach and save 10%');
 
     await page.getByRole('button', { name: 'Логика', exact: true }).click();
     await page.locator('.react-flow__node').nth(2).waitFor();
@@ -78,7 +81,12 @@ const { chromium } = require('playwright');
     const region = await page.locator('.reactflow-region').boundingBox();
     for (const item of await page.locator('.react-flow__node').all()) { const rect = await item.boundingBox(); assert.ok(rect && rect.x >= region.x - 1 && rect.y >= region.y - 1 && rect.x + rect.width <= region.x + region.width + 1 && rect.y + rect.height <= region.y + region.height + 1, 'Fit restores all blocks to view'); }
     for (let i = 0; i < 3; i++) { await page.getByRole('button', { name: 'Монтаж', exact: true }).click(); await page.getByRole('button', { name: 'Логика', exact: true }).click(); await page.locator('.react-flow__node').nth(2).waitFor(); assert.equal(await page.locator('.react-flow__node').count(), 3); }
+    for (let i = 0; i < 25; i++) await page.getByRole('button', { name: 'Уменьшить граф', exact: true }).click();
+    await save();
+    assert.equal((await stored()).logic.viewport.zoom, 0.1, 'Logic can reach and save 10%');
     await page.reload(); await page.locator('.project-open').click(); await page.getByRole('button', { name: 'Логика', exact: true }).click(); await page.locator('.react-flow__node').nth(2).waitFor(); assert.equal(await page.locator('.react-flow__edge').count(), 3);
+    assert.equal((await stored()).logic.viewport.zoom, 0.1, 'Logic 10% survives reload');
+    assert.equal((await stored()).assembly.viewport.zoom, 0.1, 'Assembly 10% survives reload');
     await page.setViewportSize({ width: 1000, height: 700 }); await page.getByRole('button', { name: 'Показать весь граф', exact: true }).click();
     await page.getByRole('button', { name: 'Увеличить граф', exact: true }).waitFor();
     assert.deepEqual(errors, []);

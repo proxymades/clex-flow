@@ -1,0 +1,79 @@
+{
+  "id": "clex.logic.synchronize",
+  "version": "1.0.0",
+  "kind": "logic",
+  "name": "Синхронизация событий",
+  "description": "После запуска запоминает поступление каждого события и выдаёт один сигнал, когда получены все. Повтор одного события не заменяет другое.",
+  "category": "events",
+  "categoryName": "События",
+  "icon": "GitMerge",
+  "color": "#34d399",
+  "inputs": [
+    {
+      "id": "start",
+      "name": "Начать ожидание",
+      "type": "event",
+      "required": true,
+      "description": "Очищает предыдущие отметки и начинает новый цикл ожидания."
+    },
+    {
+      "id": "cancel",
+      "name": "Отменить ожидание",
+      "type": "event",
+      "description": "Прекращает ожидание без сигнала завершения."
+    }
+  ],
+  "outputs": [
+    {
+      "id": "started",
+      "name": "Ожидание начато",
+      "type": "event",
+      "description": "Блок готов принимать события. Подключите к действиям, результаты которых нужно дождаться."
+    },
+    {
+      "id": "done",
+      "name": "Все получены",
+      "type": "event",
+      "description": "Срабатывает один раз за цикл, когда поступил сигнал на каждый ожидаемый вход."
+    },
+    {
+      "id": "timedOut",
+      "name": "Время ожидания истекло",
+      "type": "event",
+      "description": "Срабатывает один раз, если все события не поступили за заданное время. Ожидание прекращается."
+    }
+  ],
+  "parameters": {
+    "eventCount": {
+      "label": "Количество событий",
+      "type": "integer",
+      "default": 2,
+      "min": 1,
+      "max": 16
+    },
+    "timeoutMs": {
+      "label": "Время ожидания, мс (0 – без ограничения)",
+      "type": "integer",
+      "default": 10000,
+      "min": 0,
+      "max": 3600000
+    }
+  },
+  "constraints": {},
+  "compatibility": {
+    "projectFormat": 4,
+    "targets": [
+      "esp32",
+      "esp32s3",
+      "esp32p4"
+    ],
+    "espIdf": "5.4.4"
+  },
+  "firmware": {
+    "status": "implemented",
+    "generatorKey": "synchronize",
+    "dependencies": [
+      "esp_timer"
+    ]
+  }
+}

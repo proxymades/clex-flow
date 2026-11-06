@@ -7,12 +7,18 @@ fn main() {
     } else {
         build.flag_if_supported("-std=c99");
     }
-    for file in ["features.c", "dtw.c", "core.c", "microphone_pcm.c"] {
+    for file in [
+        "features.c",
+        "dtw.c",
+        "core.c",
+        "endpoint.c",
+        "microphone_pcm.c",
+    ] {
         let path = format!("{root}/{file}");
         println!("cargo:rerun-if-changed={path}");
         build.file(path);
     }
-    for header in ["features.h", "core.h", "microphone_pcm.h"] {
+    for header in ["features.h", "core.h", "endpoint.h", "microphone_pcm.h"] {
         println!("cargo:rerun-if-changed={root}/{header}");
     }
     build.compile("clex_voice_dsp");

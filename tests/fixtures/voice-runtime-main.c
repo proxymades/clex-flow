@@ -61,7 +61,7 @@ static void prepare_reference(int index,const int16_t *pcm,int background){
  for(int j=0;j<frames*CV_COEFFS;j++)reference_data[index][j]=(int16_t)lroundf(encoded[j]*512);
  wake_refs[index]=(cv_template_t){reference_data[index],frames,index,512};
 }
-static void consume_utterance(const int16_t *pcm){worker_mode=state;worker_cycle=cycle;worker_epoch=epoch;utterance(pcm,48000,60,false,NULL);}
+static void consume_utterance(const int16_t *pcm){worker_mode=state;worker_cycle=cycle;worker_epoch=epoch;utterance(pcm,48000,60,false,true,NULL);}
 int main(void){
  cv_features_init();afe=&mock_afe;
  scratch=malloc(KWS_SAMPLES*sizeof(int16_t));mel=malloc(KWS_FRAMES*KWS_MELS*sizeof(float));encoded=malloc(KWS_FRAMES*CV_COEFFS*sizeof(float));
@@ -78,10 +78,13 @@ int main(void){
  sound_result_t sound=play_sound(request);assert(played_pcm==playback_pcm&&played_samples==1600&&played_volume==85);
  complete_sound(&sound);assert(state==OPEN&&!audio_busy);assert(deadline==sound.ended+20000000);
  int64_t original_deadline=deadline;
+ worker_mode=state;worker_cycle=cycle;worker_epoch=epoch;
+ assert(!utterance(wake_pcm,48000,60,false,false,NULL));
+ assert(state==OPEN&&events[CV_UNCERTAIN]==0&&deadline==original_deadline);
  consume_utterance(wake_pcm);assert(state==OPEN&&events[CV_UNCERTAIN]==1&&deadline==original_deadline);
  consume_utterance(command_pcm);assert(events[CV_RECOGNIZED]==1&&events[CV_CLOSED]==1&&state==WAITING&&deadline==0);
  // Already queued commands cannot run after the first successful recognition.
- utterance(command_pcm,48000,60,false,NULL);assert(events[CV_RECOGNIZED]==1);
+ utterance(command_pcm,48000,60,false,true,NULL);assert(events[CV_RECOGNIZED]==1);
  consume_utterance(command_pcm);assert(events[CV_RECOGNIZED]==1);
  assert(clex_voice_play(42,playback_pcm,1600,60));assert(audio_busy);
  consume_utterance(wake_pcm);assert(events[CV_ACTIVATED]==1);

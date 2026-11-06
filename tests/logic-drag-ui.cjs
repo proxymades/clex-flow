@@ -25,7 +25,7 @@ const { chromium } = require('playwright');
   try {
     await page.goto(process.env.CLEX_PREVIEW_URL || 'http://127.0.0.1:1420');
     const chooser = page.waitForEvent('filechooser');
-    await page.getByRole('button', { name: 'Открыть JSON', exact: true }).click();
+    await page.getByRole('button', { name: 'Импортировать проект', exact: true }).click();
     await (await chooser).setFiles({ name: 'drag.clex.json', mimeType: 'application/json', buffer: Buffer.from(serializeProject(project)) });
     await page.getByRole('button', { name: 'Логика', exact: true }).click();
     await page.locator('.react-flow__node').nth(99).waitFor();

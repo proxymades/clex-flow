@@ -6,7 +6,7 @@
   "description": "Сетевой интерфейс из описания платы. Link и IP определяются драйвером ESP-IDF.",
   "category": "network",
   "categoryName": "Сеть",
-  "icon": "Network",
+  "icon": "EthernetPort",
   "color": "#38bdf8",
   "visual": {
     "width": 230,

@@ -20,7 +20,7 @@ const { chromium } = require('playwright');
  try {
  await fs.mkdir('.artifacts',{recursive:true});
  await page.goto(process.env.CLEX_PREVIEW_URL || 'http://127.0.0.1:1420');
- const chooser=page.waitForEvent('filechooser'); await page.getByRole('button',{name:'Открыть JSON',exact:true}).click(); await (await chooser).setFiles('tests/fixtures/blink-mount.clex.json');
+ const chooser=page.waitForEvent('filechooser'); await page.getByRole('button',{name:'Импортировать проект',exact:true}).click(); await (await chooser).setFiles('tests/fixtures/blink-mount.clex.json');
  await page.getByRole('button',{name:'Логика',exact:true}).click(); await page.getByText('Настройте поведение устройств',{exact:true}).waitFor();
  const openedWrites=await page.evaluate(()=>window.__clexWrites); await page.waitForTimeout(1000); assert.equal(await page.evaluate(()=>window.__clexWrites),openedWrites,'Opening graph must not write project');
  await page.getByRole('button',{name:'Добавить блок: Таймер',exact:true}).click(); assert.equal(await page.getByRole('spinbutton',{name:'Срабатывать каждые, мс',exact:true}).inputValue(),'500');
@@ -52,6 +52,7 @@ const { chromium } = require('playwright');
  await page.getByRole('button',{name:'Отменить изменение графа',exact:true}).click(); await waitSaved(); assert.deepEqual((await data()).logic.nodes[0].position,beforeDrag,'Whole drag is one undo step');
  await nodeTitle('Таймер 1').click(); await nodeTitle('Управлять светодиодом 1').click({modifiers:['Meta']});
  await page.getByRole('button',{name:'Копировать выделенные блоки',exact:true}).click(); await page.getByRole('button',{name:'Вставить блоки',exact:true}).click();
+ await page.locator('.react-flow__edge').nth(1).waitFor({state:'attached'});
  assert.equal(await page.locator('.react-flow__node').count(),4); assert.equal(await page.locator('.react-flow__edge').count(),2);
  await page.getByRole('button',{name:'Отменить изменение графа',exact:true}).click(); assert.equal(await page.locator('.react-flow__node').count(),2);
  await nodeTitle('Управлять светодиодом 1').click(); await page.keyboard.press('Meta+d'); assert.equal(await page.locator('.react-flow__node').count(),3);

@@ -6,7 +6,7 @@
   "description": "Реальные Link, IPv4 и параметры сети. Состояние: 0 – нет Link, 1 – ожидание IP, 2 – IP получен, 3 – ошибка драйвера.",
   "category": "network",
   "categoryName": "Сеть",
-  "icon": "Network",
+  "icon": "EthernetPort",
   "color": "#38bdf8",
   "inputs": [],
   "outputs": [

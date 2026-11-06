@@ -6,7 +6,7 @@
   "description": "Управление STEP/DIR/ENABLE. Ток и микрошаги выставляются вручную на модуле. RESET и SLEEP удерживаются на 3,3 В.",
   "category": "motor-drivers",
   "categoryName": "Драйверы двигателей",
-  "icon": "RotateCw",
+  "icon": "LayoutArrowRight",
   "color": "#f59e0b",
   "visual": {
     "width": 290,

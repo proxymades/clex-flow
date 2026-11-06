@@ -23,7 +23,7 @@ const { chromium } = require('playwright');
     await settings(); assert.equal(await toggle().isChecked(), true);
     await page.getByRole('button', { name: /Мои проекты/ }).click();
     const chooser = page.waitForEvent('filechooser');
-    await page.getByRole('button', { name: 'Открыть JSON', exact: true }).click();
+    await page.getByRole('button', { name: 'Импортировать проект', exact: true }).click();
     await (await chooser).setFiles('tests/fixtures/blink-mount.clex.json');
     await page.getByRole('textbox', { name: 'Описание', exact: true }).waitFor();
     await page.getByRole('button', { name: 'Монтаж', exact: true }).click();

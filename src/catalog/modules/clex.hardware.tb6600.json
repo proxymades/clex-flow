@@ -6,7 +6,7 @@
   "description": "Импульсный драйвер, схема общего катода: PUL−/DIR−/ENA− к GND. Входы конкретного модуля должны поддерживать 3,3 В либо подключаться через внешний согласователь. Ток и микрошаги выставляются вручную.",
   "category": "motor-drivers",
   "categoryName": "Драйверы двигателей",
-  "icon": "RotateCw",
+  "icon": "LayoutArrowRight",
   "color": "#f59e0b",
   "visual": {
     "width": 290,

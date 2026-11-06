@@ -1,0 +1,541 @@
+{
+  "id": "b98e5032-f5b5-4345-8b46-fbcbaf692732",
+  "name": "Умный светильник – управление ESP32-P4 Nano",
+  "description": "Шесть голосовых команд управляют двумя светильниками по MQTT. Индивидуальные ответы запускают звуковое подтверждение, общие проходят через синхронизацию двух событий. Запишите свои примеры команд перед сборкой.",
+  "formatVersion": 4,
+  "createdAt": "2026-11-06T00:00:00.000Z",
+  "updatedAt": "2026-11-06T00:00:00.000Z",
+  "boardId": "waveshare-esp32-p4-nano",
+  "boardSettings": {
+    "chipRevision": "pre-v3",
+    "audio": "unknown",
+    "mipiDisplay": "unknown",
+    "mipiCamera": "unknown"
+  },
+  "components": [
+    {
+      "id": "561de727-8cbb-42fa-86ee-c47fd4f12a26",
+      "moduleId": "clex.hardware.voice",
+      "moduleVersion": "1.0.0",
+      "name": "Голосовое управление",
+      "parameters": {
+        "interfaceId": "audio",
+        "profile": "{\"version\":1,\"commands\":[{\"id\":\"3b18f39e-ee3e-418f-8f26-b1157ed64f54\",\"phrase\":\"Включи левый светильник\"},{\"id\":\"55d9c6f4-4b4c-4312-9073-5ea04925812f\",\"phrase\":\"Выключи левый светильник\"},{\"id\":\"e40333c1-50f8-4f7b-a233-f4f076d5a8f3\",\"phrase\":\"Включи правый светильник\"},{\"id\":\"aed1dae1-af13-4877-af84-6ed83504fc16\",\"phrase\":\"Выключи правый светильник\"},{\"id\":\"398455f6-b6e9-44f3-a25f-8c579d61d6c3\",\"phrase\":\"Включи свет\"},{\"id\":\"2d660d29-26eb-4e37-8054-3f95f161ee0d\",\"phrase\":\"Выключи свет\"}],\"samples\":[],\"repeats\":6,\"unknownCount\":3,\"backgroundCount\":2,\"model\":null,\"inputKey\":\"\"}",
+        "windowMs": 5000,
+        "gainDb": 30,
+        "activationSound": true,
+        "speakerId": "5032f40b-f002-4ce3-9bd6-954da26e517e",
+        "activationVolume": 95,
+        "activationSoundType": "tone",
+        "activationAudio": "",
+        "recognitionSound": false,
+        "recognitionAudio": "",
+        "recognitionVolume": 85,
+        "microphoneId": "",
+        "wakeMode": "builtin",
+        "wakeProfile": ""
+      }
+    },
+    {
+      "id": "5032f40b-f002-4ce3-9bd6-954da26e517e",
+      "moduleId": "clex.hardware.audio",
+      "moduleVersion": "1.0.0",
+      "name": "Динамик",
+      "parameters": {
+        "interfaceId": "audio"
+      }
+    },
+    {
+      "id": "c15d4cf4-80e0-4ac8-90ef-a4816a0907d1",
+      "moduleId": "clex.hardware.wifi",
+      "moduleVersion": "1.0.0",
+      "name": "Wi-Fi",
+      "parameters": {
+        "ssid": "YOUR_WIFI",
+        "password": "YOUR_WIFI_PASSWORD",
+        "addressMode": "dhcp",
+        "staticIp": "",
+        "netmask": "255.255.255.0",
+        "gateway": "",
+        "dns": "",
+        "autoConnect": true,
+        "autoReconnect": true,
+        "reconnectMs": 5000,
+        "connectTimeoutMs": 30000
+      }
+    },
+    {
+      "id": "73d698bf-de2b-4c1f-931e-ebaec95a6e1e",
+      "moduleId": "clex.hardware.mqtt",
+      "moduleVersion": "1.0.0",
+      "name": "MQTT",
+      "parameters": {
+        "networkId": "c15d4cf4-80e0-4ac8-90ef-a4816a0907d1",
+        "host": "broker.example.com",
+        "port": 8883,
+        "protocol": "3.1.1",
+        "clientId": "clex-smart-lamp-controller",
+        "username": "YOUR_MQTT_USER",
+        "password": "YOUR_MQTT_PASSWORD",
+        "tls": true,
+        "caMode": "bundle",
+        "caPem": "",
+        "keepAlive": 60,
+        "cleanSession": true,
+        "sessionExpiry": 0,
+        "autoConnect": true,
+        "autoReconnect": true,
+        "reconnectMs": 5000,
+        "timeoutMs": 10000,
+        "lwtEnabled": false,
+        "lwtTopic": "",
+        "lwtPayload": "",
+        "lwtQos": "0",
+        "lwtRetain": false,
+        "lwtDelay": 0
+      }
+    }
+  ],
+  "gpioAssignments": [],
+  "logic": {
+    "nodes": [
+      {
+        "id": "8e4cf091-9094-47d5-989b-ab4dc535e05e",
+        "moduleId": "clex.logic.voice",
+        "moduleVersion": "1.0.0",
+        "name": "Голосовые команды ESP32-P4 NANO",
+        "position": {
+          "x": 0,
+          "y": 230
+        },
+        "parameters": {
+          "componentId": "561de727-8cbb-42fa-86ee-c47fd4f12a26"
+        }
+      },
+      {
+        "id": "6975605c-b34a-4ff8-bfda-ebd5ff785210",
+        "moduleId": "clex.logic.mqtt-send",
+        "moduleVersion": "1.0.0",
+        "name": "MQTT – Включить левый",
+        "position": {
+          "x": 423.7037037037037,
+          "y": -284.7222222222222
+        },
+        "parameters": {
+          "componentId": "73d698bf-de2b-4c1f-931e-ebaec95a6e1e",
+          "topic": "clex/examples/smart-lamp/left-lamp/set",
+          "payload": "ON",
+          "qos": "1",
+          "retain": false,
+          "payloadEncoding": "utf8",
+          "contentType": "",
+          "responseTopic": "",
+          "correlationData": "",
+          "messageExpiry": -1,
+          "payloadFormatIndicator": "unspecified",
+          "userProperties": "[]"
+        }
+      },
+      {
+        "id": "99789ccc-b915-46ef-966f-a58a033281c3",
+        "moduleId": "clex.logic.mqtt-send",
+        "moduleVersion": "1.0.0",
+        "name": "MQTT – Выключить левый",
+        "position": {
+          "x": 460.74074074074076,
+          "y": 885.925925925926
+        },
+        "parameters": {
+          "componentId": "73d698bf-de2b-4c1f-931e-ebaec95a6e1e",
+          "topic": "clex/examples/smart-lamp/left-lamp/set",
+          "payload": "OFF",
+          "qos": "1",
+          "retain": false,
+          "payloadEncoding": "utf8",
+          "contentType": "",
+          "responseTopic": "",
+          "correlationData": "",
+          "messageExpiry": -1,
+          "payloadFormatIndicator": "unspecified",
+          "userProperties": "[]"
+        }
+      },
+      {
+        "id": "a54f31cc-4c40-4b5e-9393-6b3cc2ae4338",
+        "moduleId": "clex.logic.mqtt-send",
+        "moduleVersion": "1.0.0",
+        "name": "MQTT – Включить правый",
+        "position": {
+          "x": 991.1111111111111,
+          "y": -193.98148148148147
+        },
+        "parameters": {
+          "componentId": "73d698bf-de2b-4c1f-931e-ebaec95a6e1e",
+          "topic": "clex/examples/smart-lamp/right-lamp/set",
+          "payload": "ON",
+          "qos": "1",
+          "retain": false,
+          "payloadEncoding": "utf8",
+          "contentType": "",
+          "responseTopic": "",
+          "correlationData": "",
+          "messageExpiry": -1,
+          "payloadFormatIndicator": "unspecified",
+          "userProperties": "[]"
+        }
+      },
+      {
+        "id": "c4df52da-c549-4b84-8840-a73c90ecf765",
+        "moduleId": "clex.logic.mqtt-send",
+        "moduleVersion": "1.0.0",
+        "name": "MQTT – Выключить правый",
+        "position": {
+          "x": 987.4074074074074,
+          "y": 811.8518518518518
+        },
+        "parameters": {
+          "componentId": "73d698bf-de2b-4c1f-931e-ebaec95a6e1e",
+          "topic": "clex/examples/smart-lamp/right-lamp/set",
+          "payload": "OFF",
+          "qos": "1",
+          "retain": false,
+          "payloadEncoding": "utf8",
+          "contentType": "",
+          "responseTopic": "",
+          "correlationData": "",
+          "messageExpiry": -1,
+          "payloadFormatIndicator": "unspecified",
+          "userProperties": "[]"
+        }
+      },
+      {
+        "id": "d84c3c89-cecd-47de-9a69-a64d56af4e90",
+        "moduleId": "clex.logic.mqtt-receive",
+        "moduleVersion": "1.0.0",
+        "name": "MQTT – Ответ левого",
+        "position": {
+          "x": 931.339954677431,
+          "y": 1261.650113306423
+        },
+        "parameters": {
+          "componentId": "73d698bf-de2b-4c1f-931e-ebaec95a6e1e",
+          "filters": "[{\"topic\":\"clex/examples/smart-lamp/left-lamp/ack\",\"qos\":1}]",
+          "autoSubscribe": true,
+          "payloadEncoding": "utf8",
+          "noLocal": false,
+          "retainAsPublished": false,
+          "retainHandling": "0"
+        }
+      },
+      {
+        "id": "bca5fe12-3a81-4737-a120-e3907dd8465c",
+        "moduleId": "clex.logic.audio-play",
+        "moduleVersion": "1.0.0",
+        "name": "Подтверждение выполнения – сигнал",
+        "position": {
+          "x": 1398.3498866935772,
+          "y": 1852.2332577957181
+        },
+        "parameters": {
+          "componentId": "5032f40b-f002-4ce3-9bd6-954da26e517e",
+          "audio": "{\"version\":1,\"name\":\"confirmation-signal.wav\",\"sampleRate\":16000,\"samples\":5760,\"data\":\"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AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA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\"}",
+          "volume": 95
+        }
+      },
+      {
+        "id": "48272900-fca8-46f8-8bb5-449b34f891f0",
+        "moduleId": "clex.logic.mqtt-receive",
+        "moduleVersion": "1.0.0",
+        "name": "MQTT – Ответ правого",
+        "position": {
+          "x": 900,
+          "y": 2050
+        },
+        "parameters": {
+          "componentId": "73d698bf-de2b-4c1f-931e-ebaec95a6e1e",
+          "filters": "[{\"topic\":\"clex/examples/smart-lamp/right-lamp/ack\",\"qos\":1}]",
+          "autoSubscribe": true,
+          "payloadEncoding": "utf8",
+          "noLocal": false,
+          "retainAsPublished": false,
+          "retainHandling": "0"
+        }
+      },
+      {
+        "id": "d84f876b-13e3-41fe-9b42-67c72c6e4233",
+        "moduleId": "clex.logic.synchronize",
+        "moduleVersion": "1.0.0",
+        "name": "Дождаться обоих светильников",
+        "position": {
+          "x": 450,
+          "y": 1700
+        },
+        "parameters": {
+          "eventCount": 2,
+          "timeoutMs": 10000
+        }
+      },
+      {
+        "id": "e8953a74-f9fd-4a6a-9165-5e4711bdb8ce",
+        "moduleId": "clex.logic.mqtt-receive",
+        "moduleVersion": "1.0.0",
+        "name": "MQTT – Общий ответ левого",
+        "position": {
+          "x": 0,
+          "y": 1340
+        },
+        "parameters": {
+          "componentId": "73d698bf-de2b-4c1f-931e-ebaec95a6e1e",
+          "filters": "[{\"topic\":\"clex/examples/smart-lamp/lamps/ack1\",\"qos\":1}]",
+          "autoSubscribe": true,
+          "payloadEncoding": "utf8",
+          "noLocal": false,
+          "retainAsPublished": false,
+          "retainHandling": "0"
+        }
+      },
+      {
+        "id": "772d760b-6a5f-43fa-ba7f-74bb506f3c7f",
+        "moduleId": "clex.logic.mqtt-send",
+        "moduleVersion": "1.0.0",
+        "name": "MQTT – Включить оба",
+        "position": {
+          "x": 1373.3333333333335,
+          "y": 59.25925925925925
+        },
+        "parameters": {
+          "componentId": "73d698bf-de2b-4c1f-931e-ebaec95a6e1e",
+          "topic": "clex/examples/smart-lamp/lamps/set",
+          "payload": "ON",
+          "qos": "1",
+          "retain": false,
+          "payloadEncoding": "utf8",
+          "contentType": "",
+          "responseTopic": "",
+          "correlationData": "",
+          "messageExpiry": -1,
+          "payloadFormatIndicator": "unspecified",
+          "userProperties": "[]"
+        }
+      },
+      {
+        "id": "11cc5258-67ab-411f-8c64-624ccaafb7cf",
+        "moduleId": "clex.logic.mqtt-receive",
+        "moduleVersion": "1.0.0",
+        "name": "MQTT – Общий ответ правого",
+        "position": {
+          "x": 0,
+          "y": 2050
+        },
+        "parameters": {
+          "componentId": "73d698bf-de2b-4c1f-931e-ebaec95a6e1e",
+          "filters": "[{\"topic\":\"clex/examples/smart-lamp/lamps/ack2\",\"qos\":1}]",
+          "autoSubscribe": true,
+          "payloadEncoding": "utf8",
+          "noLocal": false,
+          "retainAsPublished": false,
+          "retainHandling": "0"
+        }
+      },
+      {
+        "id": "c4c7a630-acf6-4cc1-bb1c-ddc207260ad1",
+        "moduleId": "clex.logic.mqtt-send",
+        "moduleVersion": "1.0.0",
+        "name": "MQTT – Выключить оба",
+        "position": {
+          "x": 1452.8228507275392,
+          "y": 602.1026930493168
+        },
+        "parameters": {
+          "componentId": "73d698bf-de2b-4c1f-931e-ebaec95a6e1e",
+          "topic": "clex/examples/smart-lamp/lamps/set",
+          "payload": "OFF",
+          "qos": "1",
+          "retain": false,
+          "payloadEncoding": "utf8",
+          "contentType": "",
+          "responseTopic": "",
+          "correlationData": "",
+          "messageExpiry": -1,
+          "payloadFormatIndicator": "unspecified",
+          "userProperties": "[]"
+        }
+      },
+      {
+        "id": "0f391812-665b-4239-afed-223d4ce53674",
+        "moduleId": "clex.logic.audio-play",
+        "moduleVersion": "1.0.0",
+        "name": "Повторите команду – сигнал",
+        "position": {
+          "x": 1073.3688468818482,
+          "y": 313.17878115822003
+        },
+        "parameters": {
+          "componentId": "5032f40b-f002-4ce3-9bd6-954da26e517e",
+          "audio": "{\"version\":1,\"name\":\"repeat-signal.wav\",\"sampleRate\":16000,\"samples\":5760,\"data\":\"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AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA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\"}",
+          "volume": 95
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "343349de-feda-43e0-a22c-f1d26618e874",
+        "source": "8e4cf091-9094-47d5-989b-ab4dc535e05e",
+        "target": "6975605c-b34a-4ff8-bfda-ebd5ff785210",
+        "sourceHandle": "command_3b18f39eee3e418f8f26b1157ed64f54",
+        "targetHandle": "trigger",
+        "dataType": "event"
+      },
+      {
+        "id": "d17d738e-4047-472e-ae5a-1081e349c129",
+        "source": "8e4cf091-9094-47d5-989b-ab4dc535e05e",
+        "target": "99789ccc-b915-46ef-966f-a58a033281c3",
+        "sourceHandle": "command_55d9c6f44b4c431290735ea04925812f",
+        "targetHandle": "trigger",
+        "dataType": "event"
+      },
+      {
+        "id": "b669309e-ceca-4b83-a3e1-b13439a6ec22",
+        "source": "8e4cf091-9094-47d5-989b-ab4dc535e05e",
+        "target": "a54f31cc-4c40-4b5e-9393-6b3cc2ae4338",
+        "sourceHandle": "command_e40333c150f84f7ba233f4f076d5a8f3",
+        "targetHandle": "trigger",
+        "dataType": "event"
+      },
+      {
+        "id": "9d13293e-be10-4075-854e-afd4fae19d8f",
+        "source": "8e4cf091-9094-47d5-989b-ab4dc535e05e",
+        "target": "c4df52da-c549-4b84-8840-a73c90ecf765",
+        "sourceHandle": "command_aed1dae1af134877af846ed83504fc16",
+        "targetHandle": "trigger",
+        "dataType": "event"
+      },
+      {
+        "id": "dc838bec-51ab-4574-8bdc-7a0716c0b862",
+        "source": "8e4cf091-9094-47d5-989b-ab4dc535e05e",
+        "target": "772d760b-6a5f-43fa-ba7f-74bb506f3c7f",
+        "sourceHandle": "command_398455f6b6e944f3a25f8c579d61d6c3",
+        "targetHandle": "trigger",
+        "dataType": "event"
+      },
+      {
+        "id": "44c23c8c-b95e-4c4f-9a79-ce0eab22f370",
+        "source": "8e4cf091-9094-47d5-989b-ab4dc535e05e",
+        "target": "d84f876b-13e3-41fe-9b42-67c72c6e4233",
+        "sourceHandle": "command_398455f6b6e944f3a25f8c579d61d6c3",
+        "targetHandle": "start",
+        "dataType": "event"
+      },
+      {
+        "id": "7da08e6a-9506-4a29-8afd-86b5adb4c51e",
+        "source": "8e4cf091-9094-47d5-989b-ab4dc535e05e",
+        "sourceHandle": "command_2d660d2926eb4e3780543f95f161ee0d",
+        "target": "c4c7a630-acf6-4cc1-bb1c-ddc207260ad1",
+        "targetHandle": "trigger",
+        "dataType": "event"
+      },
+      {
+        "id": "912974ef-e1cc-4f66-a2de-f61e792b00a5",
+        "source": "8e4cf091-9094-47d5-989b-ab4dc535e05e",
+        "sourceHandle": "command_2d660d2926eb4e3780543f95f161ee0d",
+        "target": "d84f876b-13e3-41fe-9b42-67c72c6e4233",
+        "targetHandle": "start",
+        "dataType": "event"
+      },
+      {
+        "id": "e3075d64-239f-401f-864c-933dbab05631",
+        "source": "d84c3c89-cecd-47de-9a69-a64d56af4e90",
+        "target": "bca5fe12-3a81-4737-a120-e3907dd8465c",
+        "sourceHandle": "received",
+        "targetHandle": "trigger",
+        "dataType": "event"
+      },
+      {
+        "id": "4ece105e-fb52-408d-90e2-b8a561edc584",
+        "source": "48272900-fca8-46f8-8bb5-449b34f891f0",
+        "target": "bca5fe12-3a81-4737-a120-e3907dd8465c",
+        "sourceHandle": "received",
+        "targetHandle": "trigger",
+        "dataType": "event"
+      },
+      {
+        "id": "e060b8e0-2a8b-4ce6-820d-41bc54e3b901",
+        "source": "e8953a74-f9fd-4a6a-9165-5e4711bdb8ce",
+        "target": "d84f876b-13e3-41fe-9b42-67c72c6e4233",
+        "sourceHandle": "received",
+        "targetHandle": "event1",
+        "dataType": "event"
+      },
+      {
+        "id": "994da753-293a-48e0-b858-1887dac83aa9",
+        "source": "11cc5258-67ab-411f-8c64-624ccaafb7cf",
+        "target": "d84f876b-13e3-41fe-9b42-67c72c6e4233",
+        "sourceHandle": "received",
+        "targetHandle": "event2",
+        "dataType": "event"
+      },
+      {
+        "id": "dc4fa08f-972b-4594-a2c7-0e8f9ce441e3",
+        "source": "d84f876b-13e3-41fe-9b42-67c72c6e4233",
+        "target": "bca5fe12-3a81-4737-a120-e3907dd8465c",
+        "sourceHandle": "done",
+        "targetHandle": "trigger",
+        "dataType": "event"
+      },
+      {
+        "id": "524ae020-a881-4076-890a-49255c8ee029",
+        "source": "8e4cf091-9094-47d5-989b-ab4dc535e05e",
+        "target": "0f391812-665b-4239-afed-223d4ce53674",
+        "sourceHandle": "uncertain",
+        "targetHandle": "trigger",
+        "dataType": "event"
+      }
+    ],
+    "viewport": {
+      "x": 80.4162580482012,
+      "y": 15.766572745275141,
+      "zoom": 0.4105372090688081
+    }
+  },
+  "assembly": {
+    "positions": {
+      "board": {
+        "x": 100,
+        "y": 40
+      },
+      "561de727-8cbb-42fa-86ee-c47fd4f12a26": {
+        "x": 1188,
+        "y": 120
+      },
+      "5032f40b-f002-4ce3-9bd6-954da26e517e": {
+        "x": 1188,
+        "y": 329
+      },
+      "c15d4cf4-80e0-4ac8-90ef-a4816a0907d1": {
+        "x": 1462,
+        "y": 120
+      },
+      "73d698bf-de2b-4c1f-931e-ebaec95a6e1e": {
+        "x": 1462,
+        "y": 323.2601700260893
+      }
+    },
+    "connections": [],
+    "viewport": {
+      "x": 9.09472259014126,
+      "y": 90.80006582626035,
+      "zoom": 0.406215230864699
+    }
+  },
+  "moduleVersions": {
+    "clex.hardware.voice": "1.0.0",
+    "clex.hardware.audio": "1.0.0",
+    "clex.hardware.wifi": "1.0.0",
+    "clex.hardware.mqtt": "1.0.0",
+    "clex.logic.voice": "1.0.0",
+    "clex.logic.mqtt-send": "1.0.0",
+    "clex.logic.mqtt-receive": "1.0.0",
+    "clex.logic.audio-play": "1.0.0",
+    "clex.logic.synchronize": "1.0.0"
+  }
+}

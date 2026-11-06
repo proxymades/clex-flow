@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {catalog} from './catalog-fixture.js';
 import {voiceProject,withCustomWake} from './voice-fixture.js';
 import {microphoneProject} from './microphone-fixture.js';
-import {readVoiceProfile,readWakeProfile,wakeProfileProblem,wakePhrase,wakeModelReady,voiceModelReady,voiceRuntimeSignature,voiceSignature,voicePlan,voiceTrainingProblem} from '../src/voice/model.js';
+import {readVoiceProfile,readWakeProfile,wakeProfileProblem,wakePhrase,wakeModelReady,voiceModelReady,voiceProfileProblem,voiceRuntimeSignature,voiceSignature,voicePlan,voiceTrainingProblem} from '../src/voice/model.js';
 import {parseProject,serializeProject} from '../src/projects/model.js';
 import {generateFirmware} from '../src/firmware/generator.js';
 import {validateAssembly} from '../src/assembly/model.js';
@@ -43,4 +43,20 @@ test('built-in wake configuration round-trips with the trained command model',()
  assert.equal(restored.components[0].parameters.wakeMode,'builtin');
  assert.equal(restored.components[0].parameters.profile,p.components[0].parameters.profile);
  assert.equal(voiceModelReady(readVoiceProfile(restored.components[0])),true);
+});
+
+test('recalibration changes the firmware identity without changing recordings or command ports',()=>{
+ const p=withCustomWake(voiceProject()),voice=p.components[0],board=catalog.boards.find(b=>b.id===p.boardId);
+ const profile=readVoiceProfile(voice),wake=readWakeProfile(voice),before=voiceRuntimeSignature(voice,p,board),graph=structuredClone(p.logic);
+ const recordings=structuredClone(profile.samples),signature=profile.model.signature;
+ profile.model.streaming=true;voice.parameters.profile=JSON.stringify(profile);
+ const calibrated=voiceRuntimeSignature(voice,p,board);assert.notEqual(calibrated,before);
+ profile.model.threshold=.2;voice.parameters.profile=JSON.stringify(profile);
+ assert.notEqual(voiceRuntimeSignature(voice,p,board),calibrated);
+ const updated=voiceRuntimeSignature(voice,p,board);
+ wake.model.streaming=true;voice.parameters.wakeProfile=JSON.stringify(wake);
+ assert.notEqual(voiceRuntimeSignature(voice,p,board),updated);
+ assert.equal(profile.model.signature,signature);assert.deepEqual(profile.samples,recordings);assert.deepEqual(p.logic,graph);
+ assert.equal(voiceModelReady(profile),true);assert.deepEqual(parseProject(serializeProject(p)),p);
+ profile.model.streaming='yes';assert.ok(voiceProfileProblem(profile));
 });

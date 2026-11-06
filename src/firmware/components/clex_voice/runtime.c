@@ -78,16 +78,22 @@ static void activate(uint32_t expected_cycle,uint32_t expected_epoch){
     if(chime){sound_request_t request={.tag=-1,.volume=config.activation_volume,.cycle=current_cycle,.kind=SOUND_ACTIVATION};xQueueSend(sounds,&request,portMAX_DELAY);}
     else reply("CLEX_VOICE_WINDOW remaining_ms=%u\n",config.window_ms);
 }
-static void utterance(const int16_t *pcm,size_t count,unsigned voiced,bool too_long,void *context){
+static bool utterance(const int16_t *pcm,size_t count,unsigned voiced,bool too_long,bool final,void *context){
     (void)context;
-    if(!active(worker_mode,worker_cycle,worker_epoch))return;
+    if(!active(worker_mode,worker_cycle,worker_epoch))return true;
     cv_result_t found={.label=-1,.candidate=-1,.distance=1e9f,.ratio=1};
     if(!too_long&&voiced>=10){
         int frames=cv_encode(pcm,count,0,encoded,scratch,mel);
         if(frames>0)found=worker_mode==WAITING?cv_classify(encoded,frames,config.wake_references,config.wake_reference_count,1,config.wake_threshold,config.wake_ratio):cv_classify(encoded,frames,config.references,config.reference_count,config.commands,config.threshold,config.ratio);
     }
-    if(!active(worker_mode,worker_cycle,worker_epoch))return;
-    if(worker_mode==WAITING){if(found.label==0)activate(worker_cycle,worker_epoch);return;}
+    if(!active(worker_mode,worker_cycle,worker_epoch))return true;
+    if(worker_mode==WAITING){
+        if(found.label==0) {
+            activate(worker_cycle,worker_epoch);
+            return true;
+        }
+        return final;
+    }
     if(found.label>=0){
         // Consume one command per activation. Invalidate queued audio before
         // publishing the command so it cannot launch a second action.
@@ -95,7 +101,7 @@ static void utterance(const int16_t *pcm,size_t count,unsigned voiced,bool too_l
         bool accept=enabled&&state==OPEN&&cycle==worker_cycle&&epoch==worker_epoch&&!audio_busy&&!recording&&esp_timer_get_time()<deadline;
         if(accept){state=WAITING;deadline=0;epoch++;}
         portEXIT_CRITICAL(&gate_lock);
-        if(!accept)return;
+        if(!accept)return true;
         if(config.recognition_pcm&&config.recognition_samples&&config.recognition_volume){
             sound_request_t response={.kind=SOUND_RECOGNITION,.tag=-1,.pcm=config.recognition_pcm,.samples=config.recognition_samples,.volume=config.recognition_volume};
             if(!queue_sound(response))emit(CV_FAILED,-1,-1,"Не удалось запустить звук после распознавания");
@@ -106,10 +112,12 @@ static void utterance(const int16_t *pcm,size_t count,unsigned voiced,bool too_l
         portENTER_CRITICAL(&gate_lock);bool wake=enabled&&state==WAITING&&!audio_busy;portEXIT_CRITICAL(&gate_lock);
         if(wake&&!config.custom_wake)afe->enable_wakenet(afe_data);
         reply("CLEX_VOICE_WAITING\n");
-    }else{
+        return true;
+    }else if(final){
         reply("CLEX_VOICE_UNCERTAIN distance=%.5f ratio=%.5f\n",found.distance,found.ratio);
         emit(CV_UNCERTAIN,-1,-1,NULL);
     }
+    return final;
 }
 static void infer_task(void *argument){
     (void)argument;unsigned seen_drops=0;

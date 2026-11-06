@@ -2,7 +2,7 @@
   "version": "1.0.0",
   "category": "network",
   "categoryName": "Сеть",
-  "icon": "Network",
+  "icon": "Router",
   "color": "#38bdf8",
   "compatibility": {
     "projectFormat": 4,

@@ -22,6 +22,7 @@ import { generateArduinoAvr } from './platforms/arduino-avr.js';
 import profiles from './runtime-profiles.json' with { type: 'json' };
 import { peripheralBuses } from './drivers/peripheral-buses.js';
 import { stopwatchFirmware } from './drivers/stopwatch.js';
+import {synchronizationFirmware} from './drivers/synchronization.js';
 import { mediaFirmware, MEDIA_TYPES } from './drivers/media.js';
 import { networkFirmware, NETWORK_DEPENDENCIES } from './drivers/network.js';
 import { screenFor, screenBindings, screenCommands, elementUpdatePort } from '../displays/model.js';
@@ -31,7 +32,7 @@ import { validateAssembly, boardFor } from '../assembly/model.js';
 import { validateGraph, hardwareBinding, nodePorts } from '../logic/model.js';
 
 const compare = (a, b) => a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
-const implementationKeys = {'clex.hardware.nema17':'stepper','clex.hardware.tb6600':'stepper','clex.hardware.tmc2208':'stepper','clex.hardware.drv8825':'stepper','clex.logic.stepper':'stepper','clex.hardware.touch-button':'gpio-input','clex.logic.gpio-edge':'gpio-edge',"clex.hardware.espnow":"espnow-interface","clex.logic.espnow-control":"espnow-control","clex.logic.espnow-receive":"espnow-receive","clex.logic.espnow-ack":"espnow-ack","clex.logic.espnow-send":"espnow-send",'clex.hardware.led':'gpio-led','clex.hardware.button':'gpio-button','clex.logic.timer':'timer','clex.logic.gpio-read':'gpio-read','clex.logic.gpio-set':'gpio-set','clex.logic.serial':'serial','clex.logic.display':'display-view','clex.logic.counter':'counter','clex.logic.stopwatch':'stopwatch','clex.hardware.ethernet':'ethernet-interface','clex.logic.ethernet':'ethernet','clex.logic.internet-check':'internet-check','clex.hardware.audio':'audio-interface','clex.hardware.camera':'camera-interface','clex.logic.audio-play':'audio-play','clex.logic.tone':'tone','clex.logic.camera-capture':'camera-capture'};
+const implementationKeys = {'clex.logic.synchronize':'synchronize','clex.hardware.nema17':'stepper','clex.hardware.tb6600':'stepper','clex.hardware.tmc2208':'stepper','clex.hardware.drv8825':'stepper','clex.logic.stepper':'stepper','clex.hardware.touch-button':'gpio-input','clex.logic.gpio-edge':'gpio-edge',"clex.hardware.espnow":"espnow-interface","clex.logic.espnow-control":"espnow-control","clex.logic.espnow-receive":"espnow-receive","clex.logic.espnow-ack":"espnow-ack","clex.logic.espnow-send":"espnow-send",'clex.hardware.led':'gpio-led','clex.hardware.button':'gpio-button','clex.logic.timer':'timer','clex.logic.gpio-read':'gpio-read','clex.logic.gpio-set':'gpio-set','clex.logic.serial':'serial','clex.logic.display':'display-view','clex.logic.counter':'counter','clex.logic.stopwatch':'stopwatch','clex.hardware.ethernet':'ethernet-interface','clex.logic.ethernet':'ethernet','clex.logic.internet-check':'internet-check','clex.hardware.audio':'audio-interface','clex.hardware.camera':'camera-interface','clex.logic.audio-play':'audio-play','clex.logic.tone':'tone','clex.logic.camera-capture':'camera-capture'};
 const implementationVersions = {
   'clex.hardware.espnow':'2.0.0',
   'clex.logic.espnow-send':'2.0.0',
@@ -91,9 +92,10 @@ export function generateFirmware(project, catalog, consoleMode = 'usb') {
   const media=mediaFirmware(project,catalog,nodes,index);
   const voice=voiceFirmware(project,catalog,nodes,index,cString);
   const stopwatch=stopwatchFirmware(nodes,index);
+  const synchronization=synchronizationFirmware(nodes,index);
   const buses=peripheralBuses(project,catalog);
   const events=Boolean(network.runtime || media.enabled || voice.enabled);
-  const eventModules=new Set([...NUMERIC_MODULES,...network.eventModules,...media.eventModules,...voice.eventModules,...stopwatch.eventModules,...espnow.eventModules,...gpioEdge.eventModules,...mqtt.eventModules,'clex.logic.gpio-read','clex.logic.gpio-set','clex.logic.router','clex.logic.wifi','clex.logic.xgzp6847d','clex.logic.temperature','clex.logic.stepper','clex.logic.select-number']);
+  const eventModules=new Set([...NUMERIC_MODULES,...network.eventModules,...media.eventModules,...voice.eventModules,...stopwatch.eventModules,...synchronization.eventModules,...espnow.eventModules,...gpioEdge.eventModules,...mqtt.eventModules,'clex.logic.gpio-read','clex.logic.gpio-set','clex.logic.router','clex.logic.wifi','clex.logic.xgzp6847d','clex.logic.temperature','clex.logic.stepper','clex.logic.select-number']);
   let eventTypes=media.enabled ? MEDIA_TYPES+'\n'+(network.types ? network.types.replace('clex_ethernet_snapshot_t ethernet;', 'clex_media_snapshot_t media; clex_ethernet_snapshot_t ethernet;') : 'typedef struct { uint16_t node; uint8_t kind,flags; uint32_t generation; union { clex_media_snapshot_t media; } payload; } clex_flow_event_t;') : network.types;
   if(voice.enabled)eventTypes=VOICE_TYPES+'\n'+(eventTypes?eventTypes.replace('union {','union { clex_voice_event_t voice;'):'typedef struct {uint16_t node;uint8_t kind,flags;uint32_t generation;union {clex_voice_event_t voice;} payload;} clex_flow_event_t;');
   const featureRuntimes=[...new Set([...(graphics.features||[]),...media.features,...voice.features,...espnow.features,...router.features,...wifi.features,...temperature.features,...xgzp.features,...mqtt.features,...(stepper.enabled?["stepper-"+board.target]:[])])].sort();
@@ -101,7 +103,7 @@ export function generateFirmware(project, catalog, consoleMode = 'usb') {
   const componentNames=[...new Set(extraProfiles.flatMap(profile=>profile.components||[]))].sort();
   const componentFiles=Object.assign({},...componentNames.map(name=>{if(!componentPackages[name])throw new Error('Отсутствуют исходники компонента '+name);return componentPackages[name].files;}));
   const extraConfig=[...new Set(extraProfiles.filter(profile=>profile.config.trim()).flatMap(profile=>profile.config.trim().split('\n')))].join('\n')+(featureRuntimes.length?'\n':'');
-  if (!graphics.runtime && !network.runtime && !media.enabled && !voice.enabled && !stopwatch.enabled && !espnow.enabled && !gpioEdge.enabled && !stepper.enabled && !router.enabled && !wifi.enabled && !temperature.enabled && !xgzp.enabled && !numeric.enabled && !mqtt.enabled && (!nodes.some(node=>node.moduleId==='clex.logic.timer') || !project.logic.edges.some(edge=>edge.dataType==='event'))) throw new Error('Добавьте таймер и соедините его такт с действием.');
+  if (!graphics.runtime && !network.runtime && !media.enabled && !voice.enabled && !stopwatch.enabled && !synchronization.enabled && !espnow.enabled && !gpioEdge.enabled && !stepper.enabled && !router.enabled && !wifi.enabled && !temperature.enabled && !xgzp.enabled && !numeric.enabled && !mqtt.enabled && (!nodes.some(node=>node.moduleId==='clex.logic.timer') || !project.logic.edges.some(edge=>edge.dataType==='event'))) throw new Error('Добавьте таймер и соедините его такт с действием.');
   for (const element of [...nodes,...components]) {
     const module = catalog.modules.find(module=>module.id===element.moduleId);
     if (!module || module.version !== (implementationVersions[module.id] || '1.0.0') || element.moduleVersion !== module.version || ((module.display && !supportsDisplayDriver(module.display, board.platform)) || (!module.display && (!implementationKeys[module.id] || implementationKeys[module.id] !== module.firmware?.generatorKey)))) throw new Error(`Нет проверенной реализации генератора для ${element.moduleId} v${element.moduleVersion}.`);
@@ -182,7 +184,7 @@ export function generateFirmware(project, catalog, consoleMode = 'usb') {
     const target = nodes[index.get(edge.target)];
     const element = displayElements(target).findIndex(item => elementUpdatePort(item.id) === edge.targetHandle);
     const command = displayCommands(target).findIndex(item=>item.id===edge.targetHandle);
-    const suffix = command >= 0 ? '_state_'+command : target.moduleId==='clex.logic.gpio-set'?'_'+edge.targetHandle:(target.moduleId==='clex.logic.mqtt-control'&&edge.targetHandle==='disconnect')||(target.moduleId==='clex.logic.mqtt-receive'&&edge.targetHandle==='unsubscribe')?'_'+edge.targetHandle:target.moduleId==='clex.logic.wifi'&&edge.targetHandle!=='trigger'?'_'+edge.targetHandle:target.moduleId==='clex.logic.router'&&edge.targetHandle!=='trigger'?'_'+edge.targetHandle:target.moduleId==='clex.logic.stepper'&&['stop','release'].includes(edge.targetHandle)?'_'+edge.targetHandle:target.moduleId==='clex.logic.espnow-control'&&edge.targetHandle==='resetStatistics'?'_resetStatistics':target.moduleId==='clex.logic.espnow-ack'&&edge.targetHandle==='reject'?'_reject':target.moduleId === 'clex.logic.counter' && edge.targetHandle === 'reset' ? '_reset' : target.moduleId === 'clex.logic.stopwatch' && ['pause','reset'].includes(edge.targetHandle) ? '_' + edge.targetHandle : element >= 0 ? '_element_' + element : '';
+    const suffix = command >= 0 ? '_state_'+command : target.moduleId==='clex.logic.synchronize'?(edge.targetHandle==='start'?'':'_'+edge.targetHandle):target.moduleId==='clex.logic.gpio-set'?'_'+edge.targetHandle:(target.moduleId==='clex.logic.mqtt-control'&&edge.targetHandle==='disconnect')||(target.moduleId==='clex.logic.mqtt-receive'&&edge.targetHandle==='unsubscribe')?'_'+edge.targetHandle:target.moduleId==='clex.logic.wifi'&&edge.targetHandle!=='trigger'?'_'+edge.targetHandle:target.moduleId==='clex.logic.router'&&edge.targetHandle!=='trigger'?'_'+edge.targetHandle:target.moduleId==='clex.logic.stepper'&&['stop','release'].includes(edge.targetHandle)?'_'+edge.targetHandle:target.moduleId==='clex.logic.espnow-control'&&edge.targetHandle==='resetStatistics'?'_resetStatistics':target.moduleId==='clex.logic.espnow-ack'&&edge.targetHandle==='reject'?'_reject':target.moduleId === 'clex.logic.counter' && edge.targetHandle === 'reset' ? '_reset' : target.moduleId === 'clex.logic.stopwatch' && ['pause','reset'].includes(edge.targetHandle) ? '_' + edge.targetHandle : element >= 0 ? '_element_' + element : '';
     return `node_${index.get(edge.target)}${suffix}();`;
   };
   const functions=nodes.map((node,i)=>{
@@ -195,6 +197,7 @@ export function generateFirmware(project, catalog, consoleMode = 'usb') {
     if(output){
       return 'static void node_'+i+'(void) {}\n'+['on','off','toggle'].map(action=>'static void node_'+i+'_'+action+'(void) {\n'+output.command(action)+'\n  if('+output.state+')node_'+i+'_emit_on();else node_'+i+'_emit_off();\n  node_'+i+'_emit_done();\n}').join('\n')+eventFunctions.join('');
     }
+    if(synchronization.operations.has(node.id)){operations.push(synchronization.operations.get(node.id));}
     if(mqtt.operations.has(node.id)){const op=mqtt.operations.get(node.id);operations.push(typeof op==='function'?op({inputEdge,dataExpression}):op);}
     if(numeric.operations.has(node.id))operations.push(numeric.operations.get(node.id)({inputEdge,dataExpression,emit:port=>'    node_'+i+'_emit_'+port+'();'}));
     if(xgzp.operations.has(node.id))operations.push(xgzp.operations.get(node.id));
@@ -259,16 +262,19 @@ ${stepper.source}
 ${router.source}${wifi.source?'\n'+wifi.source:''}
 ${temperature.source}${xgzp.source?'\n'+xgzp.source:''}${numeric.source?'\n'+numeric.source:''}
 ${mqtt.source}
+${synchronization.source}
 ${stopwatch.source ? stopwatch.source+'\n' : ''}${nodes.map((node,i)=>`static void node_${i}(void) __attribute__((unused));${node.moduleId === 'clex.logic.espnow-ack' ? `\nstatic void node_${i}_reject(void) __attribute__((unused));` : ''}${node.moduleId === 'clex.logic.counter' ? `\nstatic void node_${i}_reset(void) __attribute__((unused));` : ''}${node.moduleId === 'clex.logic.stopwatch' ? `\nstatic void node_${i}_pause(void) __attribute__((unused));\nstatic void node_${i}_reset(void) __attribute__((unused));` : ''}${displayElements(node).map((_, j) => `\nstatic void node_${i}_element_${j}(void) __attribute__((unused));`).join('')}${displayCommands(node).map((_,j)=>`\nstatic void node_${i}_state_${j}(void) __attribute__((unused));`).join('')}${eventModules.has(node.moduleId)?nodePorts(node,catalog,project).outputs.filter(port=>port.type==='event').map(port=>`\nstatic void node_${i}_emit_${port.id}(void) __attribute__((unused));`).join(''):''}`).join('\n')}
 ${nodes.filter(node=>node.moduleId==='clex.logic.espnow-control'&&node.parameters.action==='peer').map(node=>`static void node_${index.get(node.id)}_resetStatistics(void) __attribute__((unused));`).join('\n')}
 ${nodes.filter(node=>node.moduleId==='clex.logic.gpio-set').flatMap(node=>['on','off','toggle'].map(action=>`static void node_${index.get(node.id)}_${action}(void) __attribute__((unused));`)).join('\n')}
 ${nodes.filter(node=>node.moduleId==='clex.logic.stepper').flatMap(node=>['stop','release'].map(action=>`static void node_${index.get(node.id)}_${action}(void) __attribute__((unused));`)).join('\n')}
 ${nodes.filter(node=>node.moduleId==='clex.logic.router').flatMap(node=>['start','stop','apOn','apOff','reconnect','clients','applyAp','applyWan'].map(action=>`static void node_${index.get(node.id)}_${action}(void) __attribute__((unused));`)).join('\n')}
 ${wifi.enabled?nodes.filter(node=>node.moduleId==='clex.logic.wifi').flatMap(node=>['connect','disconnect','reconnect'].map(action=>`static void node_${index.get(node.id)}_${action}(void) __attribute__((unused));`)).join('\n')+'\n':''}${nodes.filter(node=>mqtt.extraFunctions.has(node.id)).map(node=>`static void node_${index.get(node.id)}_${node.moduleId==='clex.logic.mqtt-control'?'disconnect':'unsubscribe'}(void) __attribute__((unused));`).join('\n')}
+${synchronization.prototypes}
 static void update_inputs(void) {
 ${inputUpdates.length?'  int64_t now = esp_timer_get_time();\n'+inputUpdates.join('\n'):'  /* No buttons in this project. */'}
 }
 ${functions.join('\n\n')}
+${[...synchronization.extraFunctions.values()].map(build=>build()).join('\n')}
 ${[...stepper.extraFunctions.values()].join('\n')}${stepper.notify}
 ${nodes.filter(node=>router.extraFunctions.has(node.id)).map(node=>router.extraFunctions.get(node.id)({inputEdge,dataExpression,cString})).join('\n')}${router.notify}
 ${espnow.enabled?'\n'+[...espnow.extraFunctions.values()].join('\n')+'\n'+espnow.notify:''}
@@ -298,6 +304,7 @@ ${stepper.poll}
 ${router.poll}${wifi.poll?'\n'+wifi.poll:''}
 ${temperature.poll}${xgzp.poll?'\n'+xgzp.poll:''}
 ${mqtt.poll}
+${synchronization.poll}
 ${gpioEdge.poll?gpioEdge.poll+'\n':''}${espnow.poll?espnow.poll+'\n':''}${stopwatch.poll ? stopwatch.poll+'\n' : ''}${graphics.update}
     dropped_total += atomic_exchange(&dropped_events, 0);
     if (dropped_total && esp_timer_get_time() - last_report >= 1000000) { ESP_LOGW("CLEX", "Timer events dropped: %u", dropped_total); dropped_total = 0; last_report = esp_timer_get_time(); }

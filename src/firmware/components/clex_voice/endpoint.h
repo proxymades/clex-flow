@@ -11,7 +11,9 @@ typedef struct {
     unsigned history_next,consecutive,voiced,quiet;
     bool collecting,too_long,recovering;
 } kws_endpoint_t;
-typedef void (*kws_utterance_fn)(const int16_t *audio,size_t count,unsigned voiced,bool too_long,void *context);
+/* Return true to consume a match. A rejected preview may receive more speech
+ * before the final callback; the final callback always consumes the utterance. */
+typedef bool (*kws_utterance_fn)(const int16_t *audio,size_t count,unsigned voiced,bool too_long,bool final,void *context);
 size_t kws_endpoint_size(void);
 void kws_endpoint_reset(kws_endpoint_t *state);
 void kws_endpoint_discard(kws_endpoint_t *state);

@@ -2,7 +2,7 @@
   "version": "1.0.0",
   "category": "network",
   "categoryName": "Сеть",
-  "icon": "Network",
+  "icon": "GraphStar",
   "color": "#2dd4bf",
   "compatibility": {
     "projectFormat": 4,

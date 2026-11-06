@@ -31,9 +31,13 @@ export function wakeModelReady(component,project,board){
   return !wakeProfileProblem(profile)&&voiceModelReady(profile)&&voiceInputMatches(profile,project,component,board);
 }
 function signatureHash(text){let value=2166136261;for(let i=0;i<text.length;i++)value=Math.imul(value^text.charCodeAt(i),16777619);return (value>>>0).toString(16).padStart(8,'0');}
+function modelRuntimeSignature(profile){
+  const signature=voiceSignature(profile),model=profile.model;
+  return model.streaming===undefined?signature:signatureHash(JSON.stringify(['calibration',signature,model.referenceIds,model.threshold,model.ratio]));
+}
 export function voiceRuntimeSignature(component,project,board){
-  const profile=readVoiceProfile(component),commands=voiceModelReady(profile)&&voiceInputMatches(profile,project,component,board)?voiceSignature(profile):'none';
-  return component.parameters.wakeMode==='custom'?signatureHash(JSON.stringify([commands,'wake',wakeModelReady(component,project,board)?voiceSignature(readWakeProfile(component)):'none'])):commands;
+  const profile=readVoiceProfile(component),commands=voiceModelReady(profile)&&voiceInputMatches(profile,project,component,board)?modelRuntimeSignature(profile):'none';
+  return component.parameters.wakeMode==='custom'?signatureHash(JSON.stringify([commands,'wake',wakeModelReady(component,project,board)?modelRuntimeSignature(readWakeProfile(component)):'none'])):commands;
 }
 export function readVoiceProfile(component){
   if(!component?.parameters?.profile)return emptyVoiceProfile();
@@ -68,7 +72,7 @@ export function voiceProfileProblem(profile){
   }
   if(profile.model!==null&&profile.model!==undefined){
     const model=profile.model;
-    if(!object(model)||model.version!==1||typeof model.signature!=='string'||!/^[0-9a-f]{8}$/.test(model.signature)||!Array.isArray(model.referenceIds)||model.referenceIds.length<1||new Set(model.referenceIds).size!==model.referenceIds.length||model.referenceIds.some(id=>!sampleIds.has(id))||!Number.isFinite(model.threshold)||model.threshold<=0||model.threshold>2||!Number.isFinite(model.ratio)||model.ratio<=0||model.ratio>=1||typeof model.ready!=='boolean'||![model.validation,model.test].every(report=>object(report)&&['total','commands','correct','rejected','wrong','falseCommands'].every(key=>Number.isInteger(report[key])&&report[key]>=0)&&report.total>=report.commands&&report.commands===report.correct+report.rejected+report.wrong&&report.falseCommands<=report.total-report.commands))return 'Некорректная модель голосовых команд.';
+    if(!object(model)||model.version!==1||typeof model.signature!=='string'||!/^[0-9a-f]{8}$/.test(model.signature)||!Array.isArray(model.referenceIds)||model.referenceIds.length<1||new Set(model.referenceIds).size!==model.referenceIds.length||model.referenceIds.some(id=>!sampleIds.has(id))||!Number.isFinite(model.threshold)||model.threshold<=0||model.threshold>2||!Number.isFinite(model.ratio)||model.ratio<=0||model.ratio>=1||typeof model.ready!=='boolean'||model.streaming!==undefined&&typeof model.streaming!=='boolean'||![model.validation,model.test].every(report=>object(report)&&['total','commands','correct','rejected','wrong','falseCommands'].every(key=>Number.isInteger(report[key])&&report[key]>=0)&&report.total>=report.commands&&report.commands===report.correct+report.rejected+report.wrong&&report.falseCommands<=report.total-report.commands))return 'Некорректная модель голосовых команд.';
   }
   return null;
 }

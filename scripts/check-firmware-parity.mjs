@@ -1,4 +1,5 @@
 import {conditionProject} from '../tests/condition-fixture.js';
+import {synchronizationProject} from '../tests/synchronization-fixture.js';
 import {eventIndicatorProject} from '../tests/event-indicator-fixture.js';
 import {mosfetProject,MOSFET_BOARDS} from '../tests/mosfet-fixture.js';
 import {audioPlayProject} from '../tests/audio-play-fixture.js';
@@ -48,6 +49,9 @@ function mediaProject(family) {
 }
 
 const cases = [
+  ['esp32-event-synchronization',synchronizationProject('doit-esp32-devkit-v1-30pin').project,'uart'],
+  ['s3-event-synchronization',synchronizationProject().project,'usb'],
+  ['p4-event-synchronization',synchronizationProject('waveshare-esp32-p4-nano').project,'uart'],
   ['s3-event-indicator',eventIndicatorProject(),'usb'],
   ['p4-voice-custom-wake',withCustomWake(voiceProject()),'uart'],
   ['p4-voice-wake-capture',withCustomWake(voiceProject(),{trained:false}),'uart'],

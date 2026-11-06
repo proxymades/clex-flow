@@ -21,7 +21,7 @@ const edgeTypes = { physical: AssemblyWire };
 const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 const viewportData = viewport => ({
-  x: clamp(viewport.x, -50000, 50000), y: clamp(viewport.y, -50000, 50000), zoom: clamp(viewport.zoom, 0.2, 3),
+  x: clamp(viewport.x, -50000, 50000), y: clamp(viewport.y, -50000, 50000), zoom: clamp(viewport.zoom, 0.1, 3),
 });
 
 export default function AssemblyCanvas({ project, board, catalog, selection, setSelection, pending, setPending, onTerminal, onPin, onConnect, onError, onTransform, onInteraction, onRouteChange, focusComponentId, onFocusDone, history, busy }) {
@@ -229,7 +229,7 @@ export default function AssemblyCanvas({ project, board, catalog, selection, set
     focusedComponent.current = focusComponentId;
     autoFit.current = false;
     const viewport = instance.getViewport(), margin = 28;
-    const next = { ...viewport, zoom: Math.max(0.2, Math.min(viewport.zoom, (size.width - margin * 2) / node.width, (size.height - margin * 2) / node.height)) };
+    const next = { ...viewport, zoom: Math.max(0.1, Math.min(viewport.zoom, (size.width - margin * 2) / node.width, (size.height - margin * 2) / node.height)) };
     const left = node.position.x * next.zoom + next.x, top = node.position.y * next.zoom + next.y;
     const right = left + node.width * next.zoom, bottom = top + node.height * next.zoom;
     if (left < margin) next.x += margin - left; else if (right > size.width - margin) next.x += size.width - margin - right;
@@ -254,7 +254,7 @@ export default function AssemblyCanvas({ project, board, catalog, selection, set
         isValidConnection={connection => !problemFor(connection)} connectionMode={ConnectionMode.Loose} connectOnClick={false}
         onPaneClick={() => { setSelection({ type: 'board', id: 'board' }); setPending(null); }}
         nodesDraggable={ready && !busy && !spaceHeld} nodesConnectable={ready && !busy && !spaceHeld} panOnDrag={ready} zoomOnScroll={ready} zoomOnPinch={ready} edgesReconnectable={false}
-        selectionKeyCode={null} multiSelectionKeyCode={null} deleteKeyCode={null} minZoom={0.2} maxZoom={3} colorMode="dark"
+        selectionKeyCode={null} multiSelectionKeyCode={null} deleteKeyCode={null} minZoom={0.1} maxZoom={3} colorMode="dark"
         ariaLabelConfig={{ 'node.a11yDescription.default': 'Плата или компонент. Стрелки перемещают. Delete или Backspace удаляет компонент. Пробел и перетаскивание перемещают камеру.', 'edge.a11yDescription.default': 'Физическое соединение. Enter выбирает провод, Delete или Backspace удаляет.' }}
         onError={(_code, message) => onError(message)}>
         <Background variant={BackgroundVariant.Dots} gap={24} size={0.8} color="#3b465d" />

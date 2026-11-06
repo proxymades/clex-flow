@@ -119,7 +119,7 @@ CLEX Flow развивается с прицелом на семейства ESP
 
 ## Запуск для разработки
 
-Нужны **Node.js 22.12+**, npm и Rust. На macOS также нужны Xcode Command Line Tools; на Windows – Build Tools for Visual Studio с инструментами C++ и WebView2. Для редакторов ESP-IDF не требуется; для сборки firmware ESP32 в версии **0.1.7** нужна **ESP-IDF 5.4.4**. Ее можно обнаружить или установить через «Инструменты разработки».
+Нужны **Node.js 22.12+**, npm и Rust. На macOS также нужны Xcode Command Line Tools; на Windows – Build Tools for Visual Studio с инструментами C++ и WebView2. Для редакторов ESP-IDF не требуется; для сборки прошивок ESP32 нужна **ESP-IDF 5.4.4**. Ее можно обнаружить или установить через «Инструменты разработки».
 
 ```sh
 git clone https://github.com/proxymades/clex-flow.git
@@ -155,12 +155,14 @@ cargo test --manifest-path src-tauri/Cargo.toml --locked
 npm run test:firmware-parity
 ```
 
-`test:firmware-parity` сравнивает файлы генератора JavaScript и нативного слоя Rust в 54 конфигурациях ESP32/S3/P4/Nano, включая ESP-NOW, маршрутизатор, шаговые двигатели и измерение температуры. ESP-IDF, сеть и устройство не нужны; сначала выполните Rust-тесты для подготовки зависимостей.
+`test:firmware-parity` сравнивает файлы генератора JavaScript и нативного слоя Rust для поддерживаемых конфигураций ESP32/S3/P4/Nano, включая ESP-NOW, маршрутизатор, шаговые двигатели и измерение температуры. ESP-IDF, сеть и устройство не нужны; сначала выполните Rust-тесты для подготовки зависимостей.
 
 UI-сценарии используют Playwright: `test:ui`, `test:assembly-ui`, `test:logic-ui`, `test:firmware-ui`. Запускайте их при работающем веб-предпросмотре и установленном Chromium. Для P4 и новых маршрутов доступны `test:p4-ui`, `test:peripheral-ui`, `test:manual-routing-ui`. URL предпросмотра задается через `CLEX_PREVIEW_URL`, путь Chromium при необходимости – через `CLEX_BROWSER_EXECUTABLE`. Результаты сохраняются локально в `.artifacts/`.
 
 ## Документация
 
+- [Примеры проектов и умный светильник с MQTT](examples/README.md)
+- [Синхронизация событий](docs/synchronization.md)
 - [SDK Manager](docs/sdk-manager.md)
 - [Подключение ESP-IDF и сборка firmware](docs/esp-idf.md)
 - [Профили плат и распиновка](docs/boards.md)

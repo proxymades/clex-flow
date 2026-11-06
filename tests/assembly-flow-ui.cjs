@@ -29,7 +29,7 @@ const { chromium } = require('playwright');
   const scale = selector => page.locator(selector + ' .react-flow__viewport').evaluate(element => Number(element.style.transform.match(/scale\(([^)]+)\)/)[1]));
   try {
     await page.goto(process.env.CLEX_PREVIEW_URL || 'http://127.0.0.1:1420');
-    const chooser = page.waitForEvent('filechooser'); await page.getByRole('button', { name: 'Открыть JSON', exact: true }).click();
+    const chooser = page.waitForEvent('filechooser'); await page.getByRole('button', { name: 'Импортировать проект', exact: true }).click();
     await (await chooser).setFiles('tests/fixtures/blink-mount.clex.json');
     await page.getByRole('button', { name: 'Монтаж', exact: true }).click();
     await page.locator('.assembly-flow-region[data-ready="true"]').waitFor();

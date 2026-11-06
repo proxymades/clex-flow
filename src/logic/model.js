@@ -1,4 +1,5 @@
 import {conditionPorts,conditionIssues,CONDITION_MODULE} from './conditions.js';
+import {SYNCHRONIZE_MODULE,synchronizationPorts} from './synchronization.js';
 import {portRowCount} from './portGroups.js';
 import {OUTPUT_MODULE,outputChannelCount,outputTerminalId} from '../gpio/model.js';
 import {recordingIssues} from '../audio/model.js';
@@ -25,6 +26,7 @@ export function nodePorts(node, catalog, project) {
   let inputs = (module?.inputs || []).filter(active);
   let outputs = (module?.outputs || []).filter(active);
   if(node.moduleId===CONDITION_MODULE&&parameters.mode==='conditions')inputs=[...inputs.filter(port=>port.type==='event'),...conditionPorts(node)];
+  if(node.moduleId===SYNCHRONIZE_MODULE)inputs=[...inputs,...synchronizationPorts(node)];
   if(node.moduleId===VOICE_LOGIC&&project)outputs=[...voicePorts(project.components.find(c=>c.id===node.parameters.componentId)),...outputs];
   if(node.moduleId==='clex.logic.espnow-receive'&&node.parameters.transferType==='command')outputs=outputs.map(port=>port.readyOn==='messageReceived'?{...port,readyOn:'commandReceived'}:port);
   if (module?.editor === 'screen' && project) {
@@ -107,7 +109,7 @@ export function updateNode(graph, id, patch, catalog = null, project = null) {
   }
   const next={...graph,nodes:graph.nodes.map(node=>node.id===id?{...node,...patch}:node)};
   if(!catalog||!previous||!patch.parameters)return next;
-  const changedPorts=previous.moduleId==='clex.logic.compare-number'?['mode','conditions'].some(key=>previous.parameters[key]!==patch.parameters[key]):previous.moduleId.startsWith('clex.logic.espnow-')&&['transferType','action'].some(key=>previous.parameters[key]!==patch.parameters[key]);
+  const changedPorts=previous.moduleId===SYNCHRONIZE_MODULE?['eventCount'].some(key=>previous.parameters[key]!==patch.parameters[key]):previous.moduleId==='clex.logic.compare-number'?['mode','conditions'].some(key=>previous.parameters[key]!==patch.parameters[key]):previous.moduleId.startsWith('clex.logic.espnow-')&&['transferType','action'].some(key=>previous.parameters[key]!==patch.parameters[key]);
   if(!changedPorts)return next;
   const current=next.nodes.find(node=>node.id===id), before=nodePorts(previous,catalog,project), after=nodePorts(current,catalog,project);
   // Different purposes have different port IDs; retain only the same purpose and data type.

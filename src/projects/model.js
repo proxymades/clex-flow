@@ -16,7 +16,7 @@ const isObject = value => value !== null && typeof value === 'object' && !Array.
 const legacyText = value => typeof value === 'string' && value.length > 0 && value.length <= 500;
 const legacyEdge = value => isObject(value) && ['message','sourceName','targetName'].every(key => legacyText(value[key]));
 const point = value => isObject(value) && ['x', 'y'].every(key => Number.isFinite(value[key]) && Math.abs(value[key]) <= 5000);
-const viewportValid = value => isObject(value) && ['x', 'y', 'zoom'].every(key => Number.isFinite(value[key])) && Math.abs(value.x) <= 50000 && Math.abs(value.y) <= 50000 && value.zoom >= 0.2 && value.zoom <= 3;
+const viewportValid = value => isObject(value) && ['x', 'y', 'zoom'].every(key => Number.isFinite(value[key])) && Math.abs(value.x) <= 50000 && Math.abs(value.y) <= 50000 && value.zoom >= 0.1 && value.zoom <= 3;
 
 export function validateName(value) {
   if (typeof value !== 'string' || !value.trim() || value.trim().length > 80) throw new Error('Название должно содержать от 1 до 80 символов.');

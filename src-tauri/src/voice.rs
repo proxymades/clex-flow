@@ -12,6 +12,7 @@ use std::{
     time::{Duration, Instant},
 };
 use tauri::{Emitter, Manager};
+mod calibration;
 const MAX_RECORDS: usize = 128;
 const COEFFS: usize = 12;
 const FRAMES: usize = 119;
@@ -106,6 +107,7 @@ pub struct Model {
     threshold: f32,
     ratio: f32,
     ready: bool,
+    streaming: bool,
     validation: Evaluation,
     test: Evaluation,
 }
@@ -266,40 +268,12 @@ fn classify(
         )
     }
 }
-fn evaluate(
-    indices: &[usize],
-    references: &[usize],
-    decoded: &[Vec<i16>],
-    labels: &[i32],
-    samples: &[Sample],
-    commands: usize,
-    threshold: f32,
-    ratio: f32,
+fn prepare(
+    profile: Profile,
+    signature: String,
     cancel: &AtomicBool,
-) -> Result<Evaluation, String> {
-    let mut report = Evaluation::default();
-    for &i in indices {
-        check_cancel(cancel)?;
-        let found = classify(
-            i, references, decoded, labels, samples, commands, threshold, ratio,
-        );
-        report.total += 1;
-        if labels[i] < commands as i32 {
-            report.commands += 1;
-            if found.label == labels[i] {
-                report.correct += 1;
-            } else if found.label < 0 {
-                report.rejected += 1;
-            } else {
-                report.wrong += 1;
-            }
-        } else if found.label >= 0 {
-            report.false_commands += 1;
-        }
-    }
-    Ok(report)
-}
-fn prepare(profile: Profile, signature: String, cancel: &AtomicBool) -> Result<Model, String> {
+    recordings: Option<&std::path::Path>,
+) -> Result<Model, String> {
     let n = profile.commands.len();
     let wake = profile.purpose.as_deref() == Some("wake");
     if profile.purpose.as_deref().is_some_and(|p| p != "wake") || (wake && n != 1) {
@@ -383,82 +357,49 @@ fn prepare(profile: Profile, signature: String, cancel: &AtomicBool) -> Result<M
             });
         }
         if group.len() >= 3 {
-            test.push(group[group.len() - 1]);
-            val.push(group[group.len() - 2]);
-            train.extend_from_slice(&group[..group.len() - 2]);
+            let test_count = (group.len() / 5).max(1);
+            let val_count = if group.len() >= 5 {
+                (group.len() / 5).max(2)
+            } else {
+                1
+            };
+            let test_start = group.len() - test_count;
+            let val_start = test_start - val_count;
+            train.extend_from_slice(&group[..val_start]);
+            val.extend_from_slice(&group[val_start..test_start]);
+            test.extend_from_slice(&group[test_start..]);
         } else {
             val.push(group[1]);
             train.push(group[0]);
         }
     }
-    let raw: Vec<Match> = val
-        .iter()
-        .map(|&i| {
-            classify(
-                i,
-                &train,
-                &decoded,
-                &labels,
-                &profile.samples,
-                n,
-                1000.,
-                1.1,
-            )
-        })
-        .collect();
-    let mut best = (usize::MAX, 0usize, 0f32, 0f32);
-    for threshold in [0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.5, 0.6, 0.8, 1.0] {
-        for ratio in [0.75, 0.8, 0.85, 0.9, 0.93, 0.95, 0.97] {
-            if wake && (threshold > 0.5 || ratio > 0.9) {
-                continue;
-            }
-            check_cancel(cancel)?;
-            let (mut wrong, mut correct) = (0, 0);
-            for (&i, result) in val.iter().zip(&raw) {
-                if result.candidate < n as i32
-                    && result.distance <= threshold
-                    && result.ratio <= ratio
-                {
-                    if result.candidate == labels[i] {
-                        correct += 1
-                    } else {
-                        wrong += 1
-                    }
-                }
-            }
-            if wrong < best.0 || (wrong == best.0 && correct > best.1) {
-                best = (wrong, correct, threshold, ratio);
-            }
-        }
-    }
-    if best.1 == 0 {
-        return Err("Проверочные записи пока не распознаются уверенно. Добавьте разные примеры команд или замените слишком похожие фразы".into());
-    }
-    let (threshold, ratio) = (best.2, best.3);
-    let validation = evaluate(
+    let audio = calibration::load_recordings(&profile.samples, recordings, cancel)?;
+    let streaming = audio.iter().all(Option::is_some);
+    let raw = calibration::trials(
         &val,
         &train,
         &decoded,
         &labels,
         &profile.samples,
         n,
-        threshold,
-        ratio,
+        &audio,
         cancel,
     )?;
+    let (threshold, ratio) = calibration::choose_gate(&raw, n, wake, cancel)?;
+    let validation = calibration::evaluate(&raw, n, threshold, ratio);
     let mut references = train;
     references.extend_from_slice(&val);
-    let report = evaluate(
+    let test_trials = calibration::trials(
         &test,
         &references,
         &decoded,
         &labels,
         &profile.samples,
         n,
-        threshold,
-        ratio,
+        &audio,
         cancel,
     )?;
+    let report = calibration::evaluate(&test_trials, n, threshold, ratio);
     let ready = validation.wrong == 0
         && validation.false_commands == 0
         && report.wrong == 0
@@ -474,6 +415,7 @@ fn prepare(profile: Profile, signature: String, cancel: &AtomicBool) -> Result<M
         threshold,
         ratio,
         ready,
+        streaming,
         validation,
         test: report,
     })
@@ -821,7 +763,12 @@ pub async fn voice_prepare(
                 "preparing",
                 "Проверяем модель на отдельных записях",
             );
-            prepare(profile, signature, cancel)
+            let directory = app
+                .path()
+                .app_data_dir()
+                .map_err(|e| e.to_string())?
+                .join("voice-recordings");
+            prepare(profile, signature, cancel, Some(&directory))
         },
     )
     .await
@@ -906,6 +853,107 @@ pub async fn voice_test(
 #[cfg(test)]
 mod tests {
     use super::*;
+    fn prepare(profile: Profile, signature: String, cancel: &AtomicBool) -> Result<Model, String> {
+        super::prepare(profile, signature, cancel, None)
+    }
+    fn wav_file(directory: &std::path::Path, audio: &[i16]) -> String {
+        let mut bytes = b"RIFF".to_vec();
+        bytes.extend(96036u32.to_le_bytes());
+        bytes.extend(b"WAVEfmt ");
+        bytes.extend(16u32.to_le_bytes());
+        bytes.extend(1u16.to_le_bytes());
+        bytes.extend(1u16.to_le_bytes());
+        bytes.extend(16000u32.to_le_bytes());
+        bytes.extend(32000u32.to_le_bytes());
+        bytes.extend(2u16.to_le_bytes());
+        bytes.extend(16u16.to_le_bytes());
+        bytes.extend(b"data");
+        bytes.extend(96000u32.to_le_bytes());
+        bytes.extend(audio.iter().flat_map(|v| v.to_le_bytes()));
+        let id = format!("{:x}", Sha256::digest(&bytes));
+        fs::write(directory.join(format!("{id}.wav")), bytes).unwrap();
+        id
+    }
+    #[test]
+    fn local_wavs_use_streaming_trials_and_keep_test_recordings_out_of_references() {
+        let directory = tempfile::tempdir().unwrap();
+        let mut profile = fixture(2);
+        for (index, sample) in profile.samples.iter_mut().enumerate() {
+            let label = index / 5;
+            let example = index % 5;
+            let mut audio = vec![0i16; 48000];
+            let frequency = [0.13, 0.41, 0.73, 0.03][label] + example as f32 * 0.0001;
+            for (i, value) in audio.iter_mut().enumerate().take(22000).skip(6000) {
+                let amplitude = if label == 3 {
+                    12. + example as f32
+                } else {
+                    1800.
+                };
+                *value = (amplitude * (i as f32 * frequency + example as f32 * 0.2).sin()) as i16;
+            }
+            let (frames, data, quality, scale) = encode(&audio, label == 3).unwrap();
+            sample.id = wav_file(directory.path(), &audio);
+            sample.frames = frames;
+            sample.data = data;
+            sample.quality = quality;
+            sample.scale = scale;
+        }
+        let held_out: Vec<_> = profile
+            .samples
+            .iter()
+            .skip(4)
+            .step_by(5)
+            .map(|s| s.id.clone())
+            .collect();
+        let model = super::prepare(
+            profile,
+            "12345678".into(),
+            &AtomicBool::new(false),
+            Some(directory.path()),
+        )
+        .unwrap();
+        assert!(model.streaming && model.ready);
+        assert_eq!(model.test.commands, 8);
+        assert_eq!(model.test.correct, 8);
+        assert_eq!(model.test.false_commands, 0);
+        assert!(held_out.iter().all(|id| !model.reference_ids.contains(id)));
+    }
+    #[test]
+    #[ignore = "Reads an explicitly selected local recording corpus"]
+    fn audit_saved_recordings() {
+        let path = std::path::PathBuf::from(std::env::var("CLEX_VOICE_AUDIT_PROJECT").unwrap());
+        let original = fs::read(&path).unwrap();
+        let project: serde_json::Value = serde_json::from_slice(&original).unwrap();
+        let voice = project["components"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|c| c["moduleId"] == "clex.hardware.voice")
+            .unwrap();
+        let profile: Profile =
+            serde_json::from_str(voice["parameters"]["profile"].as_str().unwrap()).unwrap();
+        let recordings = path
+            .parent()
+            .unwrap()
+            .parent()
+            .unwrap()
+            .join("voice-recordings");
+        let model = super::prepare(
+            profile,
+            "12345678".into(),
+            &AtomicBool::new(false),
+            Some(&recordings),
+        )
+        .unwrap();
+        println!(
+            "{}",
+            serde_json::json!({"threshold":model.threshold,"ratio":model.ratio,"ready":model.ready,"streaming":model.streaming,"references":model.reference_ids.len(),"validation":model.validation,"test":model.test})
+        );
+        assert!(model.streaming);
+        assert_eq!(model.test.wrong, 0);
+        assert_eq!(model.test.false_commands, 0);
+        assert_eq!(fs::read(path).unwrap(), original);
+    }
     fn fixture(n: usize) -> Profile {
         let commands: Vec<_> = (0..n)
             .map(|i| VoiceCommand {

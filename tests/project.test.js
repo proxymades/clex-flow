@@ -12,6 +12,16 @@ test('создание проекта и JSON round-trip сохраняют ст
   assert.deepEqual(parseProject(serializeProject(project)), project);
   assert.notEqual(createProject('Другой').id, project.id);
 });
+test('масштаб логики и монтажа 10 процентов сохраняется, меньший отклоняется',()=>{
+ const project=createProject('Масштаб');
+ project.logic.viewport.zoom=0.1;
+ project.assembly.viewport.zoom=0.1;
+ assert.deepEqual(parseProject(serializeProject(project)),project);
+ for(const name of ['logic','assembly']) {
+  const invalid=structuredClone(project);invalid[name].viewport.zoom=0.099;
+  assert.throws(()=>serializeProject(invalid));
+ }
+});
 test('пустое и слишком длинное название не принимаются', () => {
   for (const value of ['', '  ', 'x'.repeat(81), null]) assert.throws(() => validateName(value));
   assert.equal(validateName('Тест'), 'Тест');

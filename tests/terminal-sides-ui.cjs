@@ -11,7 +11,7 @@ const { chromium } = require('playwright');
  const save=async()=>{await page.getByRole('button',{name:'Сохранить',exact:true}).first().click();await page.getByText('Проект сохранен',{exact:true}).waitFor();};
  try {
   await page.goto('http://127.0.0.1:1420');
-  const chooser=page.waitForEvent('filechooser');await page.getByRole('button',{name:'Открыть JSON',exact:true}).click();
+  const chooser=page.waitForEvent('filechooser');await page.getByRole('button',{name:'Импортировать проект',exact:true}).click();
   await(await chooser).setFiles({name:'sides.clex.json',mimeType:'application/json',buffer:Buffer.from(serializeProject(firmwareProject()))});
   await page.getByRole('button',{name:'Монтаж',exact:true}).click();await page.locator('.assembly-flow-region[data-ready="true"]').waitFor();
   await page.getByRole('button',{name:'Компонент Внешний светодиод 1',exact:true}).click();

@@ -1,6 +1,7 @@
 #include "endpoint.h"
 #include <string.h>
 #define QUIET_FRAMES 16
+#define FINAL_QUIET_FRAMES 60
 size_t kws_endpoint_size(void){return sizeof(kws_endpoint_t);}
 void kws_endpoint_reset(kws_endpoint_t *s) {
     s->frame_used=0;s->audio_count=0;s->history_next=0;s->consecutive=0;s->voiced=0;s->quiet=0;
@@ -33,10 +34,20 @@ static void process_frame(kws_endpoint_t *s,kws_utterance_fn callback,void *cont
     if(s->audio_count+KWS_HOP<=KWS_MAX_UTTERANCE) {
         memcpy(s->audio+s->audio_count,s->frame,sizeof(s->frame));
         s->audio_count+=KWS_HOP;
-    } else s->too_long=true;
+    } else if(voice) {
+        /* Waiting for a continuation must not turn trailing silence into an
+         * overlong utterance. Actual speech that exceeds the buffer is rejected. */
+        s->too_long=true;
+    }
     if(voice){s->voiced++;s->quiet=0;}else s->quiet++;
-    if(s->quiet>=QUIET_FRAMES){
-        callback(s->audio,s->audio_count,s->voiced,s->too_long,context);
+    bool consumed=false;
+    if(s->quiet==QUIET_FRAMES) {
+        consumed=callback(s->audio,s->audio_count,s->voiced,s->too_long,false,context);
+    } else if(s->quiet>=FINAL_QUIET_FRAMES) {
+        callback(s->audio,s->audio_count,s->voiced,s->too_long,true,context);
+        consumed=true;
+    }
+    if(consumed) {
         s->collecting=false;s->too_long=false;s->audio_count=0;
         s->consecutive=0;s->voiced=0;s->quiet=0;
     }
