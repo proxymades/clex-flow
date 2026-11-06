@@ -12,7 +12,8 @@ test('voice endpoint keeps rejected fragments across pauses without delaying con
   const compiler=candidates.find(c=>spawnSync(c,['--version'],{encoding:'utf8'}).status===0);
   assert.ok(compiler,'A host C compiler is required; set CC or install Clang/GCC.');
   const source=resolve('src/firmware/components/clex_voice'),binary=join(dir,process.platform==='win32'?'voice-endpoint.exe':'voice-endpoint');
-  const compile=spawnSync(compiler,['-std=c11','-O1','-Wall','-Wextra','-Werror','-I'+source,resolve('tests/fixtures/voice-endpoint-main.c'),join(source,'endpoint.c'),'-o',binary],{encoding:'utf8'});
+  // The local features.h must not shadow glibc's <features.h> on Linux.
+  const compile=spawnSync(compiler,['-std=c11','-O1','-Wall','-Wextra','-Werror','-iquote',source,resolve('tests/fixtures/voice-endpoint-main.c'),join(source,'endpoint.c'),'-o',binary],{encoding:'utf8'});
   assert.equal(compile.status,0,compile.stdout+compile.stderr);
   const run=spawnSync(binary,[],{encoding:'utf8',timeout:10000});
   assert.equal(run.status,0,run.stdout+run.stderr);
