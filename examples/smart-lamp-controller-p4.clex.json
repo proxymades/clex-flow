@@ -306,7 +306,7 @@
         "parameters": {
           "componentId": "73d698bf-de2b-4c1f-931e-ebaec95a6e1e",
           "topic": "clex/examples/smart-lamp/lamps/set",
-          "payload": "ON",
+          "payload": "GROUP ON",
           "qos": "1",
           "retain": false,
           "payloadEncoding": "utf8",
@@ -349,7 +349,7 @@
         "parameters": {
           "componentId": "73d698bf-de2b-4c1f-931e-ebaec95a6e1e",
           "topic": "clex/examples/smart-lamp/lamps/set",
-          "payload": "OFF",
+          "payload": "GROUP OFF",
           "qos": "1",
           "retain": false,
           "payloadEncoding": "utf8",

@@ -1,7 +1,7 @@
 {
   "id": "acb5a3b5-c9c0-4b13-9196-51352e7b6c0d",
   "name": "Умный светильник – левый ESP32-S3-ETH",
-  "description": "Управление левым светильником через Wi-Fi и MQTT: ON включает MOSFET, OFF выключает. Для индивидуальных и общих команд используются отдельные подтверждения.",
+  "description": "Управление светильником по MQTT: индивидуальные команды ON/OFF и общие GROUP ON/GROUP OFF. Подтверждение отправляется после выполнения команды GPIO.",
   "formatVersion": 4,
   "createdAt": "2026-11-06T00:00:00.000Z",
   "updatedAt": "2026-11-06T00:00:00.000Z",
@@ -83,17 +83,17 @@
   "logic": {
     "nodes": [
       {
-        "id": "1871b532-65ca-4702-a55c-6159faa426a2",
+        "id": "lamp-receive",
         "moduleId": "clex.logic.mqtt-receive",
         "moduleVersion": "1.0.0",
-        "name": "MQTT – Команда светильнику",
+        "name": "Приём команд",
         "position": {
           "x": 0,
           "y": 160
         },
         "parameters": {
           "componentId": "441f66a7-ed61-4958-978d-9ca6c1657282",
-          "filters": "[{\"topic\":\"clex/examples/smart-lamp/left-lamp/set\",\"qos\":1}]",
+          "filters": "[{\"topic\":\"clex/examples/smart-lamp/left-lamp/set\",\"qos\":1},{\"topic\":\"clex/examples/smart-lamp/lamps/set\",\"qos\":1}]",
           "autoSubscribe": true,
           "payloadEncoding": "utf8",
           "noLocal": false,
@@ -102,57 +102,27 @@
         }
       },
       {
-        "id": "d40b67aa-04dc-4111-b3a8-c54d41ce200a",
-        "moduleId": "clex.logic.compare-number",
-        "moduleVersion": "1.0.0",
-        "name": "Сообщение равно ON",
+        "id": "lamp-select",
+        "moduleId": "clex.logic.select-number",
+        "moduleVersion": "2.0.0",
+        "name": "Выбор команды",
         "position": {
-          "x": 410,
-          "y": 0
+          "x": 420,
+          "y": 200
         },
         "parameters": {
-          "mode": "conditions",
-          "operator": "gt",
-          "reference": 0,
-          "tolerance": 0,
-          "lower": 0,
-          "upper": 100,
-          "includeLower": true,
-          "includeUpper": true,
-          "conditions": "[{\"id\":\"c1\",\"type\":\"text\",\"operator\":\"eq\",\"reference\":\"ON\",\"tolerance\":0,\"negate\":false}]",
-          "combine": "all"
+          "valueType": "text",
+          "cases": "[{\"id\":\"case1\",\"value\":\"ON\"},{\"id\":\"case2\",\"value\":\"GROUP ON\"},{\"id\":\"case3\",\"value\":\"OFF\"},{\"id\":\"case4\",\"value\":\"GROUP OFF\"}]"
         }
       },
       {
-        "id": "e95e2f4d-c9f0-4cb0-826d-897d1c51b8cf",
-        "moduleId": "clex.logic.compare-number",
-        "moduleVersion": "1.0.0",
-        "name": "Сообщение равно OFF",
-        "position": {
-          "x": 410,
-          "y": 560
-        },
-        "parameters": {
-          "mode": "conditions",
-          "operator": "gt",
-          "reference": 0,
-          "tolerance": 0,
-          "lower": 0,
-          "upper": 100,
-          "includeLower": true,
-          "includeUpper": true,
-          "conditions": "[{\"id\":\"c1\",\"type\":\"text\",\"operator\":\"eq\",\"reference\":\"OFF\",\"tolerance\":0,\"negate\":false}]",
-          "combine": "all"
-        }
-      },
-      {
-        "id": "76b7f108-0479-4c54-8d8a-2fdb0342a2fa",
+        "id": "lamp-output-individual",
         "moduleId": "clex.logic.gpio-set",
         "moduleVersion": "1.0.0",
         "name": "Выход – индивидуальная команда",
         "position": {
-          "x": 820,
-          "y": 210
+          "x": 840,
+          "y": 0
         },
         "parameters": {
           "componentId": "806b9d24-959f-4d9a-9dfa-a542e062db5d",
@@ -160,13 +130,27 @@
         }
       },
       {
-        "id": "0a4b9484-141b-458c-bf8f-6755c66ba203",
+        "id": "lamp-output-group",
+        "moduleId": "clex.logic.gpio-set",
+        "moduleVersion": "1.0.0",
+        "name": "Выход – общая команда",
+        "position": {
+          "x": 840,
+          "y": 460
+        },
+        "parameters": {
+          "componentId": "806b9d24-959f-4d9a-9dfa-a542e062db5d",
+          "channel": "1"
+        }
+      },
+      {
+        "id": "lamp-reply-individual",
         "moduleId": "clex.logic.mqtt-send",
         "moduleVersion": "1.0.0",
-        "name": "MQTT – Индивидуальный ответ",
+        "name": "Индивидуальный ответ",
         "position": {
-          "x": 1230,
-          "y": 210
+          "x": 1260,
+          "y": 0
         },
         "parameters": {
           "componentId": "441f66a7-ed61-4958-978d-9ca6c1657282",
@@ -184,90 +168,13 @@
         }
       },
       {
-        "id": "7d827c3b-b4e8-43dc-a65b-8dd3e21c73c3",
-        "moduleId": "clex.logic.mqtt-receive",
-        "moduleVersion": "1.0.0",
-        "name": "MQTT – Общая команда",
-        "position": {
-          "x": 0,
-          "y": 1360
-        },
-        "parameters": {
-          "componentId": "441f66a7-ed61-4958-978d-9ca6c1657282",
-          "filters": "[{\"topic\":\"clex/examples/smart-lamp/lamps/set\",\"qos\":1}]",
-          "autoSubscribe": true,
-          "payloadEncoding": "utf8",
-          "noLocal": false,
-          "retainAsPublished": false,
-          "retainHandling": "0"
-        }
-      },
-      {
-        "id": "4142e899-d3bf-4f89-8c9e-634d9b663392",
-        "moduleId": "clex.logic.compare-number",
-        "moduleVersion": "1.0.0",
-        "name": "Сообщение равно ON",
-        "position": {
-          "x": 410,
-          "y": 1200
-        },
-        "parameters": {
-          "mode": "conditions",
-          "operator": "gt",
-          "reference": 0,
-          "tolerance": 0,
-          "lower": 0,
-          "upper": 100,
-          "includeLower": true,
-          "includeUpper": true,
-          "conditions": "[{\"id\":\"c1\",\"type\":\"text\",\"operator\":\"eq\",\"reference\":\"ON\",\"tolerance\":0,\"negate\":false}]",
-          "combine": "all"
-        }
-      },
-      {
-        "id": "35f34b50-4480-4cd2-aa72-4e6c43ed2761",
-        "moduleId": "clex.logic.compare-number",
-        "moduleVersion": "1.0.0",
-        "name": "Сообщение равно OFF",
-        "position": {
-          "x": 410,
-          "y": 1760
-        },
-        "parameters": {
-          "mode": "conditions",
-          "operator": "gt",
-          "reference": 0,
-          "tolerance": 0,
-          "lower": 0,
-          "upper": 100,
-          "includeLower": true,
-          "includeUpper": true,
-          "conditions": "[{\"id\":\"c1\",\"type\":\"text\",\"operator\":\"eq\",\"reference\":\"OFF\",\"tolerance\":0,\"negate\":false}]",
-          "combine": "all"
-        }
-      },
-      {
-        "id": "a211c870-1b11-40cc-a564-c6b22a87181c",
-        "moduleId": "clex.logic.gpio-set",
-        "moduleVersion": "1.0.0",
-        "name": "Выход – общая команда",
-        "position": {
-          "x": 820,
-          "y": 1410
-        },
-        "parameters": {
-          "componentId": "806b9d24-959f-4d9a-9dfa-a542e062db5d",
-          "channel": "1"
-        }
-      },
-      {
-        "id": "569bfac5-32af-4419-b89b-056ff130b794",
+        "id": "lamp-reply-group",
         "moduleId": "clex.logic.mqtt-send",
         "moduleVersion": "1.0.0",
-        "name": "MQTT – Общий ответ",
+        "name": "Общий ответ",
         "position": {
-          "x": 1230,
-          "y": 1410
+          "x": 1260,
+          "y": 460
         },
         "parameters": {
           "componentId": "441f66a7-ed61-4958-978d-9ca6c1657282",
@@ -287,138 +194,90 @@
     ],
     "edges": [
       {
-        "id": "d59c1b20-7658-4e90-aa0d-f4fcc1ee2408",
-        "source": "1871b532-65ca-4702-a55c-6159faa426a2",
-        "target": "d40b67aa-04dc-4111-b3a8-c54d41ce200a",
+        "id": "lamp-edge-01",
+        "source": "lamp-receive",
         "sourceHandle": "received",
+        "target": "lamp-select",
         "targetHandle": "trigger",
         "dataType": "event"
       },
       {
-        "id": "24a2ca0b-e432-4536-8658-a4beda2122a7",
-        "source": "1871b532-65ca-4702-a55c-6159faa426a2",
-        "target": "d40b67aa-04dc-4111-b3a8-c54d41ce200a",
+        "id": "lamp-edge-02",
+        "source": "lamp-receive",
         "sourceHandle": "payload",
-        "targetHandle": "c1.value",
+        "target": "lamp-select",
+        "targetHandle": "value",
         "dataType": "text"
       },
       {
-        "id": "21832a2f-f67f-4de7-a063-af1725526c6d",
-        "source": "d40b67aa-04dc-4111-b3a8-c54d41ce200a",
-        "target": "76b7f108-0479-4c54-8d8a-2fdb0342a2fa",
-        "sourceHandle": "matched",
+        "id": "lamp-edge-03",
+        "source": "lamp-select",
+        "sourceHandle": "case1",
+        "target": "lamp-output-individual",
         "targetHandle": "on",
         "dataType": "event"
       },
       {
-        "id": "3fafbe5c-9ee0-44a4-9718-abd70e7f0bba",
-        "source": "1871b532-65ca-4702-a55c-6159faa426a2",
-        "target": "e95e2f4d-c9f0-4cb0-826d-897d1c51b8cf",
-        "sourceHandle": "received",
-        "targetHandle": "trigger",
-        "dataType": "event"
-      },
-      {
-        "id": "06c3a6d7-51e3-426a-b434-ff7d699930ff",
-        "source": "1871b532-65ca-4702-a55c-6159faa426a2",
-        "target": "e95e2f4d-c9f0-4cb0-826d-897d1c51b8cf",
-        "sourceHandle": "payload",
-        "targetHandle": "c1.value",
-        "dataType": "text"
-      },
-      {
-        "id": "394c7d62-9975-4cf4-8cb5-92a757db4618",
-        "source": "e95e2f4d-c9f0-4cb0-826d-897d1c51b8cf",
-        "target": "76b7f108-0479-4c54-8d8a-2fdb0342a2fa",
-        "sourceHandle": "matched",
+        "id": "lamp-edge-04",
+        "source": "lamp-select",
+        "sourceHandle": "case3",
+        "target": "lamp-output-individual",
         "targetHandle": "off",
         "dataType": "event"
       },
       {
-        "id": "cc768f01-9321-4f1c-8b60-f8b5b333ecf6",
-        "source": "76b7f108-0479-4c54-8d8a-2fdb0342a2fa",
-        "target": "0a4b9484-141b-458c-bf8f-6755c66ba203",
-        "sourceHandle": "done",
-        "targetHandle": "trigger",
-        "dataType": "event"
-      },
-      {
-        "id": "022d5d8c-3d45-4ad4-bbf1-7683af60d883",
-        "source": "1871b532-65ca-4702-a55c-6159faa426a2",
-        "target": "0a4b9484-141b-458c-bf8f-6755c66ba203",
-        "sourceHandle": "payload",
-        "targetHandle": "payload",
-        "dataType": "text"
-      },
-      {
-        "id": "288df643-0fc2-49b7-b457-93d3b02dc571",
-        "source": "7d827c3b-b4e8-43dc-a65b-8dd3e21c73c3",
-        "target": "4142e899-d3bf-4f89-8c9e-634d9b663392",
-        "sourceHandle": "received",
-        "targetHandle": "trigger",
-        "dataType": "event"
-      },
-      {
-        "id": "c39653b4-d3c8-4f70-b497-0546ca98812e",
-        "source": "7d827c3b-b4e8-43dc-a65b-8dd3e21c73c3",
-        "target": "4142e899-d3bf-4f89-8c9e-634d9b663392",
-        "sourceHandle": "payload",
-        "targetHandle": "c1.value",
-        "dataType": "text"
-      },
-      {
-        "id": "f57efdaa-789d-4179-99ca-86b7d5ab1080",
-        "source": "4142e899-d3bf-4f89-8c9e-634d9b663392",
-        "target": "a211c870-1b11-40cc-a564-c6b22a87181c",
-        "sourceHandle": "matched",
+        "id": "lamp-edge-05",
+        "source": "lamp-select",
+        "sourceHandle": "case2",
+        "target": "lamp-output-group",
         "targetHandle": "on",
         "dataType": "event"
       },
       {
-        "id": "f3cb09bf-ecb0-41eb-9939-2b0345d112ee",
-        "source": "7d827c3b-b4e8-43dc-a65b-8dd3e21c73c3",
-        "target": "35f34b50-4480-4cd2-aa72-4e6c43ed2761",
-        "sourceHandle": "received",
-        "targetHandle": "trigger",
-        "dataType": "event"
-      },
-      {
-        "id": "11b488ea-b009-44ab-8484-a454b4a1e328",
-        "source": "7d827c3b-b4e8-43dc-a65b-8dd3e21c73c3",
-        "target": "35f34b50-4480-4cd2-aa72-4e6c43ed2761",
-        "sourceHandle": "payload",
-        "targetHandle": "c1.value",
-        "dataType": "text"
-      },
-      {
-        "id": "04ed147d-abfc-4f8d-bb2f-f58e2d97d026",
-        "source": "35f34b50-4480-4cd2-aa72-4e6c43ed2761",
-        "target": "a211c870-1b11-40cc-a564-c6b22a87181c",
-        "sourceHandle": "matched",
+        "id": "lamp-edge-06",
+        "source": "lamp-select",
+        "sourceHandle": "case4",
+        "target": "lamp-output-group",
         "targetHandle": "off",
         "dataType": "event"
       },
       {
-        "id": "c996bd03-414e-4e3d-8832-4f3755492661",
-        "source": "a211c870-1b11-40cc-a564-c6b22a87181c",
-        "target": "569bfac5-32af-4419-b89b-056ff130b794",
+        "id": "lamp-edge-07",
+        "source": "lamp-receive",
+        "sourceHandle": "payload",
+        "target": "lamp-reply-individual",
+        "targetHandle": "payload",
+        "dataType": "text"
+      },
+      {
+        "id": "lamp-edge-08",
+        "source": "lamp-output-individual",
         "sourceHandle": "done",
+        "target": "lamp-reply-individual",
         "targetHandle": "trigger",
         "dataType": "event"
       },
       {
-        "id": "f71a6b5f-09b5-4589-91bb-30944a9060f3",
-        "source": "7d827c3b-b4e8-43dc-a65b-8dd3e21c73c3",
-        "target": "569bfac5-32af-4419-b89b-056ff130b794",
+        "id": "lamp-edge-09",
+        "source": "lamp-receive",
         "sourceHandle": "payload",
+        "target": "lamp-reply-group",
         "targetHandle": "payload",
         "dataType": "text"
+      },
+      {
+        "id": "lamp-edge-10",
+        "source": "lamp-output-group",
+        "sourceHandle": "done",
+        "target": "lamp-reply-group",
+        "targetHandle": "trigger",
+        "dataType": "event"
       }
     ],
     "viewport": {
-      "x": 229.89656979252953,
-      "y": 21.28076902432349,
-      "zoom": 0.18270735938543517
+      "x": 20,
+      "y": 30,
+      "zoom": 0.5
     }
   },
   "assembly": {
@@ -465,7 +324,7 @@
     "clex.hardware.mqtt": "1.0.0",
     "clex.hardware.mosfet": "1.0.0",
     "clex.logic.mqtt-receive": "1.0.0",
-    "clex.logic.compare-number": "1.0.0",
+    "clex.logic.select-number": "2.0.0",
     "clex.logic.gpio-set": "1.0.0",
     "clex.logic.mqtt-send": "1.0.0"
   }
