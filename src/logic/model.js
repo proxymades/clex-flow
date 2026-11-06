@@ -148,7 +148,8 @@ export function pasteNodes(graph, snapshot) {
   if (!snapshot?.nodes.length) return { graph, ids: [] };
   if (graph.nodes.length + snapshot.nodes.length > 100 || graph.edges.length + snapshot.edges.length > 300) throw new Error('Превышен лимит графа: 100 блоков или 300 связей.');
   const mapping = new Map(snapshot.nodes.map(node => [node.id, crypto.randomUUID()]));
-  const nodes = snapshot.nodes.map(node => ({ ...structuredClone(node), id: mapping.get(node.id), name: `${node.name.slice(0, 70)} (копия)`, position: { x: Math.min(5000, node.position.x + 40), y: Math.min(5000, node.position.y + 40) } }));
+  const offset={x:Math.min(40,5000-Math.max(...snapshot.nodes.map(node=>node.position.x))),y:Math.min(40,5000-Math.max(...snapshot.nodes.map(node=>node.position.y)))};
+  const nodes = snapshot.nodes.map(node => ({ ...structuredClone(node), id: mapping.get(node.id), name: `${node.name.slice(0, 70)} (копия)`, position: { x: node.position.x + offset.x, y: node.position.y + offset.y } }));
   const edges = snapshot.edges.map(edge => ({ ...edge, id: crypto.randomUUID(), source: mapping.get(edge.source), target: mapping.get(edge.target) }));
   return { graph: { ...graph, nodes: [...graph.nodes, ...nodes], edges: [...graph.edges, ...edges] }, ids: nodes.map(node => node.id) };
 }

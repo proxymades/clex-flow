@@ -74,7 +74,8 @@
     "test:gpio-output-ui": "node tests/gpio-output-ui.cjs",
     "test:conditions-ui": "node tests/conditions-ui.cjs",
     "test:selection-ui": "node tests/selection-ui.cjs",
-    "test:logic-versions-ui": "node tests/logic-versions-ui.cjs"
+    "test:logic-versions-ui": "node tests/logic-versions-ui.cjs",
+    "test:logic-viewport-ui": "node tests/logic-viewport-ui.cjs"
   },
   "dependencies": {
     "@tauri-apps/api": "2.10.1",

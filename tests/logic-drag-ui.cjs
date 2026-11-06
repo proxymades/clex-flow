@@ -62,7 +62,7 @@ const { chromium } = require('playwright');
 
     // A pending parameter save must stay paused throughout the next gesture.
     await node.locator('header').click();
-    await page.getByRole('spinbutton', { name: 'Интервал, мс', exact: true }).fill('1250');
+    await page.getByRole('spinbutton', { name: 'Срабатывать каждые, мс', exact: true }).fill('1250');
     const writes = (await counters()).writes, pendingBox = await node.locator('header').boundingBox();
     await page.mouse.move(pendingBox.x + 45, pendingBox.y + 20); await page.mouse.down();
     await page.mouse.move(pendingBox.x + 70, pendingBox.y + 40); await page.clock.fastForward(10_500);

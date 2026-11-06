@@ -1,6 +1,6 @@
 import {logicVersionProblem} from './versions.js';
 import { formatCount } from '../utils/plural.js';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, useImperativeHandle } from 'react';
 import { ReactFlow, Background, BackgroundVariant, MarkerType, SelectionMode } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { Undo2, Redo2, Copy, ClipboardPaste, Files, Trash2, Layers, Unplug } from 'lucide-react';
@@ -15,8 +15,13 @@ const nodeTypes = { logic: LogicNode };
 const emptyMeasurements = {};
 const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
-export default function LogicCanvas({ project, catalog, history, selection, setSelection, pending, onPort, onConnect, error, setError, busy, clipboard, onCopy, onPaste, onDuplicate, onRemove, issues, onInteraction, onOpenScreen, onBindData }) {
+export default function LogicCanvas({ project, catalog, history, selection, setSelection, pending, onPort, onConnect, error, setError, busy, clipboard, onCopy, onPaste, onDuplicate, onRemove, issues, onInteraction, onOpenScreen, onBindData, viewportRef }) {
   const [instance, setInstance] = useState(null), [measurements, setMeasurements] = useState({});
+  const region=useRef(null);
+  useImperativeHandle(viewportRef,()=>({
+    getBoundingClientRect:()=>region.current?.getBoundingClientRect(),
+    getViewport:()=>instance?.getViewport(),
+  }),[instance]);
   const [dragConnection,setDragConnection]=useState(null);
   const handleCheckFrame = useRef(null);
   useEffect(() => () => cancelAnimationFrame(handleCheckFrame.current), []);
@@ -46,12 +51,6 @@ export default function LogicCanvas({ project, catalog, history, selection, setS
     if (wasActive !== isActive) onInteraction(isActive);
   }, [onInteraction]);
   useEffect(() => () => onInteraction(false), [onInteraction]);
-  const previousIds = useRef(new Set(project.logic.nodes.map(node => node.id)));
-  useEffect(() => {
-    const added = project.logic.nodes.some(node => !previousIds.current.has(node.id));
-    previousIds.current = new Set(project.logic.nodes.map(node => node.id));
-    if (instance && added) instance.fitView({ padding: 0.22, maxZoom: 1.1 });
-  }, [project.logic.nodes, instance]);
   useEffect(() => {
     // An external reset (for example discarding edits) still restores the
     // saved camera, without controlling its position on every pointer move.
@@ -144,7 +143,7 @@ export default function LogicCanvas({ project, catalog, history, selection, setS
   }
   return <main className={`logic-canvas ${spaceHeld ? 'canvas-space-pan' : ''}`}>
     <div className="logic-toolbar"><div><button className="icon-button" title="Отменить · ⌘/Ctrl Z" aria-label="Отменить изменение графа" disabled={busy || !history.canUndo} onClick={history.undo}><Undo2 size={16} /></button><button className="icon-button" title="Повторить · ⌘/Ctrl Shift Z" aria-label="Повторить изменение графа" disabled={busy || !history.canRedo} onClick={history.redo}><Redo2 size={16} /></button><span className="toolbar-divider" /><button className="icon-button" title="Копировать · ⌘/Ctrl C" aria-label="Копировать выделенные блоки" disabled={busy || !selection.nodes.length} onClick={onCopy}><Copy size={16} /></button><button className="icon-button" title="Вставить · ⌘/Ctrl V" aria-label="Вставить блоки" disabled={busy || !clipboard?.nodes.length} onClick={onPaste}><ClipboardPaste size={16} /></button><button className="icon-button" title="Дублировать · ⌘/Ctrl D" aria-label="Дублировать выделенные блоки" disabled={busy || !selection.nodes.length} onClick={onDuplicate}><Files size={16} /></button><button className="icon-button danger-hover" title="Удалить · Delete" aria-label="Удалить выделение графа" disabled={busy || (!selection.nodes.length && !selection.edges.length)} onClick={onRemove}><Trash2 size={16} /></button></div></div>
-    <div className="logic-inline-legend" aria-label="Типы контактов">{Object.entries(TYPE_COLORS).map(([type,color])=><span key={type}><i style={{background:color}}/>{({event:'Сигнал',number:'Число',text:'Текст',boolean:'Да/Нет'})[type]}</span>)}<span className="logic-route-legend">Линии: пунктир – сигнал, сплошная – данные</span></div><div className="reactflow-region"><ReactFlow nodes={nodes} edges={edges} nodeTypes={nodeTypes} defaultViewport={project.logic.viewport} onNodesChange={changeNodes} onEdgesChange={changeEdges} onNodeDragStart={beginDrag} onNodeDragStop={finishDrag} onSelectionDragStart={beginDrag} onSelectionDragStop={finishDrag} onInit={setInstance} onNodeDoubleClick={(event, node) => { if(event.target.closest('button,input,select,textarea,.react-flow__handle'))return; const saved = project.logic.nodes.find(item => item.id === node.id); if (!logicVersionProblem(saved,catalog) && graphModule(saved, catalog)?.editor === 'screen' && !busy) onOpenScreen(saved); }} onMoveStart={moveStart} onMoveEnd={moveEnd} onConnect={onConnect} onConnectStart={(_event,start)=>{setDragConnection({nodeId:start.nodeId,portId:start.handleId,direction:start.handleType==='source'?'output':'input'});interaction('connect',true);}} onConnectEnd={endConnection} isValidConnection={connection => !connectionProblem(project.logic, catalog, connection, null, project)} onPaneClick={() => setSelection({ nodes: [], edges: [] })} nodeExtent={[[-5000, -5000], [5000, 5000]]} minZoom={0.1} maxZoom={3} nodesDraggable={!busy && !spaceHeld} nodesConnectable={!busy && !spaceHeld} edgesReconnectable={false} selectionMode={SelectionMode.Partial} selectionKeyCode="Shift" multiSelectionKeyCode={['Meta', 'Control']} deleteKeyCode={null} colorMode="dark" ariaLabelConfig={{ 'node.a11yDescription.default': 'Выделите блок. Стрелки перемещают, Delete удаляет.', 'edge.a11yDescription.default': 'Выделите связь. Delete удаляет.' }} onError={canvasError}>
+    <div className="logic-inline-legend" aria-label="Типы контактов">{Object.entries(TYPE_COLORS).map(([type,color])=><span key={type}><i style={{background:color}}/>{({event:'Сигнал',number:'Число',text:'Текст',boolean:'Да/Нет'})[type]}</span>)}<span className="logic-route-legend">Линии: пунктир – сигнал, сплошная – данные</span></div><div className="reactflow-region" ref={region}><ReactFlow nodes={nodes} edges={edges} nodeTypes={nodeTypes} defaultViewport={project.logic.viewport} onNodesChange={changeNodes} onEdgesChange={changeEdges} onNodeDragStart={beginDrag} onNodeDragStop={finishDrag} onSelectionDragStart={beginDrag} onSelectionDragStop={finishDrag} onInit={setInstance} onNodeDoubleClick={(event, node) => { if(event.target.closest('button,input,select,textarea,.react-flow__handle'))return; const saved = project.logic.nodes.find(item => item.id === node.id); if (!logicVersionProblem(saved,catalog) && graphModule(saved, catalog)?.editor === 'screen' && !busy) onOpenScreen(saved); }} onMoveStart={moveStart} onMoveEnd={moveEnd} onConnect={onConnect} onConnectStart={(_event,start)=>{setDragConnection({nodeId:start.nodeId,portId:start.handleId,direction:start.handleType==='source'?'output':'input'});interaction('connect',true);}} onConnectEnd={endConnection} isValidConnection={connection => !connectionProblem(project.logic, catalog, connection, null, project)} onPaneClick={() => setSelection({ nodes: [], edges: [] })} nodeExtent={[[-5000, -5000], [5000, 5000]]} minZoom={0.1} maxZoom={3} nodesDraggable={!busy && !spaceHeld} nodesConnectable={!busy && !spaceHeld} edgesReconnectable={false} selectionMode={SelectionMode.Partial} selectionKeyCode="Shift" multiSelectionKeyCode={['Meta', 'Control']} deleteKeyCode={null} colorMode="dark" ariaLabelConfig={{ 'node.a11yDescription.default': 'Выделите блок. Стрелки перемещают, Delete удаляет.', 'edge.a11yDescription.default': 'Выделите связь. Delete удаляет.' }} onError={canvasError}>
       <Background variant={BackgroundVariant.Dots} gap={24} size={1} color="#34405b" />
     </ReactFlow>{!nodes.length && <div className="logic-empty"><Layers size={43} strokeWidth={1.2} /><h2>Настройте поведение устройств</h2><p>Слева показаны устройства из монтажа.<br />Добавьте событие и действие, затем соедините их.</p><span>Например: «Кнопка нажата» → «Переключить»</span></div>}
     {pending && <div className="logic-connection-prompt"><span className="dot green-dot" />{pending.direction === 'output' ? 'Выберите совместимый вход блока' : 'Выберите совместимый выход блока'}<button className="icon-button" aria-label="Отменить связь логики" onClick={() => onPort(null)}><Unplug size={15} /></button></div>}
