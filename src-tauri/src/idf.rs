@@ -163,6 +163,14 @@ fn write_source(path: &PathBuf, contents: &str) -> Result<(), String> {
     }
     Ok(())
 }
+fn build_context_hash(environment_identity: &str, profiles: &str, components: &str) -> String {
+    let mut digest = Sha256::new();
+    for value in [environment_identity, profiles, components] {
+        digest.update((value.len() as u64).to_le_bytes());
+        digest.update(value.as_bytes());
+    }
+    format!("{:x}", digest.finalize())
+}
 fn prepare(
     app: &tauri::AppHandle,
     environment: &Environment,
@@ -176,12 +184,22 @@ fn prepare(
     }
     verify_specification(spec)?;
     let env_hash = hash(environment.root.as_bytes());
+    let context_hash = build_context_hash(
+        &environment.identity,
+        include_str!("../../src/firmware/runtime-profiles.json"),
+        include_str!("../../src/firmware/component-files.json"),
+    );
     let dir = app
         .path()
         .app_cache_dir()
         .map_err(|e| e.to_string())?
         .join("firmware")
-        .join(format!("{}-{}", spec.fingerprint, &env_hash[..12]));
+        .join(format!(
+            "{}-{}-{}",
+            spec.fingerprint,
+            &env_hash[..12],
+            &context_hash[..16]
+        ));
     write_project(&dir, spec)?;
     Ok(dir)
 }
@@ -1319,6 +1337,27 @@ mod tests {
             vec![1, 3, 4]
         );
         assert_eq!(events.back().unwrap().downloaded, Some(500));
+    }
+    #[test]
+    fn build_cache_context_changes_with_dependency_versions_sources_or_environment() {
+        let profiles = r#"{"esp-dl":"3.3.15"}"#;
+        let original = build_context_hash("sdk-a", profiles, "voice sources a");
+        assert_eq!(
+            original,
+            build_context_hash("sdk-a", profiles, "voice sources a")
+        );
+        assert_ne!(
+            original,
+            build_context_hash("sdk-a", r#"{"esp-dl":"3.3.14"}"#, "voice sources a")
+        );
+        assert_ne!(
+            original,
+            build_context_hash("sdk-a", profiles, "voice sources b")
+        );
+        assert_ne!(
+            original,
+            build_context_hash("sdk-b", profiles, "voice sources a")
+        );
     }
     #[test]
     #[ignore = "Integration: explicit frontend specification and isolated output directory"]

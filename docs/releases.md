@@ -27,7 +27,7 @@ npm run test:firmware-parity
 npm run tauri -- build --target aarch64-apple-darwin --config src-tauri/tauri.release.conf.json --bundles app,dmg -- --locked
 ```
 
-Нужны macOS Apple Silicon, Node.js 22.12+, Rust и Xcode Command Line Tools. ESP-IDF для сборки самого приложения не требуется. Для MCU-эксперимента нужна отдельная существующая ESP-IDF 5.4.4, как описано в [esp-idf.md](esp-idf.md).
+Нужны macOS Apple Silicon, Node.js 22.21.1, Rust 1.93.1 и Xcode Command Line Tools. ESP-IDF для сборки самого приложения не требуется. Для MCU-эксперимента нужна отдельная существующая ESP-IDF 5.4.4, как описано в [esp-idf.md](esp-idf.md).
 
 Для Windows x64 после тех же проверок выполните:
 
@@ -41,7 +41,7 @@ npm run tauri -- build --target x86_64-pc-windows-msvc --config src-tauri/tauri.
 
 ## GitHub Actions
 
-Файл: `.github/workflows/build-macos.yml`. Матрица: macOS ARM64 (`macos-15`) и Windows x64 (`windows-latest`). Target соответственно `aarch64-apple-darwin` и `x86_64-pc-windows-msvc`; Node 22 и Rust 1.93.1. Actions закреплены полными SHA. Используется официальный `tauri-apps/tauri-action`, существующие lockfiles и `beforeBuildCommand`; загрузка/установка ESP-IDF не выполняется.
+Файл: `.github/workflows/build-macos.yml`. Матрица: macOS ARM64 (`macos-15`) и Windows x64 (`windows-latest`). Target соответственно `aarch64-apple-darwin` и `x86_64-pc-windows-msvc`; Node.js 22.21.1 и Rust 1.93.1. Actions закреплены полными SHA. Используется официальный `tauri-apps/tauri-action`, существующие lockfiles и `beforeBuildCommand`; загрузка/установка ESP-IDF не выполняется.
 
 ### Обычная разработка
 

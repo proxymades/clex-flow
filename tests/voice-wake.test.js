@@ -34,6 +34,8 @@ test('custom wake tables deploy to P4 and S3 and are disabled for a changed micr
   assert.equal(validateAssembly(p,catalog).filter(i=>i.severity==='error').length,0);
   const bundle=generateFirmware(p,catalog);assert.match(bundle.mainC,/static const int16_t wake_reference_0/);assert.match(bundle.mainC,/\.wake_reference_count=12/);
   assert.ok(bundle.mainC.includes('"'+voiceRuntimeSignature(voice,p,board)+'"'));
+  assert.match(bundle.files['main/idf_component.yml'],/espressif\/esp-sr: "=2\.6\.1"/);
+  assert.match(bundle.files['main/idf_component.yml'],/espressif\/esp-dl: "=3\.3\.14"/);
   wake.inputKey='another-source';wake.model.signature=voiceSignature(wake);voice.parameters.wakeProfile=JSON.stringify(wake);
   assert.equal(wakeModelReady(voice,p,board),false);assert.match(generateFirmware(p,catalog).mainC,/\.wake_reference_count=0/);
  }
