@@ -41,7 +41,7 @@ const { chromium } = require('playwright');
       await page.evaluate(() => new Promise(requestAnimationFrame));
     }
     assert.deepEqual(await counters(), start, '100-node drag must not clone/serialize the project or write files per frame');
-    assert.equal(await page.locator('.breadcrumb .dirty-dot').count(), 0);
+    assert.equal(await page.locator('.breadcrumb[data-dirty="true"]').count(), 0);
     await page.mouse.up(); await saved();
     assert.notDeepEqual((await records()).logic.nodes[0].position, before);
     await page.getByRole('button', { name: 'Отменить изменение графа', exact: true }).click(); await saved();

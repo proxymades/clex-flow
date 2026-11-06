@@ -1,3 +1,6 @@
+import {moduleVersionIndex} from '../catalog/versions.js';
+import {logicVersionProblem} from './versions.js';
+import {SELECTION_MODULE,selectionType,selectionOutputs,selectionIssues} from './selection.js';
 import {conditionPorts,conditionIssues,CONDITION_MODULE} from './conditions.js';
 import {SYNCHRONIZE_MODULE,synchronizationPorts} from './synchronization.js';
 import {portRowCount} from './portGroups.js';
@@ -15,17 +18,31 @@ import { networkProvider, probeUrl } from '../network/model.js';
 import { displayDescription, screenFor, screenIssues, screenPorts, screenBindings, screenCommands, elementUpdatePort } from '../displays/model.js';
 import { connectionProblem as physicalConnectionProblem, moduleProblem, boardFor } from '../assembly/model.js';
 
+export const LOGIC_NODE_WIDTH = 336;
 export const PORT_TYPES = ['event', 'number', 'text', 'boolean'];
 export const TYPE_NAMES = { event: 'Сигнал', number: 'Число', text: 'Текст', boolean: 'Да/Нет' };
 export const TYPE_COLORS = { event: '#34d399', number: '#fbbf24', text: '#a78bfa', boolean: '#60a5fa' };
 export const graphModule = (node, catalog) => catalog.modules.find(module => module.id === node.moduleId && module.kind === 'logic');
 export function nodePorts(node, catalog, project) {
   const module = graphModule(node, catalog);
+  const versionProblem=logicVersionProblem(node,catalog);
+  if(versionProblem){
+    const ports={inputs:[],outputs:[]};
+    for(const edge of project?.logic.edges||[]){
+      for(const [direction,id,handle,label] of [['inputs',edge.target,edge.targetHandle,edge.legacy?.targetName],['outputs',edge.source,edge.sourceHandle,edge.legacy?.sourceName]]){
+        if(id!==node.id||ports[direction].some(port=>port.id===handle))continue;
+        const current=module?.[direction].find(port=>port.id===handle&&port.type===edge.dataType);
+        ports[direction].push({id:handle,name:label||current?.name||handle,type:edge.dataType,legacy:true,description:versionProblem});
+      }
+    }
+    return ports;
+  }
   const parameters=node.parameters;
   const active=port=>!port.when||(port.when.values||[port.when.value]).includes(parameters[port.when.field]);
   let inputs = (module?.inputs || []).filter(active);
   let outputs = (module?.outputs || []).filter(active);
   if(node.moduleId===CONDITION_MODULE&&parameters.mode==='conditions')inputs=[...inputs.filter(port=>port.type==='event'),...conditionPorts(node)];
+  if(node.moduleId===SELECTION_MODULE){inputs=inputs.map(port=>port.id==='value'?{...port,type:selectionType(node)}:port);outputs=selectionOutputs(node);}
   if(node.moduleId===SYNCHRONIZE_MODULE)inputs=[...inputs,...synchronizationPorts(node)];
   if(node.moduleId===VOICE_LOGIC&&project)outputs=[...voicePorts(project.components.find(c=>c.id===node.parameters.componentId)),...outputs];
   if(node.moduleId==='clex.logic.espnow-receive'&&node.parameters.transferType==='command')outputs=outputs.map(port=>port.readyOn==='messageReceived'?{...port,readyOn:'commandReceived'}:port);
@@ -38,11 +55,7 @@ export function nodePorts(node, catalog, project) {
 export const logicData = graph => ({ nodes: graph.nodes, edges: graph.edges });
 
 export function withLogic(project, logic) {
-  const versions = {};
-  for (const element of [...project.components, ...logic.nodes]) {
-    if (versions[element.moduleId] && versions[element.moduleId] !== element.moduleVersion) throw new Error('В проекте нельзя смешивать версии одного модуля.');
-    versions[element.moduleId] = element.moduleVersion;
-  }
+  const versions = moduleVersionIndex([...project.components,...logic.nodes]);
   return { ...project, logic, moduleVersions: versions };
 }
 
@@ -74,25 +87,28 @@ export function logicAdditionProblem(module, project, catalog) {
 
 export function addNode(graph, module, components = [], project = null, catalog = null) {
   if (graph.nodes.length >= 100) throw new Error('В одном графе поддерживается до 100 блоков.');
-  if (graph.nodes.some(node => node.moduleId === module.id && node.moduleVersion !== module.version)) throw new Error('Проект использует другую версию этого модуля.');
   const parameters = Object.fromEntries(Object.entries(module.parameters).map(([key, parameter]) => [key, parameter.default]));
   if (module.constraints.hardware) parameters.componentId = components.find(component => hardwareMatches(component,module.constraints.hardware,catalog))?.id || '';
   let number = 1;
   while (graph.nodes.some(node => node.name === `${module.name} ${number}`)) number++;
   const height = node => {
     const definition = node && catalog ? graphModule(node, catalog) : node ? null : module;
-    const ports = catalog ? nodePorts(node||{moduleId:module.id,parameters},catalog,project) : definition || { inputs: [], outputs: [] };
+    const ports = catalog ? nodePorts(node||{moduleId:module.id,moduleVersion:module.version,parameters},catalog,project) : definition || { inputs: [], outputs: [] };
     return (definition?.editor === 'screen' ? 360 : 160) + portRowCount(ports) * 44 + 48;
   };
-  const newHeight = height(null), width = 246, gap = 32;
+  const newHeight = height(null), width = LOGIC_NODE_WIDTH, gap = 32, columnStep = width + 84;
   let slot = 0, position;
-  do { position = { x: 60 + (slot % 2) * 330 + Math.floor(slot / 20) * 660, y: 100 + (Math.floor(slot / 2) % 10) * 310 }; slot++; }
+  do { position = { x: 60 + (slot % 2) * columnStep + Math.floor(slot / 20) * columnStep * 2, y: 100 + (Math.floor(slot / 2) % 10) * 310 }; slot++; }
   while (graph.nodes.some(node => node.position.x < position.x + width + gap && position.x < node.position.x + width + gap && node.position.y < position.y + newHeight + gap && position.y < node.position.y + height(node) + gap));
   return { ...graph, nodes: [...graph.nodes, { id: crypto.randomUUID(), moduleId: module.id, moduleVersion: module.version, name: `${module.name} ${number}`, position, parameters }] };
 }
 
 export function updateNode(graph, id, patch, catalog = null, project = null) {
   const previous=graph.nodes.find(node=>node.id===id);
+  if(catalog&&previous&&patch.parameters){
+    const problem=logicVersionProblem(previous,catalog);
+    if(problem)throw new Error(problem);
+  }
   if(catalog&&previous?.moduleId==='clex.logic.espnow-control'&&patch.parameters?.action==='peer'){
     const module=graphModule(previous,catalog);
     patch={...patch,parameters:{...patch.parameters}};
@@ -109,11 +125,12 @@ export function updateNode(graph, id, patch, catalog = null, project = null) {
   }
   const next={...graph,nodes:graph.nodes.map(node=>node.id===id?{...node,...patch}:node)};
   if(!catalog||!previous||!patch.parameters)return next;
-  const changedPorts=previous.moduleId===SYNCHRONIZE_MODULE?['eventCount'].some(key=>previous.parameters[key]!==patch.parameters[key]):previous.moduleId==='clex.logic.compare-number'?['mode','conditions'].some(key=>previous.parameters[key]!==patch.parameters[key]):previous.moduleId.startsWith('clex.logic.espnow-')&&['transferType','action'].some(key=>previous.parameters[key]!==patch.parameters[key]);
+  const changedPorts=previous.moduleId===SELECTION_MODULE?['valueType','cases'].some(key=>previous.parameters[key]!==patch.parameters[key]):previous.moduleId===SYNCHRONIZE_MODULE?['eventCount'].some(key=>previous.parameters[key]!==patch.parameters[key]):previous.moduleId==='clex.logic.compare-number'?['mode','conditions'].some(key=>previous.parameters[key]!==patch.parameters[key]):previous.moduleId.startsWith('clex.logic.espnow-')&&['transferType','action'].some(key=>previous.parameters[key]!==patch.parameters[key]);
   if(!changedPorts)return next;
   const current=next.nodes.find(node=>node.id===id), before=nodePorts(previous,catalog,project), after=nodePorts(current,catalog,project);
   // Different purposes have different port IDs; retain only the same purpose and data type.
-  const keep=(direction,handle,type)=>before[direction].some(port=>port.id===handle&&port.type===type)&&after[direction].some(port=>port.id===handle&&port.type===type);
+  const typeChanged=previous.moduleId===SELECTION_MODULE&&selectionType(previous)!==selectionType(current);
+  const keep=(direction,handle,type)=>!(typeChanged&&direction==='outputs')&&before[direction].some(port=>port.id===handle&&port.type===type)&&after[direction].some(port=>port.id===handle&&port.type===type);
   return {...next,edges:graph.edges.filter(edge=>(edge.source!==id||keep('outputs',edge.sourceHandle,edge.dataType))&&(edge.target!==id||keep('inputs',edge.targetHandle,edge.dataType)))};
 }
 
@@ -152,8 +169,8 @@ export function connectionProblem(graph, catalog, connection, ignoreId = null, p
   const source = graph.nodes.find(node => node.id === connection.source), target = graph.nodes.find(node => node.id === connection.target);
   if (!source || !target) return 'Оба блока соединения должны существовать.';
   if (source.id === target.id) return 'Нельзя соединить блок с самим собой.';
-  const sourceModule = graphModule(source, catalog), targetModule = graphModule(target, catalog);
-  if (!sourceModule || !targetModule || sourceModule.version !== source.moduleVersion || targetModule.version !== target.moduleVersion) return 'Соединение требует установленных совместимых версий модулей.';
+  const versionProblem=logicVersionProblem(source,catalog)||logicVersionProblem(target,catalog);
+  if(versionProblem)return versionProblem;
   const output = nodePorts(source, catalog, project).outputs.find(port => port.id === connection.sourceHandle), input = nodePorts(target, catalog, project).inputs.find(port => port.id === connection.targetHandle);
   if (!output || !input) return 'Соединяйте выход блока со входом; выбранный порт отсутствует.';
   if (output.type !== input.type) return `Несовместимые типы: ${TYPE_NAMES[output.type]} → ${TYPE_NAMES[input.type]}.`;
@@ -214,10 +231,12 @@ export function validateGraph(project, catalog) {
   if (!graph.nodes.length) add('warning', 'logic-empty', 'Добавьте блоки во вкладке «Логика».');
   for (const node of graph.nodes) {
     const module = graphModule(node, catalog), fields = { nodeId: node.id };
+    const versionProblem=logicVersionProblem(node,catalog);
+    if(versionProblem){add('error','logic-module',node.name+': '+versionProblem,fields);continue;}
     if (node.legacy) { add('warning','logic-legacy-block',node.name + ': ' + node.legacy,fields); continue; }
-    if (!module || module.version !== node.moduleVersion || module.compatibility.projectFormat !== 4 || !moduleSupportsBoard(module,boardFor(project,catalog))) { add('error', 'logic-module', module&&module.version!==node.moduleVersion?`${node.name}: в проекте версия блока v${node.moduleVersion}, установлена v${module.version}.`:`${node.name}: модуль отсутствует или несовместим с выбранной платой.`, fields); continue; }
+    if (module.compatibility.projectFormat !== 4 || !moduleSupportsBoard(module,boardFor(project,catalog))) { add('error', 'logic-module',`${node.name}: модуль несовместим с выбранной платой.`, fields); continue; }
     if (!node.name.trim()) add('error', 'logic-name', 'Укажите название блока.', fields);
-    for (const [key, parameter] of Object.entries(module.parameters)) {
+    for (const [key, parameter] of Object.entries(module.id===SELECTION_MODULE?{}:module.parameters)) {
       if(parameter.when&&node.parameters[parameter.when.field]!==parameter.when.value)continue;
       const component=project.components.find(component=>component.id===node.parameters.componentId);
       if(parameter.componentModules&&!parameter.componentModules.includes(component?.moduleId)||parameter.componentChannels&&!outputChannelCount(component))continue;
@@ -228,7 +247,7 @@ export function validateGraph(project, catalog) {
       if (parameter.type === 'select' && !parameter.options.some(option=>option.value===value)) add('error','logic-parameter',node.name+': выберите допустимый вариант «'+parameter.label+'».',fields);
       if (parameter.type === 'text' && (typeof value !== 'string' || value.length > parameter.maxLength)) add('error', 'logic-parameter', `${node.name}: текст не должен превышать ${formatCount(parameter.maxLength, ['символ', 'символа', 'символов'])}.`, fields);
     }
-    if (module.id === 'clex.logic.select-number' && node.parameters.firstValue === node.parameters.secondValue) add('error', 'logic-parameter', node.name + ': укажите два разных значения для выбора.', fields);
+    for(const message of selectionIssues(node))add('error','logic-parameter',node.name+': '+message,fields);
     for(const message of recordingIssues(node))add('error','audio-recording',node.name+': '+message,fields);
     for(const message of [...numericLogicIssues(node,project),...conditionIssues(node)])add('error','numeric-logic',node.name+': '+message,fields);
     for(const message of mqttLogicIssues(node,project))add('error','mqtt-logic',node.name+': '+message,fields);
@@ -256,6 +275,7 @@ export function validateGraph(project, catalog) {
   }
   for (const edge of graph.edges) {
     if (edge.legacy) { add('warning','logic-legacy-connection',edge.legacy.sourceName + ' → ' + edge.legacy.targetName + ': ' + edge.legacy.message,{edgeId:edge.id,nodeId:edge.target}); continue; }
+    if([edge.source,edge.target].some(id=>{const node=graph.nodes.find(item=>item.id===id);return node&&logicVersionProblem(node,catalog);}))continue;
     const problem = connectionProblem(graph, catalog, edge, edge.id, project);
     if (problem) { add('error', 'logic-connection', problem, { edgeId: edge.id, nodeId: edge.target }); continue; }
     const source = graph.nodes.find(node => node.id === edge.source), port = nodePorts(source,catalog,project).outputs.find(port => port.id === edge.sourceHandle);
@@ -265,6 +285,6 @@ export function validateGraph(project, catalog) {
     if (port.readyOn && input?.sample !== 'latest' && !hasPath(orderedEdges, source.id, edge.target, true)) add('error', 'logic-order', 'Значение должно передаваться после события «Готово» его источника. Соедините также события.', { edgeId: edge.id, nodeId: edge.target });
   }
   const roots = graph.nodes.filter(node => node.moduleId==='clex.logic.timer'||moduleIsEventSource(graphModule(node,catalog),node)).map(node => node.id);
-  for (const node of graph.nodes.filter(node => !roots.includes(node.id) && !graphModule(node, catalog)?.editor)) if (!roots.some(root => hasPath(graph.edges, root, node.id, true))) add('warning', 'logic-unreachable', `${node.name}: нет событийного пути от источника событий.`, { nodeId: node.id });
+  for (const node of graph.nodes.filter(node => !logicVersionProblem(node,catalog) && !roots.includes(node.id) && !graphModule(node, catalog)?.editor)) if (!roots.some(root => hasPath(graph.edges, root, node.id, true))) add('warning', 'logic-unreachable', `${node.name}: нет событийного пути от источника событий.`, { nodeId: node.id });
   return issues;
 }

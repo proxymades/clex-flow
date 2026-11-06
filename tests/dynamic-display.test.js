@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 import { dynamicDisplayProject } from './dynamic-display-fixture.js';
 import { catalog, timer, serial, read, button, eth } from './catalog-fixture.js';
 import { screenCommands, screenPorts, screenIssues, saveScreen, elementPreviewText, elementUpdatePort } from '../src/displays/model.js';
-import { validateGraph, connectionProblem, connectNodes, addNode, withLogic } from '../src/logic/model.js';
+import { validateGraph, connectionProblem, connectNodes, addNode, withLogic, LOGIC_NODE_WIDTH } from '../src/logic/model.js';
 import { createProject, serializeProject, parseProject } from '../src/projects/model.js';
 import { generateFirmware, firmwareFingerprint, cString } from '../src/firmware/generator.js';
 const elements = project => project.screens[project.components[0].id].elements;
@@ -128,7 +128,7 @@ test('new nodes do not overlap the extended display card', () => {
   const project = dynamicDisplayProject(); project.logic.nodes = [view(project)]; project.logic.edges = [];
   const graph = addNode(project.logic, catalog.modules.find(module => module.id === 'clex.logic.counter'), [], project, catalog);
   const [display, counter] = graph.nodes;
-  assert.ok(counter.position.x >= display.position.x + 246 + 32 || counter.position.y >= display.position.y + 384 + 32);
+  assert.ok(counter.position.x >= display.position.x + LOGIC_NODE_WIDTH + 32 || counter.position.y >= display.position.y + 384 + 32);
 });
 
 test('two independent counters update two elements of one display through ordinary event ports', () => {

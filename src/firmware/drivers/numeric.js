@@ -34,6 +34,7 @@ export function numericFirmware(nodes,index,cString,{avr=false,project=null}={})
    const action='  clex_number_evaluate(&'+name+','+dataExpression(inputEdge(node,'value'))+','+range+','+(range?0:operator)+','+(range?'0.0':get('reference'))+','+(range?get('lower'):'0.0')+','+(range?get('upper'):'0.0')+','+(range?p.includeLower:true)+','+(range?p.includeUpper:true)+','+(range?'0.0':literal(p.tolerance))+');\n'+emit('changed')+'\n  if(!'+name+'.valid){\n'+emit('failed')+'\n  }';
    return action+(range?'else if('+name+'.below){\n'+emit('below')+'\n  }else if('+name+'.above){\n'+emit('above')+'\n  }else{\n'+emit('inside')+'\n  }':'else if('+name+'.result){\n'+emit('matched')+'\n  }else{\n'+emit('unmatched')+'\n  }');
   });
+  if(avr)return parse?'static clex_text_number_t '+name+' = {NAN,false,{0}};':'static clex_number_condition_t '+name+' = {NAN,false,false,false,false,false,{0}};';
   return parse?'static clex_text_number_t '+name+' = {.value=NAN,.valid=false,.error=""};':'static clex_number_condition_t '+name+' = {.value=NAN,.valid=false,.result=false,.below=false,.inside=false,.above=false,.error=""};';
  });
  return {enabled:blocks.length>0,source:blocks.length?NUMERIC_RUNTIME+'\n'+declarations.join('\n'):'',expressions,textSizes,textGlyphs,operations,ram:ram+(blocks.some(n=>n.moduleId===TEXT_TO_NUMBER)?80:0)};

@@ -1,5 +1,5 @@
 import {portRowCount} from './portGroups.js';
-import {addNode,connectNodes,graphModule,nodePorts,hardwareBinding,connectionProblem,validateGraph} from './model.js';
+import {addNode,connectNodes,graphModule,nodePorts,hardwareBinding,connectionProblem,validateGraph,LOGIC_NODE_WIDTH} from './model.js';
 import {screenBindings,screenFor,elementUpdatePort} from '../displays/model.js';
 import {presentPort,visiblePorts} from './presentation.js';
 export function displaySources(project,catalog,displayNodeId,bindingId){
@@ -76,7 +76,7 @@ export function planDisplayBinding(project,catalog,choice){
  while(queue.length&&passes++<graph.nodes.length*2){
   const changed=queue.shift(),root=graph.nodes.find(node=>node.id===changed.id),bottom=root.position.y+height(root,{...project,logic:graph})+32;
   graph={...graph,nodes:graph.nodes.map(node=>{
-   if(node.id===root.id||node.position.x>=root.position.x+262||root.position.x>=node.position.x+262||node.position.y<changed.y+changed.height||node.position.y>=bottom||bottom>5000)return node;
+   if(node.id===root.id||node.position.x>=root.position.x+LOGIC_NODE_WIDTH+16||root.position.x>=node.position.x+LOGIC_NODE_WIDTH+16||node.position.y<changed.y+changed.height||node.position.y>=bottom||bottom>5000)return node;
    queue.push({id:node.id,y:node.position.y,height:height(node,{...project,logic:graph})});return {...node,position:{...node.position,y:bottom}};
   })};
  }

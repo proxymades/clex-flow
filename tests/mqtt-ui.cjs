@@ -24,7 +24,7 @@ const {chromium}=require('playwright');
   }
  },project);
  const card=id=>page.locator('.react-flow__node[data-id="'+id+'"]'),saved=()=>page.evaluate(()=>JSON.parse(Object.values(JSON.parse(localStorage.getItem('clex-flow:projects:v1')))[0]));
- const save=async()=>{await page.getByRole('button',{name:'Сохранить',exact:true}).click();await page.getByText('Проект сохранен',{exact:true}).waitFor();await page.locator('.dirty-dot').waitFor({state:'detached'});};
+ const save=async()=>{await page.getByRole('button',{name:'Сохранить',exact:true}).click();await page.getByText('Проект сохранен',{exact:true}).waitFor();await page.locator('.breadcrumb[data-dirty="true"]').waitFor({state:'detached'});};
  await fs.mkdir('.artifacts/mqtt-ui',{recursive:true});
  try{
   await page.goto(process.env.CLEX_PREVIEW_URL||'http://127.0.0.1:1442');await page.locator('.project-open').click();await page.getByRole('button',{name:'Монтаж',exact:true}).click();await page.locator('.assembly-flow-region[data-ready="true"]').waitFor();

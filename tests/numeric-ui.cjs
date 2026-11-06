@@ -49,7 +49,7 @@ const {chromium}=require('playwright');
   assert.equal(await card(nodes.condition).locator('[data-port-id="isBelow"]').count(),0);
   assert.equal(await card(nodes.condition).locator('[data-port-id="matched"]').count(),1);
   await page.getByRole('button',{name:'Сохранить',exact:true}).click();
-  await page.locator('.dirty-dot').waitFor({state:'detached'});
+  await page.locator('.breadcrumb[data-dirty="true"]').waitFor({state:'detached'});
   await page.screenshot({path:'.artifacts/numeric/ui/'+board+'-compare.png'});
   await page.reload();await page.locator('.project-open').click();
   await page.getByRole('button',{name:'Логика',exact:true}).click();await card(nodes.condition).locator('.logic-drag-handle').click();

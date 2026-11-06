@@ -29,7 +29,7 @@ const { chromium } = require('playwright');
     await page.evaluate(() => new Promise(requestAnimationFrame)); const start = await counters();
     for (let i = 1; i <= 20; i++) { await page.mouse.move(box.x + 55 + i, box.y + 25 + i); await page.evaluate(() => new Promise(requestAnimationFrame)); }
     assert.deepEqual(await counters(), start, 'Assembly drag also stays outside project serialization and storage');
-    assert.equal(await page.locator('.breadcrumb .dirty-dot').count(), 0);
+    assert.equal(await page.locator('.breadcrumb[data-dirty="true"]').count(), 0);
     await page.mouse.up(); await save();
     const moved = (await stored()).assembly.positions; assert.notDeepEqual(moved, before);
 

@@ -1,3 +1,5 @@
+import {useEffect,useRef} from 'react';
+
 const pinY = index => 88.5 + index * 13;
 const wires = [
   { color: '#8b5cf6', x: 45, y: 91, path: `M45 91H104Q120 91 120 107V${pinY(3) - 16}Q120 ${pinY(3)} 136 ${pinY(3)}H155` },
@@ -5,20 +7,36 @@ const wires = [
   { color: '#8b5cf6', x: 392, y: 211, fromBoard: true, path: `M287 ${pinY(5)}H313Q330 ${pinY(5)} 330 ${pinY(5) + 17}V194Q330 211 347 211H392` },
   { color: '#34d399', x: 47, y: 229, fromBoard: true, path: `M155 ${pinY(7)}H112Q95 ${pinY(7)} 95 ${pinY(7) + 17}V212Q95 229 78 229H47` },
 ];
-const signalTravel = 2.4, signalStep = 2.8, signalCycle = signalStep * wires.length;
-const signalDuration = `${signalCycle}s`;
-const motionKeyTimes = `0;${signalTravel / signalCycle};1`;
-const opacityKeyTimes = `0;${.2 / signalCycle};${(signalTravel - .2) / signalCycle};${signalTravel / signalCycle};1`;
+const signalTravel = 2.4;
 export default function Blueprint() {
+  const signals=useRef([]);
+  useEffect(()=>{
+    const reducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)');
+    const timers=[];
+    const stop=()=>timers.forEach(timer=>window.clearTimeout(timer));
+    function schedule(index,delay){
+      timers[index]=window.setTimeout(()=>{
+        signals.current[index]?.querySelectorAll('animateMotion,animate').forEach(animation=>animation.beginElement());
+        schedule(index,(signalTravel+.3+Math.random()*2.4)*1000);
+      },delay);
+    }
+    function start(){
+      stop();
+      if(!reducedMotion.matches)wires.forEach((_,index)=>schedule(index,100+Math.random()*1500));
+    }
+    start();
+    reducedMotion.addEventListener('change',start);
+    return ()=>{stop();reducedMotion.removeEventListener('change',start);};
+  },[]);
   return <svg className="blueprint" viewBox="0 0 440 270" fill="none" aria-hidden="true">
     <defs><pattern id="dots" width="16" height="16" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r=".7" fill="#64748b" opacity=".35" /></pattern><linearGradient id="board" x1="170" y1="40" x2="290" y2="230" gradientUnits="userSpaceOnUse"><stop stopColor="#27243d" /><stop offset="1" stopColor="#141824" /></linearGradient></defs>
     <rect width="440" height="270" fill="url(#dots)" />
     {wires.map((wire, index) => <g key={index}>
       <path d={wire.path} stroke={wire.color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" opacity=".7" />
       <circle cx={wire.x} cy={wire.y} r="4" fill={wire.color} />
-      <circle className="blueprint-signal" r="2.7" fill={wire.color} opacity="0" pointerEvents="none">
-        <animateMotion path={wire.path} keyPoints={wire.fromBoard ? '1;0;0' : '0;1;1'} keyTimes={motionKeyTimes} calcMode="linear" dur={signalDuration} begin={`${(index * signalStep).toFixed(1)}s`} repeatCount="indefinite" />
-        <animate attributeName="opacity" values="0;.55;.55;0;0" keyTimes={opacityKeyTimes} calcMode="linear" dur={signalDuration} begin={`${(index * signalStep).toFixed(1)}s`} repeatCount="indefinite" />
+      <circle ref={element=>{signals.current[index]=element;}} className="blueprint-signal" r="2.7" fill="#f1f5f9" opacity="0" pointerEvents="none">
+        <animateMotion path={wire.path} keyPoints={wire.fromBoard ? '1;0' : '0;1'} keyTimes="0;1" calcMode="linear" dur={signalTravel+'s'} begin="indefinite" />
+        <animate attributeName="opacity" values="0;.85;.85;0" keyTimes="0;.08;.92;1" calcMode="linear" dur={signalTravel+'s'} begin="indefinite" />
       </circle>
     </g>)}
     <rect x="164" y="38" width="114" height="201" rx="15" fill="url(#board)" stroke="#7662ad" strokeWidth="1.2" />

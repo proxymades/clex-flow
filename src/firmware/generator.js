@@ -1,3 +1,5 @@
+import {compatibleVersion} from '../catalog/versions.js';
+import {implementationVersions} from './versions.js';
 import {assertNoLegacy} from '../projects/legacy.js';
 import {outputTerminals} from '../gpio/model.js';
 import {MICROPHONE_MODULES} from '../microphone/model.js';
@@ -33,13 +35,6 @@ import { validateGraph, hardwareBinding, nodePorts } from '../logic/model.js';
 
 const compare = (a, b) => a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
 const implementationKeys = {'clex.logic.synchronize':'synchronize','clex.hardware.nema17':'stepper','clex.hardware.tb6600':'stepper','clex.hardware.tmc2208':'stepper','clex.hardware.drv8825':'stepper','clex.logic.stepper':'stepper','clex.hardware.touch-button':'gpio-input','clex.logic.gpio-edge':'gpio-edge',"clex.hardware.espnow":"espnow-interface","clex.logic.espnow-control":"espnow-control","clex.logic.espnow-receive":"espnow-receive","clex.logic.espnow-ack":"espnow-ack","clex.logic.espnow-send":"espnow-send",'clex.hardware.led':'gpio-led','clex.hardware.button':'gpio-button','clex.logic.timer':'timer','clex.logic.gpio-read':'gpio-read','clex.logic.gpio-set':'gpio-set','clex.logic.serial':'serial','clex.logic.display':'display-view','clex.logic.counter':'counter','clex.logic.stopwatch':'stopwatch','clex.hardware.ethernet':'ethernet-interface','clex.logic.ethernet':'ethernet','clex.logic.internet-check':'internet-check','clex.hardware.audio':'audio-interface','clex.hardware.camera':'camera-interface','clex.logic.audio-play':'audio-play','clex.logic.tone':'tone','clex.logic.camera-capture':'camera-capture'};
-const implementationVersions = {
-  'clex.hardware.espnow':'2.0.0',
-  'clex.logic.espnow-send':'2.0.0',
-  'clex.logic.espnow-receive':'2.0.0',
-  'clex.logic.espnow-ack':'2.0.0',
-  'clex.logic.espnow-control':'2.0.0',
-};
 for(const id of MICROPHONE_MODULES)implementationKeys[id]='microphone-interface';
 implementationKeys['clex.hardware.voice']='voice-interface';
 implementationKeys['clex.logic.voice']='voice';
@@ -106,7 +101,7 @@ export function generateFirmware(project, catalog, consoleMode = 'usb') {
   if (!graphics.runtime && !network.runtime && !media.enabled && !voice.enabled && !stopwatch.enabled && !synchronization.enabled && !espnow.enabled && !gpioEdge.enabled && !stepper.enabled && !router.enabled && !wifi.enabled && !temperature.enabled && !xgzp.enabled && !numeric.enabled && !mqtt.enabled && (!nodes.some(node=>node.moduleId==='clex.logic.timer') || !project.logic.edges.some(edge=>edge.dataType==='event'))) throw new Error('Добавьте таймер и соедините его такт с действием.');
   for (const element of [...nodes,...components]) {
     const module = catalog.modules.find(module=>module.id===element.moduleId);
-    if (!module || module.version !== (implementationVersions[module.id] || '1.0.0') || element.moduleVersion !== module.version || ((module.display && !supportsDisplayDriver(module.display, board.platform)) || (!module.display && (!implementationKeys[module.id] || implementationKeys[module.id] !== module.firmware?.generatorKey)))) throw new Error(`Нет проверенной реализации генератора для ${element.moduleId} v${element.moduleVersion}.`);
+    if (!module || !compatibleVersion(implementationVersions[module.id] || '1.0.0',module.version) || !(module.kind==='logic'?compatibleVersion(element.moduleVersion,module.version):element.moduleVersion===module.version) || ((module.display && !supportsDisplayDriver(module.display, board.platform)) || (!module.display && (!implementationKeys[module.id] || implementationKeys[module.id] !== module.firmware?.generatorKey)))) throw new Error(`Нет проверенной реализации генератора для ${element.moduleId} v${element.moduleVersion}.`);
   }
   const inputEdge = (node, port) => project.logic.edges.find(edge=>edge.target===node.id&&edge.targetHandle===port);
   function dataExpression(edge) {
@@ -202,7 +197,7 @@ export function generateFirmware(project, catalog, consoleMode = 'usb') {
     if(numeric.operations.has(node.id))operations.push(numeric.operations.get(node.id)({inputEdge,dataExpression,emit:port=>'    node_'+i+'_emit_'+port+'();'}));
     if(xgzp.operations.has(node.id))operations.push(xgzp.operations.get(node.id));
     if(temperature.operations.has(node.id))operations.push(temperature.operations.get(node.id));
-    if (node.moduleId === 'clex.logic.select-number') operations.push(selectNumberCode(node, dataExpression(inputEdge(node, 'value')), port => `    node_${i}_emit_${port}();`));
+    if (node.moduleId === 'clex.logic.select-number') operations.push(selectNumberCode(node, dataExpression(inputEdge(node, 'value')), port => `    node_${i}_emit_${port}();`,{cString}));
     if(wifi.operations.has(node.id))operations.push(wifi.operations.get(node.id));
     if(router.operations.has(node.id))operations.push(router.operations.get(node.id));
     if(stepper.operations.has(node.id))operations.push(stepper.operations.get(node.id));

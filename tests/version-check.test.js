@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
 
 const script = fileURLToPath(new URL('../scripts/check-version.mjs', import.meta.url));
-const files = ['package.json', 'package-lock.json', 'src-tauri/tauri.conf.json', 'src-tauri/Cargo.toml', 'src-tauri/Cargo.lock'];
+const files = ['README.md', 'package.json', 'package-lock.json', 'src-tauri/tauri.conf.json', 'src-tauri/Cargo.toml', 'src-tauri/Cargo.lock'];
 
 for (const [name, newline] of [['LF', '\n'], ['CRLF', '\r\n']]) {
   for (const mismatch of [false, true]) {

@@ -23,6 +23,7 @@ import { p4Project } from '../tests/p4-fixture.js';
 import {espNowProject,espNowButtonProject} from '../tests/espnow-fixture.js';
 import {nanoProject} from '../tests/nano-fixture.js';
 import {selectNumberProject} from '../tests/select-number-fixture.js';
+import {selectionProject} from '../tests/selection-fixture.js';
 import {touchButtonProject} from '../tests/touch-button-fixture.js';
 import {stepperProject} from '../tests/stepper-fixture.js';
 import {nanoStepperProject} from '../tests/nano-stepper-fixture.js';
@@ -130,6 +131,7 @@ for(const board of MICROPHONE_BOARDS)for(const chip of ['max9814','max4466','inm
 {const p=addHardware(microphoneProject('waveshare-esp32-s3-eth','inmp441'),catalog.modules.find(m=>m.id==='clex.hardware.wifi'),catalog);p.components.at(-1).parameters.ssid='Voice network';cases.push(['s3-microphone-wifi',p,'uart']);}
 cases.push(['s3-custom-wake',withCustomWake(microphoneProject('waveshare-esp32-s3-eth','inmp441')),'uart']);
 for(const boardId of MOSFET_BOARDS)for(const activeLevel of ['high','low'])cases.push([boardId+'-mosfet-'+activeLevel,mosfetProject({boardId,activeLevel}).project,boardId==='waveshare-esp32-s3-eth'?'usb':'uart']);
+for(const boardId of ['doit-esp32-devkit-v1-30pin','waveshare-esp32-s3-eth','waveshare-esp32-p4-nano','arduino-nano-atmega328p-ch340'])for(const type of ['number','text','boolean'])cases.push([boardId+'-selection-'+type,selectionProject(type,boardId).project,boardId==='waveshare-esp32-s3-eth'?'usb':'uart']);
 const temporary = mkdtempSync(join(tmpdir(), 'clex-firmware-parity-'));
 try {
   for (const [name, project, consoleMode] of cases) {

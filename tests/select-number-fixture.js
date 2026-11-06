@@ -15,7 +15,7 @@ export function selectNumberProject(boardId='waveshare-esp32-s3-eth',parameters=
   Object.assign(nodes.select.parameters,parameters);
   for(const [source,sourceHandle,target,targetHandle] of [
     ['timer','tick','counter','increment'],['counter','done','select','trigger'],['counter','value','select','value'],
-    ['select','first','first','trigger'],['select','second','second','trigger'],['select','other','other','trigger'],
+    ['select','case1','first','trigger'],['select','case2','second','trigger'],['select','other','other','trigger'],
   ]) graph=connectNodes(graph,catalog,{source:nodes[source].id,sourceHandle,target:nodes[target].id,targetHandle},{...project,logic:graph});
   project=withLogic(project,graph);
   return {project,nodes};

@@ -38,7 +38,7 @@ const {chromium}=require('playwright');
   await page.getByLabel('Измерять автоматически',{exact:true}).selectOption('false');assert.equal(await page.getByLabel('Период измерения, мс',{exact:true}).count(),0);
   await page.getByLabel('Измерять автоматически',{exact:true}).selectOption('true');await page.getByLabel('Период измерения, мс',{exact:true}).fill('500');
   assert.ok(await page.getByText('Подключение настроено в «Монтаже»',{exact:true}).count());
-  await page.getByRole('button',{name:'Сохранить',exact:true}).click();await page.locator('.dirty-dot').waitFor({state:'detached'});
+  await page.getByRole('button',{name:'Сохранить',exact:true}).click();await page.locator('.breadcrumb[data-dirty="true"]').waitFor({state:'detached'});
   await page.screenshot({path:'.artifacts/xgzp/ui/logic.png'});
   await page.reload();await page.locator('.project-open').click();await page.getByRole('button',{name:'Логика',exact:true}).click();await card(sensor.id).locator('.logic-drag-handle').click();
   assert.equal(await page.getByLabel('Единица давления',{exact:true}).inputValue(),'psi');assert.equal(await page.getByLabel('Период измерения, мс',{exact:true}).inputValue(),'500');

@@ -1,3 +1,4 @@
+import {moduleVersionIndex} from '../catalog/versions.js';
 import {AUDIO_PLAY_MODULE,readRecording} from '../audio/model.js';
 import {VOICE_MODULE,readVoiceProfile,voiceProfileProblem,readWakeProfile,wakeProfileProblem} from '../voice/model.js';
 import { imageIssues } from '../displays/image.js';
@@ -109,7 +110,7 @@ export function validateProject(project) {
     assigned.add(key);
   }
   if (!isObject(project.moduleVersions) || !Object.entries(project.moduleVersions).every(([key, value]) => validKey(key) && semver(value))) throw new Error('Некорректные версии модулей.');
-  for (const component of [...project.components, ...project.logic.nodes]) if (project.moduleVersions[component.moduleId] !== component.moduleVersion) throw new Error('Версии модулей в проекте не совпадают с компонентами.');
+  for (const [id,version] of Object.entries(moduleVersionIndex([...project.components,...project.logic.nodes]))) if (project.moduleVersions[id] !== version) throw new Error('Версии модулей в проекте не совпадают с компонентами.');
   return project;
 }
 

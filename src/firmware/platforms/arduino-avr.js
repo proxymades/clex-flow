@@ -1,3 +1,5 @@
+import {compatibleVersion} from '../../catalog/versions.js';
+import {implementationVersions} from '../versions.js';
 import {outputTerminals} from '../../gpio/model.js';
 import {gpioOutputFirmware} from '../drivers/gpio-output.js';
 import {MOSFET_MODULE} from '../../mosfet/model.js';
@@ -9,6 +11,7 @@ import {RELAY_MODULE,relayChannelCount} from '../../relay/model.js';
 import { stepperFirmware } from '../drivers/stepper.js';
 import { isStepperDriver } from '../../stepper/model.js';
 import { hardwareBinding } from '../../logic/model.js';
+import {selectionType} from '../../logic/selection.js';
 import { selectNumberCode } from '../drivers/select-number.js';
 const keys=new Set([MOSFET_MODULE,...NUMERIC_MODULES,'clex.hardware.xgzp6847d','clex.logic.xgzp6847d','clex.hardware.relay','clex.hardware.nema17','clex.hardware.tb6600','clex.hardware.tmc2208','clex.hardware.drv8825','clex.logic.stepper','clex.logic.select-number','clex.hardware.touch-button','clex.logic.gpio-edge','clex.hardware.led','clex.hardware.button','clex.logic.timer','clex.logic.counter','clex.logic.stopwatch','clex.logic.serial','clex.logic.gpio-read','clex.logic.gpio-set']);
 export function generateArduinoAvr(project,catalog,board,cString,issues){
@@ -16,7 +19,10 @@ export function generateArduinoAvr(project,catalog,board,cString,issues){
  if(!Object.hasOwn(board.firmware.variants,revision))throw new Error('Выберите загрузчик Nano.');
  const sort=(a,b)=>a.id<b.id?-1:a.id>b.id?1:0,nodes=[...project.logic.nodes].sort(sort),components=[...project.components].sort(sort);
  if(nodes.length>32)throw new Error('Для Nano поддерживается до 32 логических блоков из-за объема памяти.');
- for(const entry of [...nodes,...components])if(!keys.has(entry.moduleId)||entry.moduleVersion!=='1.0.0')throw new Error('Для Nano нет реализации блока «'+entry.name+'».');
+ for(const entry of [...nodes,...components]){
+  const module=catalog.modules.find(module=>module.id===entry.moduleId);
+  if(!keys.has(entry.moduleId)||!compatibleVersion(implementationVersions[entry.moduleId]||'1.0.0',module?.version)||!(module?.kind==='logic'?compatibleVersion(entry.moduleVersion,module.version):entry.moduleVersion===module?.version))throw new Error('Для Nano нет реализации блока «'+entry.name+'».');
+ }
  const index=new Map(nodes.map((n,i)=>[n.id,i])),hardware=new Map(components.map((c,i)=>[c.id,i]));
  const stepper=stepperFirmware(project,nodes,index,board);
  const xgzp=xgzpFirmware(project,catalog,nodes,index);
@@ -27,7 +33,8 @@ export function generateArduinoAvr(project,catalog,board,cString,issues){
  for(const n of nodes.filter(n=>n.moduleId==='clex.logic.serial'))textSize(n);
  const watches=nodes.filter(n=>n.moduleId==='clex.logic.stopwatch'),timers=nodes.filter(n=>n.moduleId==='clex.logic.timer');
  const ram=[...textLengths.values()].reduce((a,b)=>a+b,0)+watches.length*48+timers.length*4+nodes.length*4+components.length*10+components.filter(c=>c.moduleId===RELAY_MODULE).reduce((sum,c)=>sum+relayChannelCount(c),0)+components.filter(isStepperDriver).length*96+nodes.filter(n=>n.moduleId==='clex.logic.stepper').length*16;
- if(ram+xgzp.ram+numeric.ram>896)throw new Error('Тексты и блоки требуют слишком много памяти Nano. Сократите сообщения или количество блоков.');
+ const selectionRam=nodes.filter(n=>n.moduleId==='clex.logic.select-number'&&selectionType(n)==='text'&&edge(n,'value')?.sourceHandle==='error'&&nodes.find(source=>source.id===edge(n,'value').source)?.moduleId==='clex.logic.stepper').length*128;
+ if(ram+xgzp.ram+numeric.ram+selectionRam>896)throw new Error('Тексты и блоки требуют слишком много памяти Nano. Сократите сообщения или количество блоков.');
  if(!xgzp.enabled&&!stepper.enabled&&!timers.length&&!watches.length&&!nodes.some(n=>n.moduleId==='clex.logic.gpio-edge'))throw new Error('Добавьте таймер или секундомер для запуска схемы.');
  const data=e=>{
   const n=nodes[index.get(e.source)],i=index.get(n.id);
@@ -70,7 +77,10 @@ export function generateArduinoAvr(project,catalog,board,cString,issues){
   if(numeric.operations.has(n.id))return 'static void node_'+i+'(){\n'+numeric.operations.get(n.id)({inputEdge:edge,dataExpression:data,emit:port=>emit(n,port)})+'\n}';
   if(n.moduleId==='clex.logic.xgzp6847d')return 'static void node_'+i+'(){\n'+xgzp.operations.get(n.id)+'\n}\n'+['changed','done','failed'].map(port=>'static void node_'+i+'_emit_'+port+'(){\n'+emit(n,port)+'\n}').join('\n');
   if(n.moduleId==='clex.logic.stepper')return 'static void node_'+i+'(){\n'+stepper.operations.get(n.id)+'\n}\n'+['changed','started','completed','stopped','failed'].map(port=>'static void node_'+i+'_emit_'+port+'(){\n'+emit(n,port)+'\n}').join('\n');
-  if(n.moduleId==='clex.logic.select-number')return 'static void node_'+i+'(){\n'+selectNumberCode(n,data(edge(n,'value')),port=>emit(n,port),true)+'\n}';
+  if(n.moduleId==='clex.logic.select-number'){
+   const input=edge(n,'value'),source=nodes.find(item=>item.id===input.source);
+   return 'static void node_'+i+'(){\n'+selectNumberCode(n,data(input),port=>emit(n,port),{avr:true,cString,flashText:input.sourceHandle==='error'&&source.moduleId==='clex.logic.stepper',floatingNumber:numeric.expressions.has(input.source)||xgzp.expressions.has(input.source)})+'\n}';
+  }
   const binding=hardwareBinding(n,project,catalog),h=hardware.get(binding.component?.id),operations=[];
   const output=outputs.operations.get(n.id)||relay.operations.get(n.id);
   if(output)return 'static void node_'+i+'(){}\n'+['on','off','toggle'].map(action=>'static void node_'+i+'_'+action+'(){\n'+output.command(action)+'\n  if('+output.state+'){\n'+emit(n,'on')+'\n  }else{\n'+emit(n,'off')+'\n  }\n'+emit(n,'done')+'\n}').join('\n');
@@ -109,6 +119,7 @@ static bool clex_watch_reset(clex_watch_t *w,uint32_t now){w->elapsed=0;w->sampl
 #include <Arduino.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
 #include <avr/pgmspace.h>
 ${xgzp.headers?xgzp.headers+'\n':''}${runtime}${stepper.source}${xgzp.source?'\n'+xgzp.source:''}${numeric.source?'\n'+numeric.source:''}
 ${declarations.join('\n')}

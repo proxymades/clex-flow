@@ -13,7 +13,7 @@ const {chromium}=require('playwright');
  page.on('pageerror',error=>errors.push(error.message));
  await page.addInitScript(p=>{if(!localStorage.getItem('clex-flow:projects:v1')){localStorage.setItem('clex-flow:projects:v1',JSON.stringify({[p.id]:JSON.stringify(p)}));localStorage.setItem('clex-flow:autosave-enabled','false');}},project);
  const card=id=>page.locator('.react-flow__node[data-id="'+id+'"]');
- const save=async()=>{await page.getByRole('button',{name:'Сохранить',exact:true}).click();await page.locator('.dirty-dot').waitFor({state:'detached'});};
+ const save=async()=>{await page.getByRole('button',{name:'Сохранить',exact:true}).click();await page.locator('.breadcrumb[data-dirty="true"]').waitFor({state:'detached'});};
  await fs.mkdir('.artifacts/wifi/ui',{recursive:true});
  try{
   await page.goto(process.env.CLEX_PREVIEW_URL||'http://127.0.0.1:1454');await page.locator('.project-open').click();

@@ -46,7 +46,7 @@ const { chromium } = require('playwright');
     assert.ok(Math.abs(circle.y + circle.height / 2 - handle.y - handle.height / 2) < 1, 'React Flow handle must coincide with the documented physical pin');
     const untouchedIds = project.assembly.connections.filter(wire => wire.terminalId !== 'anode').map(wire => wire.id);
     await drag(boardPort('P29'), componentPort(led.id, 'anode'));
-    assert.equal(await page.locator('.breadcrumb .dirty-dot').count(), 1, 'A valid native connection must update the project');
+    assert.equal(await page.locator('.breadcrumb[data-dirty="true"]').count(), 1, 'A valid native connection must update the project');
     await save();
     let result = await stored();
     assert.equal(result.assembly.connections.find(wire => wire.componentId === led.id && wire.terminalId === 'anode').boardPinId, 'P29');

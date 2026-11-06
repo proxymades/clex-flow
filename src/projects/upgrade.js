@@ -1,3 +1,4 @@
+import {compatibleVersion} from '../catalog/versions.js';
 import { parseProject, serializeProject, MAX_PROJECT_BYTES } from './model.js';
 import { nodePorts } from '../logic/model.js';
 import { DEFAULT_BOARD_POSITION, DEFAULT_VIEWPORT } from '../assembly/model.js';
@@ -149,7 +150,7 @@ function upgrade(project, catalog) {
   });
   for (const node of p.logic.nodes) {
     const module = catalog.modules.find(m => m.id === node.moduleId && m.kind === 'logic');
-    if (!module || module.version !== node.moduleVersion)
+    if (!module || !compatibleVersion(node.moduleVersion,module.version))
       node.legacy = 'Блок из старого проекта. Замените его доступным блоком из библиотеки.';
   }
   for (const edge of p.logic.edges) {

@@ -3,6 +3,7 @@ const assert=require('node:assert/strict');
 const {chromium}=require('playwright');
 (async()=>{
  const {networkProject}=await import('./network-fixture.js');
+ const {TYPE_COLORS}=await import('../src/logic/model.js');
  const project=networkProject(),display=project.logic.nodes.find(node=>node.moduleId==='clex.logic.display');
  project.name='Проверка оформления';Object.values(project.screens)[0].elements[0].text='Ёжик и ёлка';
  const browser=await chromium.launch({headless:true,executablePath:process.env.CLEX_BROWSER_EXECUTABLE||process.argv[2]});
@@ -20,12 +21,13 @@ const {chromium}=require('playwright');
   await page.getByRole('button',{name:'Новый проект',exact:true}).click();await gaps(page.getByRole('dialog'));await page.getByRole('button',{name:'Отмена',exact:true}).click();
   await page.locator('.project-open').click();await page.getByRole('button',{name:'Логика',exact:true}).click();await page.locator('.logic-node').first().waitFor();await page.getByRole('button',{name:'Показать весь граф',exact:true}).click();await page.waitForTimeout(150);
   const renderedEdges=await page.locator('.react-flow__edge').evaluateAll(elements=>elements.map(edge=>{const path=edge.querySelector('.react-flow__edge-path'),markerId=path.getAttribute('marker-end').match(/#(.+?)['"]?\)$/)[1],marker=document.getElementById(markerId);return {id:edge.dataset.id,stroke:path.style.stroke,dash:path.style.strokeDasharray,marker:marker?.querySelector('polyline')?.style.stroke};}));
-  assert.equal(new Set(renderedEdges.map(edge=>edge.stroke)).size,project.logic.edges.length,'each route has a distinct color');
+  const typeColors=await page.evaluate(colors=>{const marker=document.createElement('span');return Object.fromEntries(Object.entries(colors).map(([type,color])=>{marker.style.color=color;return [type,marker.style.color];}));},TYPE_COLORS);
+  for(const edge of renderedEdges)assert.equal(edge.stroke,typeColors[project.logic.edges.find(item=>item.id===edge.id).dataType],'route color matches its contact type');
   for(const edge of renderedEdges){assert.equal(Boolean(edge.dash),project.logic.edges.find(item=>item.id===edge.id).dataType==='event');assert.equal(edge.marker,edge.stroke,'arrow and line colors match');}
   const viewport=await page.locator('.reactflow-region').boundingBox();await page.locator('.react-flow__viewport').evaluate(element=>{element.style.transform='translate(0px,0px) scale(1)';});
   // Inspect layout in node coordinates, independent of the chosen zoom.
-  const rows=await page.locator('.logic-port-row.single-port-row').evaluateAll(elements=>elements.map(row=>{const label=row.querySelector('.port-label-copy'),port=row.querySelector('.logic-port'),dot=row.querySelector('.port-type-dot'),button=row.querySelector('button');return {text:label.textContent,full:port.getBoundingClientRect().width/row.getBoundingClientRect().width,clamp:getComputedStyle(label).webkitLineClamp,dotNear:port.classList.contains('output')?dot.getBoundingClientRect().left>label.getBoundingClientRect().right-1:dot.getBoundingClientRect().right<label.getBoundingClientRect().left+1,overflow:label.scrollWidth>label.clientWidth+1,height:button.getBoundingClientRect().height};}));
-  assert.ok(rows.length>=10);assert.ok(rows.every(row=>row.full>.98&&row.clamp==='none'&&row.dotNear&&!row.overflow),JSON.stringify(rows));
+  const rows=await page.locator('.logic-port-row.single-port-row').evaluateAll(elements=>elements.map(row=>{const label=row.querySelector('.port-label-copy'),port=row.querySelector('.logic-port'),button=row.querySelector('button');return {text:label.textContent,full:port.getBoundingClientRect().width/row.getBoundingClientRect().width,clamp:getComputedStyle(label).webkitLineClamp,dots:row.querySelectorAll('.port-type-dot').length,handles:port.querySelectorAll('.react-flow__handle').length,overflow:label.scrollWidth>label.clientWidth+1,height:button.getBoundingClientRect().height};}));
+  assert.ok(rows.length>=10);assert.ok(rows.every(row=>row.full>.98&&row.clamp==='none'&&row.dots===0&&row.handles===1&&!row.overflow),JSON.stringify(rows));
   await page.getByRole('button',{name:'Показать весь граф',exact:true}).click();await page.waitForTimeout(150);
   const card=page.locator('.react-flow__node[data-id="'+display.id+'"]');await card.locator('header').click();
   const networkCard=page.locator('.react-flow__node[data-id="'+project.logic.nodes.find(node=>node.moduleId==='clex.logic.ethernet').id+'"]');
@@ -38,6 +40,6 @@ const {chromium}=require('playwright');
   await page.getByRole('button',{name:'Настройки',exact:true}).click();await gaps(page.locator('.settings-page'));await page.setViewportSize({width:1000,height:700});await gaps(page.locator('.settings-page'));assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>window.innerWidth),false);
   await page.getByRole('button',{name:'Текущий проект',exact:true}).click();await page.getByRole('button',{name:'Логика',exact:true}).click();await page.locator('.logic-node').first().waitFor();await page.getByRole('button',{name:'Показать весь граф',exact:true}).click();await page.waitForTimeout(150);await card.locator('header').click();await gaps(page.locator('.workspace-properties'));await page.screenshot({path:'.artifacts/style-polish-small.png',animations:'disabled'});
   const tags=await page.locator('.log-level').allTextContents();assert.ok(tags.length>0);assert.ok(tags.every(text=>!['ОК','ОШ','ВНИМ','ВЫВ'].includes(text)));assert.ok(viewport.width>0);assert.deepEqual(errors,[]);
-  console.log('PASS: distinct route colors, signal dashes and selected-node route emphasis; full-width one-sided contacts, full labels, aligned type dots, separated action buttons across home/dialog/editor/inspector/settings, complete log labels, no duplicate topbar action, preserved user Ё text and small layout.');
+  console.log('PASS: contact type colors, signal dashes and selected-node route emphasis; full-width one-sided contacts, full labels, connection handles without duplicate dots, separated action buttons across home/dialog/editor/inspector/settings, complete log labels, no duplicate topbar action, preserved user Ё text and small layout.');
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});
