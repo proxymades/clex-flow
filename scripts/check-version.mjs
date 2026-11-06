@@ -8,8 +8,9 @@ const cargo = readFileSync('src-tauri/Cargo.toml', 'utf8').split(/\n\[/)[0];
 const cargoVersion = cargo.match(/^version\s*=\s*"([^"]+)"/m)?.[1];
 const cargoLock = readFileSync('src-tauri/Cargo.lock', 'utf8').replace(/\r\n/g, '\n');
 const lockedVersion = cargoLock.match(/\[\[package\]\]\nname = "clex-flow"\nversion = "([^"]+)"/)?.[1];
+const readmeVersion = readFileSync('README.md', 'utf8').match(/<strong>(\d+\.\d+\.\d+) · Предварительная версия/)?.[1];
 assert.match(pkg.version, /^\d+\.\d+\.\d+$/);
-for (const [file, version] of Object.entries({ 'package-lock.json': lock.version, 'package-lock root': lock.packages[''].version, 'tauri.conf.json': tauri.version, 'Cargo.toml': cargoVersion, 'Cargo.lock': lockedVersion })) {
+for (const [file, version] of Object.entries({ 'package-lock.json': lock.version, 'package-lock root': lock.packages[''].version, 'tauri.conf.json': tauri.version, 'Cargo.toml': cargoVersion, 'Cargo.lock': lockedVersion, 'README.md': readmeVersion })) {
   assert.equal(version, pkg.version, `${file}: version mismatch`);
 }
 const event = process.env.GITHUB_EVENT_PATH ? readJson(process.env.GITHUB_EVENT_PATH) : {};

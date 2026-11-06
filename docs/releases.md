@@ -4,7 +4,7 @@
 
 ## Согласованность версии
 
-Версия должна совпадать в `package.json`, обеих корневых записях `package-lock.json`, `src-tauri/tauri.conf.json`, package-секции `src-tauri/Cargo.toml` и записи `clex-flow` в `src-tauri/Cargo.lock`.
+Версия должна совпадать в `package.json`, обеих корневых записях `package-lock.json`, `src-tauri/tauri.conf.json`, package-секции `src-tauri/Cargo.toml`, записи `clex-flow` в `src-tauri/Cargo.lock` и заголовке `README.md` на главной странице репозитория.
 
 ```sh
 node scripts/check-version.mjs
