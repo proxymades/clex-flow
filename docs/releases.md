@@ -1,6 +1,6 @@
 # GitHub и выпуск версий
 
-Проверки разработки, ручная сборка установщиков для macOS ARM64 и Windows x64 и выпуск версий через GitHub Releases.
+Сборка установщиков для macOS ARM64 и Windows x64, проверка пакетов и публикация на GitHub Releases.
 
 ## Согласованность версии
 
@@ -27,7 +27,7 @@ npm run test:firmware-parity
 npm run tauri -- build --target aarch64-apple-darwin --config src-tauri/tauri.release.conf.json --bundles app,dmg -- --locked
 ```
 
-Нужны macOS Apple Silicon, Node.js 22.21.1, Rust 1.93.1 и Xcode Command Line Tools. ESP-IDF для сборки самого приложения не требуется. Для MCU-эксперимента нужна отдельная существующая ESP-IDF 5.4.4, как описано в [esp-idf.md](esp-idf.md).
+Нужны macOS Apple Silicon, Node.js 22.21.1, Rust 1.93.1 и Xcode Command Line Tools. ESP-IDF для сборки самого приложения не требуется. Для сборки прошивок микроконтроллеров нужна ESP-IDF 5.4.4, как описано в [esp-idf.md](esp-idf.md).
 
 Для Windows x64 после тех же проверок выполните:
 
@@ -35,9 +35,9 @@ npm run tauri -- build --target aarch64-apple-darwin --config src-tauri/tauri.re
 npm run tauri -- build --target x86_64-pc-windows-msvc --config src-tauri/tauri.windows.release.conf.json --bundles nsis -- --locked
 ```
 
-Целевой target должен быть установлен через `rustup target add`. Исходный код не запрещает ручную сборку macOS Intel, но установщики Intel не входят в матрицу выпусков.
+Нужную целевую платформу добавьте командой `rustup target add`. Готовые установщики для macOS Intel не выпускаются.
 
-Установщик macOS находится в `src-tauri/target/<target>/release/bundle/dmg/`, Windows – в `src-tauri/target/<target>/release/bundle/nsis/`. `.app` содержит MIT и сторонние уведомления в `Contents/Resources/`. Сборки/сертификаты не коммитятся.
+Установщик macOS находится в `src-tauri/target/<target>/release/bundle/dmg/`, Windows – в `src-tauri/target/<target>/release/bundle/nsis/`. `.app` содержит лицензию MIT и уведомления о сторонних библиотеках в `Contents/Resources/`.
 
 ## GitHub Actions
 
@@ -53,7 +53,7 @@ npm run tauri -- build --target x86_64-pc-windows-msvc --config src-tauri/tauri.
 
 ### Подготовка версии
 
-Полная сборка установщиков запускается **только вручную**: **Build desktop installers → Run workflow**, с указанием конкретного проверенного commit или существующего тега. Push коммита/тега и создание Release не запускают её автоматически.
+Основной способ сборки – GitHub Actions. Установщики собираются **только по ручному запуску**: **Build desktop installers → Run workflow**, с указанием конкретного проверенного commit или существующего тега. Push коммита/тега и создание Release не запускают её автоматически.
 
 Права всех workflow – `contents: read`. Сборка не передаёт Tauri action параметры `tagName`, `releaseName` или `releaseId`; автоматическая публикация отключена. Результат – artifact с `.dmg` или `.exe` и SHA-256, срок хранения 30 дней.
 
@@ -64,9 +64,13 @@ npm run tauri -- build --target x86_64-pc-windows-msvc --config src-tauri/tauri.
 3. Перед созданием тега и Pre-release проверьте уже существующие теги и Releases. Используйте фактическую версию приложения; существующие теги не перемещайте.
 4. Создайте новый Pre-release с описанием реализованных возможностей и прикрепите проверенные установщики из того же commit, что и тег.
 
-В v0.1.8 на ESP32 DevKit V1 проверена прошивка через USB-UART. Аппаратная проверка отдельных периферийных сценариев остается открытой.
-
 Изменения `main` не меняют уже опубликованные теги и Releases. Версия в конфигурациях, тег и установщики должны соответствовать друг другу.
+
+### Локальная сборка macOS
+
+Установщик macOS можно собрать локально командами из раздела «Сборка для тестирования». Для пакетов macOS и Windows используйте один и тот же полный SHA коммита и закреплённые версии инструментов. Перед повторным запуском GitHub Actions проверьте причину остановки и наличие уже готовых пакетов.
+
+Перед загрузкой локального пакета проверьте его содержимое, включая исполняемые файлы и ресурсы. В них не должны попадать личные пути, проекты, записи голоса, учётные данные, локальные SDK и файлы конфигурации разработчика. Для удаления путей исходников из диагностических строк Rust используйте `--remap-path-prefix`; для C/C++ – `-ffile-prefix-map`. После сборки проверьте готовый пакет на наличие таких данных.
 
 ## Проверка перед прикреплением DMG
 
@@ -76,10 +80,10 @@ npm run tauri -- build --target x86_64-pc-windows-msvc --config src-tauri/tauri.
 
 ## Подпись и нотариализация macOS
 
-Release overlay сейчас использует **ad-hoc** signing identity `-`. Она подходит для предварительной сборки Apple Silicon, но не подтверждает разработчика и не является Developer ID/notarization. Gatekeeper может блокировать скачанный установщик без Developer ID и нотариализации.
+Конфигурация macOS использует подпись **ad-hoc** (`-`). Она позволяет запускать сборку на Apple Silicon, но не подтверждает личность разработчика и не заменяет Developer ID или нотариализацию Apple. Gatekeeper может блокировать скачанный установщик без Developer ID и нотариализации.
 
-Предварительные выпуски не используют платные сертификаты, Developer ID, нотариализацию или внешние сервисы подписи. Локальная ad-hoc подпись остается техническим требованием ARM64. Инструкции первого запуска для macOS и Windows приведены в [README](../README.md#установка).
+Инструкции первого запуска для macOS и Windows приведены в [README](../README.md#установка).
 
 Источники: [официальный pipeline Tauri](https://v2.tauri.app/distribute/pipelines/github/), [build-only режим tauri-action](https://github.com/tauri-apps/tauri-action#tips-and-caveats), [подпись macOS](https://v2.tauri.app/distribute/sign/macos/), [DMG](https://v2.tauri.app/distribute/dmg/).
 
-Windows использует `src-tauri/tauri.windows.release.conf.json` и NSIS; установщик успешно собран в Actions, его установка и работа SDK на пользовательской Windows требуют отдельной проверки. SDK/компиляторы не включаются в установщики ни одной платформы.
+Для Windows используются `src-tauri/tauri.windows.release.conf.json` и NSIS. SDK и компиляторы устанавливаются отдельно на обеих платформах.
