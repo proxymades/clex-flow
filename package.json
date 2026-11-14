@@ -1,7 +1,7 @@
 {
   "name": "clex-flow",
   "private": true,
-  "version": "0.1.15",
+  "version": "0.1.16",
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
@@ -25,6 +25,7 @@
     "test:assembly-flow-ui": "node tests/assembly-flow-ui.cjs",
     "test:terminal-sides-ui": "node tests/terminal-sides-ui.cjs",
     "test:logic-ui": "node tests/logic-ui.cjs",
+    "test:countdown-ui": "node tests/countdown-ui.cjs",
     "test:logic-drag-ui": "node tests/logic-drag-ui.cjs",
     "test:autosave-ui": "node tests/autosave-ui.cjs",
     "test:canvas-ui": "node tests/canvas-ui.cjs",

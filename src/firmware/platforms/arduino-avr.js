@@ -13,6 +13,7 @@ import { isStepperDriver } from '../../stepper/model.js';
 import { hardwareBinding } from '../../logic/model.js';
 import {selectionType} from '../../logic/selection.js';
 import { selectNumberCode } from '../drivers/select-number.js';
+import {countdownFirmware} from '../drivers/countdown.js';
 const keys=new Set([MOSFET_MODULE,...NUMERIC_MODULES,'clex.hardware.xgzp6847d','clex.logic.xgzp6847d','clex.hardware.relay','clex.hardware.nema17','clex.hardware.tb6600','clex.hardware.tmc2208','clex.hardware.drv8825','clex.logic.stepper','clex.logic.select-number','clex.hardware.touch-button','clex.logic.gpio-edge','clex.hardware.led','clex.hardware.button','clex.logic.timer','clex.logic.counter','clex.logic.stopwatch','clex.logic.serial','clex.logic.gpio-read','clex.logic.gpio-set']);
 export function generateArduinoAvr(project,catalog,board,cString,issues){
  const revision=project.boardSettings.bootloader || board.options.bootloader.default;
@@ -21,18 +22,19 @@ export function generateArduinoAvr(project,catalog,board,cString,issues){
  if(nodes.length>32)throw new Error('Для Nano поддерживается до 32 логических блоков из-за объема памяти.');
  for(const entry of [...nodes,...components]){
   const module=catalog.modules.find(module=>module.id===entry.moduleId);
-  if(!keys.has(entry.moduleId)||!compatibleVersion(implementationVersions[entry.moduleId]||'1.0.0',module?.version)||!(module?.kind==='logic'?compatibleVersion(entry.moduleVersion,module.version):entry.moduleVersion===module?.version))throw new Error('Для Nano нет реализации блока «'+entry.name+'».');
+  if(!(keys.has(entry.moduleId)||entry.moduleId==='clex.logic.countdown')||!compatibleVersion(implementationVersions[entry.moduleId]||'1.0.0',module?.version)||!(module?.kind==='logic'?compatibleVersion(entry.moduleVersion,module.version):entry.moduleVersion===module?.version))throw new Error('Для Nano нет реализации блока «'+entry.name+'».');
  }
  const index=new Map(nodes.map((n,i)=>[n.id,i])),hardware=new Map(components.map((c,i)=>[c.id,i]));
  const stepper=stepperFirmware(project,nodes,index,board);
  const xgzp=xgzpFirmware(project,catalog,nodes,index);
  const numeric=numericFirmware(nodes,index,cString,{avr:true,project});
+ const countdown=countdownFirmware(nodes,index,{avr:true});
  const edge=(n,port)=>project.logic.edges.find(e=>e.target===n.id&&e.targetHandle===port);
  const textLengths=new Map();
  const textSize=(n,port='text')=>{if(numeric.textSizes.has(n.id))return numeric.textSizes.get(n.id)[port];if(xgzp.textSizes.has(n.id))return xgzp.textSizes.get(n.id)[port];if(n.moduleId==='clex.logic.stepper')return stepper.textSizes.get(n.id).error;if(n.moduleId==='clex.logic.stopwatch')return 24;if(textLengths.has(n.id))return textLengths.get(n.id);const input=edge(n,'text'),size=(input?textSize(nodes[index.get(input.source)],input.sourceHandle):new TextEncoder().encode(n.parameters.message).length+1)+(edge(n,'number')?((xgzp.expressions.has(edge(n,'number').source)||numeric.expressions.has(edge(n,'number').source))?25:13):0);textLengths.set(n.id,size);return size;};
  for(const n of nodes.filter(n=>n.moduleId==='clex.logic.serial'))textSize(n);
  const watches=nodes.filter(n=>n.moduleId==='clex.logic.stopwatch'),timers=nodes.filter(n=>n.moduleId==='clex.logic.timer');
- const ram=[...textLengths.values()].reduce((a,b)=>a+b,0)+watches.length*48+timers.length*4+nodes.length*4+components.length*10+components.filter(c=>c.moduleId===RELAY_MODULE).reduce((sum,c)=>sum+relayChannelCount(c),0)+components.filter(isStepperDriver).length*96+nodes.filter(n=>n.moduleId==='clex.logic.stepper').length*16;
+ const ram=[...textLengths.values()].reduce((a,b)=>a+b,0)+watches.length*48+timers.length*4+countdown.ram+nodes.length*4+components.length*10+components.filter(c=>c.moduleId===RELAY_MODULE).reduce((sum,c)=>sum+relayChannelCount(c),0)+components.filter(isStepperDriver).length*96+nodes.filter(n=>n.moduleId==='clex.logic.stepper').length*16;
  const selectionRam=nodes.filter(n=>n.moduleId==='clex.logic.select-number'&&selectionType(n)==='text'&&edge(n,'value')?.sourceHandle==='error'&&nodes.find(source=>source.id===edge(n,'value').source)?.moduleId==='clex.logic.stepper').length*128;
  if(ram+xgzp.ram+numeric.ram+selectionRam>896)throw new Error('Тексты и блоки требуют слишком много памяти Nano. Сократите сообщения или количество блоков.');
  if(!xgzp.enabled&&!stepper.enabled&&!timers.length&&!watches.length&&!nodes.some(n=>n.moduleId==='clex.logic.gpio-edge'))throw new Error('Добавьте таймер или секундомер для запуска схемы.');
@@ -51,7 +53,7 @@ export function generateArduinoAvr(project,catalog,board,cString,issues){
   if(n.moduleId==='clex.logic.serial')return 'text_'+i;
   return 'value_'+i;
  };
- const call=e=>'node_'+index.get(e.target)+(nodes[index.get(e.target)].moduleId==='clex.logic.gpio-set'?'_'+e.targetHandle:e.targetHandle==='reset'?'_reset':e.targetHandle==='pause'?'_pause':e.targetHandle==='stop'?'_stop':e.targetHandle==='release'?'_release':'')+'();';
+ const call=e=>'node_'+index.get(e.target)+(nodes[index.get(e.target)].moduleId==='clex.logic.gpio-set'?'_'+e.targetHandle:e.targetHandle==='reset'?'_reset':e.targetHandle==='pause'?'_pause':e.targetHandle==='stop'?'_stop':e.targetHandle==='release'?'_release':e.targetHandle==='cancel'?'_cancel':'')+'();';
  const emit=(n,port=null)=>project.logic.edges.filter(e=>e.source===n.id&&e.dataType==='event'&&(!port||e.sourceHandle===port)).sort((a,b)=>index.get(a.target)-index.get(b.target)||a.targetHandle.localeCompare(b.targetHandle)).map(e=>'  '+call(e)).join('\n');
  const relay=relayFirmware(project,nodes,board.platform);
  const outputs=gpioOutputFirmware(project,components,board.platform,catalog,nodes);
@@ -74,6 +76,7 @@ export function generateArduinoAvr(project,catalog,board,cString,issues){
  });
  const prototypes=nodes.map((n,i)=>'static void node_'+i+'();'+(n.moduleId==='clex.logic.gpio-set'?'\n'+['on','off','toggle'].map(action=>'static void node_'+i+'_'+action+'();').join('\n'):'')+(n.moduleId==='clex.logic.counter'?'\nstatic void node_'+i+'_reset();':'')+(n.moduleId==='clex.logic.xgzp6847d'?'\n'+['changed','done','failed'].map(port=>'static void node_'+i+'_emit_'+port+'();').join('\n'):'')+(n.moduleId==='clex.logic.stepper'?'\nstatic void node_'+i+'_stop();\nstatic void node_'+i+'_release();\n'+['changed','started','completed','stopped','failed'].map(port=>'static void node_'+i+'_emit_'+port+'();').join('\n'):'')+(n.moduleId==='clex.logic.stopwatch'?'\nstatic void node_'+i+'_pause();\nstatic void node_'+i+'_reset();\nstatic void node_'+i+'_changed();':'')).join('\n').replaceAll('();','() __attribute__((unused));');
  const functions=nodes.map((n,i)=>{
+  if(countdown.operations.has(n.id))return 'static void node_'+i+'(){\n'+countdown.operations.get(n.id)+'\n}\n'+countdown.extraFunctions.get(n.id)+'\n'+['started','elapsed'].map(port=>'static void node_'+i+'_emit_'+port+'(){\n'+emit(n,port)+'\n}').join('\n');
   if(numeric.operations.has(n.id))return 'static void node_'+i+'(){\n'+numeric.operations.get(n.id)({inputEdge:edge,dataExpression:data,emit:port=>emit(n,port)})+'\n}';
   if(n.moduleId==='clex.logic.xgzp6847d')return 'static void node_'+i+'(){\n'+xgzp.operations.get(n.id)+'\n}\n'+['changed','done','failed'].map(port=>'static void node_'+i+'_emit_'+port+'(){\n'+emit(n,port)+'\n}').join('\n');
   if(n.moduleId==='clex.logic.stepper')return 'static void node_'+i+'(){\n'+stepper.operations.get(n.id)+'\n}\n'+['changed','started','completed','stopped','failed'].map(port=>'static void node_'+i+'_emit_'+port+'(){\n'+emit(n,port)+'\n}').join('\n');
@@ -124,6 +127,9 @@ static bool clex_watch_reset(clex_watch_t *w,uint32_t now){w->elapsed=0;w->sampl
 ${xgzp.headers?xgzp.headers+'\n':''}${runtime}${stepper.source}${xgzp.source?'\n'+xgzp.source:''}${numeric.source?'\n'+numeric.source:''}
 ${declarations.join('\n')}
 ${prototypes}
+${countdown.source}
+${countdown.prototypes}
+${nodes.filter(n=>countdown.operations.has(n.id)).flatMap(n=>['started','elapsed'].map(port=>'static void node_'+index.get(n.id)+'_emit_'+port+'(void) __attribute__((unused));')).join('\n')}
 ${[...stepper.extraFunctions.values()].join('\n')}${stepper.notify}
 ${functions.join('\n\n')}
 void setup(){
@@ -139,6 +145,7 @@ ${stepper.poll}${xgzp.poll?'\n'+xgzp.poll:''}
 ${poll.join('\n')}
 ${timers.map(n=>{const i=index.get(n.id),interval=n.parameters.intervalMs;return '  if((uint32_t)(now-timer_'+i+') >= '+interval+'UL){ timer_'+i+' += ((uint32_t)(now-timer_'+i+')/'+interval+'UL)*'+interval+'UL; node_'+i+'(); }';}).join('\n')}
 ${watches.map(n=>{const i=index.get(n.id);return '  if(clex_watch_refresh(&watch_'+i+', millis())) node_'+i+'_changed();';}).join('\n')}
+${countdown.poll}
 }
 `;
  return {boardId:board.id,target:board.target,platform:board.platform,boardRevision:revision,consoleMode:'uart',mainC:source,graphicsRuntime:null,networkRuntime:null,featureRuntimes:[],warnings:issues.filter(i=>i.severity==='warning'),files:{'clex_flow/clex_flow.ino':'// The generated runtime is in src/flow.cpp.\n','clex_flow/src/flow.cpp':source}};

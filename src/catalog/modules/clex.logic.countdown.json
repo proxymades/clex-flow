@@ -1,0 +1,65 @@
+{
+  "id": "clex.logic.countdown",
+  "version": "1.0.0",
+  "kind": "logic",
+  "name": "Обратный отсчёт",
+  "description": "Таймер по сигналу: отсчитывает заданное время и один раз сообщает об окончании. Повторный запуск начинает отсчёт заново; отмена прекращает ожидание.",
+  "category": "time",
+  "categoryName": "Время",
+  "icon": "Hourglass",
+  "color": "#38bdf8",
+  "inputs": [
+    {
+      "id": "start",
+      "name": "Запустить",
+      "type": "event",
+      "required": true,
+      "description": "Начинает полный отсчёт. Повторный сигнал начинает время заново и отменяет прежний срок окончания."
+    },
+    {
+      "id": "cancel",
+      "name": "Отменить",
+      "type": "event",
+      "description": "Прекращает отсчёт без события «Время истекло». Повторная отмена ничего не меняет."
+    }
+  ],
+  "outputs": [
+    {
+      "id": "started",
+      "name": "Отсчёт начат",
+      "type": "event",
+      "description": "Срабатывает сразу после каждого запуска, включая повторный. Можно подключить к команде включения реле."
+    },
+    {
+      "id": "elapsed",
+      "name": "Время истекло",
+      "type": "event",
+      "description": "Срабатывает один раз после заданного времени. Отсчёт прекращается до следующего запуска."
+    }
+  ],
+  "parameters": {
+    "durationSeconds": {
+      "label": "Длительность, с",
+      "type": "number",
+      "default": 5,
+      "min": 0.001,
+      "max": 3600,
+      "step": 0.001,
+      "description": "Время от запуска до окончания: 5 – пять секунд, 0,5 – половина секунды. При включении платы отсчёт не запускается."
+    }
+  },
+  "constraints": {},
+  "compatibility": {
+    "projectFormat": 4,
+    "targets": ["esp32", "esp32s3", "esp32p4", "atmega328p"],
+    "espIdf": "5.4.4",
+    "platforms": {
+      "arduino-avr": "1.8.6"
+    }
+  },
+  "firmware": {
+    "status": "implemented",
+    "generatorKey": "countdown",
+    "dependencies": ["esp_timer"]
+  }
+}

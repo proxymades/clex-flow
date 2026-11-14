@@ -1,0 +1,103 @@
+/* global window, document */
+const assert=require('node:assert/strict');
+const {mkdir}=require('node:fs/promises');
+const {existsSync}=require('node:fs');
+const {chromium}=require('playwright');
+
+(async()=>{
+  const {countdownProject}=await import('./countdown-fixture.js');
+  const {withLogic}=await import('../src/logic/model.js');
+  const {project,countdown,pressed,output}=countdownProject();
+  const demo=withLogic(project,{...project.logic,nodes:project.logic.nodes.filter(node=>node.id!==countdown.id),edges:[]});
+  const executablePath=process.env.CLEX_BROWSER_EXECUTABLE||process.argv[2]||(!existsSync(chromium.executablePath())?'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome':undefined);
+  const browser=await chromium.launch({headless:true,...(executablePath?{executablePath}:{})});
+  const context=await browser.newContext({viewport:{width:1440,height:1000}});
+  const page=await context.newPage(),errors=[];
+  page.on('pageerror',error=>errors.push(error.message));
+  await page.addInitScript(p=>{if(!localStorage.getItem('clex-flow:projects:v1'))localStorage.setItem('clex-flow:projects:v1',JSON.stringify({[p.id]:JSON.stringify(p)}));},demo);
+  const saved=()=>page.evaluate(()=>JSON.parse(Object.values(JSON.parse(localStorage.getItem('clex-flow:projects:v1')))[0]));
+  const save=async()=>{
+    await page.getByRole('button',{name:'Сохранить',exact:true}).first().click();
+    await page.getByText('Проект сохранен',{exact:true}).waitFor();
+  };
+  const open=async()=>{
+    await page.locator('.project-open').click();
+    await page.getByRole('button',{name:'Логика',exact:true}).click();
+    await page.locator('.logic-node').first().waitFor();
+  };
+  const connect=async(source,sourceHandle,target,targetHandle)=>{
+    await source.locator('.logic-port.output[data-port-id="'+sourceHandle+'"] button').click();
+    await target.locator('.logic-port.input[data-port-id="'+targetHandle+'"] button').click();
+  };
+  try {
+    await mkdir('.artifacts',{recursive:true});
+    await page.goto(process.env.CLEX_PREVIEW_URL||'http://127.0.0.1:1430');
+    await open();
+    const search=page.getByRole('textbox',{name:'Поиск блоков',exact:true});
+    await search.fill('таймер');
+    await page.getByRole('button',{name:'Добавить блок: Таймер',exact:true}).waitFor();
+    await page.getByRole('button',{name:'Добавить блок: Обратный отсчёт',exact:true}).waitFor();
+    await search.fill('обратный');
+    await page.getByRole('button',{name:'Добавить блок: Обратный отсчёт',exact:true}).click();
+    const card=page.locator('.react-flow__node').filter({has:page.getByText('Обратный отсчёт',{exact:true})});
+    await card.waitFor();
+    assert.equal(await card.locator('.logic-node-version').innerText(),'v1.0.0');
+    assert.equal(await card.locator('.logic-port').count(),4);
+    assert.equal(await card.locator('[data-port-section="data"]').count(),0);
+    const duration=page.getByRole('spinbutton',{name:'Длительность, с',exact:true});
+    assert.equal(await duration.inputValue(),'5');
+    await duration.fill('2');
+    await card.locator('.logic-node-summary').filter({hasText:'2 с'}).waitFor();
+    await page.getByRole('button',{name:'Отменить изменение графа',exact:true}).click();
+    await card.locator('header').click();
+    assert.equal(await duration.inputValue(),'5');
+    await page.getByRole('button',{name:'Повторить изменение графа',exact:true}).click();
+    await card.locator('header').click();
+    assert.equal(await duration.inputValue(),'2');
+    await duration.fill('0');
+    await page.locator('.logic-problems').getByText(/Длительность/).waitFor();
+    await duration.fill('2');
+    await page.getByRole('button',{name:'Показать весь граф',exact:true}).click();
+    const button=page.locator('.react-flow__node[data-id="'+pressed.id+'"]');
+    const relay=page.locator('.react-flow__node[data-id="'+output.id+'"]');
+    await connect(button,'active',card,'start');
+    await connect(card,'started',relay,'on');
+    await connect(card,'elapsed',relay,'off');
+    await page.locator('.react-flow__edge').nth(2).waitFor();
+    await connect(button,'inactive',card,'cancel');
+    assert.equal(await page.locator('.react-flow__edge').count(),4);
+    await page.getByRole('button',{name:'Отменить изменение графа',exact:true}).click();
+    assert.equal(await page.locator('.react-flow__edge').count(),3);
+    await save();
+    const value=await saved();
+    assert.equal(value.logic.nodes.length,3);
+    assert.equal(value.logic.edges.length,3);
+    assert.equal(value.logic.edges.every(edge=>edge.dataType==='event'),true);
+    assert.equal(value.logic.nodes.find(node=>node.moduleId==='clex.logic.countdown').parameters.durationSeconds,2);
+    assert.equal(value.logic.nodes.some(node=>['clex.logic.timer','clex.logic.stopwatch','clex.logic.compare-number'].includes(node.moduleId)),false);
+    assert.equal(value.moduleVersions['clex.logic.countdown'],'1.0.0');
+    await page.getByRole('button',{name:'Посмотреть исходники прошивки',exact:true}).click();
+    await page.getByRole('button',{name:'main/main.c',exact:true}).click();
+    const source=await page.locator('.firmware-source').innerText();
+    assert.match(source,/clex_countdown_expire\([^\n]+, 2000UL\)/);
+    assert.equal(source.includes('esp_timer_start_periodic'),false);
+    await page.keyboard.press('Escape');
+    await page.getByRole('button',{name:'Показать весь граф',exact:true}).click();
+    await page.screenshot({path:'.artifacts/countdown-logic.png',animations:'disabled'});
+    await page.reload();
+    await open();
+    await page.locator('.react-flow__edge').nth(2).waitFor();
+    await card.locator('header').click();
+    assert.equal(await duration.inputValue(),'2');
+    assert.equal(await page.locator('.react-flow__edge').count(),3);
+    await page.setViewportSize({width:1000,height:700});
+    await page.getByRole('button',{name:'Показать весь граф',exact:true}).click();
+    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>window.innerWidth),false);
+    await page.screenshot({path:'.artifacts/countdown-logic-small.png',animations:'disabled'});
+    assert.deepEqual(errors,[]);
+    console.log('PASS countdown UI: search, version, duration, validation, event connections, cancel, undo/redo, save/reopen, generated source and small layout; isolated headless context.');
+  } catch(error) {
+    await page.screenshot({path:'.artifacts/countdown-failure.png'}).catch(()=>{});
+    throw error;
+  } finally { await context.close(); await browser.close(); }
+})().catch(error=>{console.error(error);process.exitCode=1;});

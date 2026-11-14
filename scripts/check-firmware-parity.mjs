@@ -1,5 +1,6 @@
 import {conditionProject} from '../tests/condition-fixture.js';
 import {synchronizationProject} from '../tests/synchronization-fixture.js';
+import {COUNTDOWN_BOARDS,countdownProject} from '../tests/countdown-fixture.js';
 import {eventIndicatorProject} from '../tests/event-indicator-fixture.js';
 import {mosfetProject,MOSFET_BOARDS} from '../tests/mosfet-fixture.js';
 import {audioPlayProject} from '../tests/audio-play-fixture.js';
@@ -50,6 +51,7 @@ function mediaProject(family) {
 }
 
 const cases = [
+  ...COUNTDOWN_BOARDS.map(board=>[board+'-countdown',countdownProject(board,{cancelOnRelease:true}).project,board==='waveshare-esp32-s3-eth'?'usb':'uart']),
   ['esp32-event-synchronization',synchronizationProject('doit-esp32-devkit-v1-30pin').project,'uart'],
   ['s3-event-synchronization',synchronizationProject().project,'usb'],
   ['p4-event-synchronization',synchronizationProject('waveshare-esp32-p4-nano').project,'uart'],

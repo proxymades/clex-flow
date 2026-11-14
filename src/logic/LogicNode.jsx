@@ -9,7 +9,7 @@ import {synchronizationSummary} from './synchronization.js';
 import { formatCount } from '../utils/plural.js';
 import {memo,useEffect} from 'react';
 import {Handle,Position,useUpdateNodeInternals} from '@xyflow/react';
-import {TriangleAlert,Link2,ArrowRightLeft,ListFilter,ListChecks,Clock3,Timer,Hash,Globe,Thermometer,Text,GitBranch,Radio,Info} from 'lucide-react';
+import {TriangleAlert,Link2,ArrowRightLeft,ListFilter,ListChecks,Clock3,Timer,Hourglass,Hash,Globe,Thermometer,Text,GitBranch,Radio,Info} from 'lucide-react';
 import ScreenPreview from '../displays/ScreenPreview.jsx';
 import PortValueStates from './PortValueStates.jsx';
 import {TYPE_COLORS,TYPE_NAMES,LOGIC_NODE_WIDTH} from './model.js';
@@ -17,6 +17,7 @@ import {visiblePorts,nodeDisplayName} from './presentation.js';
 const SUMMARY_ICONS={
  'clex.logic.timer':Clock3,
  'clex.logic.stopwatch':Timer,
+ 'clex.logic.countdown':Hourglass,
  'clex.logic.counter':Hash,
  'clex.logic.compare-number':ListFilter,
  'clex.logic.text-to-number':ArrowRightLeft,
@@ -36,7 +37,7 @@ function LogicNode({id,data,selected}){
  const radioOption=definition?.parameters?.transferType?.options.find(option=>option.value===node.parameters.transferType)||definition?.parameters?.action?.options.find(option=>option.value===node.parameters.action);
  const radioSummary=radioOption?[radioOption.label,node.parameters.transferType==='command'?node.parameters.command:node.parameters.action==='mode'?definition.parameters.mode.options.find(option=>option.value===node.parameters.mode)?.label:binding?.component?.name].filter(Boolean).join(' · '):null;
  const outputSummary=definition?.id===OUTPUT_MODULE?[binding?.component?.name||'Выберите компонент',outputChannelCount(binding?.component)?'канал '+node.parameters.channel:null,radioOption?.label].filter(Boolean).join(' · '):null;
- const summary=versionProblem?'Требуется замена блока':outputSummary||selectionSummary(node)||synchronizationSummary(node)||numericSummary(node,project)||radioSummary|| (definition?.editor==='screen'?(binding?.component?.name||'Выберите дисплей'):definition?.id==='clex.logic.temperature'?(node.parameters.autoRead?`Кристалл · каждые ${node.parameters.intervalMs} мс`:'Кристалл · измерение по сигналу'):definition?.id==='clex.logic.timer'?`Каждые ${node.parameters.intervalMs} мс`:definition?.id==='clex.logic.stopwatch'?`00:00:00 · ${node.parameters.autoStart?'автозапуск':'запуск по сигналу'}`:definition?.id==='clex.logic.counter'?`Начало: ${node.parameters.initialValue} · изменение: ${node.parameters.step}`:definition?.id==='clex.logic.internet-check'?(node.parameters.url||'Укажите адрес проверки'):definition?.constraints.hardware?(binding?.component?.name||'Выберите компонент'):node.parameters.message||'Пустое сообщение');
+ const summary=versionProblem?'Требуется замена блока':outputSummary||(node.moduleId==='clex.logic.countdown'?(Number.isFinite(node.parameters.durationSeconds)?`${node.parameters.durationSeconds.toLocaleString('ru-RU',{maximumFractionDigits:3})} с · запуск по сигналу`:'Укажите длительность'):null)||selectionSummary(node)||synchronizationSummary(node)||numericSummary(node,project)||radioSummary|| (definition?.editor==='screen'?(binding?.component?.name||'Выберите дисплей'):definition?.id==='clex.logic.temperature'?(node.parameters.autoRead?`Кристалл · каждые ${node.parameters.intervalMs} мс`:'Кристалл · измерение по сигналу'):definition?.id==='clex.logic.timer'?`Каждые ${node.parameters.intervalMs} мс`:definition?.id==='clex.logic.stopwatch'?`00:00:00 · ${node.parameters.autoStart?'автозапуск':'запуск по сигналу'}`:definition?.id==='clex.logic.counter'?`Начало: ${node.parameters.initialValue} · изменение: ${node.parameters.step}`:definition?.id==='clex.logic.internet-check'?(node.parameters.url||'Укажите адрес проверки'):definition?.constraints.hardware?(binding?.component?.name||'Выберите компонент'):node.parameters.message||'Пустое сообщение');
  const title=nodeDisplayName(node,project,catalog);
  const hardwareSummary=Boolean(outputSummary||(!radioSummary&&definition?.constraints.hardware));
  const SummaryIcon=hardwareSummary?Link2:radioSummary?Radio:SUMMARY_ICONS[node.moduleId]||Info;
