@@ -688,7 +688,7 @@ mod tests {
             310
         );
         let d = tempfile::tempdir().unwrap();
-        for target in ["esp32", "esp32s3", "esp32p4"] {
+        for target in ["esp32", "esp32c3", "esp32s3", "esp32p4"] {
             let value: toml::Value =
                 toml::from_str(&eim_config_for(d.path(), "5.4.4", false, target)).unwrap();
             assert_eq!(

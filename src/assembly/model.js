@@ -1,3 +1,6 @@
+import {hardwareVersionCompatible,moduleVersionIndex} from '../catalog/versions.js';
+import {BUTTON_BOARD_MODULE,resolveButtonModule,buttonIssues,internalPull} from '../buttons/model.js';
+import {isResistor,electricalModel,electricalIssues,ledResistance} from '../electrical/model.js';
 import {resolveMosfetModule,MOSFET_MODULE,isMosfet,mosfetChannelCount} from '../mosfet/model.js';
 import {isMicrophone,microphoneConnectionProblem,microphoneIssues} from '../microphone/model.js';
 import {VOICE_MODULE,voiceIssues} from '../voice/model.js';
@@ -18,7 +21,7 @@ export const DEFAULT_BOARD_POSITION = { x: 100, y: 40 };
 export const DEFAULT_VIEWPORT = { x: 0, y: 0, zoom: 1 };
 const lookup = (items, id) => items.find(item => item.id === id);
 export const boardFor = (project, catalog) => lookup(catalog.boards, project.boardId);
-export const moduleFor = (component, catalog) => resolveMosfetModule(component,resolveRelayModule(component,lookup(catalog.modules, component.moduleId)));
+export const moduleFor = (component, catalog) => resolveButtonModule(component,resolveMosfetModule(component,resolveRelayModule(component,lookup(catalog.modules, component.moduleId))));
 
 export function transformAssembly(project,catalog,transform){
  const previous=project.assembly.positions,positions={...previous,...transform.positions},board=boardFor(project,catalog);
@@ -46,7 +49,7 @@ export function moduleProblem(component, catalog, board = null) {
   if(module.softwareInterface==='mqtt'&&board&&!mqttSupported(board))return 'MQTT требует поддерживаемое Wi-Fi или Ethernet-подключение ESP-IDF.';
   if(module.softwareInterface==='espnow'&&board&&!espNowSupported(board))return 'Эта плата не имеет поддерживаемого ESP-NOW-радиоинтерфейса.';
   if (board && module.hardwareInterface && !hardwareProvider(component,module,board)) return 'Выберите совместимый аппаратный интерфейс платы.';
-  if (module.version !== component.moduleVersion) return `Требуется модуль ${component.moduleId} версии ${component.moduleVersion}; установлен ${module.version}.`;
+  if (!hardwareVersionCompatible(module,component.moduleVersion)) return `Требуется модуль ${component.moduleId} версии ${component.moduleVersion}; установлен ${module.version}.`;
   if (board && !moduleSupportsBoard(module,board)) return 'Для выбранной платформы нет реализованного драйвера этого компонента.';
   if (module.network && board && !board.networkInterfaces?.some(provider=>provider.family===module.network.family)) return 'Для выбранной платы нет описанного сетевого интерфейса этого типа.';
   if (module.kind !== 'hardware' || module.compatibility.projectFormat !== 4 || !module.compatibility.targets.includes(board?.target || 'esp32s3')) return 'Модуль несовместим с этим редактором монтажа.';
@@ -82,6 +85,10 @@ export function connectionProblem(project, catalog, componentId, terminalId, pin
   const microphoneProblem=microphoneConnectionProblem(component,terminal,pin,board);if(microphoneProblem)return microphoneProblem;
   if(component.moduleId===RELAY_MODULE&&terminal.id==='power')return relayPowerProblem(component,pin);
   if(isXgzp(component)&&terminal.id==='power')return xgzpPowerProblem(component,pin,board);
+  if (isResistor(component)) {
+    if (pin.kind === 'gpio') return pinProblem(project,pin,board);
+    return ['power','ground'].includes(pin.kind) ? null : 'Резистор подключается к GPIO, питанию или GND.';
+  }
   if (terminal.kind === 'power') return pin.kind === 'power' && pin.voltage === (terminal.voltageFromBoard ? (board.logicVoltage || 3.3) : terminal.voltageParameter ? Number(component.parameters[terminal.voltageParameter]) : terminal.voltage) ? null : 'Питание компонента подключается к контакту платы с указанным напряжением.';
   if (terminal.kind === 'ground') return pin.kind === 'ground' ? null : 'Общий контакт / катод должен быть подключен к GND. Питание и GPIO здесь недопустимы.';
   if (pin.kind !== 'gpio') return 'Сигнальный контакт подключается к GPIO, а не к питанию, GND или управлению.';
@@ -96,11 +103,15 @@ export function connectionProblem(project, catalog, componentId, terminalId, pin
   if (restriction) return restriction;
   const capability = terminal.kind === 'gpio-output' ? 'digital-output' : terminal.kind === 'gpio-input' ? 'digital-input' : null;
   if (!capability || !pin.capabilities.includes(capability)) return 'GPIO не поддерживает требуемое направление цифрового интерфейса.';
-  if (capability==='digital-input' && pin.internalPulls===false && ['up','down'].includes(component.parameters.pull)) return 'У этого GPIO нет внутренней подтяжки. Выберите другой вход для компонента с внутренней подтяжкой.';
+  if (capability==='digital-input' && pin.internalPulls===false && internalPull(component)) return 'У этого GPIO нет внутренней подтяжки. Выберите другой вход для компонента с внутренней подтяжкой.';
+  if(capability==='digital-input'&&internalPull(component)==='down'&&board.platform==='arduino-avr')return 'У этой платы нет внутренней подтяжки вниз. Выберите внешний резистор.';
+  const indirect=project.gpioAssignments.find(a=>a.gpio===pin.gpio&&a.componentId!==componentId&&!project.assembly.connections.some(w=>w.componentId===a.componentId&&w.terminalId===a.terminalId&&w.boardPinId===a.pinId));
+  if(indirect)return `GPIO${pin.gpio} уже используется цепью другого компонента.`;
   const conflict = project.assembly.connections.find(wire => {
     if (wire.componentId === componentId && wire.terminalId === terminalId) return false;
     if(lookup(board.pins,wire.boardPinId)?.gpio!==pin.gpio)return false;
     const other=lookup(project.components,wire.componentId);
+    if(isResistor(other))return false;
     return !(isXgzp(component)&&isXgzp(other)&&component.parameters.i2cPort===other.parameters.i2cPort&&wire.terminalId===terminalId);
   });
   if (conflict) return `GPIO${pin.gpio} уже назначен другому контакту. Сначала удалите прежнее соединение.`;
@@ -109,12 +120,21 @@ export function connectionProblem(project, catalog, componentId, terminalId, pin
 
 export function gpioAssignments(project, catalog) {
   const board = boardFor(project, catalog);
-  return project.assembly.connections.flatMap(wire => {
+  const assignments = project.assembly.connections.flatMap(wire => {
     const pin = board?.pins.find(pin => pin.id === wire.boardPinId);
     const component = project.components.find(component => component.id === wire.componentId);
     const terminal = component && moduleFor(component, catalog)?.terminals.find(terminal => terminal.id === wire.terminalId);
-    return pin?.kind === 'gpio' && terminal && terminal.kind !== 'ground' ? [{ componentId: wire.componentId, terminalId: wire.terminalId, pinId: pin.id, gpio: pin.gpio, mode: terminal.kind === 'gpio-output' ? 'output' : 'input' }] : [];
+    return pin?.kind === 'gpio' && terminal && ['gpio-input','gpio-output'].includes(terminal.kind) ? [{ componentId: wire.componentId, terminalId: wire.terminalId, pinId: pin.id, gpio: pin.gpio, mode: terminal.kind === 'gpio-output' ? 'output' : 'input' }] : [];
   });
+  const model=electricalModel(project,catalog);
+  for(const component of project.components){
+    for(const terminal of moduleFor(component,catalog)?.terminals||[]){
+      if(!['gpio-input','gpio-output'].includes(terminal.kind)||assignments.some(a=>a.componentId===component.id&&a.terminalId===terminal.id))continue;
+      const pin=model.signalPin(component,terminal.id);
+      if(pin)assignments.push({componentId:component.id,terminalId:terminal.id,pinId:pin.id,gpio:pin.gpio,mode:terminal.kind==='gpio-output'?'output':'input'});
+    }
+  }
+  return assignments;
 }
 
 export function updateHardware(project,catalog,id,patch){
@@ -168,7 +188,7 @@ export function removeWire(project, catalog, id) {
 
 export function addHardware(project, module, catalog = null) {
   if (project.components.length >= 100) throw new Error('В одном проекте поддерживается до 100 компонентов.');
-  if (project.moduleVersions[module.id] && project.moduleVersions[module.id] !== module.version) throw new Error('Проект использует другую версию этого модуля.');
+  if (project.moduleVersions[module.id] && !hardwareVersionCompatible(module,project.moduleVersions[module.id])) throw new Error('Проект использует другую версию этого модуля.');
   const id = crypto.randomUUID();
   let number = 1;
   const instanceName = number => module.display ? `${module.name} · №${number}` : `${module.name} ${number}`;
@@ -187,6 +207,7 @@ export function addHardware(project, module, catalog = null) {
   if(module.parameters.spiHost&&catalog&&(!module.network||networkProvider({parameters},boardFor(project,catalog),module)?.interface==='spi')){const options=spiOptions(project,catalog,id).filter(option=>!option.busy.length);parameters.spiHost=options.find(option=>option.value===String(parameters.spiHost))?.value||options[0]?.value||'';}
 
   if(isXgzp({moduleId:module.id})&&catalog){const board=boardFor(project,catalog);parameters.supplyVoltage=String(board.logicVoltage||3.3);if(board.platform!=='arduino-avr'){const used=new Set([...project.components.filter(isXgzp).map(c=>c.parameters.i2cPort),...resourceClaims(project,catalog).filter(c=>/^i2c:[01]$/.test(c.key)).map(c=>c.key.slice(4))]);parameters.i2cPort=['0','1'].find(port=>!used.has(port))||'0';}}
+  if(module.id===BUTTON_BOARD_MODULE&&catalog){parameters.supplyVoltage=parameters.outputVoltage=String(boardFor(project,catalog).logicVoltage||3.3);}
   if(catalog)Object.assign(parameters,boardFor(project,catalog)?.componentDefaults?.[module.id]);
   const occupied = project.components.map(component => {
     const layout = terminalLayout(catalog?moduleFor(component,catalog):null, project.assembly.portSides?.[component.id]);
@@ -218,7 +239,7 @@ export function addHardware(project, module, catalog = null) {
 export function removeHardware(project, catalog, id) {
   const components = project.components.filter(component => component.id !== id);
   const positions = Object.fromEntries(Object.entries(project.assembly.positions).filter(([key]) => key !== id));
-  const moduleVersions = Object.fromEntries(Object.entries(project.moduleVersions).filter(([key]) => [...components, ...project.logic.nodes].some(component => component.moduleId === key)));
+  const moduleVersions = moduleVersionIndex([...components,...project.logic.nodes]);
   return withConnections({ ...project, components, moduleVersions, ...(project.screens ? { screens: Object.fromEntries(Object.entries(project.screens).filter(([key]) => key !== id)) } : {}), assembly: { ...project.assembly, positions, ...(project.assembly.portSides ? { portSides: Object.fromEntries(Object.entries(project.assembly.portSides).filter(([key]) => key !== id)) } : {}) } }, project.assembly.connections.filter(wire => !touches(wire,id)), catalog);
 }
 
@@ -240,12 +261,15 @@ export function validateAssembly(project, catalog) {
     if (!option.values.some(item => item.value === value)) issue('error', 'board-option', `Неизвестное значение настройки «${option.label}».`);
     else if (value === 'unknown' && board.pins.some(pin=>Array.isArray(pin.sharedWith)?pin.sharedWith.includes(key):pin.sharedWith===key)) issue('warning', 'shared-pins', `«${option.label}»: подключение не подтверждено. Общие контакты ограничены.`);
   }
+  const electrical=electricalModel(project,catalog),versions=moduleVersionIndex(project.components);
+  issues.push(...electricalIssues(project,catalog,electrical));
   for (const component of project.components) {
     const fields = { componentId: component.id };
     const problem = moduleProblem(component, catalog, board);
     if (problem) { issue('error', 'module-compatibility', `${component.name}: ${problem}`, fields); continue; }
     const module = moduleFor(component, catalog);
-    if (project.moduleVersions[module.id] !== component.moduleVersion) issue('error', 'module-version', `${component.name}: версии экземпляра и библиотеки проекта не совпадают.`, fields);
+    issues.push(...buttonIssues(component,board,electrical));
+    if (project.moduleVersions[module.id] !== versions[module.id]) issue('error', 'module-version', `${component.name}: версии экземпляра и библиотеки проекта не совпадают.`, fields);
     for (const [key, parameter] of Object.entries(module.parameters)) {
       const value = module.id===RELAY_MODULE?relayParameters(component)[key]:module.id===VOICE_MODULE&&key==='recognitionVolume'?(component.parameters[key]??parameter.default):component.parameters[key];
       if (parameter.type === 'number' && (!Number.isFinite(value) || value < parameter.min || value > parameter.max)) issue('error', 'parameter-range', `${component.name}: «${parameter.label}» должен быть в диапазоне ${parameter.min}-${parameter.max}.`, fields);
@@ -267,7 +291,7 @@ export function validateAssembly(project, catalog) {
     if(module.network)for(const message of networkIssues(component,board,module))issue('error','network-config',component.name+': '+message,fields);
     if(module.parameters.spiHost&&(!module.network||networkProvider(component,board,module)?.interface==='spi')&&!board.interfaces?.spi?.hosts.includes(Number(component.parameters.spiHost)))issue('error','spi-host',component.name+': выберите доступный SPI.',fields);
     if (module.constraints.requiresSeriesResistor) {
-      const { resistorOhms, forwardVoltage } = component.parameters;
+      const { forwardVoltage } = component.parameters, resistorOhms=ledResistance(component,project,catalog);
       const currentMa = ((board.logicVoltage || module.constraints.signalVoltage) - forwardVoltage) / resistorOhms * 1000;
       if (Number.isFinite(currentMa) && currentMa > module.constraints.maxCurrentMa) issue('error', 'led-current', `${component.name}: расчетный ток ${currentMa.toFixed(1)} мА превышает предел модуля ${module.constraints.maxCurrentMa} мА. Увеличьте резистор.`, fields);
     }

@@ -28,7 +28,7 @@ test('таймер 500 мс → переключение LED используе�
   const restored=parseProject(serializeProject(project));
   assert.equal(restored.logic.nodes[1].moduleId,'clex.logic.gpio-set');assert.equal(restored.logic.edges[0].targetHandle,'toggle');
   assert.deepEqual(restored.logic.edges,project.logic.edges);assert.deepEqual(parseProject(serializeProject(restored)),restored);
-  assert.equal(project.moduleVersions[toggle.id],'1.0.0');
+  assert.equal(project.moduleVersions[toggle.id],toggle.version);
 });
 test('несовместимые типы и повторные связи запрещены, события допускают несколько источников', () => {
   const project = nodes(mounted(),timer,toggle,serial,timer), graph = project.logic;
@@ -70,7 +70,7 @@ test('числа и текст после действия требуют соб
 test('удалённый компонент, неправильный тип компонента и GPIO без монтажа видны', () => {
   const project=blink(), node=project.logic.nodes[1];
   assert.ok(validateGraph(removeHardware(project,catalog,project.components[0].id),catalog).some(issue=>issue.code==='logic-hardware'));
-  assert.equal(removeHardware(project,catalog,project.components[0].id).moduleVersions[timer.id],'1.0.0');
+  assert.equal(removeHardware(project,catalog,project.components[0].id).moduleVersions[timer.id],timer.version);
   const wrong={...project,logic:{...project.logic,nodes:project.logic.nodes.map(item=>item.id===node.id?{...item,parameters:{componentId:project.components[1].id}}:item)}};
   assert.ok(validateGraph(wrong,catalog).some(issue=>issue.code==='logic-hardware'));
   assert.ok(validateGraph({...project,gpioAssignments:[]},catalog).some(issue=>issue.code==='logic-hardware'));

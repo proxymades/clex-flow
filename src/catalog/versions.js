@@ -13,3 +13,7 @@ export function moduleVersionIndex(elements){
  for(const element of elements)if(!versions[element.moduleId]||compareVersions(versions[element.moduleId],element.moduleVersion)<0)versions[element.moduleId]=element.moduleVersion;
  return versions;
 }
+
+export function hardwareVersionCompatible(module, saved) {
+  return Boolean(module && (saved === module.version || module.compatibleFrom && compatibleVersion(module.compatibleFrom, saved) && compatibleVersion(saved, module.version)));
+}

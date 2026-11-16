@@ -22,7 +22,7 @@ const assert=require('node:assert/strict'),fs=require('node:fs/promises'),{chrom
   await fs.mkdir('.artifacts/block-versions',{recursive:true});
   await page.goto(process.env.CLEX_PREVIEW_URL||'http://127.0.0.1:1420');await open();await card(old.id).locator('header').click();
   await card(old.id).locator('.logic-version-warning').waitFor();
-  assert.match(await card(old.id).locator('.logic-version-warning').innerText(),/v1\.0\.0.*v2\.0\.0/);
+  assert.match(await card(old.id).locator('.logic-version-warning').innerText(),/v1\.0\.0.*v2\.1\.0/);
   assert.match(await card(old.id).locator('.logic-version-warning').innerText(),/формат настроек/);
   assert.equal(await page.getByLabel('Тип значения',{exact:true}).count(),0);
   assert.equal(await card(old.id).locator('.react-flow__handle').count(),5);
@@ -34,12 +34,12 @@ const assert=require('node:assert/strict'),fs=require('node:fs/promises'),{chrom
   assert.ok((await library.count())>0);
   for(const entry of await library.all())assert.match(await entry.locator('small').innerText(),/v\d+\.\d+\.\d+/);
   const add=page.getByRole('button',{name:'Добавить блок: Выбор по значению',exact:true});
-  assert.match(await add.locator('small').innerText(),/v2\.0\.0/);await add.click();
+  assert.match(await add.locator('small').innerText(),/v2\.1\.0/);await add.click();
   assert.equal(await page.getByLabel('Тип значения',{exact:true}).inputValue(),'number');
   await page.getByLabel('Значение варианта 1',{exact:true}).fill('3');await page.getByLabel('Значение варианта 2',{exact:true}).fill('7');
   await save();let current=await saved();
   const replacement=current.logic.nodes.find(node=>node.moduleId===old.moduleId&&node.id!==old.id);
-  assert.ok(replacement);assert.equal(replacement.moduleVersion,'2.0.0');assert.deepEqual(current.logic.edges,project.logic.edges);
+  assert.ok(replacement);assert.equal(replacement.moduleVersion,'2.1.0');assert.deepEqual(current.logic.edges,project.logic.edges);
   assert.deepEqual(current.logic.nodes.find(node=>node.id===old.id).parameters,old.parameters);
   await page.reload();await open();await page.getByRole('button',{name:'Показать весь граф',exact:true}).click();
   await card(old.id).locator('.logic-version-warning').waitFor();await card(replacement.id).waitFor();

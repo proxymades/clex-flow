@@ -1,0 +1,65 @@
+{
+  "id": "clex.hardware.resistor",
+  "version": "1.0.0",
+  "kind": "hardware",
+  "name": "Резистор",
+  "description": "Резистор с двумя взаимозаменяемыми выводами. Подключается между сигнальной цепью и питанием или GND для внешней подтяжки, либо последовательно со светодиодом.",
+  "category": "passive",
+  "categoryName": "Пассивные компоненты",
+  "icon": "Resistor",
+  "color": "#d4a76a",
+  "visual": {
+    "width": 230,
+    "height": 185
+  },
+  "passive": true,
+  "resistor": true,
+  "terminals": [
+    {
+      "id": "a",
+      "label": "Вывод 1",
+      "kind": "passive",
+      "x": 0,
+      "y": 125
+    },
+    {
+      "id": "b",
+      "label": "Вывод 2",
+      "kind": "passive",
+      "x": 0,
+      "y": 160
+    }
+  ],
+  "parameters": {
+    "resistanceOhms": {
+      "label": "Сопротивление, Ом",
+      "type": "number",
+      "default": 10000,
+      "min": 1,
+      "max": 10000000,
+      "step": 1
+    }
+  },
+  "constraints": {},
+  "inputs": [],
+  "outputs": [],
+  "compatibility": {
+    "projectFormat": 4,
+    "targets": [
+      "esp32",
+      "esp32c3",
+      "esp32s3",
+      "esp32p4",
+      "atmega328p"
+    ],
+    "espIdf": "5.4.4",
+    "platforms": {
+      "arduino-avr": "1.8.6"
+    }
+  },
+  "firmware": {
+    "status": "implemented",
+    "generatorKey": "passive",
+    "dependencies": []
+  }
+}

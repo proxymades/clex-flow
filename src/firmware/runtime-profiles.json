@@ -370,5 +370,96 @@
     "config": "CONFIG_CODEC_ES8311_SUPPORT=y\nCONFIG_CODEC_I2C_BACKWARD_COMPATIBLE=n\nCONFIG_SR_WN_WN10_RU_PRIVETESP=y\nCONFIG_MODEL_IN_FLASH=y\nCONFIG_SR_NSN_WEBRTC=y\nCONFIG_SR_VADN_WEBRTC=y\nCONFIG_ESP_CONSOLE_UART_BAUDRATE=460800\nCONFIG_ESP_MAIN_TASK_STACK_SIZE=8192\nCONFIG_PARTITION_TABLE_CUSTOM=y\nCONFIG_PARTITION_TABLE_CUSTOM_FILENAME=\"partitions.csv\"\nCONFIG_SPIRAM=y\nCONFIG_SPIRAM_MODE_OCT=y\nCONFIG_SPIRAM_SPEED_80M=y\nCONFIG_SPIRAM_USE_MALLOC=y\n",
     "partitions": "nvs,data,nvs,0x9000,0x6000\nphy_init,data,phy,0xf000,0x1000\nfactory,app,factory,0x10000,0x500000\nmodel,data,,0x510000,0x100000\n",
     "otaPartitions": "nvs,data,nvs,0x9000,0x5000\notadata,data,ota,0xe000,0x2000\nphy_init,data,phy,0x10000,0x1000\nota_0,app,ota_0,0x20000,0x300000\nota_1,app,ota_1,0x320000,0x300000\nmodel,data,,0x620000,0x100000\n"
+  },
+  "espnow-esp32c3": {
+    "target": "esp32c3",
+    "dependencies": {},
+    "requires": [
+      "esp_wifi",
+      "esp_event",
+      "esp_netif",
+      "nvs_flash",
+      "esp_hw_support",
+      "mbedtls"
+    ],
+    "config": "CONFIG_ESP_WIFI_ESPNOW_MAX_ENCRYPT_NUM=6\nCONFIG_PARTITION_TABLE_CUSTOM=y\nCONFIG_PARTITION_TABLE_CUSTOM_FILENAME=\"partitions.csv\"\n",
+    "partitions": "nvs,data,nvs,0x9000,0x6000\nphy_init,data,phy,0xf000,0x1000\nfactory,app,factory,0x10000,0x300000\n"
+  },
+  "stepper-esp32c3": {
+    "target": "esp32c3",
+    "config": "",
+    "requires": [
+      "esp_driver_gptimer"
+    ],
+    "dependencies": {}
+  },
+  "temperature-esp32c3": {
+    "target": "esp32c3",
+    "dependencies": {},
+    "requires": [
+      "esp_driver_tsens"
+    ],
+    "config": ""
+  },
+  "router-esp32c3": {
+    "target": "esp32c3",
+    "dependencies": {},
+    "requires": [
+      "esp_wifi",
+      "esp_event",
+      "esp_netif",
+      "esp_eth",
+      "esp_http_client",
+      "esp_http_server",
+      "app_update",
+      "nvs_flash",
+      "mbedtls",
+      "json",
+      "lwip",
+      "http_parser"
+    ],
+    "config": "CONFIG_LWIP_IP_FORWARD=y\nCONFIG_LWIP_IPV4_NAPT=y\nCONFIG_LWIP_IPV4_NAPT_PORTMAP=y\nCONFIG_LWIP_TCPIP_CORE_LOCKING=y\nCONFIG_LWIP_DHCPS=y\nCONFIG_LWIP_DHCPS_ADD_DNS=y\nCONFIG_LWIP_DHCPS_MAX_STATION_NUM=10\nCONFIG_ESP_WIFI_SOFTAP_SUPPORT=y\nCONFIG_ESP_WIFI_SOFTAP_SAE_SUPPORT=y\nCONFIG_ESP_WIFI_ENABLE_WPA3_SAE=y\nCONFIG_MBEDTLS_CERTIFICATE_BUNDLE=y\nCONFIG_MBEDTLS_CERTIFICATE_BUNDLE_DEFAULT_FULL=y\nCONFIG_PARTITION_TABLE_CUSTOM=y\nCONFIG_PARTITION_TABLE_CUSTOM_FILENAME=\"partitions.csv\"\nCONFIG_HTTPD_MAX_REQ_HDR_LEN=1024\nCONFIG_HTTPD_MAX_URI_LEN=128\nCONFIG_ESP_NETIF_SET_DNS_PER_DEFAULT_NETIF=y\n",
+    "partitions": "nvs,data,nvs,0x9000,0x6000\nphy_init,data,phy,0xf000,0x1000\nfactory,app,factory,0x10000,0x300000\n"
+  },
+  "mqtt-esp32c3": {
+    "target": "esp32c3",
+    "dependencies": {},
+    "components": [
+      "mqtt"
+    ],
+    "requires": [
+      "mqtt",
+      "esp_netif",
+      "esp_event",
+      "mbedtls",
+      "esp_timer",
+      "lwip",
+      "json",
+      "esp_hw_support"
+    ],
+    "config": "CONFIG_MQTT_PROTOCOL_311=y\nCONFIG_MQTT_PROTOCOL_5=y\nCONFIG_MQTT_TRANSPORT_SSL=y\nCONFIG_MQTT_REPORT_DELETED_MESSAGES=y\nCONFIG_MBEDTLS_CERTIFICATE_BUNDLE=y\nCONFIG_MBEDTLS_CERTIFICATE_BUNDLE_DEFAULT_FULL=y\nCONFIG_PARTITION_TABLE_CUSTOM=y\nCONFIG_PARTITION_TABLE_CUSTOM_FILENAME=\"partitions.csv\"\n",
+    "partitions": "nvs,data,nvs,0x9000,0x6000\nphy_init,data,phy,0xf000,0x1000\nfactory,app,factory,0x10000,0x300000\n"
+  },
+  "wifi-sta-esp32c3": {
+    "target": "esp32c3",
+    "dependencies": {},
+    "requires": [
+      "esp_wifi",
+      "esp_netif",
+      "esp_event",
+      "nvs_flash",
+      "lwip",
+      "esp_hw_support"
+    ],
+    "config": "CONFIG_ESP_WIFI_ENABLE_WPA3_SAE=y\nCONFIG_ESP_NETIF_IP_LOST_TIMER_INTERVAL=1\nCONFIG_PARTITION_TABLE_CUSTOM=y\nCONFIG_PARTITION_TABLE_CUSTOM_FILENAME=\"partitions.csv\"\nCONFIG_ESP_NETIF_SET_DNS_PER_DEFAULT_NETIF=y\n",
+    "partitions": "nvs,data,nvs,0x9000,0x6000\nphy_init,data,phy,0xf000,0x1000\nfactory,app,factory,0x10000,0x300000\n"
+  },
+  "xgzp6847d-esp32c3": {
+    "target": "esp32c3",
+    "dependencies": {},
+    "requires": [
+      "esp_driver_i2c"
+    ],
+    "config": ""
   }
 }

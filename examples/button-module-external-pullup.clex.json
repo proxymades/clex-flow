@@ -1,0 +1,183 @@
+{
+  "id": "c1a64204-91bf-4c17-b6ae-083d40b51d89",
+  "name": "Модуль кнопки с внешней подтяжкой",
+  "description": "ESP32-C3 Super Mini: VCC 3,3 В, GND, OUT на GPIO3, подтяжка 10 кОм к 3,3 В. Нажатие переключает внешний светодиод на GPIO5; его последовательный резистор задаётся в свойствах светодиода.",
+  "formatVersion": 4,
+  "createdAt": "2026-11-16T04:00:25.557Z",
+  "updatedAt": "2026-11-16T04:00:25.557Z",
+  "boardId": "esp32-c3-super-mini",
+  "boardSettings": {},
+  "components": [
+    {
+      "id": "05a1076e-7871-4878-a825-c91c997815f2",
+      "moduleId": "clex.hardware.button-module",
+      "moduleVersion": "1.0.0",
+      "name": "Модуль кнопки 1",
+      "parameters": {
+        "supplyVoltage": "3.3",
+        "outputVoltage": "3.3",
+        "pull": "external-up",
+        "activeLevel": "low",
+        "debounceMs": 30
+      }
+    },
+    {
+      "id": "8a3de0b7-e678-4f6e-9d4b-a5a6f93d2375",
+      "moduleId": "clex.hardware.led",
+      "moduleVersion": "1.0.0",
+      "name": "Внешний светодиод 1",
+      "parameters": {
+        "resistorOhms": 330,
+        "forwardVoltage": 2
+      }
+    },
+    {
+      "id": "ba9689ca-856d-41ee-95b8-e5dc8fa24bae",
+      "moduleId": "clex.hardware.resistor",
+      "moduleVersion": "1.0.0",
+      "name": "Резистор 1",
+      "parameters": {
+        "resistanceOhms": 10000
+      }
+    }
+  ],
+  "gpioAssignments": [
+    {
+      "componentId": "05a1076e-7871-4878-a825-c91c997815f2",
+      "terminalId": "signal",
+      "pinId": "R5",
+      "gpio": 3,
+      "mode": "input"
+    },
+    {
+      "componentId": "8a3de0b7-e678-4f6e-9d4b-a5a6f93d2375",
+      "terminalId": "anode",
+      "pinId": "L1",
+      "gpio": 5,
+      "mode": "output"
+    }
+  ],
+  "logic": {
+    "nodes": [
+      {
+        "id": "b0389436-124c-41bb-9998-1dfe5dde8d87",
+        "moduleId": "clex.logic.gpio-edge",
+        "moduleVersion": "1.2.0",
+        "name": "События входа 1",
+        "position": {
+          "x": 60,
+          "y": 100
+        },
+        "parameters": {
+          "componentId": "05a1076e-7871-4878-a825-c91c997815f2"
+        }
+      },
+      {
+        "id": "dd676529-96f8-450a-a458-5e6eb9284261",
+        "moduleId": "clex.logic.gpio-set",
+        "moduleVersion": "1.1.0",
+        "name": "Управлять выходом 1",
+        "position": {
+          "x": 480,
+          "y": 100
+        },
+        "parameters": {
+          "componentId": "8a3de0b7-e678-4f6e-9d4b-a5a6f93d2375",
+          "channel": "1"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "45850d26-ff39-4cc5-be8b-f2b75f505a2d",
+        "source": "b0389436-124c-41bb-9998-1dfe5dde8d87",
+        "target": "dd676529-96f8-450a-a458-5e6eb9284261",
+        "sourceHandle": "active",
+        "targetHandle": "toggle",
+        "dataType": "event"
+      }
+    ],
+    "viewport": {
+      "x": 0,
+      "y": 0,
+      "zoom": 1
+    }
+  },
+  "assembly": {
+    "positions": {
+      "board": {
+        "x": 100,
+        "y": 40
+      },
+      "05a1076e-7871-4878-a825-c91c997815f2": {
+        "x": 628,
+        "y": 120
+      },
+      "8a3de0b7-e678-4f6e-9d4b-a5a6f93d2375": {
+        "x": 628,
+        "y": 364
+      },
+      "ba9689ca-856d-41ee-95b8-e5dc8fa24bae": {
+        "x": 882,
+        "y": 120
+      }
+    },
+    "connections": [
+      {
+        "id": "37818b24-3397-4693-a51e-fa099eb29dba",
+        "componentId": "05a1076e-7871-4878-a825-c91c997815f2",
+        "terminalId": "signal",
+        "boardPinId": "R5"
+      },
+      {
+        "id": "6b5a81b0-fbad-4457-af92-edb029b25b60",
+        "componentId": "05a1076e-7871-4878-a825-c91c997815f2",
+        "terminalId": "ground",
+        "boardPinId": "R2"
+      },
+      {
+        "id": "9cc609b0-b111-4be2-8987-a13b16762e94",
+        "componentId": "05a1076e-7871-4878-a825-c91c997815f2",
+        "terminalId": "power",
+        "boardPinId": "R3"
+      },
+      {
+        "id": "a80cb972-f658-4f62-8205-03729bd44d4f",
+        "componentId": "8a3de0b7-e678-4f6e-9d4b-a5a6f93d2375",
+        "terminalId": "anode",
+        "boardPinId": "L1"
+      },
+      {
+        "id": "b29174bd-23cb-4fe2-9e77-b7818f43043b",
+        "componentId": "8a3de0b7-e678-4f6e-9d4b-a5a6f93d2375",
+        "terminalId": "cathode",
+        "boardPinId": "R2"
+      },
+      {
+        "id": "899d506e-6662-4a12-9027-0244efce4a4f",
+        "componentId": "ba9689ca-856d-41ee-95b8-e5dc8fa24bae",
+        "terminalId": "a",
+        "sourceComponentId": "05a1076e-7871-4878-a825-c91c997815f2",
+        "sourceTerminalId": "signal"
+      },
+      {
+        "id": "302a8f42-62a4-4bba-bb64-41fcb6ffb586",
+        "componentId": "ba9689ca-856d-41ee-95b8-e5dc8fa24bae",
+        "terminalId": "b",
+        "boardPinId": "R3"
+      }
+    ],
+    "viewport": {
+      "x": 0,
+      "y": 0,
+      "zoom": 1
+    }
+  },
+  "moduleVersions": {
+    "clex.hardware.button-module": "1.0.0",
+    "clex.hardware.led": "1.0.0",
+    "clex.hardware.resistor": "1.0.0",
+    "clex.logic.gpio-edge": "1.2.0",
+    "clex.logic.gpio-set": "1.1.0"
+  }
+}

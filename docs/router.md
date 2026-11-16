@@ -6,6 +6,7 @@
 
 | Профиль платы | Wi-Fi WAN → SoftAP | Ethernet WAN → SoftAP | Wi-Fi WAN → Ethernet LAN | Резервный WAN |
 | --- | --- | --- | --- | --- |
+| ESP32-C3 Super Mini | Да | Нет описанного Ethernet | Нет описанного Ethernet | Нет второго интерфейса |
 | ESP32 DevKit V1 (30 pin) | Да | Нет описанного Ethernet | Нет описанного Ethernet | Нет второго интерфейса |
 | Waveshare ESP32-S3-ETH | Да | W5500 | W5500 | Ethernet и Wi-Fi |
 | ESP32-S3-DevKitC-1 v1.1 N8R8 | Да | Нет описанного Ethernet | Нет описанного Ethernet | Нет второго интерфейса |

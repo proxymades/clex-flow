@@ -54,6 +54,8 @@
     "test:espnow-mac-ui": "node tests/espnow-mac-ui.cjs",
     "test:espnow-blocks-ui": "node tests/espnow-blocks-ui.cjs",
     "test:touch-button-ui": "node tests/touch-button-ui.cjs",
+    "test:button-input-ui": "node tests/button-input-ui.cjs",
+    "test:c3-ui": "node tests/esp32-c3-ui.cjs",
     "test:board-picker-ui": "node tests/board-picker-ui.cjs",
     "test:stepper-ui": "node tests/stepper-ui.cjs",
     "test:router-ui": "node tests/router-ui.cjs",

@@ -7,7 +7,7 @@ export function espNowFirmware(project,nodes,index,cString,netifReady,target='es
  const components=project.components.filter(c=>c.moduleId===ESPNOW_MODULE),blocks=nodes.filter(n=>n.moduleId.startsWith('clex.logic.espnow-'));
  const empty={enabled:false,headers:'',source:'',notify:'',initialize:'',poll:'',features:[],expressions:new Map(),textSizes:new Map(),textGlyphs:new Map(),operations:new Map(),extraFunctions:new Map(),eventModules:new Set()};
  if(!components.length&&!blocks.length)return empty;
- const profile={esp32:'espnow-esp32',esp32s3:'espnow-s3'}[target];
+ const profile={esp32:'espnow-esp32',esp32c3:'espnow-esp32c3',esp32s3:'espnow-s3'}[target];
  if(!profile)throw new Error('Для платы нет реализованного ESP-NOW-драйвера.');
  if(components.length!==1)throw new Error('Добавьте один ESP-NOW-интерфейс в монтаж.');
  const component=components[0],p=component.parameters,peers=readPeers(component),expressions=new Map(),textSizes=new Map(),textGlyphs=new Map(),operations=new Map(),extraFunctions=new Map();

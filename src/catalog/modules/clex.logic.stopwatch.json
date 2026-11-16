@@ -1,6 +1,6 @@
 {
   "id": "clex.logic.stopwatch",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "kind": "logic",
   "name": "Секундомер",
   "description": "Измеряет прошедшее время и передает текст чч:мм:сс. Пуск продолжает отсчет после паузы; сброс возвращает время к нулю.",
@@ -76,6 +76,7 @@
     "projectFormat": 4,
     "targets": [
       "esp32",
+      "esp32c3",
       "esp32s3",
       "esp32p4",
       "atmega328p"

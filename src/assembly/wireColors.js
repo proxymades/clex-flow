@@ -1,3 +1,5 @@
+import {resolveButtonModule} from '../buttons/model.js';
+import {electricalModel,isResistor} from '../electrical/model.js';
 // Saturated, separated hues remain legible as thin lines on the dark canvas.
 const SIGNAL_COLORS = ['#37d7ff', '#ffb52e', '#c58aff', '#56ed87', '#ff83d1', '#f5ec55', '#789bff', '#e9f4ff', '#24dfcb', '#ff9a60'];
 export const GROUND_COLOR = '#d1dbea';
@@ -12,12 +14,13 @@ function signalColor(index) {
   return `hsl(${hue} 90% ${index % 2 ? 75 : 63}%)`;
 }
 export function wireColors(project, catalog) {
-  const colors = {}, signals = [];
+  const colors = {}, signals = [], electrical=electricalModel(project,catalog);
   for (const wire of project.assembly.connections) {
     const component = project.components.find(component => component.id === wire.componentId);
-    const terminal = catalog.modules.find(module => module.id === component?.moduleId)?.terminals.find(terminal => terminal.id === wire.terminalId);
-    if (terminal?.kind === 'ground') colors[wire.id] = GROUND_COLOR;
-    else if (terminal?.kind === 'power') colors[wire.id] = POWER_COLOR;
+    const terminal = resolveButtonModule(component,catalog.modules.find(module => module.id === component?.moduleId))?.terminals.find(terminal => terminal.id === wire.terminalId);
+    const net=isResistor(component)?electrical.pins(component.id,wire.terminalId):[];
+    if (terminal?.kind === 'ground'||net.some(pin=>pin.kind==='ground')) colors[wire.id] = GROUND_COLOR;
+    else if (terminal?.kind === 'power'||net.some(pin=>pin.kind==='power')) colors[wire.id] = POWER_COLOR;
     else if(terminal?.kind==='winding-input')colors[wire.id]=terminal.phase==='A'?'#fbbf24':'#38bdf8';
     else signals.push(wire);
   }

@@ -7,7 +7,7 @@ pub fn compiler(target: &str) -> Result<&'static str, String> {
     match target {
         "esp32" => Ok("xtensa-esp32-elf-gcc"),
         "esp32s3" => Ok("xtensa-esp32s3-elf-gcc"),
-        "esp32p4" => Ok("riscv32-esp-elf-gcc"),
+        "esp32c3" | "esp32p4" => Ok("riscv32-esp-elf-gcc"),
         "atmega328p" => Ok("avr-gcc"),
         _ => Err("Цель SDK не поддерживается".into()),
     }
@@ -19,6 +19,9 @@ pub fn target(value: Option<String>) -> Result<String, String> {
 }
 pub fn profile(id: &str) -> Result<Value, String> {
     let source = match id {
+        "esp32-c3-super-mini" => {
+            include_str!("../../src/catalog/boards/esp32-c3-super-mini.json")
+        }
         "doit-esp32-devkit-v1-30pin" => {
             include_str!("../../src/catalog/boards/doit-esp32-devkit-v1-30pin.json")
         }
@@ -43,6 +46,18 @@ pub fn profile(id: &str) -> Result<Value, String> {
 mod tests {
     use super::*;
 
+    #[test]
+    fn c3_super_mini_uses_riscv_and_native_usb() {
+        let board = profile("esp32-c3-super-mini").unwrap();
+        assert_eq!(board["target"], "esp32c3");
+        assert_eq!(board["firmware"]["flashSizeMb"], 4);
+        assert_eq!(
+            board["firmware"]["consoleModes"],
+            serde_json::json!(["usb", "uart"])
+        );
+        assert_eq!(compiler("esp32c3").unwrap(), "riscv32-esp-elf-gcc");
+        assert_eq!(target(Some("esp32c3".into())).unwrap(), "esp32c3");
+    }
     #[test]
     fn classic_esp32_profile_selects_its_toolchain_and_uart_console() {
         let board = profile("doit-esp32-devkit-v1-30pin").unwrap();

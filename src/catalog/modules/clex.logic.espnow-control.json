@@ -1,6 +1,6 @@
 {
   "id": "clex.logic.espnow-control",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "kind": "logic",
   "name": "Управление ESP-NOW",
   "description": "Показывает состояние местного радио, проверяет связь с выбранным устройством или меняет режим Normal / Long Range.",
@@ -471,6 +471,7 @@
     "projectFormat": 4,
     "targets": [
       "esp32",
+      "esp32c3",
       "esp32s3"
     ],
     "espIdf": "5.4.4"

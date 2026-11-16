@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="440" viewBox="0 0 480 440" role="img" aria-label="ESP32-C3 Super Mini, вид со стороны компонентов, USB-C сверху">
+  <title>ESP32-C3 Super Mini</title>
+  <desc>Условный вид со стороны компонентов: USB-C сверху, BOOT слева, RESET справа, ESP32-C3, кварц и керамическая антенна снизу. Два ряда по восемь контактов.</desc>
+  <defs>
+    <linearGradient id="c3-pcb" x2="1" y2="1"><stop stop-color="#242a2c"/><stop offset="1" stop-color="#101719"/></linearGradient>
+    <linearGradient id="c3-metal"><stop stop-color="#899392"/><stop offset=".3" stop-color="#e1e2d6"/><stop offset=".7" stop-color="#aab2aa"/><stop offset="1" stop-color="#737d7c"/></linearGradient>
+    <g id="c3-pin"><circle r="9" fill="#d6b95b"/><circle r="4.5" fill="#0b1114" stroke="#a08c47"/></g>
+    <g id="c3-button"><rect width="52" height="36" rx="3" fill="url(#c3-metal)" stroke="#69716b"/><rect x="5" y="5" width="42" height="26" rx="2" fill="#8b8e83"/><circle cx="26" cy="18" r="11" fill="#343a39" stroke="#161c1d"/></g>
+    <g id="c3-passive"><rect width="17" height="8" rx="1" fill="#b9c1b4"/><rect x="3" width="11" height="8" fill="#a08b5c"/></g>
+  </defs>
+  <rect x="116" y="45" width="248" height="359" rx="8" fill="url(#c3-pcb)" stroke="#5b6560" stroke-width="1.5"/>
+  <g fill="none" stroke="#3a4842" stroke-width="1.6"><path d="M158 196h24l27 27M322 196h-23l-25 27M157 322h23l25-25M323 322h-18l-26-25M170 336h54v19M300 336h-38v19"/></g>
+  <rect x="184" y="18" width="112" height="91" rx="8" fill="url(#c3-metal)" stroke="#697573" stroke-width="2"/>
+  <rect x="191" y="18" width="98" height="14" rx="6" fill="#343d3c" stroke="#d2d8cb"/>
+  <rect x="201" y="22" width="78" height="6" rx="2" fill="#11191c"/>
+  <path d="M194 92h92M197 98h86" stroke="#555f5b"/>
+  <use href="#c3-button" x="174" y="131"/><use href="#c3-button" x="254" y="131"/>
+  <g font-family="sans-serif" font-size="10" fill="#e3e7d8" text-anchor="middle"><text x="200" y="125">BOOT</text><text x="280" y="125">RESET</text></g>
+  <rect x="198" y="218" width="84" height="84" rx="4" fill="#202628" stroke="#65716b"/>
+  <g stroke="#b2b8a8" stroke-width="3"><path d="M205 212v6M205 302v6M192 225h6M282 225h6"/><path d="M215 212v6M215 302v6M192 235h6M282 235h6"/><path d="M225 212v6M225 302v6M192 245h6M282 245h6"/><path d="M235 212v6M235 302v6M192 255h6M282 255h6"/><path d="M245 212v6M245 302v6M192 265h6M282 265h6"/><path d="M255 212v6M255 302v6M192 275h6M282 275h6"/><path d="M265 212v6M265 302v6M192 285h6M282 285h6"/><path d="M275 212v6M275 302v6M192 295h6M282 295h6"/></g>
+  <g font-family="sans-serif" text-anchor="middle" fill="#a1aaa1"><text x="240" y="251" font-size="11">ESP32-C3</text><text x="240" y="269" font-size="9">RISC-V</text><text x="240" y="285" font-size="8">4 MB FLASH</text></g>
+  <rect x="159" y="260" width="28" height="39" rx="3" fill="url(#c3-metal)" stroke="#b3a47a"/>
+  <text x="173" y="284" text-anchor="middle" font-family="sans-serif" font-size="8" fill="#4d5b55">40</text>
+  <rect x="164" y="190" width="28" height="18" rx="2" fill="#242c2a" stroke="#88958b"/>
+  <use href="#c3-passive" x="294" y="220"/><use href="#c3-passive" x="296" y="286"/><use href="#c3-passive" x="178" y="314"/><use href="#c3-passive" x="264" y="324"/>
+  <rect x="294" y="182" width="14" height="9" rx="1" fill="#a7b9bb"/><text x="301" y="177" font-family="sans-serif" font-size="8" text-anchor="middle" fill="#c8d1c6">LED8</text>
+  <rect x="190" y="361" width="100" height="25" rx="3" fill="#c8c1a2" stroke="#c1c5a9"/>
+  <rect x="204" y="362" width="72" height="23" fill="#9d282b"/><text x="240" y="379" font-family="sans-serif" font-size="13" font-weight="bold" text-anchor="middle" fill="#f2ebcd">C3</text>
+  <text x="240" y="349" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#d4dccf">Super Mini</text>
+  <g><use href="#c3-pin" x="132" y="70"/><use href="#c3-pin" x="132" y="112"/><use href="#c3-pin" x="132" y="154"/><use href="#c3-pin" x="132" y="196"/><use href="#c3-pin" x="132" y="238"/><use href="#c3-pin" x="132" y="280"/><use href="#c3-pin" x="132" y="322"/><use href="#c3-pin" x="132" y="364"/><use href="#c3-pin" x="348" y="70"/><use href="#c3-pin" x="348" y="112"/><use href="#c3-pin" x="348" y="154"/><use href="#c3-pin" x="348" y="196"/><use href="#c3-pin" x="348" y="238"/><use href="#c3-pin" x="348" y="280"/><use href="#c3-pin" x="348" y="322"/><use href="#c3-pin" x="348" y="364"/></g><g font-family="sans-serif" font-size="11" fill="#e0e6d7"><text x="147" y="74" text-anchor="start">5</text><text x="147" y="116" text-anchor="start">6</text><text x="147" y="158" text-anchor="start">7</text><text x="147" y="200" text-anchor="start">8</text><text x="147" y="242" text-anchor="start">9</text><text x="147" y="284" text-anchor="start">10</text><text x="147" y="326" text-anchor="start">20</text><text x="147" y="368" text-anchor="start">21</text><text x="333" y="74" text-anchor="end">5V</text><text x="333" y="116" text-anchor="end">GND</text><text x="333" y="158" text-anchor="end">3V3</text><text x="333" y="200" text-anchor="end">4</text><text x="333" y="242" text-anchor="end">3</text><text x="333" y="284" text-anchor="end">2</text><text x="333" y="326" text-anchor="end">1</text><text x="333" y="368" text-anchor="end">0</text></g>
+</svg>

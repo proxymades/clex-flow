@@ -1,3 +1,5 @@
+import {buttonInputCases,combinedButtonProject} from '../tests/button-input-fixture.js';
+import {c3Cases} from '../tests/esp32-c3-fixture.js';
 import {conditionProject} from '../tests/condition-fixture.js';
 import {synchronizationProject} from '../tests/synchronization-fixture.js';
 import {COUNTDOWN_BOARDS,countdownProject} from '../tests/countdown-fixture.js';
@@ -51,6 +53,10 @@ function mediaProject(family) {
 }
 
 const cases = [
+  ...buttonInputCases().map(([name,project])=>[name,project,project.boardId.startsWith('arduino')?'uart':'usb']),
+  ['c3-combined-buttons',combinedButtonProject(),'usb'],
+  ['nano-combined-buttons',combinedButtonProject('arduino-nano-atmega328p-ch340'),'uart'],
+  ...c3Cases().flatMap(([name,project])=>['usb','uart'].map(console=>['c3-'+name+'-'+console,project,console])),
   ...COUNTDOWN_BOARDS.map(board=>[board+'-countdown',countdownProject(board,{cancelOnRelease:true}).project,board==='waveshare-esp32-s3-eth'?'usb':'uart']),
   ['esp32-event-synchronization',synchronizationProject('doit-esp32-devkit-v1-30pin').project,'uart'],
   ['s3-event-synchronization',synchronizationProject().project,'usb'],

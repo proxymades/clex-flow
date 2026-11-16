@@ -1,6 +1,6 @@
 {
   "id": "clex.logic.serial",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "kind": "logic",
   "name": "Сообщение в монитор",
   "description": "Вывести текст и необязательное число по событию.",
@@ -62,6 +62,7 @@
     "projectFormat": 4,
     "targets": [
       "esp32",
+      "esp32c3",
       "esp32s3",
       "esp32p4",
       "atmega328p"

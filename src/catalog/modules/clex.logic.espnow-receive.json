@@ -1,6 +1,6 @@
 {
   "id": "clex.logic.espnow-receive",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "kind": "logic",
   "name": "Получено ESP-NOW",
   "description": "Получает сообщения или команды с указанным именем от устройств из списка.",
@@ -107,6 +107,7 @@
     "projectFormat": 4,
     "targets": [
       "esp32",
+      "esp32c3",
       "esp32s3"
     ],
     "espIdf": "5.4.4"

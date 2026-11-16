@@ -1,3 +1,5 @@
+import {resolveButtonModule} from '../buttons/model.js';
+import {isResistor} from '../electrical/model.js';
 import {resolveMosfetModule} from '../mosfet/model.js';
 import {resolveRelayModule} from '../relay/model.js';
 export const componentContact=(id,terminal)=>`component:${id}:${terminal}`;
@@ -5,12 +7,13 @@ export function parseContact(value){const match=/^component:([^:]+):([^:]+)$/.ex
 export const wireSource=wire=>wire.sourceComponentId?componentContact(wire.sourceComponentId,wire.sourceTerminalId):wire.boardPinId;
 export const touches=(wire,id,terminal)=>wire.componentId===id&&(!terminal||wire.terminalId===terminal)||wire.sourceComponentId===id&&(!terminal||wire.sourceTerminalId===terminal);
 export function contactInfo(project,catalog,id,terminal){
- const component=project.components.find(c=>c.id===id),module=resolveMosfetModule(component,resolveRelayModule(component,catalog.modules.find(m=>m.id===component?.moduleId)));
+ const component=project.components.find(c=>c.id===id),module=resolveButtonModule(component,resolveMosfetModule(component,resolveRelayModule(component,catalog.modules.find(m=>m.id===component?.moduleId))));
  return {component,module,terminal:module?.terminals.find(t=>t.id===terminal)};
 }
 export function normalizedContact(project,catalog,componentId,terminalId,value){
  const source=parseContact(value);if(!source)return {componentId,terminalId,value};
  const a=contactInfo(project,catalog,componentId,terminalId),b=contactInfo(project,catalog,source.componentId,source.terminalId);
+ if(isResistor(b.component)&&!isResistor(a.component))return {componentId:source.componentId,terminalId:source.terminalId,value:componentContact(componentId,terminalId)};
  const output=t=>t?.kind==='winding-output';
  if(output(a.terminal)&&!output(b.terminal))return {componentId:source.componentId,terminalId:source.terminalId,value:componentContact(componentId,terminalId)};
  return {componentId,terminalId,value};
@@ -21,6 +24,13 @@ export function componentWireProblem(project,catalog,componentId,terminalId,valu
  if(!a.component||!b.component||!a.terminal||!b.terminal)return 'Компонент или контакт соединения удален.';
  if(componentId===source.componentId)return 'Нельзя соединять компонент с самим собой.';
  const input=a.terminal,output=b.terminal;
+ if(isResistor(a.component)||isResistor(b.component)){
+  const peer=isResistor(a.component)?b:a;
+  if(isResistor(peer.component))return 'Соединяйте резистор с сигнальной цепью, питанием или GND.';
+  if(['ground','power'].includes(peer.terminal.kind))return null;
+  if(['clex.hardware.button','clex.hardware.button-module'].includes(peer.component.moduleId)&&peer.terminal.id==='signal'||peer.component.moduleId==='clex.hardware.led'&&peer.terminal.id==='anode')return null;
+  return 'Резистор подключается к кнопке, аноду светодиода, питанию или GND.';
+ }
  if(input.kind==='winding-input'&&output.kind==='winding-output'){
   if(input.phase!==output.phase)return 'Соединяйте обмотку A с выходами A, обмотку B с выходами B.';
   const occupied=project.assembly.connections.find(w=>w.sourceComponentId===source.componentId&&w.sourceTerminalId===source.terminalId&&!(w.componentId===componentId&&w.terminalId===terminalId));

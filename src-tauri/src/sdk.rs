@@ -131,7 +131,7 @@ impl Paths {
         Ok(())
     }
     pub fn slot_for(&self, version: &str, target: &str) -> Result<PathBuf, String> {
-        if !["esp32", "esp32s3", "esp32p4"].contains(&target) {
+        if !["esp32", "esp32c3", "esp32s3", "esp32p4"].contains(&target) {
             return Err("Для этой платформы используется отдельный установщик".into());
         }
         let slot = self.slot(version)?;
@@ -1016,6 +1016,12 @@ mod tests {
         let s3_slot = claim_slot(&p, &s3).unwrap();
         let p4_slot = claim_slot(&p, &p4).unwrap();
         let esp32_slot = claim_slot(&p, &esp32).unwrap();
+        let c3 = managed_sdk_for(&p.slot_for("5.4.4", "esp32c3").unwrap(), "5.4.4", "esp32c3");
+        let c3_slot = claim_slot(&p, &c3).unwrap();
+        assert_ne!(c3_slot, esp32_slot);
+        assert_ne!(c3_slot, s3_slot);
+        assert_ne!(c3_slot, p4_slot);
+        assert_eq!(assert_owned(&p, &c3).unwrap(), c3_slot);
         assert_ne!(s3_slot, p4_slot);
         assert_ne!(esp32_slot, s3_slot);
         assert_ne!(esp32_slot, p4_slot);

@@ -58,7 +58,7 @@ test('Boolean indicators and text use preserved source values and explicit text 
 });
 
 test('old resource availability data is distinguished from the newer availability event',()=>{
- const project=networkProject();project.formatVersion=3;
+ const project=networkProject();project.formatVersion=3;for(const node of project.logic.nodes){node.moduleVersion='1.0.0';project.moduleVersions[node.moduleId]='1.0.0';}
  const source=project.logic.nodes.find(n=>n.moduleId==='clex.logic.internet-check'),view=project.logic.nodes.find(n=>n.moduleId==='clex.logic.display'),element=project.screens[view.parameters.componentId].elements.find(e=>e.type==='indicator');
  Object.assign(element,applyValueStates(element,{type:'boolean'}));
  project.logic.edges=project.logic.edges.filter(e=>e.target!==view.id||e.targetHandle!==element.id);

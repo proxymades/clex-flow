@@ -1,6 +1,6 @@
 {
   "id": "clex.logic.internet-check",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "kind": "logic",
   "name": "Проверка интернета",
   "description": "Проверяет указанный HTTP/HTTPS-ресурс в фоновой задаче. Состояние: 0 – ожидание, 1 – проверка, 2 – доступен, 3 – недоступен.",
@@ -196,6 +196,7 @@
     "projectFormat": 4,
     "targets": [
       "esp32",
+      "esp32c3",
       "esp32s3",
       "esp32p4"
     ],

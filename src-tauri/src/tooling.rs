@@ -118,8 +118,9 @@ pub struct Plan {
     estimated_min: u64,
     estimated_max: u64,
 }
-const TARGETS: [(&str, &str); 4] = [
+const TARGETS: [(&str, &str); 5] = [
     ("esp32", "ESP32 · ESP-IDF 5.4.4"),
+    ("esp32c3", "ESP32-C3 · ESP-IDF 5.4.4"),
     ("esp32s3", "ESP32-S3 · ESP-IDF 5.4.4"),
     ("esp32p4", "ESP32-P4 · ESP-IDF 5.4.4"),
     (arduino::TARGET, "Arduino Nano · AVR Boards 1.8.6"),
@@ -341,7 +342,7 @@ mod tests {
     use super::*;
     #[test]
     fn separate_platform_names() {
-        assert_eq!(TARGETS.len(), 4);
+        assert_eq!(TARGETS.len(), 5);
         for (target, _) in TARGETS {
             assert!(crate::boards::compiler(target).is_ok());
         }

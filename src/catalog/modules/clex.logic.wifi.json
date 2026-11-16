@@ -1,6 +1,6 @@
 {
   "id": "clex.logic.wifi",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "kind": "logic",
   "name": "Wi-Fi",
   "description": "Управляет подключением к сети Wi-Fi и сообщает состояние, IPv4 и причину ошибки.",
@@ -189,6 +189,7 @@
     "projectFormat": 4,
     "targets": [
       "esp32",
+      "esp32c3",
       "esp32s3",
       "esp32p4"
     ],

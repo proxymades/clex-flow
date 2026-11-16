@@ -1,3 +1,4 @@
+import {isButton} from '../buttons/model.js';
 import {moduleVersionIndex} from '../catalog/versions.js';
 import {logicVersionProblem} from './versions.js';
 import {SELECTION_MODULE,selectionType,selectionOutputs,selectionIssues} from './selection.js';
@@ -16,7 +17,7 @@ import { formatCount } from '../utils/plural.js';
 import { hardwareProvider } from '../hardware/resources.js';
 import { networkProvider, probeUrl } from '../network/model.js';
 import { displayDescription, screenFor, screenIssues, screenPorts, screenBindings, screenCommands, elementUpdatePort } from '../displays/model.js';
-import { connectionProblem as physicalConnectionProblem, moduleProblem, boardFor } from '../assembly/model.js';
+import { connectionProblem as physicalConnectionProblem, moduleProblem, boardFor, gpioAssignments, moduleFor } from '../assembly/model.js';
 
 export const LOGIC_NODE_WIDTH = 336;
 export const PORT_TYPES = ['event', 'number', 'text', 'boolean'];
@@ -215,15 +216,16 @@ export function hardwareBinding(node, project, catalog) {
   const terminalId=(node.moduleId===OUTPUT_MODULE?outputTerminalId(node,component,catalog):requirement.terminal)||catalog.modules.find(module=>module.id===component.moduleId)?.terminals.find(terminal=>terminal.kind===(requirement.mode==='input'?'gpio-input':'gpio-output'))?.id;
   const assignment = project.gpioAssignments.find(assignment => assignment.componentId === component.id && assignment.terminalId === terminalId);
   if (!assignment || assignment.mode !== requirement.mode) return { component, gpio: null, error: 'Сначала назначьте GPIO этому компоненту во вкладке «Монтаж».' };
-  const wire = project.assembly.connections.find(wire => wire.componentId === component.id && wire.terminalId === terminalId && wire.boardPinId === assignment.pinId);
-  if (!wire) return { component, gpio: assignment.gpio, error: 'Назначение GPIO не совпадает с монтажом.' };
+  const physical = gpioAssignments(project,catalog).find(a=>a.componentId===component.id&&a.terminalId===terminalId&&a.pinId===assignment.pinId&&a.gpio===assignment.gpio);
+  if (!physical) return { component, gpio: assignment.gpio, error: 'Назначение GPIO не совпадает с монтажом.' };
   const problem = physicalConnectionProblem(project, catalog, component.id, terminalId, assignment.pinId);
-  const physicalModule = catalog.modules.find(module => module.id === component.moduleId);
-  const grounded = physicalModule?.terminals.filter(terminal => terminal.kind === 'ground').every(terminal => {
+  const physicalModule = moduleFor(component,catalog);
+  const commons=physicalModule?.terminals.filter(terminal=>terminal.kind==='ground'||isButton(component)&&terminal.kind==='power');
+  const grounded = commons?.every(terminal => {
     const wire = project.assembly.connections.find(wire => wire.componentId === component.id && wire.terminalId === terminal.id);
     return wire && !physicalConnectionProblem(project, catalog, component.id, terminal.id, wire.boardPinId);
   });
-  return { component, gpio: assignment.gpio, error: problem || (!grounded ? 'Подключите общий контакт компонента к GND во вкладке «Монтаж».' : null) };
+  return { component, gpio: assignment.gpio, error: problem || (!grounded ? commons?.some(terminal=>terminal.kind==='power')?'Подключите питание и общий контакт компонента по выбранной схеме во вкладке «Монтаж».':'Подключите общий контакт компонента к GND во вкладке «Монтаж».' : null) };
 }
 
 export function validateGraph(project, catalog) {

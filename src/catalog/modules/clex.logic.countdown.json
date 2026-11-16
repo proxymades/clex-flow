@@ -1,6 +1,6 @@
 {
   "id": "clex.logic.countdown",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "kind": "logic",
   "name": "Обратный отсчёт",
   "description": "Таймер по сигналу: отсчитывает заданное время и один раз сообщает об окончании. Повторный запуск начинает отсчёт заново; отмена прекращает ожидание.",
@@ -51,7 +51,7 @@
   "constraints": {},
   "compatibility": {
     "projectFormat": 4,
-    "targets": ["esp32", "esp32s3", "esp32p4", "atmega328p"],
+    "targets": ["esp32", "esp32c3", "esp32s3", "esp32p4", "atmega328p"],
     "espIdf": "5.4.4",
     "platforms": {
       "arduino-avr": "1.8.6"

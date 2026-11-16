@@ -1,6 +1,6 @@
 {
   "id": "clex.logic.gpio-read",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "kind": "logic",
   "hidden": true,
   "name": "Проверить вход",
@@ -83,6 +83,7 @@
     "projectFormat": 4,
     "targets": [
       "esp32",
+      "esp32c3",
       "esp32s3",
       "esp32p4",
       "atmega328p"

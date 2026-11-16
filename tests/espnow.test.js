@@ -33,9 +33,9 @@ test('four ESP-NOW types expose only their active ports and enforce actual block
  const modules=catalog.modules.filter(m=>m.kind==='logic'&&m.id.startsWith('clex.logic.espnow-'));
  assert.deepEqual(modules.map(m=>m.id).sort(),['clex.logic.espnow-ack','clex.logic.espnow-control','clex.logic.espnow-receive','clex.logic.espnow-send']);
  for(const module of modules){
-  assert.equal(module.version,'2.0.0');
+  assert.equal(module.version,'2.1.0');
   const {project:p}=espNowProject({combined:true}),node=p.logic.nodes.find(n=>n.moduleId===module.id);
-  assert.equal(node.moduleVersion,'2.0.0');node.moduleVersion='1.0.0';
+  assert.equal(node.moduleVersion,module.version);node.moduleVersion='1.0.0';
   assert.ok(validateGraph(p,catalog).some(i=>i.code==='logic-module'&&i.nodeId===node.id));assert.throws(()=>generateFirmware(p,catalog));
  }
 });
@@ -71,11 +71,11 @@ test('message and command modes generate separate acknowledgements without chang
  send.parameters.transferType='command';assert.ok(validateGraph(p,catalog).some(i=>i.message.includes('зашифрованного')));
 });
 
-test('ESP-NOW hardware and all four logic modules share version 2.0.0 throughout projects and examples',async()=>{
+test('ESP-NOW keeps compatible saved versions while new blocks use the current catalog version',async()=>{
  const modules=catalog.modules.filter(m=>m.id==='clex.hardware.espnow'||m.id.startsWith('clex.logic.espnow-'));
- assert.equal(modules.length,5);for(const module of modules)assert.equal(module.version,'2.0.0',module.id);
+ assert.equal(modules.length,5);for(const module of modules)assert.equal(module.version,module.kind==='logic'?'2.1.0':'2.0.0',module.id);
  const {project:p,component}=espNowProject({combined:true});
- for(const element of [...p.components,...p.logic.nodes].filter(n=>modules.some(m=>m.id===n.moduleId))){assert.equal(element.moduleVersion,'2.0.0');assert.equal(p.moduleVersions[element.moduleId],'2.0.0');}
+ for(const element of [...p.components,...p.logic.nodes].filter(n=>modules.some(m=>m.id===n.moduleId))){const version=modules.find(m=>m.id===element.moduleId).version;assert.equal(element.moduleVersion,version);assert.equal(p.moduleVersions[element.moduleId],version);}
  generateFirmware(parseProject(serializeProject(p)),catalog);
  component.moduleVersion='1.0.0';p.moduleVersions[component.moduleId]='1.0.0';
  assert.ok(validateAssembly(p,catalog).some(i=>i.severity==='error'));assert.throws(()=>generateFirmware(p,catalog));

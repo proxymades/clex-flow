@@ -14,7 +14,7 @@ import {relayFirmware} from '../src/firmware/drivers/relay.js';
 
 test('countdown uses three blocks and event connections, supports all target families and saves unchanged',async()=>{
   const module=catalog.modules.find(module=>module.id==='clex.logic.countdown');
-  assert.equal(module.version,'1.0.0');
+  assert.equal(module.version,'1.1.0');
   assert.equal(catalog.modules.find(module=>module.id==='clex.logic.timer').name,'Таймер');
   for (const boardId of COUNTDOWN_BOARDS) {
     const {project,countdown}=countdownProject(boardId,{cancelOnRelease:true});

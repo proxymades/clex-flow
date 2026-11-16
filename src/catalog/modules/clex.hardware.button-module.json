@@ -1,0 +1,173 @@
+{
+  "version": "1.0.0",
+  "kind": "hardware",
+  "inputs": [],
+  "outputs": [],
+  "compatibility": {
+    "projectFormat": 4,
+    "targets": [
+      "esp32",
+      "esp32c3",
+      "esp32s3",
+      "esp32p4",
+      "atmega328p"
+    ],
+    "espIdf": "5.4.4",
+    "platforms": {
+      "arduino-avr": "1.8.6"
+    }
+  },
+  "firmware": {
+    "status": "implemented",
+    "dependencies": [
+      "esp_driver_gpio"
+    ],
+    "generatorKey": "gpio-input"
+  },
+  "id": "clex.hardware.button-module",
+  "name": "Модуль кнопки",
+  "category": "input",
+  "categoryName": "Кнопки",
+  "description": "Кнопочный модуль с VCC, GND и OUT. Укажите питание, уровень сигнала при нажатии и источник подтяжки по схеме модуля.",
+  "icon": "MousePointerClick",
+  "color": "#8B5CF6",
+  "visual": {
+    "width": 230,
+    "height": 220
+  },
+  "logicPresentation": {
+    "deviceLabel": "Кнопка",
+    "read": {
+      "title": "Проверить кнопку",
+      "trigger": "Проверить кнопку",
+      "active": "Кнопка нажата",
+      "inactive": "Кнопка отпущена",
+      "activeState": "Кнопка нажата?",
+      "level": "Уровень HIGH?"
+    },
+    "edge": {
+      "title": "События кнопки",
+      "active": "Кнопка нажата",
+      "inactive": "Кнопка отпущена",
+      "activeState": "Кнопка нажата?",
+      "level": "Уровень HIGH?"
+    }
+  },
+  "terminals": [
+    {
+      "id": "power",
+      "label": "VCC",
+      "kind": "power",
+      "voltageParameter": "supplyVoltage",
+      "x": 0,
+      "y": 125
+    },
+    {
+      "id": "ground",
+      "label": "GND",
+      "kind": "ground",
+      "x": 0,
+      "y": 160
+    },
+    {
+      "id": "signal",
+      "label": "OUT",
+      "kind": "gpio-input",
+      "x": 0,
+      "y": 195
+    }
+  ],
+  "parameters": {
+    "supplyVoltage": {
+      "label": "Питание VCC",
+      "type": "select",
+      "default": "3.3",
+      "options": [
+        {
+          "value": "3.3",
+          "label": "3,3 В"
+        },
+        {
+          "value": "5",
+          "label": "5 В"
+        }
+      ]
+    },
+    "outputVoltage": {
+      "label": "Напряжение HIGH на OUT",
+      "type": "select",
+      "default": "3.3",
+      "options": [
+        {
+          "value": "3.3",
+          "label": "3,3 В"
+        },
+        {
+          "value": "5",
+          "label": "5 В"
+        }
+      ],
+      "description": "Напряжение выхода проверяется отдельно от питания модуля. Для GPIO ESP32 допустим уровень до 3,3 В."
+    },
+    "pull": {
+      "label": "Подтяжка OUT",
+      "type": "select",
+      "default": "module",
+      "options": [
+        {
+          "value": "module",
+          "label": "На модуле"
+        },
+        {
+          "value": "up",
+          "label": "Внутренняя вверх"
+        },
+        {
+          "value": "down",
+          "label": "Внутренняя вниз",
+          "requiresPullDown": true
+        },
+        {
+          "value": "external-up",
+          "label": "Внешняя вверх, через резистор"
+        },
+        {
+          "value": "external-down",
+          "label": "Внешняя вниз, через резистор"
+        },
+        {
+          "value": "none",
+          "label": "Не требуется, выход задаёт оба уровня"
+        }
+      ],
+      "description": "Выбирайте «На модуле» только при наличии подтягивающего резистора. Выход, самостоятельно задающий HIGH и LOW, не требует подтяжки GPIO."
+    },
+    "activeLevel": {
+      "label": "Уровень OUT при нажатии",
+      "type": "select",
+      "default": "low",
+      "options": [
+        {
+          "value": "low",
+          "label": "LOW – низкий уровень"
+        },
+        {
+          "value": "high",
+          "label": "HIGH – высокий уровень"
+        }
+      ]
+    },
+    "debounceMs": {
+      "label": "Антидребезг, мс",
+      "type": "number",
+      "default": 30,
+      "min": 5,
+      "max": 1000,
+      "step": 5
+    }
+  },
+  "constraints": {
+    "signalVoltageParameter": "outputVoltage",
+    "supplyVoltageParameter": "supplyVoltage"
+  }
+}

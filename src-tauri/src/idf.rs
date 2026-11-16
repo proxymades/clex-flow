@@ -863,9 +863,10 @@ pub struct DeviceMac {
     port: String,
 }
 fn mac_read_command(environment: &Environment, port: &str) -> Result<Command, String> {
-    if !["esp32", "esp32s3"].contains(&environment.target.as_str()) || environment.arduino.is_some()
+    if !["esp32", "esp32c3", "esp32s3"].contains(&environment.target.as_str())
+        || environment.arduino.is_some()
     {
-        return Err("Чтение MAC ESP-NOW доступно для ESP32 и ESP32-S3".into());
+        return Err("Чтение MAC ESP-NOW доступно для ESP32, ESP32-C3 и ESP32-S3".into());
     }
     let mut cmd = command(environment);
     cmd.args([
@@ -1380,6 +1381,13 @@ mod tests {
     fn espnow_profiles_match_the_chip_and_need_no_downloaded_component() {
         for (board, console, target, runtime, wrong_runtime) in [
             (
+                "esp32-c3-super-mini",
+                "usb",
+                "esp32c3",
+                "espnow-esp32c3",
+                "espnow-s3",
+            ),
+            (
                 "waveshare-esp32-s3-eth",
                 "usb",
                 "esp32s3",
@@ -1543,7 +1551,7 @@ mod tests {
         let mut environment: Environment = serde_json::from_value(serde_json::json!({
             "target":"esp32s3", "root":"sdk", "python":"python", "toolsPath":"tools", "sdkVersion":"5.4.4", "identity":"test", "version":"test", "compilerVersion":"test", "cmakeVersion":"test", "ninjaVersion":"test", "diagnostics":""
         })).unwrap();
-        for target in ["esp32", "esp32s3"] {
+        for target in ["esp32", "esp32c3", "esp32s3"] {
             environment.target = target.into();
             let cmd = mac_read_command(&environment, "COM42").unwrap();
             let args = cmd

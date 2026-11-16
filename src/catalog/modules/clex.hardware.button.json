@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0",
+  "version": "1.1.0",
   "kind": "hardware",
   "inputs": [],
   "outputs": [],
@@ -7,6 +7,7 @@
     "projectFormat": 4,
     "targets": [
       "esp32",
+      "esp32c3",
       "esp32s3",
       "esp32p4",
       "atmega328p"
@@ -27,7 +28,7 @@
   "name": "Кнопка",
   "category": "input",
   "categoryName": "Кнопки",
-  "description": "Нормально разомкнутая кнопка: GPIO ↔ GND, внутренняя подтяжка вверх.",
+  "description": "Механическая кнопка с внутренней или внешней подтяжкой. Направление подтяжки определяет подключение общего контакта и уровень при нажатии.",
   "icon": "MousePointerClick",
   "color": "#8B5CF6",
   "visual": {
@@ -66,9 +67,23 @@
       "options": [
         {
           "value": "up",
-          "label": "Внутренняя, вверх"
+          "label": "Внутренняя вверх"
+        },
+        {
+          "value": "down",
+          "label": "Внутренняя вниз",
+          "requiresPullDown": true
+        },
+        {
+          "value": "external-up",
+          "label": "Внешняя вверх, через резистор"
+        },
+        {
+          "value": "external-down",
+          "label": "Внешняя вниз, через резистор"
         }
-      ]
+      ],
+      "description": "При подтяжке вверх кнопка замыкает GPIO на GND. При подтяжке вниз общий контакт подключается к питанию логики платы. Внешняя подтяжка требует резистор в монтаже."
     }
   },
   "constraints": {
@@ -92,5 +107,6 @@
       "activeState": "Кнопка нажата?",
       "level": "Уровень HIGH?"
     }
-  }
+  },
+  "compatibleFrom": "1.0.0"
 }

@@ -1,0 +1,378 @@
+{
+  "id": "esp32-c3-super-mini",
+  "name": "ESP32-C3 Super Mini",
+  "manufacturer": "Nologo / совместимые платы",
+  "mcu": "ESP32-C3",
+  "revision": null,
+  "espIdfVersion": "5.4.4",
+  "target": "esp32c3",
+  "platform": "esp-idf",
+  "resources": {
+    "gptimer": 2
+  },
+  "logicVoltage": 3.3,
+  "pinoutVerified": false,
+  "documentationVerified": true,
+  "verificationNote": "Профиль 16-контактной компоновки Super Mini по документации Nologo. Сверьте маркировку контактов своей платы: варианты Super Mini могут отличаться. Прошивка и работа периферии на физической плате не проверены.",
+  "description": "ESP32-C3, RISC-V 160 МГц, 4 МБ Flash без PSRAM. Прошивка и монитор через USB-C Serial/JTAG; UART0 доступен через внешний USB-UART.",
+  "svg": "esp32-c3-super-mini.svg",
+  "width": 480,
+  "height": 440,
+  "orientation": "Вид со стороны компонентов: USB-C сверху, керамическая антенна снизу. Слева GPIO5, 6, 7, 8, 9, 10, 20, 21; справа 5V, GND, 3V3, GPIO4, 3, 2, 1, 0. Нумерация L1-L8 и R1-R8 сверху вниз используется в CLEX Flow.",
+  "sources": [
+    {
+      "title": "Nologo: ESP32C3 SuperMini, распиновка, размеры и схема",
+      "url": "https://www.nologo.tech/en/product/esp32/esp32c3SuperMini/esp32C3SuperMini.html"
+    },
+    {
+      "title": "Nologo: схема выводов, вид с обратной стороны",
+      "url": "https://www.nologo.tech/assets/img/esp32/esp32c3supermini/esp32c3foot1.png"
+    },
+    {
+      "title": "Espressif: GPIO ESP32-C3, ESP-IDF 5.4.4",
+      "url": "https://docs.espressif.com/projects/esp-idf/en/v5.4.4/esp32c3/api-reference/peripherals/gpio.html"
+    },
+    {
+      "title": "Espressif: ESP32-C3 Datasheet",
+      "url": "https://www.espressif.com/sites/default/files/documentation/esp32-c3_datasheet_en.pdf"
+    }
+  ],
+  "options": {},
+  "reservedGpios": {
+    "2": "Загрузочный strapping-контакт",
+    "8": "Загрузочный strapping-контакт и встроенный светодиод",
+    "9": "Загрузочный strapping-контакт и кнопка BOOT",
+    "11": "Питание Flash: VDD_SPI",
+    "12": "Встроенная SPI Flash ESP32-C3",
+    "13": "Встроенная SPI Flash ESP32-C3",
+    "14": "Встроенная SPI Flash ESP32-C3",
+    "15": "Встроенная SPI Flash ESP32-C3",
+    "16": "Встроенная SPI Flash ESP32-C3",
+    "17": "Встроенная SPI Flash ESP32-C3",
+    "18": "USB Serial/JTAG: прошивка и монитор",
+    "19": "USB Serial/JTAG: прошивка и монитор",
+    "20": "UART0: внешний USB-UART, прошивка и монитор",
+    "21": "UART0: внешний USB-UART, прошивка и монитор"
+  },
+  "pins": [
+    {
+      "id": "L1",
+      "label": "GPIO5",
+      "physicalNumber": 1,
+      "header": "L",
+      "side": "left",
+      "kind": "gpio",
+      "gpio": 5,
+      "x": 132,
+      "y": 70,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ]
+    },
+    {
+      "id": "L2",
+      "label": "GPIO6",
+      "physicalNumber": 2,
+      "header": "L",
+      "side": "left",
+      "kind": "gpio",
+      "gpio": 6,
+      "x": 132,
+      "y": 112,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ]
+    },
+    {
+      "id": "L3",
+      "label": "GPIO7",
+      "physicalNumber": 3,
+      "header": "L",
+      "side": "left",
+      "kind": "gpio",
+      "gpio": 7,
+      "x": 132,
+      "y": 154,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ]
+    },
+    {
+      "id": "L4",
+      "label": "GPIO8",
+      "physicalNumber": 4,
+      "header": "L",
+      "side": "left",
+      "kind": "gpio",
+      "gpio": 8,
+      "x": 132,
+      "y": 196,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "reservedReason": "Загрузочный strapping-контакт и встроенный светодиод"
+    },
+    {
+      "id": "L5",
+      "label": "GPIO9",
+      "physicalNumber": 5,
+      "header": "L",
+      "side": "left",
+      "kind": "gpio",
+      "gpio": 9,
+      "x": 132,
+      "y": 238,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "reservedReason": "Загрузочный strapping-контакт и кнопка BOOT"
+    },
+    {
+      "id": "L6",
+      "label": "GPIO10",
+      "physicalNumber": 6,
+      "header": "L",
+      "side": "left",
+      "kind": "gpio",
+      "gpio": 10,
+      "x": 132,
+      "y": 280,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ]
+    },
+    {
+      "id": "L7",
+      "label": "GPIO20",
+      "physicalNumber": 7,
+      "header": "L",
+      "side": "left",
+      "kind": "gpio",
+      "gpio": 20,
+      "x": 132,
+      "y": 322,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "reservedReason": "UART0: внешний USB-UART, прошивка и монитор"
+    },
+    {
+      "id": "L8",
+      "label": "GPIO21",
+      "physicalNumber": 8,
+      "header": "L",
+      "side": "left",
+      "kind": "gpio",
+      "gpio": 21,
+      "x": 132,
+      "y": 364,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "reservedReason": "UART0: внешний USB-UART, прошивка и монитор"
+    },
+    {
+      "id": "R1",
+      "label": "5V",
+      "physicalNumber": 1,
+      "header": "R",
+      "side": "right",
+      "kind": "power",
+      "gpio": null,
+      "x": 348,
+      "y": 70,
+      "functions": [],
+      "capabilities": [],
+      "voltage": 5
+    },
+    {
+      "id": "R2",
+      "label": "GND",
+      "physicalNumber": 2,
+      "header": "R",
+      "side": "right",
+      "kind": "ground",
+      "gpio": null,
+      "x": 348,
+      "y": 112,
+      "functions": [],
+      "capabilities": []
+    },
+    {
+      "id": "R3",
+      "label": "3V3",
+      "physicalNumber": 3,
+      "header": "R",
+      "side": "right",
+      "kind": "power",
+      "gpio": null,
+      "x": 348,
+      "y": 154,
+      "functions": [],
+      "capabilities": [],
+      "voltage": 3.3
+    },
+    {
+      "id": "R4",
+      "label": "GPIO4",
+      "physicalNumber": 4,
+      "header": "R",
+      "side": "right",
+      "kind": "gpio",
+      "gpio": 4,
+      "x": 348,
+      "y": 196,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ]
+    },
+    {
+      "id": "R5",
+      "label": "GPIO3",
+      "physicalNumber": 5,
+      "header": "R",
+      "side": "right",
+      "kind": "gpio",
+      "gpio": 3,
+      "x": 348,
+      "y": 238,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ]
+    },
+    {
+      "id": "R6",
+      "label": "GPIO2",
+      "physicalNumber": 6,
+      "header": "R",
+      "side": "right",
+      "kind": "gpio",
+      "gpio": 2,
+      "x": 348,
+      "y": 280,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ],
+      "reservedReason": "Загрузочный strapping-контакт"
+    },
+    {
+      "id": "R7",
+      "label": "GPIO1",
+      "physicalNumber": 7,
+      "header": "R",
+      "side": "right",
+      "kind": "gpio",
+      "gpio": 1,
+      "x": 348,
+      "y": 322,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ]
+    },
+    {
+      "id": "R8",
+      "label": "GPIO0",
+      "physicalNumber": 8,
+      "header": "R",
+      "side": "right",
+      "kind": "gpio",
+      "gpio": 0,
+      "x": 348,
+      "y": 364,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ]
+    }
+  ],
+  "interfaces": {
+    "spi": {
+      "hosts": [
+        2
+      ]
+    }
+  },
+  "componentDefaults": {
+    "clex.hardware.router": {
+      "wanSource": "wifi"
+    }
+  },
+  "firmware": {
+    "flashSizeMb": 4,
+    "psramMb": 0,
+    "consoleModes": [
+      "usb",
+      "uart"
+    ],
+    "compiler": "RISC-V ESP32 GCC"
+  },
+  "radio": {
+    "espNow": true,
+    "longRange": true,
+    "interface": "station"
+  },
+  "wifi": {
+    "driverKey": "native",
+    "sta": true,
+    "softap": true,
+    "authModes": [
+      "wpa2",
+      "wpa3",
+      "mixed"
+    ],
+    "maxClients": 4
+  },
+  "routing": {
+    "keepOutAreas": [
+      {
+        "x": 182,
+        "y": 18,
+        "width": 116,
+        "height": 95
+      },
+      {
+        "x": 170,
+        "y": 124,
+        "width": 140,
+        "height": 47
+      },
+      {
+        "x": 195,
+        "y": 216,
+        "width": 90,
+        "height": 90
+      },
+      {
+        "x": 187,
+        "y": 359,
+        "width": 106,
+        "height": 29
+      }
+    ]
+  }
+}

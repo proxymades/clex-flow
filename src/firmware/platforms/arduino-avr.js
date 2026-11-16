@@ -1,4 +1,5 @@
-import {compatibleVersion} from '../../catalog/versions.js';
+import {inputActiveLow,internalPull} from '../../buttons/model.js';
+import {compatibleVersion,hardwareVersionCompatible} from '../../catalog/versions.js';
 import {implementationVersions} from '../versions.js';
 import {outputTerminals} from '../../gpio/model.js';
 import {gpioOutputFirmware} from '../drivers/gpio-output.js';
@@ -14,7 +15,7 @@ import { hardwareBinding } from '../../logic/model.js';
 import {selectionType} from '../../logic/selection.js';
 import { selectNumberCode } from '../drivers/select-number.js';
 import {countdownFirmware} from '../drivers/countdown.js';
-const keys=new Set([MOSFET_MODULE,...NUMERIC_MODULES,'clex.hardware.xgzp6847d','clex.logic.xgzp6847d','clex.hardware.relay','clex.hardware.nema17','clex.hardware.tb6600','clex.hardware.tmc2208','clex.hardware.drv8825','clex.logic.stepper','clex.logic.select-number','clex.hardware.touch-button','clex.logic.gpio-edge','clex.hardware.led','clex.hardware.button','clex.logic.timer','clex.logic.counter','clex.logic.stopwatch','clex.logic.serial','clex.logic.gpio-read','clex.logic.gpio-set']);
+const keys=new Set(['clex.hardware.button-module','clex.hardware.resistor',MOSFET_MODULE,...NUMERIC_MODULES,'clex.hardware.xgzp6847d','clex.logic.xgzp6847d','clex.hardware.relay','clex.hardware.nema17','clex.hardware.tb6600','clex.hardware.tmc2208','clex.hardware.drv8825','clex.logic.stepper','clex.logic.select-number','clex.hardware.touch-button','clex.logic.gpio-edge','clex.hardware.led','clex.hardware.button','clex.logic.timer','clex.logic.counter','clex.logic.stopwatch','clex.logic.serial','clex.logic.gpio-read','clex.logic.gpio-set']);
 export function generateArduinoAvr(project,catalog,board,cString,issues){
  const revision=project.boardSettings.bootloader || board.options.bootloader.default;
  if(!Object.hasOwn(board.firmware.variants,revision))throw new Error('Выберите загрузчик Nano.');
@@ -22,7 +23,7 @@ export function generateArduinoAvr(project,catalog,board,cString,issues){
  if(nodes.length>32)throw new Error('Для Nano поддерживается до 32 логических блоков из-за объема памяти.');
  for(const entry of [...nodes,...components]){
   const module=catalog.modules.find(module=>module.id===entry.moduleId);
-  if(!(keys.has(entry.moduleId)||entry.moduleId==='clex.logic.countdown')||!compatibleVersion(implementationVersions[entry.moduleId]||'1.0.0',module?.version)||!(module?.kind==='logic'?compatibleVersion(entry.moduleVersion,module.version):entry.moduleVersion===module?.version))throw new Error('Для Nano нет реализации блока «'+entry.name+'».');
+  if(!(keys.has(entry.moduleId)||entry.moduleId==='clex.logic.countdown')||!compatibleVersion(implementationVersions[entry.moduleId]||'1.0.0',module?.version)||!(module?.kind==='logic'?compatibleVersion(entry.moduleVersion,module.version):hardwareVersionCompatible(module,entry.moduleVersion)))throw new Error('Для Nano нет реализации блока «'+entry.name+'».');
  }
  const index=new Map(nodes.map((n,i)=>[n.id,i])),hardware=new Map(components.map((c,i)=>[c.id,i]));
  const stepper=stepperFirmware(project,nodes,index,board);
@@ -43,7 +44,7 @@ export function generateArduinoAvr(project,catalog,board,cString,issues){
   if(n.moduleId==='clex.logic.gpio-set'&&e.sourceHandle==='state')return (outputs.operations.get(n.id)||relay.operations.get(n.id)).state;
   if(['clex.logic.gpio-read','clex.logic.gpio-edge'].includes(n.moduleId)&&['level','activeState'].includes(e.sourceHandle)){
    const component=hardwareBinding(n,project,catalog).component,state='input_stable_'+hardware.get(component.id);
-   return e.sourceHandle==='activeState'?state:(component.moduleId==='clex.hardware.button'||component.parameters.activeLevel==='low'?'!':'')+state;
+   return e.sourceHandle==='activeState'?state:(inputActiveLow(component)?'!':'')+state;
   }
   if(numeric.expressions.has(n.id))return numeric.expressions.get(n.id)[e.sourceHandle];
   if(xgzp.expressions.has(n.id))return xgzp.expressions.get(n.id)[e.sourceHandle];
@@ -61,9 +62,9 @@ export function generateArduinoAvr(project,catalog,board,cString,issues){
  components.forEach((c,i)=>{
   if(outputTerminals(c,catalog).length||c.moduleId==='clex.hardware.xgzp6847d'||c.moduleId===RELAY_MODULE||isStepperDriver(c)||catalog.modules.find(m=>m.id===c.moduleId)?.passive)return;
   const assignment=project.gpioAssignments.find(a=>a.componentId===c.id);if(!assignment)throw new Error('Назначьте контакт Nano компоненту «'+c.name+'».');
-  const pin=assignment.gpio,output=c.moduleId==='clex.hardware.led',sample='digitalRead('+pin+') '+((c.moduleId==='clex.hardware.button'||c.parameters.activeLevel==='low')?'== LOW':'!= LOW');
+  const pin=assignment.gpio,output=c.moduleId==='clex.hardware.led',sample='digitalRead('+pin+') '+((inputActiveLow(c))?'== LOW':'!= LOW');
   declarations.push(output?'static bool gpio_state_'+i+';':'static bool input_stable_'+i+', input_raw_'+i+';\nstatic uint32_t input_changed_'+i+';');
-  initialize.push('  pinMode('+pin+', '+(output?'OUTPUT':c.parameters.pull==='up'?'INPUT_PULLUP':'INPUT')+');');
+  initialize.push('  pinMode('+pin+', '+(output?'OUTPUT':internalPull(c)==='up'?'INPUT_PULLUP':'INPUT')+');');
   if(output)initialize.push('  digitalWrite('+pin+', LOW);');
   else {initialize.push('  input_stable_'+i+' = input_raw_'+i+' = '+sample+'; input_changed_'+i+' = millis();');poll.push('  { bool raw = '+sample+'; if(raw != input_raw_'+i+'){ input_raw_'+i+' = raw; input_changed_'+i+' = now; } if((uint32_t)(now-input_changed_'+i+') >= '+c.parameters.debounceMs+'UL) input_stable_'+i+' = raw; }');}
  });

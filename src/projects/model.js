@@ -106,7 +106,7 @@ export function validateProject(project) {
   const assigned = new Set();
   for (const assignment of project.gpioAssignments) {
     const key = `${assignment?.componentId}/${assignment?.terminalId}`;
-    if (!isObject(assignment) || !Number.isInteger(assignment.gpio) || assignment.gpio < 0 || assignment.gpio > 63 || !['input','output'].includes(assignment.mode) || assigned.has(key) || !assembly.connections.some(wire => wire.componentId === assignment.componentId && wire.terminalId === assignment.terminalId && wire.boardPinId === assignment.pinId)) throw new Error('Некорректное назначение GPIO.');
+    if (!isObject(assignment) || !Number.isInteger(assignment.gpio) || assignment.gpio < 0 || assignment.gpio > 63 || !validKey(assignment.pinId) || !['input','output'].includes(assignment.mode) || assigned.has(key) || !assembly.connections.some(wire => wire.componentId === assignment.componentId && wire.terminalId === assignment.terminalId && (wire.sourceComponentId !== undefined || wire.boardPinId === assignment.pinId) || wire.sourceComponentId === assignment.componentId && wire.sourceTerminalId === assignment.terminalId && validKey(assignment.pinId))) throw new Error('Некорректное назначение GPIO.');
     assigned.add(key);
   }
   if (!isObject(project.moduleVersions) || !Object.entries(project.moduleVersions).every(([key, value]) => validKey(key) && semver(value))) throw new Error('Некорректные версии модулей.');

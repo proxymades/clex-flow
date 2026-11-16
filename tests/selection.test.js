@@ -18,7 +18,7 @@ test('old numeric selections remain saved but require replacement instead of run
  assert.ok(selectionIssues(nodes.select).length);
  assert.deepEqual(parseProject(serializeProject(project)),original);
  const issue=validateGraph(project,catalog).find(issue=>issue.code==='logic-module');
- assert.match(issue.message,/v1\.0\.0.*v2\.0\.0/);assert.match(issue.message,/Замените/);
+ assert.match(issue.message,/v1\.0\.0.*v2\.1\.0/);assert.match(issue.message,/Замените/);
  assert.match(issue.message,/формат настроек/);
  const ports=nodePorts(nodes.select,catalog,project);
  assert.deepEqual(ports.outputs.map(p=>p.id),['first','second','other']);

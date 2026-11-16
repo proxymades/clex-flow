@@ -40,8 +40,8 @@ test('new and incompatible old blocks can coexist until manual rewiring and remo
  const {project,nodes}=outdatedProject(),module=catalog.modules.find(m=>m.id===nodes.select.moduleId);
  let current=withLogic(project,addNode(project.logic,module,[],project,catalog));
  const replacement=current.logic.nodes.at(-1);
- assert.equal(replacement.moduleVersion,'2.0.0');assert.deepEqual(current.logic.edges,project.logic.edges);
- assert.equal(current.moduleVersions[module.id],'2.0.0');
+ assert.equal(replacement.moduleVersion,module.version);assert.deepEqual(current.logic.edges,project.logic.edges);
+ assert.equal(current.moduleVersions[module.id],module.version);
  current=parseProject(serializeProject(current));
  assert.equal(current.logic.nodes.find(n=>n.id===nodes.select.id).moduleVersion,'1.0.0');
  assert.throws(()=>generateFirmware(current,catalog),/Замените/);
@@ -70,7 +70,7 @@ test('mixed-version index remains correct when the newest block is removed',()=>
 test('compatible updates run existing settings on ESP and Nano without changing stored versions',()=>{
  for(const board of ['waveshare-esp32-s3-eth','arduino-nano-atmega328p-ch340']){
   const {project,nodes}=selectNumberProject(board),original=structuredClone(project);
-  const installed={...catalog,modules:catalog.modules.map(module=>module.kind==='logic'?{...module,version:module.version==='2.0.0'?'2.1.0':'1.1.0'}:module)};
+  const installed={...catalog,modules:catalog.modules.map(module=>module.kind==='logic'?{...module,version:module.version.split('.').map((n,i)=>i===1?Number(n)+1:n).join('.')}:module)};
   assert.equal(logicVersionProblem(nodes.select,installed),null);
   assert.deepEqual(validateGraph(project,installed).filter(issue=>issue.severity==='error'),[]);
   assert.ok(!nodePorts(nodes.select,installed,project).outputs.some(port=>port.legacy));
@@ -80,7 +80,7 @@ test('compatible updates run existing settings on ESP and Nano without changing 
 });
 test('a newer saved block requires an application update rather than a silent downgrade',()=>{
  const {project,nodes}=selectNumberProject();
- nodes.select.moduleVersion='2.1.0';project.moduleVersions[nodes.select.moduleId]='2.1.0';
+ nodes.select.moduleVersion='2.2.0';project.moduleVersions[nodes.select.moduleId]='2.2.0';
  assert.match(logicVersionProblem(nodes.select,catalog),/Обновите приложение/);
  assert.throws(()=>generateFirmware(project,catalog),/Обновите приложение/);
 });

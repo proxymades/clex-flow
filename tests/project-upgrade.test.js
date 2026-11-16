@@ -14,7 +14,7 @@ import {loadProjectFiles,readImportedProject} from '../src/projects/projectFiles
 import {PROJECT_KEY,BACKUP_PREFIX,browserRecords,backupBrowserProject,saveBrowserProject} from '../src/projects/browserStorage.js';
 import {addHardware,connectTerminal,connectionProblem as wireProblem} from '../src/assembly/model.js';
 
-import {oldBlink,ambiguousProject,edge,versions} from './project-upgrade-fixture.js';
+import {oldBlink,ambiguousProject,edge,versions,oldLogic} from './project-upgrade-fixture.js';
 const omit = (item,key) => Object.fromEntries(Object.entries(item).filter(([name])=>name!==key));
 const open = p => openProject(JSON.stringify(p),catalog).project;
 const memoryStorage = entries => {
@@ -47,7 +47,7 @@ test('old toggle retains identity, hardware, wiring and positions; conversion is
 
 test('touch transitions preserve their normalized meaning for both active levels',()=>{
   for(const activeLevel of ['low','high']){
-    const {project,nodes}=touchButtonProject(undefined,activeLevel);project.formatVersion=3;
+    const {project,nodes}=touchButtonProject(undefined,activeLevel);project.formatVersion=3;oldLogic(project);
     project.logic.edges=project.logic.edges.filter(e=>e.source!==nodes.edge.id&&e.source!==nodes.read.id);
     project.logic.edges.push(edge(nodes.edge.id,'rising',nodes.counter.id,'increment'),edge(nodes.edge.id,'changed',nodes.read.id,'trigger'),edge(nodes.read.id,'done',nodes.off.id,'trigger'));
     const p=open(project);
@@ -59,7 +59,7 @@ test('touch transitions preserve their normalized meaning for both active levels
 });
 
 test('mechanical button high/low is converted to released/pressed, preserving electrical meaning',()=>{
-  const p=firmwareProject(true);p.formatVersion=3;
+  const p=firmwareProject(true);p.formatVersion=3;oldLogic(p);
   const read=p.logic.nodes.find(n=>n.moduleId==='clex.logic.gpio-read'),output=p.logic.nodes.find(n=>n.moduleId==='clex.logic.gpio-set');
   output.parameters.defaultValue=true;
   p.logic.edges=p.logic.edges.filter(e=>e.target!==output.id);
@@ -72,7 +72,7 @@ test('mechanical button high/low is converted to released/pressed, preserving el
 
 test('Boolean numeric comparison becomes output commands, including the invalid-value branch',()=>{
   for(const mode of ['range','compare']){
-    const {project:p,nodes}=numericProject(undefined,{mode});p.formatVersion=3;
+    const {project:p,nodes}=numericProject(undefined,{mode});p.formatVersion=3;oldLogic(p);
     for(const key of ['low','high']){
       const target=nodes[key];target.moduleId='clex.logic.relay';target.parameters.action='set';target.parameters.defaultValue=false;
       p.logic.edges=p.logic.edges.filter(e=>e.target!==target.id);
@@ -90,7 +90,7 @@ test('Boolean numeric comparison becomes output commands, including the invalid-
 
 test('old touch Boolean data retains activation semantics for both electrical active levels',()=>{
   for(const activeLevel of ['low','high']){
-    let {project:p,nodes}=touchButtonProject(undefined,activeLevel);p.formatVersion=3;
+    let {project:p,nodes}=touchButtonProject(undefined,activeLevel);p.formatVersion=3;oldLogic(p);
     p=addHardware(p,catalog.modules.find(m=>m.id==='clex.hardware.led'),catalog);
     const led=p.components.at(-1),board=catalog.boards.find(b=>b.id===p.boardId);
     for(const terminal of ['anode','cathode'])p=connectTerminal(p,catalog,led.id,terminal,board.pins.find(pin=>!wireProblem(p,catalog,led.id,terminal,pin.id)).id);
@@ -121,7 +121,7 @@ test('ambiguous sampled connections survive save/reopen with warnings and visibl
 });
 
 test('old Boolean indicator keeps appearance and its usable source data',()=>{
-  const p=networkProject();p.formatVersion=3;
+  const p=networkProject();p.formatVersion=3;oldLogic(p);
   const view=p.logic.nodes.find(n=>n.moduleId==='clex.logic.display'),eth=p.logic.nodes.find(n=>n.moduleId==='clex.logic.ethernet');
   const element=p.screens[view.parameters.componentId].elements.find(e=>e.type==='indicator');
   element.valueType='boolean';element.initialValue=false;element.states=element.states.slice(0,2).map((s,i)=>({...s,value:Boolean(i)}));element.fallbackStateId=element.states[0].id;
@@ -135,7 +135,7 @@ test('old Boolean indicator keeps appearance and its usable source data',()=>{
 
 test('old Boolean text retains its displayed initial value',()=>{
   for(const value of [false,true]){
-    const p=networkProject();p.formatVersion=3;
+    const p=networkProject();p.formatVersion=3;oldLogic(p);
     const view=p.logic.nodes.find(n=>n.moduleId==='clex.logic.display');
     const element=p.screens[view.parameters.componentId].elements.find(e=>e.type==='text'&&e.mode==='dynamic');
     element.valueType='boolean';element.initialValue=value;

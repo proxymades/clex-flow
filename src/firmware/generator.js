@@ -1,4 +1,5 @@
-import {compatibleVersion} from '../catalog/versions.js';
+import {inputActiveLow,internalPull} from '../buttons/model.js';
+import {compatibleVersion,hardwareVersionCompatible} from '../catalog/versions.js';
 import {implementationVersions} from './versions.js';
 import {assertNoLegacy} from '../projects/legacy.js';
 import {outputTerminals} from '../gpio/model.js';
@@ -35,7 +36,7 @@ import { validateAssembly, boardFor } from '../assembly/model.js';
 import { validateGraph, hardwareBinding, nodePorts } from '../logic/model.js';
 
 const compare = (a, b) => a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
-const implementationKeys = {'clex.logic.synchronize':'synchronize','clex.hardware.nema17':'stepper','clex.hardware.tb6600':'stepper','clex.hardware.tmc2208':'stepper','clex.hardware.drv8825':'stepper','clex.logic.stepper':'stepper','clex.hardware.touch-button':'gpio-input','clex.logic.gpio-edge':'gpio-edge',"clex.hardware.espnow":"espnow-interface","clex.logic.espnow-control":"espnow-control","clex.logic.espnow-receive":"espnow-receive","clex.logic.espnow-ack":"espnow-ack","clex.logic.espnow-send":"espnow-send",'clex.hardware.led':'gpio-led','clex.hardware.button':'gpio-button','clex.logic.timer':'timer','clex.logic.gpio-read':'gpio-read','clex.logic.gpio-set':'gpio-set','clex.logic.serial':'serial','clex.logic.display':'display-view','clex.logic.counter':'counter','clex.logic.stopwatch':'stopwatch','clex.hardware.ethernet':'ethernet-interface','clex.logic.ethernet':'ethernet','clex.logic.internet-check':'internet-check','clex.hardware.audio':'audio-interface','clex.hardware.camera':'camera-interface','clex.logic.audio-play':'audio-play','clex.logic.tone':'tone','clex.logic.camera-capture':'camera-capture'};
+const implementationKeys = {'clex.logic.synchronize':'synchronize','clex.hardware.nema17':'stepper','clex.hardware.tb6600':'stepper','clex.hardware.tmc2208':'stepper','clex.hardware.drv8825':'stepper','clex.logic.stepper':'stepper','clex.hardware.touch-button':'gpio-input','clex.logic.gpio-edge':'gpio-edge',"clex.hardware.espnow":"espnow-interface","clex.logic.espnow-control":"espnow-control","clex.logic.espnow-receive":"espnow-receive","clex.logic.espnow-ack":"espnow-ack","clex.logic.espnow-send":"espnow-send",'clex.hardware.led':'gpio-led','clex.hardware.button':'gpio-button','clex.hardware.button-module':'gpio-input','clex.hardware.resistor':'passive','clex.logic.timer':'timer','clex.logic.gpio-read':'gpio-read','clex.logic.gpio-set':'gpio-set','clex.logic.serial':'serial','clex.logic.display':'display-view','clex.logic.counter':'counter','clex.logic.stopwatch':'stopwatch','clex.hardware.ethernet':'ethernet-interface','clex.logic.ethernet':'ethernet','clex.logic.internet-check':'internet-check','clex.hardware.audio':'audio-interface','clex.hardware.camera':'camera-interface','clex.logic.audio-play':'audio-play','clex.logic.tone':'tone','clex.logic.camera-capture':'camera-capture'};
 for(const id of MICROPHONE_MODULES)implementationKeys[id]='microphone-interface';
 implementationKeys['clex.hardware.voice']='voice-interface';
 implementationKeys['clex.logic.voice']='voice';
@@ -68,7 +69,7 @@ export function generateFirmware(project, catalog, consoleMode = 'usb') {
   if (errors.length) throw new Error(`Исправьте схему перед сборкой:\n${errors.map(issue=>issue.message).join('\n')}`);
   const board = boardFor(project,catalog);
   if(board.platform==='arduino-avr')return generateArduinoAvr(project,catalog,board,cString,issues);
-  if (board.platform !== 'esp-idf' || !board.firmware || !['esp32','esp32s3','esp32p4'].includes(board.target)) throw new Error('Для платы нет реализованного профиля генератора.');
+  if (board.platform !== 'esp-idf' || !board.firmware || !['esp32','esp32c3','esp32s3','esp32p4'].includes(board.target)) throw new Error('Для платы нет реализованного профиля генератора.');
   const modes = board.firmware.consoleModes;
   if (!modes.includes(consoleMode)) consoleMode = modes[0];
   const boardRevision = board.firmware.revisionConfigs ? project.boardSettings.chipRevision || board.options.chipRevision.default : null;
@@ -104,7 +105,7 @@ export function generateFirmware(project, catalog, consoleMode = 'usb') {
   if (!graphics.runtime && !network.runtime && !media.enabled && !voice.enabled && !stopwatch.enabled && !synchronization.enabled && !countdown.enabled && !espnow.enabled && !gpioEdge.enabled && !stepper.enabled && !router.enabled && !wifi.enabled && !temperature.enabled && !xgzp.enabled && !numeric.enabled && !mqtt.enabled && (!nodes.some(node=>node.moduleId==='clex.logic.timer') || !project.logic.edges.some(edge=>edge.dataType==='event'))) throw new Error('Добавьте таймер и соедините его такт с действием.');
   for (const element of [...nodes,...components]) {
     const module = catalog.modules.find(module=>module.id===element.moduleId);
-    if (!module || !compatibleVersion(implementationVersions[module.id] || '1.0.0',module.version) || !(module.kind==='logic'?compatibleVersion(element.moduleVersion,module.version):element.moduleVersion===module.version) || ((module.display && !supportsDisplayDriver(module.display, board.platform)) || (!module.display && (!implementationKeys[module.id] || implementationKeys[module.id] !== module.firmware?.generatorKey)))) throw new Error(`Нет проверенной реализации генератора для ${element.moduleId} v${element.moduleVersion}.`);
+    if (!module || !compatibleVersion(implementationVersions[module.id] || '1.0.0',module.version) || !(module.kind==='logic'?compatibleVersion(element.moduleVersion,module.version):hardwareVersionCompatible(module,element.moduleVersion)) || ((module.display && !supportsDisplayDriver(module.display, board.platform)) || (!module.display && (!implementationKeys[module.id] || implementationKeys[module.id] !== module.firmware?.generatorKey)))) throw new Error(`Нет проверенной реализации генератора для ${element.moduleId} v${element.moduleVersion}.`);
   }
   const inputEdge = (node, port) => project.logic.edges.find(edge=>edge.target===node.id&&edge.targetHandle===port);
   function dataExpression(edge) {
@@ -117,7 +118,7 @@ export function generateFirmware(project, catalog, consoleMode = 'usb') {
     if(producer.moduleId==='clex.logic.gpio-set'&&edge.sourceHandle==='state')return (outputs.operations.get(producer.id)||relay.operations.get(producer.id)).state;
     if(['clex.logic.gpio-read','clex.logic.gpio-edge'].includes(producer.moduleId)&&['level','activeState'].includes(edge.sourceHandle)){
       const component=hardwareBinding(producer,project,catalog).component,state='input_stable_'+hardware.get(component.id);
-      return edge.sourceHandle==='activeState'?state:(component.moduleId==='clex.hardware.button'||component.parameters.activeLevel==='low'?'!':'')+state;
+      return edge.sourceHandle==='activeState'?state:(inputActiveLow(component)?'!':'')+state;
     }
     if (edge.sourceHandle==='interval' && producer.moduleId==='clex.logic.timer') return `${producer.parameters.intervalMs}.0`;
     if (edge.dataType === 'number') return `value_${index.get(edge.source)}`;
@@ -166,9 +167,9 @@ export function generateFirmware(project, catalog, consoleMode = 'usb') {
     if (catalog.modules.find(module=>module.id===component.moduleId)?.display || catalog.modules.find(module=>module.id===component.moduleId)?.network || catalog.modules.find(module=>module.id===component.moduleId)?.hardwareInterface || catalog.modules.find(module=>module.id===component.moduleId)?.softwareInterface || catalog.modules.find(module=>module.id===component.moduleId)?.stepper || catalog.modules.find(module=>module.id===component.moduleId)?.passive) continue;
     const assignment=project.gpioAssignments.find(assignment=>assignment.componentId===component.id);
     if (!assignment) throw new Error('Компонент не имеет назначения GPIO.');
-    const gpio=assignment.gpio, led=component.moduleId==='clex.hardware.led', sample=`gpio_get_level(${gpio}) ${(component.moduleId==='clex.hardware.button'||component.parameters.activeLevel==='low')?'== 0':'!= 0'}`;
+    const gpio=assignment.gpio, led=component.moduleId==='clex.hardware.led', sample=`gpio_get_level(${gpio}) ${(inputActiveLow(component))?'== 0':'!= 0'}`;
     declarations.push(led ? `static bool gpio_state_${i};` : `static bool input_stable_${i}, input_raw_${i};\nstatic int64_t input_changed_${i};`);
-    initializers.push(`  { gpio_config_t config = { .pin_bit_mask = 1ULL << ${gpio}, .mode = ${led?'GPIO_MODE_OUTPUT':'GPIO_MODE_INPUT'}, .pull_up_en = ${!led && component.parameters.pull==='up'?'GPIO_PULLUP_ENABLE':'GPIO_PULLUP_DISABLE'}, .pull_down_en = GPIO_PULLDOWN_DISABLE, .intr_type = GPIO_INTR_DISABLE }; ESP_ERROR_CHECK(gpio_config(&config)); }`);
+    initializers.push(`  { gpio_config_t config = { .pin_bit_mask = 1ULL << ${gpio}, .mode = ${led?'GPIO_MODE_OUTPUT':'GPIO_MODE_INPUT'}, .pull_up_en = ${!led && internalPull(component)==='up'?'GPIO_PULLUP_ENABLE':'GPIO_PULLUP_DISABLE'}, .pull_down_en = ${!led && internalPull(component)==='down'?'GPIO_PULLDOWN_ENABLE':'GPIO_PULLDOWN_DISABLE'}, .intr_type = GPIO_INTR_DISABLE }; ESP_ERROR_CHECK(gpio_config(&config)); }`);
     initializers.push(led ? `  ESP_ERROR_CHECK(gpio_set_level(${gpio}, gpio_state_${i}));` : `  input_stable_${i} = input_raw_${i} = ${sample}; input_changed_${i} = esp_timer_get_time();`);
     if (!led) inputUpdates.push(`  { bool raw = ${sample}; if (raw != input_raw_${i}) { input_raw_${i} = raw; input_changed_${i} = now; } if (now - input_changed_${i} >= ${Math.round(component.parameters.debounceMs*1000)}LL) input_stable_${i} = input_raw_${i}; }`);
   }
