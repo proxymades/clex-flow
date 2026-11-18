@@ -28,7 +28,7 @@ test('display and Ethernet can exchange SPI controllers; collisions and unavaila
  const unsupported={...displayProject(),boardId:'espressif-devkitc-1-v1-1-n8r8'};assert.throws(()=>addHardware(unsupported,ethernetModule,catalog),/нет описанного/);
 });
 test('numeric indicator state names and colors are user-defined',()=>{
- const indicator=newIndicator(catalog.modules.find(m=>m.display).display);indicator.mode='dynamic';
+ const indicator=newIndicator(catalog.modules.find(m=>m.id==='clex.display.spi-240x320').display);indicator.mode='dynamic';
  indicator.states[0].text='Холодно';indicator.states[0].dotColor='#112233';indicator.states[1].text='Горячо';
  assert.equal(indicatorState(indicator,1).text,'Горячо');assert.equal(indicatorState(indicator,0).dotColor,'#112233');
 });

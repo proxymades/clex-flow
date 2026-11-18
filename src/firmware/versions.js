@@ -1,4 +1,5 @@
 export const implementationVersions={
+ 'clex.display.oled-sh1106':'1.1.0',
  'clex.logic.camera-capture':'1.1.0',
  'clex.logic.dc-motor':'1.0.1',
  'clex.hardware.bts7960':'1.1.0',
@@ -18,7 +19,7 @@ export const implementationVersions={
  'clex.logic.internet-check':'1.1.0',
  'clex.logic.stopwatch':'1.1.0',
  'clex.logic.compare-number':'1.1.0',
- 'clex.logic.display':'1.1.0',
+ 'clex.logic.display':'1.2.2',
  'clex.logic.counter':'1.1.0',
  'clex.logic.wifi':'1.1.0',
  'clex.logic.gpio-read':'1.2.0',

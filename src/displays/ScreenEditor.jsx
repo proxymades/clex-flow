@@ -8,6 +8,8 @@ import { useRef, useState } from 'react';
 import { Plus, Save, Trash2, Monitor, Type, CircleDot, ImagePlus } from 'lucide-react';
 import Modal from '../components/Modal.jsx';
 import ScreenPreview from './ScreenPreview.jsx';
+import ScreenColorField from './ScreenColorField.jsx';
+import { isMonochrome } from './monochrome.js';
 import { displayDescription, screenFor, screenIssues, isDynamicText, elementName, elementPreviewText, saveScreen } from './model.js';
 
 export default function ScreenEditor({ project, component, catalog, onSave, onClose, busy }) {
@@ -40,7 +42,8 @@ export default function ScreenEditor({ project, component, catalog, onSave, onCl
   function addText() {
     if (screen.elements.length >= display.graphics.maxElements) return;
     const id = crypto.randomUUID();
-    setScreen(current => ({ ...current, elements: [...current.elements, { id, type: 'text', text: 'Привет, мир! CLEX Flow', x: 20, y: 20, fontId: display.graphics.fonts[0].id, color: '#ffffff' }] }));
+    const compact = display.resolution.width <= 128;
+    setScreen(current => ({ ...current, elements: [...current.elements, { id, type: 'text', text: compact ? 'Привет, мир!' : 'Привет, мир! CLEX Flow', x: compact ? 6 : 20, y: compact ? 6 : 20, fontId: display.graphics.fonts[0].id, color: '#ffffff' }] }));
     setSelected(id); setError('');
   }
   function pointerDown(event, id, scale, resize = false) {
@@ -71,7 +74,7 @@ export default function ScreenEditor({ project, component, catalog, onSave, onCl
     setScreen(current => ({ ...current, elements: current.elements.map(element => element.id === start.id ? { ...element, x, y } : element) }));
   }
   return <Modal title={'Редактор экрана · ' + component.name} className="display-editor" busy={locked} onClose={onClose}>
-    <div className="screen-editor-info"><Monitor size={17} /><strong>{display.resolution.width} × {display.resolution.height}</strong><span>{display.colorFormats.join(', ')}</span><span>{display.model.name}</span></div>
+    <div className="screen-editor-info"><Monitor size={17} /><strong>{display.resolution.width} × {display.resolution.height}</strong><span>{isMonochrome(display) ? 'Монохромный' : display.colorFormats.join(', ')}</span><span>{display.model.name}</span></div>
 
     <div className="screen-editor-body">
       <section className="screen-editor-canvas" onPointerMove={pointerMove} onPointerUp={() => { drag.current = null; }} onPointerCancel={() => { drag.current = null; }} onLostPointerCapture={() => { drag.current = null; }}>
@@ -81,7 +84,9 @@ export default function ScreenEditor({ project, component, catalog, onSave, onCl
         </div>
       </section>
       <aside className="screen-editor-properties">
-        {display.graphics.features.includes('background') && <label className="field">Фон экрана<input aria-label="Фон экрана" type="color" value={screen.background} disabled={locked} onChange={event => setScreen(current => ({ ...current, background: event.target.value }))} /></label>}
+        {isMonochrome(display) && <p className="panel-note">Цвет свечения задаёт OLED-панель.</p>}
+        {display.graphics.features.includes('background') && <ScreenColorField display={display} label="Фон экрана" pixelLabel="Пиксели фона"
+          value={screen.background} disabled={locked} onChange={background => setScreen(current => ({ ...current, background }))} />}
         <div className="screen-create-actions">
         {display.graphics.features.includes('text') && <button className="button secondary" disabled={locked || screen.elements.length >= display.graphics.maxElements} onClick={addText}><Plus size={16} />Добавить текст</button>}
         {display.graphics.features.includes('indicator')&&<button className="button secondary" disabled={locked||screen.elements.length>=display.graphics.maxElements} onClick={()=>{const element=newIndicator(display);element.y=Math.min(display.resolution.height-element.height,20+screen.elements.length*54);setScreen(current=>({...current,elements:[...current.elements,element]}));selectElement(element);setError('');}}><Plus size={16}/>Добавить индикатор</button>}
@@ -103,7 +108,8 @@ export default function ScreenEditor({ project, component, catalog, onSave, onCl
           </>}
           <div className="screen-coordinates">{['x', 'y'].map(axis => <label className="field" key={axis}>{axis.toUpperCase()}<input aria-label={'Координата ' + axis.toUpperCase()} type="number" min={0} max={display.resolution[axis === 'x' ? 'width' : 'height'] - (element.type === 'image' ? element[axis === 'x' ? 'width' : 'height'] : 1)} value={element[axis]} disabled={locked} onChange={event => update({ [axis]: Number(event.target.value) })} /></label>)}</div>
           {element.type !== 'image' && <label className="field">Шрифт и размер<select aria-label="Шрифт и размер" value={element.fontId} disabled={locked} onChange={event => update({ fontId: event.target.value })}>{display.graphics.fonts.map(font => <option key={font.id} value={font.id}>{font.name} · {font.size} px</option>)}</select></label>}
-          {element.type === 'text' && <label className="field">Цвет текста<input aria-label="Цвет текста" type="color" value={element.color} disabled={locked} onChange={event => update({ color: event.target.value })} /></label>}
+          {element.type === 'text' && <ScreenColorField display={display} label="Цвет текста" pixelLabel="Пиксели текста"
+            value={element.color} disabled={locked} onChange={color => update({ color })} />}
           <button className="text-button danger-hover" disabled={locked} onClick={() => { setScreen(current => ({ ...current, elements: current.elements.filter(element => element.id !== selected) })); setSelected(null); }}><Trash2 size={15} />Удалить элемент</button>
         </>}
         <p className="panel-note">Доступны только возможности выбранного дисплея и его шрифтов. Перетаскивайте элементы на холсте или задайте координаты.</p>

@@ -1,6 +1,6 @@
 import {microphoneClaims} from '../microphone/model.js';
 import {VOICE_MODULE,SPEAKER_MODULE} from '../voice/model.js';
-import {externalI2cBuses} from '../pressure/model.js';
+import {externalI2cBuses} from './i2c.js';
 export function hardwareProvider(component, module, board) {
   if(module?.id===VOICE_MODULE)return component.parameters.microphoneId?null:board?.peripherals?.find(p=>p.id===component.parameters.interfaceId&&p.driverKey==='es8311-i2s')||null;
   if (!module?.hardwareInterface) return null;
@@ -17,8 +17,8 @@ export function resourceClaims(project, catalog) {
   const wifi=router&&board?.wifi?.driverKey==='hosted'?[{key:'sdmmc:1',label:'ESP-Hosted SDIO',gpios:Object.values(board.wifi.signals),componentId:router.id,name:router.name}]:[];
   const motion=board?.motion?.timerResource&&project.components.find(component=>catalog.modules.find(module=>module.id===component.moduleId)?.stepper);
   const motionTimers=motion?[{key:board.motion.timerResource,label:'Timer1 движения',componentId:motion.id,name:'Шаговые двигатели'}]:[];
-  const sensors=externalI2cBuses(project).map(bus=>({key:'i2c:'+bus.port,label:'I²C'+bus.port,gpios:[bus.sda,bus.scl].filter(Number.isInteger),share:'bus',configuration:Number.isInteger(bus.sda)&&Number.isInteger(bus.scl)?{port:bus.port,sda:bus.sda,scl:bus.scl}:null,componentId:bus.componentId,name:bus.name}));
-  return [...mounted,...configured,...wifi,...motionTimers,...sensors,...microphoneClaims(project,board)];
+  const i2c=externalI2cBuses(project,catalog).map(bus=>({key:'i2c:'+bus.port,label:'I²C'+bus.port,gpios:[bus.sda,bus.scl].filter(Number.isInteger),share:'bus',configuration:Number.isInteger(bus.sda)&&Number.isInteger(bus.scl)?{port:bus.port,sda:bus.sda,scl:bus.scl}:null,componentId:bus.componentId,name:bus.name}));
+  return [...mounted,...configured,...wifi,...motionTimers,...i2c,...microphoneClaims(project,board)];
 }
 const normalized = value => Array.isArray(value) ? value.map(normalized) : value && typeof value==='object' ? Object.fromEntries(Object.keys(value).sort().map(key=>[key,normalized(value[key])])) : value;
 const canonical = value => JSON.stringify(normalized(value));

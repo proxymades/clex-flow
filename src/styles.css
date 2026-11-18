@@ -118,3 +118,7 @@ input:is([type=checkbox],[type=radio],[type=color],[type=range],[type=button],[t
 .logic-version-warning{display:flex;align-items:flex-start;gap:8px;padding:10px 14px;margin:0 10px 8px;border:1px solid #d6ac6c55;border-radius:6px;background:#d6ac6c0c;color:#e2be89;font-size:10px;line-height:1.7}.logic-version-warning svg{flex-shrink:0;margin-top:2px}
 
 .logic-node.node-version-incompatible{border:3px solid #ef526a}.logic-node.node-version-incompatible.node-selected{box-shadow:0 0 0 1px #ef526a,0 5px 18px #0004}
+
+.screen-pixels-mono{isolation:isolate}
+.screen-mono-frame{position:absolute;inset:0;filter:grayscale(1) contrast(10000%)}
+.screen-pixels-mono::after{content:'';position:absolute;inset:0;background:var(--screen-glow);mix-blend-mode:multiply;pointer-events:none}

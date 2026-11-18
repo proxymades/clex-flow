@@ -1,4 +1,5 @@
-import {isXgzp, XGZP_LOGIC, i2cSignals} from '../../pressure/model.js';
+import {isXgzp, XGZP_LOGIC} from '../../pressure/model.js';
+import {i2cSignals} from '../../hardware/i2c.js';
 import {XGZP_RUNTIME} from './xgzp6847d-runtime.js';
 
 export function xgzpFirmware(project,catalog,nodes,index) {

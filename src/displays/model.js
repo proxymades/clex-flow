@@ -37,7 +37,11 @@ export function dynamicTextValid(element) {
 }
 export const colorValid = value => typeof value === 'string' && /^#[0-9a-f]{6}$/i.test(value);
 export function displayDescription(component, catalog) {
-  return catalog.modules.find(module => module.id === component?.moduleId)?.display || null;
+  const module = catalog.modules.find(module => module.id === component?.moduleId);
+  const display = module?.display;
+  if (!display?.panelColors) return display || null;
+  const panelColor = component.parameters.panelColor ?? module.parameters.panelColor.default;
+  return {...display, previewGlow: display.panelColors[panelColor]};
 }
 export function emptyScreen() { return { formatVersion: 1, background: '#000000', elements: [] }; }
 export function screenFor(project, componentId) { return project.screens?.[componentId] || emptyScreen(); }

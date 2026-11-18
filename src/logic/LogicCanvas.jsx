@@ -7,6 +7,7 @@ import { Undo2, Redo2, Copy, ClipboardPaste, Files, Trash2, Layers, Unplug } fro
 import CanvasControls from '../components/CanvasControls.jsx';
 import useCanvasKeys from '../components/useCanvasKeys.js';
 import LogicNode from './LogicNode.jsx';
+import { displayDescription } from '../displays/model.js';
 import {friendlyConnectionProblem, nodeDisplayName, presentPort} from './presentation.js';
 import {logicEdgeColors} from './edgeColors.js';
 import { graphModule, nodePorts, hardwareBinding, connectionProblem, TYPE_COLORS } from './model.js';
@@ -60,7 +61,7 @@ export default function LogicCanvas({ project, catalog, history, selection, setS
   const modelNodes = useMemo(() => {
     const selected = new Set(selection.nodes), errors = new Map();
     for (const issue of issues) if (issue.severity === 'error' && issue.nodeId) errors.set(issue.nodeId, (errors.get(issue.nodeId) || 0) + 1);
-    return project.logic.nodes.map(node => ({ id: node.id, type: 'logic', position: node.position, measured: measurements[node.id] || emptyMeasurements, selected: selected.has(node.id), ariaLabel: `Блок: ${nodeDisplayName(node, project, catalog)}`, data: { node, definition: graphModule(node, catalog), project, catalog, connection, onBindData, busy, ports: nodePorts(node, catalog, project), binding: hardwareBinding(node, project, catalog), issueCount: errors.get(node.id) || 0, onPort, pending, display: catalog.modules.find(module => module.id === project.components.find(component => component.id === node.parameters.componentId)?.moduleId)?.display, screen: project.screens?.[node.parameters.componentId] } }));
+    return project.logic.nodes.map(node => ({ id: node.id, type: 'logic', position: node.position, measured: measurements[node.id] || emptyMeasurements, selected: selected.has(node.id), ariaLabel: `Блок: ${nodeDisplayName(node, project, catalog)}`, data: { node, definition: graphModule(node, catalog), project, catalog, connection, onBindData, busy, ports: nodePorts(node, catalog, project), binding: hardwareBinding(node, project, catalog), issueCount: errors.get(node.id) || 0, onPort, pending, display: displayDescription(project.components.find(component => component.id === node.parameters.componentId), catalog), screen: project.screens?.[node.parameters.componentId] } }));
   }, [project, catalog, measurements, selection.nodes, issues, onPort, pending, connection, onBindData, busy]);
   // Moving a node updates only its canvas position. Card data, validation,
   // firmware generation and project serialization stay outside the frame loop.

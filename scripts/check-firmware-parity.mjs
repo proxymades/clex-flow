@@ -1,3 +1,4 @@
+import {sh1106Project} from '../tests/sh1106-fixture.js';
 import {cameraMotorProject} from '../tests/esp32-cam-motor-fixture.js';
 import {buttonInputCases,combinedButtonProject} from '../tests/button-input-fixture.js';
 import {c3Cases} from '../tests/esp32-c3-fixture.js';
@@ -54,6 +55,8 @@ function mediaProject(family) {
 }
 
 const cases = [
+  ['c3-oled-sh1106',sh1106Project(),'usb'],
+  ['s3-oled-sh1106-3d',sh1106Project('waveshare-esp32-s3-eth',{address:'61'}),'usb'],
   ...buttonInputCases().map(([name,project])=>[name,project,project.boardId.startsWith('arduino')?'uart':'usb']),
   ['c3-combined-buttons',combinedButtonProject(),'usb'],
   ['nano-combined-buttons',combinedButtonProject('arduino-nano-atmega328p-ch340'),'uart'],

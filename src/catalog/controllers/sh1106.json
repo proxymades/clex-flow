@@ -1,0 +1,9 @@
+{
+  "id": "sinowealth.sh1106",
+  "name": "SH1106",
+  "manufacturer": "Sino Wealth",
+  "implementedInterfaces": ["i2c"],
+  "drivers": [
+    { "platform": "esp-idf", "interface": "i2c", "key": "sh1106-i2c" }
+  ]
+}

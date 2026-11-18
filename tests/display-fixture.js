@@ -2,7 +2,7 @@ import { createProject } from '../src/projects/model.js';
 import { addHardware, connectTerminal } from '../src/assembly/model.js';
 import { addNode, withLogic } from '../src/logic/model.js';
 import { catalog, eth } from './catalog-fixture.js';
-export const displayModule = catalog.modules.find(module => module.display);
+export const displayModule = catalog.modules.find(module => module.id === 'clex.display.spi-240x320');
 export const screenModule = catalog.modules.find(module => module.editor === 'screen');
 export function displayProject() {
  let project = {...createProject('Display test'), boardSettings:{camera:'disconnected'}};

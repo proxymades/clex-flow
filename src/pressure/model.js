@@ -1,10 +1,6 @@
 export const XGZP_MODULE = 'clex.hardware.xgzp6847d';
 export const XGZP_LOGIC = 'clex.logic.xgzp6847d';
 export const isXgzp = component => component?.moduleId === XGZP_MODULE;
-export const i2cSignals = (component, project) => Object.fromEntries(project.gpioAssignments.filter(a => a.componentId === component.id && ['sda','scl'].includes(a.terminalId)).map(a => [a.terminalId,a.gpio]));
-export function externalI2cBuses(project) {
-  return project.components.filter(isXgzp).map(component => ({componentId:component.id,name:component.name,port:Number(component.parameters.i2cPort),...i2cSignals(component,project)}));
-}
 export function xgzpSupplyProblem(component, board) {
   if (!isXgzp(component) || Number(component.parameters.supplyVoltage) === (board.logicVoltage || 3.3)) return null;
   return board.logicVoltage === 5
@@ -19,27 +15,11 @@ export function xgzpPowerProblem(component, pin, board) {
     : 'На ESP32 VDD датчика можно подключить только к контакту питания 3,3 В.';
   return xgzpSupplyProblem(component, board);
 }
-export function i2cConnectionProblem(component, terminal, pin, board) {
-  if (!isXgzp(component) || !['sda','scl'].includes(terminal.id)) return null;
-  const voltageProblem = xgzpSupplyProblem(component, board);
-  if (voltageProblem) return voltageProblem;
-  if (!pin.capabilities?.includes('digital-input') || !pin.capabilities?.includes('digital-output')) return 'I²C требует GPIO с цифровым входом и выходом.';
-  if (board.platform === 'arduino-avr' && pin.gpio !== (terminal.id === 'sda' ? 18 : 19)) return terminal.id === 'sda' ? 'На Nano SDA подключается к A4.' : 'На Nano SCL подключается к A5.';
-  return null;
-}
-export function i2cClaimAllows(component, terminalId, pin, claim) {
-  if (!isXgzp(component) || !['sda','scl'].includes(terminalId)) return false;
-  return claim.key === 'i2c:' + component.parameters.i2cPort && (claim.componentId === component.id || claim.configuration?.[terminalId] === pin.gpio);
-}
-export function xgzpIssues(component, project, board) {
+export function xgzpIssues(component, board) {
   if (!isXgzp(component)) return [];
   const issues = [];
   const voltageProblem = xgzpSupplyProblem(component, board);
   if (voltageProblem) issues.push(voltageProblem);
   if (!['4','8','16','32','64','128','256','512','1024','2048','4096','8192'].includes(component.parameters.kFactor)) issues.push('Выберите коэффициент K по диапазону и документации датчика.');
-  if (board.platform === 'arduino-avr' && component.parameters.i2cPort !== '0') issues.push('На Arduino Nano доступен один контроллер I²C (Wire).');
-  if (project.components.some(c => c.id !== component.id && isXgzp(c) && c.parameters.i2cPort === component.parameters.i2cPort)) issues.push('Адрес 0x6D уже занят другим XGZP6847D на этой шине. Выберите другой контроллер I²C.');
-  const {sda,scl} = i2cSignals(component,project);
-  if (sda !== undefined && sda === scl) issues.push('SDA и SCL должны использовать разные GPIO.');
   return issues;
 }

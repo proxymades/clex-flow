@@ -8,6 +8,14 @@ on:
         required: true
         default: main
         type: string
+      platforms:
+        description: 'Installer platforms'
+        required: true
+        default: windows
+        type: choice
+        options:
+          - windows
+          - all
 
 # This workflow builds review artifacts. It cannot create tags or releases,
 # nor attach untested binaries to a Release.
@@ -23,17 +31,36 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - runner: macos-15
-            target: aarch64-apple-darwin
-            config: src-tauri/tauri.release.conf.json
-            bundles: app,dmg
-            architecture: arm64
-          - runner: windows-latest
-            target: x86_64-pc-windows-msvc
-            config: src-tauri/tauri.windows.release.conf.json
-            bundles: nsis
-            architecture: x64
+        include: >-
+          ${{ fromJSON(
+            inputs.platforms == 'all' &&
+            '[
+              {
+                "runner": "macos-15",
+                "target": "aarch64-apple-darwin",
+                "config": "src-tauri/tauri.release.conf.json",
+                "bundles": "app,dmg",
+                "architecture": "arm64"
+              },
+              {
+                "runner": "windows-latest",
+                "target": "x86_64-pc-windows-msvc",
+                "config": "src-tauri/tauri.windows.release.conf.json",
+                "bundles": "nsis",
+                "architecture": "x64"
+              }
+            ]'
+            ||
+            '[
+              {
+                "runner": "windows-latest",
+                "target": "x86_64-pc-windows-msvc",
+                "config": "src-tauri/tauri.windows.release.conf.json",
+                "bundles": "nsis",
+                "architecture": "x64"
+              }
+            ]'
+          ) }}
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 45
     steps:

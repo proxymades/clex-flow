@@ -33,7 +33,7 @@ test('editing formatting preserves bindings; changing the type or deleting a dyn
   const screen = structuredClone(project.screens[id]); screen.elements[1].name = 'Показание'; screen.elements[1].prefix = 'Температура: '; screen.elements[1].suffix = ' °C'; screen.elements[1].initialValue = 25;
   const edited = saveScreen(project, id, screen);
   assert.deepEqual(edited.logic.edges, project.logic.edges); assert.equal(elementPreviewText(screen.elements[1]), 'Температура: 25 °C');
-  assert.equal(screenIssues(screen, catalog.modules.find(module => module.display).display).length, 0);
+  assert.equal(screenIssues(screen, catalog.modules.find(module => module.id === 'clex.display.spi-240x320').display).length, 0);
   screen.elements[1].valueType = 'text'; screen.elements[1].initialValue = '25';
   const changed = saveScreen(edited, id, screen);
   assert.equal(changed.logic.edges.length, 2); assert.ok(!changed.logic.edges.some(edge => edge.targetHandle === screen.elements[1].id));
@@ -70,7 +70,7 @@ test('UTF-8 text and Boolean values use typed screen bindings', () => {
   assert.match(generateFirmware(project, catalog).mainC, /clex_graphics_set_text\("[^" ]+", "[^" ]+", text_\d+\)/);
   source.parameters.message = '🌍'; assert.throws(() => generateFirmware(project, catalog), /шрифт/);
   dynamic.valueType = 'boolean'; dynamic.initialValue = false;
-  assert.deepEqual(screenIssues(project.screens[id],catalog.modules.find(m=>m.display).display),[]);
+  assert.deepEqual(screenIssues(project.screens[id],catalog.modules.find(m=>m.id==='clex.display.spi-240x320').display),[]);
   assert.doesNotThrow(()=>serializeProject(project));assert.ok(validateGraph(project,catalog).some(issue=>issue.code==='logic-connection'));
 });
 test('invalid dynamic metadata and unsupported prefix glyphs are rejected', () => {

@@ -9,7 +9,7 @@ import {screenCommands} from '../src/displays/model.js';
 import {newIndicator} from '../src/displays/indicator.js';
 import {applyValueStates} from '../src/logic/valueStates.js';
 import {generateFirmware,cString} from '../src/firmware/generator.js';
-const project=displayProject(),component=project.components[0],screen=project.screens[component.id],display=catalog.modules.find(module=>module.display).display;
+const project=displayProject(),component=project.components[0],screen=project.screens[component.id],display=catalog.modules.find(module=>module.id==='clex.display.spi-240x320').display;
 const first=newIndicator(display);first.y=80;first.states[0].text='Ожидание';first.states[1].text='Готово';first.states[1].background='#005544';first.states[1].dotColor='#11ff22';
 const second=newIndicator(display);second.mode='static';second.y=170;second.dotVisible=false;second.dotPosition='bottom';second.align='right';second.states[1].text='Другой';
 const sourcePort=catalog.modules.find(m=>m.id==='clex.logic.ethernet').outputs.find(p=>p.id==='state');

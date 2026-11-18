@@ -1,0 +1,317 @@
+{
+  "id": "clex.display.oled-sh1106",
+  "version": "1.1.0",
+  "kind": "hardware",
+  "name": "OLED 128×64 · I²C",
+  "category": "displays",
+  "categoryName": "Дисплеи",
+  "description": "Монохромный OLED-дисплей 1,3″ с контроллером SH1106. Подключается по I²C, питание 3,3 В.",
+  "icon": "Monitor",
+  "color": "#38bdf8",
+  "visual": {
+    "width": 255,
+    "height": 271
+  },
+  "terminals": [
+    {
+      "id": "gnd",
+      "label": "GND",
+      "kind": "ground",
+      "x": 0,
+      "y": 133
+    },
+    {
+      "id": "vcc",
+      "label": "VCC · 3,3 В",
+      "kind": "power",
+      "x": 0,
+      "y": 167,
+      "voltage": 3.3
+    },
+    {
+      "id": "scl",
+      "label": "SCK / SCL",
+      "kind": "gpio-output",
+      "x": 0,
+      "y": 201
+    },
+    {
+      "id": "sda",
+      "label": "SDA",
+      "kind": "gpio-output",
+      "x": 0,
+      "y": 235
+    }
+  ],
+  "inputs": [],
+  "outputs": [],
+  "parameters": {
+    "i2cPort": {
+      "label": "Контроллер I²C",
+      "type": "select",
+      "default": "0",
+      "options": [
+        {
+          "value": "0",
+          "label": "I²C0"
+        },
+        {
+          "value": "1",
+          "label": "I²C1"
+        }
+      ]
+    },
+    "i2cAddress": {
+      "label": "Адрес I²C",
+      "type": "select",
+      "default": "60",
+      "options": [
+        {
+          "value": "60",
+          "label": "0x3C"
+        },
+        {
+          "value": "61",
+          "label": "0x3D"
+        }
+      ]
+    },
+    "panelColor": {
+      "label": "Цвет свечения панели",
+      "type": "select",
+      "default": "blue",
+      "previewOnly": true,
+      "options": [
+        {
+          "value": "blue",
+          "label": "Голубой"
+        },
+        {
+          "value": "white",
+          "label": "Белый"
+        }
+      ],
+      "description": "Выберите цвет установленной OLED-панели для предпросмотра."
+    }
+  },
+  "i2c": {
+    "sda": "sda",
+    "scl": "scl",
+    "addressParameter": "i2cAddress",
+    "frequencyHz": 100000
+  },
+  "manualWiring": [
+    "Подключите GND и питание 3,3 В. Контакт SCK на модуле соответствует линии SCL шины I²C.",
+    "Укажите адрес 0x3C или 0x3D по настройке модуля. Если на модуле нет подтяжек SDA и SCL, добавьте их к 3,3 В."
+  ],
+  "constraints": {},
+  "compatibility": {
+    "projectFormat": 4,
+    "targets": [
+      "esp32",
+      "esp32c3",
+      "esp32s3",
+      "esp32p4"
+    ],
+    "espIdf": "5.4.4"
+  },
+  "firmware": {
+    "status": "implemented",
+    "generatorKey": "display",
+    "dependencies": [
+      "esp_driver_i2c",
+      "lvgl__lvgl"
+    ]
+  },
+  "display": {
+    "model": {
+      "name": "OLED 1,3″ · SH1106",
+      "diagonalInches": 1.3
+    },
+    "controllerId": "sinowealth.sh1106",
+    "interface": "i2c",
+    "resolution": {
+      "width": 128,
+      "height": 64
+    },
+    "colorFormats": [
+      "I1"
+    ],
+    "initialization": {
+      "xGap": 2
+    },
+    "supportedPlatforms": [
+      "esp-idf"
+    ],
+    "driverKey": "sh1106-i2c",
+    "graphics": {
+      "features": [
+        "background",
+        "text",
+        "indicator",
+        "image"
+      ],
+      "maxElements": 32,
+      "fonts": [
+        {
+          "id": "montserrat_14",
+          "name": "Montserrat · латиница / кириллица",
+          "family": "ClexMontserrat",
+          "size": 14,
+          "ranges": [
+            [
+              32,
+              126
+            ],
+            [
+              176,
+              176
+            ],
+            [
+              1024,
+              1119
+            ],
+            [
+              1122,
+              1123
+            ],
+            [
+              1130,
+              1131
+            ],
+            [
+              1138,
+              1141
+            ],
+            [
+              1162,
+              1220
+            ],
+            [
+              1222,
+              1279
+            ],
+            [
+              10,
+              10
+            ]
+          ],
+          "lineHeight": 17,
+          "baseline": 3,
+          "characterSets": [
+            "latin-basic",
+            "cyrillic",
+            "measurement-symbols"
+          ]
+        },
+        {
+          "id": "montserrat_20",
+          "name": "Montserrat · латиница / кириллица",
+          "family": "ClexMontserrat",
+          "size": 20,
+          "ranges": [
+            [
+              32,
+              126
+            ],
+            [
+              176,
+              176
+            ],
+            [
+              1024,
+              1119
+            ],
+            [
+              1122,
+              1123
+            ],
+            [
+              1130,
+              1131
+            ],
+            [
+              1138,
+              1141
+            ],
+            [
+              1162,
+              1220
+            ],
+            [
+              1222,
+              1279
+            ],
+            [
+              10,
+              10
+            ]
+          ],
+          "lineHeight": 23,
+          "baseline": 4,
+          "characterSets": [
+            "latin-basic",
+            "cyrillic",
+            "measurement-symbols"
+          ]
+        },
+        {
+          "id": "montserrat_28",
+          "name": "Montserrat · латиница / кириллица",
+          "family": "ClexMontserrat",
+          "size": 28,
+          "ranges": [
+            [
+              32,
+              126
+            ],
+            [
+              176,
+              176
+            ],
+            [
+              1024,
+              1119
+            ],
+            [
+              1122,
+              1123
+            ],
+            [
+              1130,
+              1131
+            ],
+            [
+              1138,
+              1141
+            ],
+            [
+              1162,
+              1220
+            ],
+            [
+              1222,
+              1279
+            ],
+            [
+              10,
+              10
+            ]
+          ],
+          "lineHeight": 30,
+          "baseline": 5,
+          "characterSets": [
+            "latin-basic",
+            "cyrillic",
+            "measurement-symbols"
+          ]
+        }
+      ]
+    },
+    "panelColors": {
+      "blue": "#55bfff",
+      "white": "#ffffff"
+    }
+  },
+  "compatibleFrom": "1.0.0"
+}
