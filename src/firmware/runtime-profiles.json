@@ -1,4 +1,49 @@
 {
+  "camera-esp32-dvp": {
+    "target": "esp32",
+    "dependencies": {
+      "espressif/esp32-camera": "2.1.4",
+      "espressif/esp_jpeg": "1.3.1"
+    },
+    "requires": [
+      "espressif__esp32-camera",
+      "esp_driver_ledc",
+      "esp_psram"
+    ],
+    "config": "CONFIG_SPIRAM=y\nCONFIG_SPIRAM_SPEED_40M=y\nCONFIG_SCCB_HARDWARE_I2C_PORT1=y\nCONFIG_OV2640_SUPPORT=y\nCONFIG_OV3660_SUPPORT=y\nCONFIG_OV7670_SUPPORT=n\nCONFIG_OV7725_SUPPORT=n\nCONFIG_NT99141_SUPPORT=n\nCONFIG_OV5640_SUPPORT=n\nCONFIG_GC2145_SUPPORT=n\nCONFIG_GC032A_SUPPORT=n\nCONFIG_GC0308_SUPPORT=n\nCONFIG_BF3005_SUPPORT=n\nCONFIG_BF20A6_SUPPORT=n\nCONFIG_SC101IOT_SUPPORT=n\nCONFIG_SC030IOT_SUPPORT=n\nCONFIG_SC031GS_SUPPORT=n\nCONFIG_HM1055_SUPPORT=n\nCONFIG_HM0360_SUPPORT=n\nCONFIG_MEGA_CCM_SUPPORT=n\n"
+  },
+  "dc-motor-esp32": {
+    "target": "esp32",
+    "dependencies": {},
+    "requires": [
+      "esp_driver_ledc"
+    ],
+    "config": ""
+  },
+  "dc-motor-esp32c3": {
+    "target": "esp32c3",
+    "dependencies": {},
+    "requires": [
+      "esp_driver_ledc"
+    ],
+    "config": ""
+  },
+  "dc-motor-esp32s3": {
+    "target": "esp32s3",
+    "dependencies": {},
+    "requires": [
+      "esp_driver_ledc"
+    ],
+    "config": ""
+  },
+  "dc-motor-esp32p4": {
+    "target": "esp32p4",
+    "dependencies": {},
+    "requires": [
+      "esp_driver_ledc"
+    ],
+    "config": ""
+  },
   "jd9365-dsi": {
     "target": "esp32p4",
     "dependencies": {

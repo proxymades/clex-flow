@@ -2,6 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {allocateWireLanes,orthogonalWireRoute,routeAssemblyEdges,previewAssemblyEdges,wireFitPadding,wireObstacles,segmentCrossesObstacle,manualWirePoints,reanchorManualRoute} from '../src/assembly/wireRouting.js';
 import {catalog} from './catalog-fixture.js';
+import {cameraMotorProject} from './esp32-cam-motor-fixture.js';
+import {assemblyRoutingScene} from '../src/assembly/routingScene.js';
 import {p4Project} from './p4-fixture.js';
 import {displayProject} from './display-fixture.js';
 import {peripheralProject} from './peripheral-fixture.js';
@@ -134,6 +136,30 @@ test('moving assembly commits reattached routes atomically with positions and re
  }
  const delta={x:75,y:45},translated=transformAssembly(p,catalog,{positions:Object.fromEntries(Object.entries(p.assembly.positions).map(([id,position])=>[id,{x:position.x+delta.x,y:position.y+delta.y}]))});
  assert.deepEqual(translated.assembly.connections.find(w=>w.id===edge.id).route,p.assembly.connections.find(w=>w.id===edge.id).route.map(point=>({x:point.x+delta.x,y:point.y+delta.y})));
+});
+
+test('ESP32-CAM restores a manual 5V route clear of the moved GND contact', () => {
+ const project = cameraMotorProject('esp32-cam');
+ const board = catalog.boards.find(board => board.id === project.boardId);
+ const wire = project.assembly.connections.find(wire => wire.terminalId === 'vcc');
+ project.assembly.positions[wire.componentId] = { x: -360, y: 325 };
+ wire.route = [{x:244,y:376},{x:24,y:376},{x:24,y:675},{x:-426,y:675},{x:-426,y:594}];
+ const render = (project) => {
+  const scene = assemblyRoutingScene({...project.assembly, components:project.components}, board, catalog);
+  return {nodes:scene.nodes, edges:routeAssemblyEdges(scene.edges, scene.nodes, board)};
+ };
+ const {nodes, edges} = render(project);
+ const routed = edges.find(edge => edge.id === wire.id).data.route;
+ assert.ok(routed.manual);
+ assert.deepEqual(routed.points, [[244,407.4],[244,393.4],[24,393.4],[24,675],[-426,675],[-426,594],[-360,594]]);
+
+ const position = {x:155,y:85};
+ const moved = transformAssembly(project, catalog, {positions:{board:position}});
+ const preview = previewAssemblyEdges(edges, nodes.map(node => node.id === 'board' ? {...node,position} : node));
+ const reopened = render(parseProject(serializeProject(moved)));
+ assert.deepEqual(reopened.edges.find(edge => edge.id === wire.id).data.route.points,
+  preview.find(edge => edge.id === wire.id).data.route.points);
+ assert.deepEqual(moved.gpioAssignments, project.gpioAssignments);
 });
 
 test('a manually routed wire stays manual when moving the component makes its path straight',()=>{

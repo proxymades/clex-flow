@@ -1,3 +1,4 @@
+import {cameraMotorProject} from '../tests/esp32-cam-motor-fixture.js';
 import {buttonInputCases,combinedButtonProject} from '../tests/button-input-fixture.js';
 import {c3Cases} from '../tests/esp32-c3-fixture.js';
 import {conditionProject} from '../tests/condition-fixture.js';
@@ -102,6 +103,8 @@ const cases = [
   ['p4-spi-v3', p4Project(false, 'v3'), 'uart'],
   ['p4-spi-network', p4Project(true), 'uart'],
   ['p4-dsi', peripheralProject({network:false,audio:false,camera:false}), 'uart'],
+  ['esp32-cam-motor', cameraMotorProject('esp32-cam'), 'uart'],
+  ['nano-dc-motor', cameraMotorProject('arduino-nano-atmega328p-ch340'), 'uart'],
   ['p4-audio', mediaProject('audio'), 'uart'],
   ['p4-camera', mediaProject('camera'), 'uart'],
   ['p4-combined', peripheralProject(), 'uart'],

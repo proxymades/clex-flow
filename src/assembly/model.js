@@ -9,6 +9,7 @@ import {WIFI_MODULE,wifiSupported,wifiIssues} from '../wifi/model.js';
 import {RELAY_MODULE,relayChannelCount,resolveRelayModule,relayParameters,relaySupplyVoltage,relayVoltageLabel,relayPowerProblem,relayPowerWarning} from '../relay/model.js';
 import {parseContact,wireSource,touches,normalizedContact,componentWireProblem} from './endpoints.js';
 import {stepperIssues} from '../stepper/model.js';
+import {motorAssemblyIssues, motorPwmPinProblem, resolveBts7960Module} from '../hardware/dc-motor.js';
 import {MQTT_MODULE,MAX_MQTT_CONNECTIONS,mqttSupported,mqttIssues} from '../mqtt/model.js';
 import {ROUTER_MODULE,routerCapabilities,routerIssues} from '../router/model.js';
 import {ESPNOW_MODULE,espNowSupported,espNowIssues,newKey} from '../espnow/model.js';
@@ -21,7 +22,11 @@ export const DEFAULT_BOARD_POSITION = { x: 100, y: 40 };
 export const DEFAULT_VIEWPORT = { x: 0, y: 0, zoom: 1 };
 const lookup = (items, id) => items.find(item => item.id === id);
 export const boardFor = (project, catalog) => lookup(catalog.boards, project.boardId);
-export const moduleFor = (component, catalog) => resolveButtonModule(component,resolveMosfetModule(component,resolveRelayModule(component,lookup(catalog.modules, component.moduleId))));
+export function moduleFor(component, catalog) {
+  const definition = lookup(catalog.modules, component.moduleId);
+  return resolveBts7960Module(component,
+    resolveButtonModule(component, resolveMosfetModule(component, resolveRelayModule(component, definition))));
+}
 
 export function transformAssembly(project,catalog,transform){
  const previous=project.assembly.positions,positions={...previous,...transform.positions},board=boardFor(project,catalog);
@@ -35,7 +40,8 @@ export function transformAssembly(project,catalog,transform){
   const terminal=component && terminalLayout(moduleFor(component,catalog),project.assembly.portSides?.[component.id]).terminals.find(terminal=>terminal.id===wire.terminalId);
   if(!pin || !terminal)return wire;
   const anchor=(position,contact)=>[position.x+contact.x,position.y+contact.y];
-  const points=reanchorManualRoute(anchor(oldSource,pin),anchor(oldTarget,terminal),wire.route,anchor(newSource,pin),anchor(newTarget,terminal));
+  const boardHeader = source ? undefined : {sourcePin: pin, boardPins: board?.pins, manualPinExitClearance: board?.routing?.manualPinExitClearance};
+  const points=reanchorManualRoute(anchor(oldSource,pin),anchor(oldTarget,terminal),wire.route,anchor(newSource,pin),anchor(newTarget,terminal),boardHeader);
   const updated={...wire},route=points.slice(1,-1).map(([x,y])=>({x,y}));
   updated.route=route.length?route:[{x:(points[0][0]+points.at(-1)[0])/2,y:(points[0][1]+points.at(-1)[1])/2}];
   return updated;
@@ -79,6 +85,7 @@ export function connectionProblem(project, catalog, componentId, terminalId, pin
   const terminal = lookup(module.terminals, terminalId);
   const pin = lookup(board.pins, pinId);
   if (!terminal) return 'Контакт компонента не найден.';
+  if (terminal.externalConnection) return terminal.label + ': подключите двигатель к клемме драйвера.';
   if (terminal.kind==='nc') return 'Вывод NC не подключается к внешней цепи или земле.';
   if (!pin) return 'Контакт платы не найден.';
   if(isMicrophone(component)&&['power','lr'].includes(terminal.id))return microphoneConnectionProblem(component,terminal,pin,board);
@@ -103,15 +110,26 @@ export function connectionProblem(project, catalog, componentId, terminalId, pin
   if (restriction) return restriction;
   const capability = terminal.kind === 'gpio-output' ? 'digital-output' : terminal.kind === 'gpio-input' ? 'digital-input' : null;
   if (!capability || !pin.capabilities.includes(capability)) return 'GPIO не поддерживает требуемое направление цифрового интерфейса.';
+  if (terminal.pwm) {
+    const pwmProblem = motorPwmPinProblem(project, board, pin.gpio);
+    if (pwmProblem) return pwmProblem;
+  }
   if (capability==='digital-input' && pin.internalPulls===false && internalPull(component)) return 'У этого GPIO нет внутренней подтяжки. Выберите другой вход для компонента с внутренней подтяжкой.';
   if(capability==='digital-input'&&internalPull(component)==='down'&&board.platform==='arduino-avr')return 'У этой платы нет внутренней подтяжки вниз. Выберите внешний резистор.';
   const indirect=project.gpioAssignments.find(a=>a.gpio===pin.gpio&&a.componentId!==componentId&&!project.assembly.connections.some(w=>w.componentId===a.componentId&&w.terminalId===a.terminalId&&w.boardPinId===a.pinId));
   if(indirect)return `GPIO${pin.gpio} уже используется цепью другого компонента.`;
+  const sharedGpio = wire => Boolean(terminal.gpioGroup && wire.componentId === componentId &&
+    wire.terminalId !== terminalId && lookup(module.terminals, wire.terminalId)?.gpioGroup === terminal.gpioGroup);
+  const paired = terminal.gpioGroup && project.assembly.connections.find(sharedGpio);
+  if (paired && lookup(board.pins, paired.boardPinId)?.gpio !== pin.gpio) {
+    const other = lookup(module.terminals, paired.terminalId);
+    return terminal.label + ' и ' + other.label + ' должны быть подключены к одному GPIO.';
+  }
   const conflict = project.assembly.connections.find(wire => {
     if (wire.componentId === componentId && wire.terminalId === terminalId) return false;
     if(lookup(board.pins,wire.boardPinId)?.gpio!==pin.gpio)return false;
     const other=lookup(project.components,wire.componentId);
-    if(isResistor(other))return false;
+    if(isResistor(other) || sharedGpio(wire))return false;
     return !(isXgzp(component)&&isXgzp(other)&&component.parameters.i2cPort===other.parameters.i2cPort&&wire.terminalId===terminalId);
   });
   if (conflict) return `GPIO${pin.gpio} уже назначен другому контакту. Сначала удалите прежнее соединение.`;
@@ -254,6 +272,7 @@ export function validateAssembly(project, catalog) {
   issues.push(...resourceIssues(project,catalog),...stepperIssues(project,catalog),...voiceIssues(project,catalog));
   if(project.components.filter(c=>c.moduleId===ESPNOW_MODULE).length>1)issue('error','espnow-duplicate','В проекте поддерживается один ESP-NOW-интерфейс платы.');
   if (!board) { issue('error', 'board-missing', 'Плата отсутствует в каталоге.'); return issues; }
+  issues.push(...motorAssemblyIssues(project, board));
   if (!board.pins.length) issue('error', 'board-generic', 'Выберите конкретную плату. Общая ESP32-S3 не имеет распиновки.');
   else if (!board.pinoutVerified) issue('warning', 'revision-unconfirmed', `Ревизия ${board.name} не подтверждена. Сверьте физическую плату с документацией профиля.`);
   for (const [key, option] of Object.entries(board.options || {})) {

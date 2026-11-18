@@ -1,0 +1,406 @@
+{
+  "id": "esp32-cam",
+  "name": "ESP32-CAM",
+  "manufacturer": "Совместимые платы",
+  "mcu": "ESP32",
+  "revision": "1.6",
+  "espIdfVersion": "5.4.4",
+  "target": "esp32",
+  "platform": "esp-idf",
+  "resources": {
+    "gptimer": 4
+  },
+  "logicVoltage": 3.3,
+  "pinoutVerified": false,
+  "documentationVerified": true,
+  "verificationNote": "Расположение контактов соответствует схеме V1.6. Для камеры нужен модуль с совместимым 24-контактным шлейфом.",
+  "description": "ESP32, 4 МБ Flash и PSRAM. Камера подключается к разъёму DVP. Прошивка и монитор работают через внешний USB-UART.",
+  "svg": "esp32-cam.svg",
+  "width": 490,
+  "height": 430,
+  "orientation": "Вид со стороны модуля ESP32, антенна сверху. Слева сверху GPIO4, справа GND. Разъём камеры и слот microSD находятся с обратной стороны. GPIO13, GPIO14 и GPIO15 доступны при пустом слоте microSD.",
+  "sources": [
+    {
+      "title": "ESP32-CAM V1.6, принципиальная схема",
+      "url": "https://www.adrirobot.it/wp-content/uploads/2024/08/circuito-ESP32_CAM_V1.6.pdf"
+    },
+    {
+      "title": "ESP32-CAM, спецификация платы",
+      "url": "https://d229kd5ey79jzj.cloudfront.net/1205/ESP32-CAM%20Product%20Specification.pdf"
+    },
+    {
+      "title": "Espressif, пример подключения камеры",
+      "url": "https://github.com/espressif/arduino-esp32/blob/master/libraries/ESP32/examples/Camera/CameraWebServer/camera_pins.h"
+    }
+  ],
+  "options": {},
+  "reservedGpios": {
+    "0": "Загрузка и тактовый сигнал камеры XCLK",
+    "1": "UART0: прошивка и монитор",
+    "2": "Загрузочный контакт и линия microSD",
+    "3": "UART0: прошивка и монитор",
+    "4": "Встроенная вспышка и линия microSD",
+    "12": "Загрузочный контакт питания Flash и линия microSD",
+    "16": "Выбор микросхемы PSRAM"
+  },
+  "pins": [
+    {
+      "id": "L1",
+      "label": "GPIO4",
+      "physicalNumber": 1,
+      "header": "L",
+      "side": "left",
+      "kind": "gpio",
+      "gpio": 4,
+      "x": 144,
+      "y": 171.4,
+      "functions": [
+        "microSD"
+      ],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ]
+    },
+    {
+      "id": "L2",
+      "label": "GPIO2",
+      "physicalNumber": 2,
+      "header": "L",
+      "side": "left",
+      "kind": "gpio",
+      "gpio": 2,
+      "x": 144,
+      "y": 199.4,
+      "functions": [
+        "microSD"
+      ],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ]
+    },
+    {
+      "id": "L3",
+      "label": "GPIO14",
+      "physicalNumber": 3,
+      "header": "L",
+      "side": "left",
+      "kind": "gpio",
+      "gpio": 14,
+      "x": 144,
+      "y": 227.4,
+      "functions": [
+        "microSD"
+      ],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ]
+    },
+    {
+      "id": "L4",
+      "label": "GPIO15",
+      "physicalNumber": 4,
+      "header": "L",
+      "side": "left",
+      "kind": "gpio",
+      "gpio": 15,
+      "x": 144,
+      "y": 255.4,
+      "functions": [
+        "microSD"
+      ],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ]
+    },
+    {
+      "id": "L5",
+      "label": "GPIO13",
+      "physicalNumber": 5,
+      "header": "L",
+      "side": "left",
+      "kind": "gpio",
+      "gpio": 13,
+      "x": 144,
+      "y": 283.4,
+      "functions": [
+        "microSD"
+      ],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ]
+    },
+    {
+      "id": "L6",
+      "label": "GPIO12",
+      "physicalNumber": 6,
+      "header": "L",
+      "side": "left",
+      "kind": "gpio",
+      "gpio": 12,
+      "x": 144,
+      "y": 311.4,
+      "functions": [
+        "microSD"
+      ],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ]
+    },
+    {
+      "id": "L7",
+      "label": "GND",
+      "physicalNumber": 7,
+      "header": "L",
+      "side": "left",
+      "kind": "ground",
+      "gpio": null,
+      "x": 144,
+      "y": 339.4,
+      "functions": [],
+      "capabilities": []
+    },
+    {
+      "id": "L8",
+      "label": "5V",
+      "physicalNumber": 8,
+      "header": "L",
+      "side": "left",
+      "kind": "power",
+      "gpio": null,
+      "x": 144,
+      "y": 367.4,
+      "functions": [],
+      "capabilities": [],
+      "voltage": 5
+    },
+    {
+      "id": "R1",
+      "label": "GND",
+      "physicalNumber": 1,
+      "header": "R",
+      "side": "right",
+      "kind": "ground",
+      "gpio": null,
+      "x": 346,
+      "y": 171.4,
+      "functions": [],
+      "capabilities": []
+    },
+    {
+      "id": "R2",
+      "label": "U0T / GPIO1",
+      "physicalNumber": 2,
+      "header": "R",
+      "side": "right",
+      "kind": "gpio",
+      "gpio": 1,
+      "x": 346,
+      "y": 199.4,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ]
+    },
+    {
+      "id": "R3",
+      "label": "U0R / GPIO3",
+      "physicalNumber": 3,
+      "header": "R",
+      "side": "right",
+      "kind": "gpio",
+      "gpio": 3,
+      "x": 346,
+      "y": 227.4,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ]
+    },
+    {
+      "id": "R4",
+      "label": "VCC",
+      "physicalNumber": 4,
+      "header": "R",
+      "side": "right",
+      "kind": "control",
+      "gpio": null,
+      "x": 346,
+      "y": 255.4,
+      "functions": [],
+      "capabilities": []
+    },
+    {
+      "id": "R5",
+      "label": "GND",
+      "physicalNumber": 5,
+      "header": "R",
+      "side": "right",
+      "kind": "ground",
+      "gpio": null,
+      "x": 346,
+      "y": 283.4,
+      "functions": [],
+      "capabilities": []
+    },
+    {
+      "id": "R6",
+      "label": "GPIO0",
+      "physicalNumber": 6,
+      "header": "R",
+      "side": "right",
+      "kind": "gpio",
+      "gpio": 0,
+      "x": 346,
+      "y": 311.4,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ]
+    },
+    {
+      "id": "R7",
+      "label": "GPIO16",
+      "physicalNumber": 7,
+      "header": "R",
+      "side": "right",
+      "kind": "gpio",
+      "gpio": 16,
+      "x": 346,
+      "y": 339.4,
+      "functions": [],
+      "capabilities": [
+        "digital-input",
+        "digital-output"
+      ]
+    },
+    {
+      "id": "R8",
+      "label": "3V3",
+      "physicalNumber": 8,
+      "header": "R",
+      "side": "right",
+      "kind": "power",
+      "gpio": null,
+      "x": 346,
+      "y": 367.4,
+      "functions": [],
+      "capabilities": [],
+      "voltage": 3.3
+    }
+  ],
+  "interfaces": {
+    "spi": {
+      "hosts": [
+        2,
+        3
+      ]
+    }
+  },
+  "componentDefaults": {
+    "clex.hardware.router": {
+      "wanSource": "wifi"
+    }
+  },
+  "peripherals": [
+    {
+      "id": "camera-fpc",
+      "name": "Камера DVP",
+      "interface": "dvp",
+      "connector": "24-pin FPC",
+      "family": "camera",
+      "driverKey": "esp32-camera-dvp",
+      "description": "Разъём для совместимого модуля OV2640 или OV3660. Сенсор определяется автоматически.",
+      "signals": {
+        "pwdn": 32,
+        "reset": -1,
+        "xclk": 0,
+        "sccb_sda": 26,
+        "sccb_scl": 27,
+        "d0": 5,
+        "d1": 18,
+        "d2": 19,
+        "d3": 21,
+        "d4": 36,
+        "d5": 39,
+        "d6": 34,
+        "d7": 35,
+        "vsync": 25,
+        "href": 23,
+        "pclk": 22
+      },
+      "resources": [
+        {
+          "key": "i2c:1",
+          "label": "SCCB камеры (I²C1)",
+          "gpios": [
+            26,
+            27
+          ]
+        },
+        {
+          "key": "camera:dvp",
+          "label": "Разъём камеры DVP",
+          "gpios": [
+            32,
+            0,
+            5,
+            18,
+            19,
+            21,
+            36,
+            39,
+            34,
+            35,
+            25,
+            23,
+            22
+          ]
+        }
+      ]
+    }
+  ],
+  "firmware": {
+    "flashSizeMb": 4,
+    "psramMb": 4,
+    "consoleModes": [
+      "uart"
+    ],
+    "compiler": "Xtensa ESP32 GCC"
+  },
+  "radio": {
+    "espNow": true,
+    "longRange": true,
+    "interface": "station"
+  },
+  "wifi": {
+    "driverKey": "native",
+    "sta": true,
+    "softap": true,
+    "authModes": [
+      "wpa2",
+      "wpa3",
+      "mixed"
+    ],
+    "maxClients": 4
+  },
+  "routing": {
+    "manualPinExitClearance": 10,
+    "keepOutAreas": [
+      {
+        "x": 165,
+        "y": 32,
+        "width": 160,
+        "height": 357
+      }
+    ]
+  }
+}

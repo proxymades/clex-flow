@@ -1,0 +1,113 @@
+{
+  "id": "clex.hardware.bts7960",
+  "version": "1.1.0",
+  "kind": "hardware",
+  "name": "BTS7960",
+  "description": "Управляет коллекторным двигателем постоянного тока. Скорость задаётся ШИМ, направление выбирается в «Логике».",
+  "category": "motor-drivers",
+  "categoryName": "Драйверы двигателей",
+  "icon": "LayoutArrowRight",
+  "color": "#f59e0b",
+  "visual": {
+    "width": 280,
+    "height": 330,
+    "terminalStartY": 133,
+    "terminalPitch": 34
+  },
+  "terminals": [
+    {
+      "id": "rpwm",
+      "label": "RPWM",
+      "kind": "gpio-output",
+      "pwm": true,
+      "x": 0,
+      "y": 133
+    },
+    {
+      "id": "lpwm",
+      "label": "LPWM",
+      "kind": "gpio-output",
+      "pwm": true,
+      "x": 0,
+      "y": 167
+    },
+    {
+      "id": "enable",
+      "label": "R_EN",
+      "kind": "gpio-output",
+      "gpioGroup": "enable",
+      "x": 0,
+      "y": 201
+    },
+    {
+      "id": "enable-left",
+      "label": "L_EN",
+      "kind": "gpio-output",
+      "gpioGroup": "enable",
+      "x": 0,
+      "y": 235
+    },
+    {
+      "id": "vcc",
+      "label": "VCC · 5 В",
+      "kind": "power",
+      "voltage": 5,
+      "x": 0,
+      "y": 269
+    },
+    {
+      "id": "gnd",
+      "label": "GND",
+      "kind": "ground",
+      "x": 0,
+      "y": 303
+    },
+    {
+      "id": "motor-plus",
+      "label": "M+",
+      "kind": "motor-output",
+      "externalConnection": "К двигателю",
+      "optional": true,
+      "x": 280,
+      "y": 133
+    },
+    {
+      "id": "motor-minus",
+      "label": "M−",
+      "kind": "motor-output",
+      "externalConnection": "К двигателю",
+      "optional": true,
+      "x": 280,
+      "y": 167
+    }
+  ],
+  "inputs": [],
+  "outputs": [],
+  "parameters": {},
+  "constraints": {},
+  "compatibility": {
+    "projectFormat": 4,
+    "targets": [
+      "esp32",
+      "esp32c3",
+      "esp32s3",
+      "esp32p4",
+      "atmega328p"
+    ],
+    "espIdf": "5.4.4",
+    "platforms": {
+      "arduino-avr": "1.8.6"
+    }
+  },
+  "firmware": {
+    "status": "implemented",
+    "generatorKey": "dc-motor"
+  },
+  "manualWiring": [
+    "Подключите R_EN и L_EN к одному GPIO. Подтяните общую линию к GND резистором 2,2 кОм, чтобы двигатель оставался выключенным при загрузке платы.",
+    "Питание двигателя подключите к B+ и B−, двигатель к M+ и M−. Соедините общую землю. VCC питает логику модуля, а не двигатель.",
+    "Сверьте допустимый уровень RPWM, LPWM и EN. Если входной буфер 74HC244 питается от 5 В, для сигналов 3,3 В используйте согласование уровней.",
+    "На ESP32-CAM при использовании GPIO13, GPIO14 и GPIO15 оставьте слот microSD пустым."
+  ],
+  "compatibleFrom": "1.0.0"
+}

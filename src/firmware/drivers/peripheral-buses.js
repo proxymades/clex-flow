@@ -4,9 +4,9 @@ export function peripheralBuses(project,catalog) {
  const board=catalog.boards.find(board=>board.id===project.boardId);
  const providers=project.components.filter(component=>catalog.modules.find(module=>module.id===component.moduleId)?.hardwareInterface?.family!=='display' || project.logic.nodes.some(node=>node.parameters.componentId===component.id && catalog.modules.find(module=>module.id===node.moduleId)?.editor==='screen')).map(component=>hardwareProvider(component,catalog.modules.find(module=>module.id===component.moduleId),board)).filter(Boolean);
  const external=externalI2cBuses(project).filter(bus=>Number.isInteger(bus.sda)&&Number.isInteger(bus.scl));
- if(!providers.length&&!external.length)return {source:'',initialize:''};
  const buses=[...new Map([...external,...providers.filter(p=>p.i2c).map(p=>p.i2c)].map(bus=>[bus.port,bus])).values()];
  const ldos=[...new Map(providers.filter(p=>p.ldo).map(p=>[p.ldo.channel,p.ldo])).values()];
+ if(!buses.length&&!ldos.length)return {source:'',initialize:''};
  const source=`#include "driver/i2c_master.h"
 ${ldos.length?'#include "esp_ldo_regulator.h"':''}
 static struct { int port, sda, scl; i2c_master_bus_handle_t handle; } clex_i2c_buses[] = {

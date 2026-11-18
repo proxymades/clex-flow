@@ -5,6 +5,7 @@ import {mqttSupported} from '../mqtt/model.js';
 import {routerCapabilities} from '../router/model.js';
 export function moduleSupportsBoard(module, board) {
  if(!module || !board || !module.compatibility?.targets.includes(board.target))return false;
+ if(module.compatibility.boards && !module.compatibility.boards.includes(board.id))return false;
  if(['clex.hardware.voice','clex.logic.voice'].includes(module.id)&&!voiceSupported(board))return false;
  if((module.id==='clex.hardware.mqtt'||module.id.startsWith('clex.logic.mqtt-'))&&!mqttSupported(board))return false;
  if((module.id==='clex.hardware.router'||module.id==='clex.logic.router')&&!routerCapabilities(board).available)return false;

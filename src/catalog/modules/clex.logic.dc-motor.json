@@ -1,0 +1,95 @@
+{
+  "id": "clex.logic.dc-motor",
+  "version": "1.0.1",
+  "kind": "logic",
+  "name": "Управлять двигателем",
+  "description": "Задаёт направление и скорость двигателя через BTS7960. По сигналу остановки отключает привод.",
+  "category": "motion",
+  "categoryName": "Движение",
+  "icon": "RotateCw",
+  "color": "#f59e0b",
+  "inputs": [
+    {
+      "id": "trigger",
+      "name": "Запустить",
+      "type": "event",
+      "description": "Применяет текущую скорость и направление."
+    },
+    {
+      "id": "stop",
+      "name": "Остановить",
+      "type": "event",
+      "description": "Отключает привод."
+    },
+    {
+      "id": "speed",
+      "name": "Скорость, %",
+      "type": "number",
+      "description": "Задаёт мощность ШИМ от 0 до 100. При 0 привод отключается."
+    }
+  ],
+  "outputs": [
+    {
+      "id": "done",
+      "name": "Команда применена",
+      "type": "event",
+      "description": "Передаёт событие после изменения сигнала управления."
+    }
+  ],
+  "parameters": {
+    "componentId": {
+      "label": "Драйвер двигателя",
+      "type": "component",
+      "default": ""
+    },
+    "direction": {
+      "label": "Направление",
+      "type": "select",
+      "default": "forward",
+      "options": [
+        {
+          "value": "forward",
+          "label": "Вперёд"
+        },
+        {
+          "value": "reverse",
+          "label": "Назад"
+        }
+      ]
+    },
+    "speed": {
+      "label": "Скорость, %",
+      "type": "number",
+      "default": 50,
+      "min": 0,
+      "max": 100,
+      "step": 1
+    }
+  },
+  "constraints": {
+    "hardware": {
+      "kind": "dc-motor",
+      "modules": [
+        "clex.hardware.bts7960"
+      ]
+    }
+  },
+  "compatibility": {
+    "projectFormat": 4,
+    "targets": [
+      "esp32",
+      "esp32c3",
+      "esp32s3",
+      "esp32p4",
+      "atmega328p"
+    ],
+    "espIdf": "5.4.4",
+    "platforms": {
+      "arduino-avr": "1.8.6"
+    }
+  },
+  "firmware": {
+    "status": "implemented",
+    "generatorKey": "dc-motor"
+  }
+}

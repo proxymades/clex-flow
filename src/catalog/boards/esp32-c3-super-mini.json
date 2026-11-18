@@ -13,7 +13,7 @@
   "logicVoltage": 3.3,
   "pinoutVerified": false,
   "documentationVerified": true,
-  "verificationNote": "Профиль 16-контактной компоновки Super Mini по документации Nologo. Сверьте маркировку контактов своей платы: варианты Super Mini могут отличаться. Прошивка и работа периферии на физической плате не проверены.",
+  "verificationNote": "Профиль 16-контактной компоновки Super Mini по документации Nologo. Распиновка других вариантов может отличаться.",
   "description": "ESP32-C3, RISC-V 160 МГц, 4 МБ Flash без PSRAM. Прошивка и монитор через USB-C Serial/JTAG; UART0 доступен через внешний USB-UART.",
   "svg": "esp32-c3-super-mini.svg",
   "width": 480,

@@ -25,6 +25,7 @@ pub fn profile(id: &str) -> Result<Value, String> {
         "doit-esp32-devkit-v1-30pin" => {
             include_str!("../../src/catalog/boards/doit-esp32-devkit-v1-30pin.json")
         }
+        "esp32-cam" => include_str!("../../src/catalog/boards/esp32-cam.json"),
         "arduino-nano-atmega328p-ch340" => {
             include_str!("../../src/catalog/boards/arduino-nano-atmega328p-ch340.json")
         }

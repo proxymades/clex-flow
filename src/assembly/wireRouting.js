@@ -137,9 +137,32 @@ export function manualWirePoints(start,end,waypoints){
  }
  return simplifyWirePoints(points);
 }
+function clearManualPinExit(points, {sourcePin, boardPins, manualPinExitClearance} = {}) {
+ if (!manualPinExitClearance || !sourcePin || !boardPins || points.length < 3) return points;
+ const [start, bend, next] = points;
+ if (start[0] !== bend[0]) return points;
+ const direction = Math.sign(bend[1] - start[1]);
+ const distances = boardPins
+  .filter(pin => pin.x === sourcePin.x)
+  .map(pin => direction * (pin.y - sourcePin.y))
+  .filter(distance => distance > 0);
+ const nearest = Math.min(...distances);
+ if (Math.abs(bend[1] - start[1]) <= nearest - manualPinExitClearance) return points;
+
+ // Keep the exit between contacts when a saved bend extends past the new pin row.
+ const y = start[1] + direction * nearest / 2;
+ return simplifyWirePoints([start, [start[0], y], [next[0], y], ...points.slice(points.length === 3 ? 2 : 3)]);
+}
+
 // Reattach endpoint-adjacent segments while retaining the user's interior lanes.
-export function reanchorManualRoute(start,end,waypoints,nextStart=start,nextEnd=end){
- const points=manualWirePoints(start,end,waypoints),sourceDelta=nextStart.map((value,axis)=>value-start[axis]),targetDelta=nextEnd.map((value,axis)=>value-end[axis]);
+export function reanchorManualRoute(start,end,waypoints,nextStart=start,nextEnd=end,boardHeader){
+ const points = clearManualPinExit(manualWirePoints(start, end, waypoints), boardHeader);
+ if (same(start, nextStart) && same(end, nextEnd)) return points;
+ return clearManualPinExit(moveManualWireEndpoints(points, start, end, nextStart, nextEnd), boardHeader);
+}
+
+function moveManualWireEndpoints(points,start,end,nextStart,nextEnd){
+ const sourceDelta=nextStart.map((value,axis)=>value-start[axis]),targetDelta=nextEnd.map((value,axis)=>value-end[axis]);
  if(length(sourceDelta,targetDelta)<1e-7){
   const translated=points.map(point=>point.map((value,axis)=>value+sourceDelta[axis]));
   translated[0]=[...nextStart];translated[translated.length-1]=[...nextEnd];
@@ -178,7 +201,7 @@ function boardExit(start,data,obstacles,previous){
 }
 export function orthogonalWireRoute({sourceX,sourceY,targetX,targetY,targetPosition='left',data},previous=[]){
  const start=data.sourceAnchor || [sourceX,sourceY],end=data.targetAnchor || [targetX,targetY];
- if(data.manualRoute?.length){const points=reanchorManualRoute(data.manualSourceAnchor || start,data.manualTargetAnchor || end,data.manualRoute,start,end);return {points,path:roundedWirePath(points),manual:true,spacing:12};}
+ if(data.manualRoute?.length){const points=reanchorManualRoute(data.manualSourceAnchor || start,data.manualTargetAnchor || end,data.manualRoute,start,end,data);return {points,path:roundedWirePath(points),manual:true,spacing:12};}
  const obstacles=wireObstacles(data),normal={left:[-1,0],right:[1,0],top:[0,-1],bottom:[0,1]}[targetPosition] || [-1,0];
  const sourceNormal={left:[-1,0],right:[1,0],top:[0,-1],bottom:[0,1]}[data.sourcePin?.side]||[1,0];
  const componentPortal=[start[0]+sourceNormal[0]*(18+(data.laneIndex||0)*12),start[1]+sourceNormal[1]*(18+(data.laneIndex||0)*12)];
@@ -207,7 +230,7 @@ export function routeAssemblyEdges(edges,nodes,board){
  const sorted=[...edges].sort((a,b)=>(a.data.sourcePin?.y ?? Infinity)-(b.data.sourcePin?.y ?? Infinity) || compare(a.id,b.id));
  for(const edge of sorted){
   const target=byId.get(edge.target),pin=edge.data.sourcePin,terminal=edge.data.targetTerminal;if(!target || !pin || !terminal)continue;
-  const data={...edge.data,sourceAnchor:[(byId.get(edge.source)?.position.x||0)+pin.x,(byId.get(edge.source)?.position.y||0)+pin.y],sourcePosition:byId.get(edge.source)?.position,targetAnchor:[target.position.x+terminal.x,target.position.y+terminal.y],boardPosition:origin,boardPins:board.pins,boardKeepOut:board.routing?.keepOutAreas || [],sceneNodes:nodes};
+  const data={...edge.data,sourceAnchor:[(byId.get(edge.source)?.position.x||0)+pin.x,(byId.get(edge.source)?.position.y||0)+pin.y],sourcePosition:byId.get(edge.source)?.position,targetAnchor:[target.position.x+terminal.x,target.position.y+terminal.y],boardPosition:origin,boardPins:board.pins,boardKeepOut:board.routing?.keepOutAreas || [],manualPinExitClearance:edge.source==='board'?board.routing?.manualPinExitClearance:undefined,sceneNodes:nodes};
   const route=orthogonalWireRoute({data,targetPosition:terminal.side},routes);routes.push(route.points);result.set(edge.id,{...edge,zIndex:edge.selected?12:edge.data.highlighted?8:4,data:{...data,route}});
  }
  return edges.map(edge=>result.get(edge.id) || edge);
@@ -222,7 +245,7 @@ export function previewAssemblyEdges(edges, nodes) {
   const start = [source.position.x + data.sourcePin.x, source.position.y + data.sourcePin.y];
   const end = [target.position.x + data.targetTerminal.x, target.position.y + data.targetTerminal.y];
   if (same(start, data.sourceAnchor) && same(end, data.targetAnchor)) return edge;
-  const points = reanchorManualRoute(data.sourceAnchor, data.targetAnchor, data.route.points.slice(1, -1), start, end);
+  const points = reanchorManualRoute(data.sourceAnchor, data.targetAnchor, data.route.points.slice(1, -1), start, end, data.route.manual ? data : undefined);
   return { ...edge, data: { ...data, sourceAnchor: start, targetAnchor: end,
    route: { ...data.route, points, path: roundedWirePath(points) },
   } };

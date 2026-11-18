@@ -13,6 +13,7 @@ import {mqttLogicIssues} from '../mqtt/model.js';
 import {stepperLogicIssues} from '../stepper/model.js';
 import {ESPNOW_MODULE,espNowSupported,espNowLogicIssues,espNowAckIssues} from '../espnow/model.js';
 import { moduleSupportsBoard,moduleIsEventSource } from '../catalog/compatibility.js';
+import { BTS7960, DC_MOTOR } from '../hardware/dc-motor.js';
 import { formatCount } from '../utils/plural.js';
 import { hardwareProvider } from '../hardware/resources.js';
 import { networkProvider, probeUrl } from '../network/model.js';
@@ -64,7 +65,7 @@ export function hardwareMatches(component,requirement,catalog){
  if(!component||!requirement)return false;
  const definition=catalog?.modules.find(module=>module.id===component.moduleId);
  if(requirement.kind==='display')return Boolean(definition?.display);
- if(requirement.kind==='gpio')return !definition?.display&&!definition?.i2c&&!definition?.stepper&&!definition?.microphone&&!definition?.hardwareInterface&&!definition?.softwareInterface&&Boolean(definition?.terminals?.some(terminal=>terminal.kind===(requirement.mode==='input'?'gpio-input':'gpio-output')));
+ if(requirement.kind==='gpio')return definition?.id!==BTS7960&&!definition?.display&&!definition?.i2c&&!definition?.stepper&&!definition?.microphone&&!definition?.hardwareInterface&&!definition?.softwareInterface&&Boolean(definition?.terminals?.some(terminal=>terminal.kind===(requirement.mode==='input'?'gpio-input':'gpio-output')));
  return Boolean(requirement.modules?.includes(component.moduleId));
 }
 
@@ -195,7 +196,7 @@ export function connectNodes(graph, catalog, connection, project = null) {
 export function hardwareBinding(node, project, catalog) {
   const module = graphModule(node, catalog), requirement = module?.constraints.hardware;
   if(requirement?.kind==='i2c'){const component=project.components.find(c=>c.id===node.parameters.componentId);return {component,gpio:null,error:hardwareMatches(component,requirement,catalog)?null:'Выберите датчик из монтажа.'};}
-  if(requirement?.kind==='voice'||requirement?.kind==='wifi'||requirement?.kind==='stepper'||requirement?.kind==='router'||requirement?.kind==='mqtt'){const component=project.components.find(c=>c.id===node.parameters.componentId);return {component,gpio:null,error:hardwareMatches(component,requirement,catalog)?null:'Выберите совместимый компонент из монтажа.'};}
+  if(requirement?.kind==='voice'||requirement?.kind==='wifi'||requirement?.kind==='stepper'||requirement?.kind==='router'||requirement?.kind==='mqtt'||requirement?.kind==='dc-motor'){const component=project.components.find(c=>c.id===node.parameters.componentId);return {component,gpio:null,error:hardwareMatches(component,requirement,catalog)?null:'Выберите совместимый компонент из монтажа.'};}
   if (requirement?.kind === 'peripheral') {
     const component=project.components.find(component=>component.id===node.parameters.componentId),definition=catalog.modules.find(module=>module.id===component?.moduleId);
     return {component,gpio:null,error:component && requirement.modules.includes(component.moduleId) && hardwareProvider(component,definition,boardFor(project,catalog)) ? null : 'Выберите аппаратный компонент и его интерфейс в монтаже.'};
@@ -272,6 +273,7 @@ export function validateGraph(project, catalog) {
       }
     }
     if (module.id === OUTPUT_MODULE && !graph.edges.some(edge => edge.target === node.id && (['on','off','toggle'].includes(edge.targetHandle) || edge.legacy))) add('error','logic-input',node.name + ': подключите команду включения, выключения или переключения.',fields);
+    if (module.id === DC_MOTOR && !graph.edges.some(edge => edge.target === node.id && ['trigger', 'stop'].includes(edge.targetHandle))) add('error', 'logic-input', node.name + ': подключите сигнал запуска или остановки.', fields);
     if (binding.error) add('error', 'logic-hardware', `${node.name}: ${binding.error}`, fields);
     for (const port of nodePorts(node, catalog, project).inputs.filter(port => port.required)) if (!graph.edges.some(edge => edge.target === node.id && edge.targetHandle === port.id)) add('error', 'logic-input', `${node.name}: подключите вход «${port.name}».`, fields);
     if (module.id === 'clex.logic.timer' && !graph.edges.some(edge => edge.source === node.id && edge.dataType === 'event')) add('warning', 'timer-unused', `${node.name}: такт пока не подключен к действию.`, fields);

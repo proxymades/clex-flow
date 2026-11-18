@@ -1,0 +1,44 @@
+{
+  "id": "clex.hardware.camera-dvp",
+  "version": "1.0.0",
+  "kind": "hardware",
+  "name": "Камера ESP32-CAM",
+  "description": "Снимает JPEG-кадры с OV2640 или OV3660. Сенсор определяется при запуске.",
+  "category": "camera",
+  "categoryName": "Камеры",
+  "icon": "Camera",
+  "color": "#60a5fa",
+  "visual": {
+    "width": 250,
+    "height": 185
+  },
+  "terminals": [],
+  "inputs": [],
+  "outputs": [],
+  "parameters": {
+    "interfaceId": {
+      "label": "Разъём камеры",
+      "type": "hardware-interface",
+      "default": ""
+    }
+  },
+  "constraints": {},
+  "hardwareInterface": {
+    "family": "camera",
+    "interface": "dvp"
+  },
+  "compatibility": {
+    "projectFormat": 4,
+    "targets": [
+      "esp32"
+    ],
+    "espIdf": "5.4.4",
+    "boards": [
+      "esp32-cam"
+    ]
+  },
+  "firmware": {
+    "status": "implemented",
+    "generatorKey": "camera-interface"
+  }
+}

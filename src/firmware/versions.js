@@ -1,4 +1,7 @@
 export const implementationVersions={
+ 'clex.logic.camera-capture':'1.1.0',
+ 'clex.logic.dc-motor':'1.0.1',
+ 'clex.hardware.bts7960':'1.1.0',
  'clex.hardware.espnow':'2.0.0',
  'clex.logic.espnow-send':'2.1.0',
  'clex.logic.espnow-receive':'2.1.0',

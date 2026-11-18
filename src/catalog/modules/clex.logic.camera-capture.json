@@ -1,6 +1,6 @@
 {
   "id": "clex.logic.camera-capture",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "kind": "logic",
   "name": "Сделать кадр",
   "description": "Получает кадр с камеры и передает его размеры и номер. Захват выполняется в отдельной задаче.",
@@ -90,16 +90,22 @@
     "hardware": {
       "kind": "peripheral",
       "modules": [
-        "clex.hardware.camera"
+        "clex.hardware.camera",
+        "clex.hardware.camera-dvp"
       ]
     }
   },
   "compatibility": {
     "projectFormat": 4,
     "targets": [
-      "esp32p4"
+      "esp32p4",
+      "esp32"
     ],
-    "espIdf": "5.4.4"
+    "espIdf": "5.4.4",
+    "boards": [
+      "esp32-cam",
+      "waveshare-esp32-p4-nano"
+    ]
   },
   "firmware": {
     "status": "implemented",

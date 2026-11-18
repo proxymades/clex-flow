@@ -10,7 +10,7 @@ import {createProject,serializeProject,parseProject} from '../src/projects/model
 import {generateFirmware} from '../src/firmware/generator.js';
 import {mqttNetwork,mqttIssues} from '../src/mqtt/model.js';
 import {resourceClaims} from '../src/hardware/resources.js';
-const boards=['esp32-c3-super-mini','doit-esp32-devkit-v1-30pin','espressif-devkitc-1-v1-1-n8r8','waveshare-esp32-s3-eth','waveshare-esp32-p4-nano'];
+const boards=['esp32-cam','esp32-c3-super-mini','doit-esp32-devkit-v1-30pin','espressif-devkitc-1-v1-1-n8r8','waveshare-esp32-s3-eth','waveshare-esp32-p4-nano'];
 const definition=id=>catalog.modules.find(module=>module.id===id);
 const errors=project=>[...validateAssembly(project,catalog),...validateGraph(project,catalog)].filter(issue=>issue.severity==='error');
 test('Wi-Fi Station generates on every compatible current board without router services or a mandatory logic block',()=>{

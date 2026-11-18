@@ -3,6 +3,8 @@ import {compatibleVersion,hardwareVersionCompatible} from '../../catalog/version
 import {implementationVersions} from '../versions.js';
 import {outputTerminals} from '../../gpio/model.js';
 import {gpioOutputFirmware} from '../drivers/gpio-output.js';
+import {dcMotorFirmware} from '../drivers/dc-motor.js';
+import {BTS7960, DC_MOTOR} from '../../hardware/dc-motor.js';
 import {MOSFET_MODULE} from '../../mosfet/model.js';
 import {numericFirmware} from '../drivers/numeric.js';
 import {NUMERIC_MODULES} from '../../logic/numeric.js';
@@ -15,7 +17,7 @@ import { hardwareBinding } from '../../logic/model.js';
 import {selectionType} from '../../logic/selection.js';
 import { selectNumberCode } from '../drivers/select-number.js';
 import {countdownFirmware} from '../drivers/countdown.js';
-const keys=new Set(['clex.hardware.button-module','clex.hardware.resistor',MOSFET_MODULE,...NUMERIC_MODULES,'clex.hardware.xgzp6847d','clex.logic.xgzp6847d','clex.hardware.relay','clex.hardware.nema17','clex.hardware.tb6600','clex.hardware.tmc2208','clex.hardware.drv8825','clex.logic.stepper','clex.logic.select-number','clex.hardware.touch-button','clex.logic.gpio-edge','clex.hardware.led','clex.hardware.button','clex.logic.timer','clex.logic.counter','clex.logic.stopwatch','clex.logic.serial','clex.logic.gpio-read','clex.logic.gpio-set']);
+const keys=new Set([BTS7960,DC_MOTOR,'clex.hardware.button-module','clex.hardware.resistor',MOSFET_MODULE,...NUMERIC_MODULES,'clex.hardware.xgzp6847d','clex.logic.xgzp6847d','clex.hardware.relay','clex.hardware.nema17','clex.hardware.tb6600','clex.hardware.tmc2208','clex.hardware.drv8825','clex.logic.stepper','clex.logic.select-number','clex.hardware.touch-button','clex.logic.gpio-edge','clex.hardware.led','clex.hardware.button','clex.logic.timer','clex.logic.counter','clex.logic.stopwatch','clex.logic.serial','clex.logic.gpio-read','clex.logic.gpio-set']);
 export function generateArduinoAvr(project,catalog,board,cString,issues){
  const revision=project.boardSettings.bootloader || board.options.bootloader.default;
  if(!Object.hasOwn(board.firmware.variants,revision))throw new Error('Выберите загрузчик Nano.');
@@ -27,6 +29,7 @@ export function generateArduinoAvr(project,catalog,board,cString,issues){
  }
  const index=new Map(nodes.map((n,i)=>[n.id,i])),hardware=new Map(components.map((c,i)=>[c.id,i]));
  const stepper=stepperFirmware(project,nodes,index,board);
+ const motor=dcMotorFirmware(project,board,components,nodes);
  const xgzp=xgzpFirmware(project,catalog,nodes,index);
  const numeric=numericFirmware(nodes,index,cString,{avr:true,project});
  const countdown=countdownFirmware(nodes,index,{avr:true});
@@ -60,7 +63,7 @@ export function generateArduinoAvr(project,catalog,board,cString,issues){
  const outputs=gpioOutputFirmware(project,components,board.platform,catalog,nodes);
  const declarations=[relay.declarations,outputs.declarations].filter(Boolean),initialize=[relay.initialize,outputs.initialize].filter(Boolean),poll=[];
  components.forEach((c,i)=>{
-  if(outputTerminals(c,catalog).length||c.moduleId==='clex.hardware.xgzp6847d'||c.moduleId===RELAY_MODULE||isStepperDriver(c)||catalog.modules.find(m=>m.id===c.moduleId)?.passive)return;
+  if(outputTerminals(c,catalog).length||c.moduleId==='clex.hardware.xgzp6847d'||c.moduleId===RELAY_MODULE||c.moduleId===BTS7960||isStepperDriver(c)||catalog.modules.find(m=>m.id===c.moduleId)?.passive)return;
   const assignment=project.gpioAssignments.find(a=>a.componentId===c.id);if(!assignment)throw new Error('Назначьте контакт Nano компоненту «'+c.name+'».');
   const pin=assignment.gpio,output=c.moduleId==='clex.hardware.led',sample='digitalRead('+pin+') '+((inputActiveLow(c))?'== LOW':'!= LOW');
   declarations.push(output?'static bool gpio_state_'+i+';':'static bool input_stable_'+i+', input_raw_'+i+';\nstatic uint32_t input_changed_'+i+';');
@@ -75,9 +78,14 @@ export function generateArduinoAvr(project,catalog,board,cString,issues){
   if(n.moduleId==='clex.logic.timer')declarations.push('static uint32_t timer_'+i+';');
   if(n.moduleId==='clex.logic.stopwatch')declarations.push('static clex_watch_t watch_'+i+';');
  });
- const prototypes=nodes.map((n,i)=>'static void node_'+i+'();'+(n.moduleId==='clex.logic.gpio-set'?'\n'+['on','off','toggle'].map(action=>'static void node_'+i+'_'+action+'();').join('\n'):'')+(n.moduleId==='clex.logic.counter'?'\nstatic void node_'+i+'_reset();':'')+(n.moduleId==='clex.logic.xgzp6847d'?'\n'+['changed','done','failed'].map(port=>'static void node_'+i+'_emit_'+port+'();').join('\n'):'')+(n.moduleId==='clex.logic.stepper'?'\nstatic void node_'+i+'_stop();\nstatic void node_'+i+'_release();\n'+['changed','started','completed','stopped','failed'].map(port=>'static void node_'+i+'_emit_'+port+'();').join('\n'):'')+(n.moduleId==='clex.logic.stopwatch'?'\nstatic void node_'+i+'_pause();\nstatic void node_'+i+'_reset();\nstatic void node_'+i+'_changed();':'')).join('\n').replaceAll('();','() __attribute__((unused));');
+ const prototypes=nodes.map((n,i)=>'static void node_'+i+'();'+(n.moduleId==='clex.logic.gpio-set'?'\n'+['on','off','toggle'].map(action=>'static void node_'+i+'_'+action+'();').join('\n'):'')+(n.moduleId===DC_MOTOR?'\nstatic void node_'+i+'_stop();':'')+(n.moduleId==='clex.logic.counter'?'\nstatic void node_'+i+'_reset();':'')+(n.moduleId==='clex.logic.xgzp6847d'?'\n'+['changed','done','failed'].map(port=>'static void node_'+i+'_emit_'+port+'();').join('\n'):'')+(n.moduleId==='clex.logic.stepper'?'\nstatic void node_'+i+'_stop();\nstatic void node_'+i+'_release();\n'+['changed','started','completed','stopped','failed'].map(port=>'static void node_'+i+'_emit_'+port+'();').join('\n'):'')+(n.moduleId==='clex.logic.stopwatch'?'\nstatic void node_'+i+'_pause();\nstatic void node_'+i+'_reset();\nstatic void node_'+i+'_changed();':'')).join('\n').replaceAll('();','() __attribute__((unused));');
  const functions=nodes.map((n,i)=>{
   if(countdown.operations.has(n.id))return 'static void node_'+i+'(){\n'+countdown.operations.get(n.id)+'\n}\n'+countdown.extraFunctions.get(n.id)+'\n'+['started','elapsed'].map(port=>'static void node_'+i+'_emit_'+port+'(){\n'+emit(n,port)+'\n}').join('\n');
+  if(motor.operations.has(n.id)){
+   const control=motor.operations.get(n.id),speed=edge(n,'speed'),done=emit(n,'done');
+   return 'static void node_'+i+'(){\n'+control.start(speed ? data(speed) : undefined)+'\n'+done+'\n}\n'+
+     'static void node_'+i+'_stop(){\n'+control.stop+'\n'+done+'\n}';
+  }
   if(numeric.operations.has(n.id))return 'static void node_'+i+'(){\n'+numeric.operations.get(n.id)({inputEdge:edge,dataExpression:data,emit:port=>emit(n,port)})+'\n}';
   if(n.moduleId==='clex.logic.xgzp6847d')return 'static void node_'+i+'(){\n'+xgzp.operations.get(n.id)+'\n}\n'+['changed','done','failed'].map(port=>'static void node_'+i+'_emit_'+port+'(){\n'+emit(n,port)+'\n}').join('\n');
   if(n.moduleId==='clex.logic.stepper')return 'static void node_'+i+'(){\n'+stepper.operations.get(n.id)+'\n}\n'+['changed','started','completed','stopped','failed'].map(port=>'static void node_'+i+'_emit_'+port+'(){\n'+emit(n,port)+'\n}').join('\n');
@@ -127,6 +135,7 @@ static bool clex_watch_reset(clex_watch_t *w,uint32_t now){w->elapsed=0;w->sampl
 #include <avr/pgmspace.h>
 ${xgzp.headers?xgzp.headers+'\n':''}${runtime}${stepper.source}${xgzp.source?'\n'+xgzp.source:''}${numeric.source?'\n'+numeric.source:''}
 ${declarations.join('\n')}
+${motor.source}
 ${prototypes}
 ${countdown.source}
 ${countdown.prototypes}
@@ -134,6 +143,7 @@ ${nodes.filter(n=>countdown.operations.has(n.id)).flatMap(n=>['started','elapsed
 ${[...stepper.extraFunctions.values()].join('\n')}${stepper.notify}
 ${functions.join('\n\n')}
 void setup(){
+${motor.initialize}
   Serial.begin(115200);
 ${stepper.initialize}${xgzp.initialize?'\n'+xgzp.initialize:''}
 ${initialize.join('\n')}

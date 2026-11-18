@@ -4,7 +4,7 @@
 
 <h1 align="center">CLEX Flow</h1>
 <p align="center">Визуальная среда разработки для микроконтроллеров</p>
-<p align="center"><strong>0.1.16 · Предварительная версия · macOS / Windows · MIT</strong></p>
+<p align="center"><strong>0.1.17 · Предварительная версия · macOS / Windows · MIT</strong></p>
 
 CLEX Flow – визуальная среда разработки для микроконтроллеров. Позволяет создавать схемы подключения, задавать логику работы устройств с помощью блоков, разрабатывать интерфейсы дисплеев, собирать и записывать прошивки. Монтаж, логика и экраны сохраняются в одном проекте.
 
@@ -62,12 +62,13 @@ CLEX Flow работает локально. Регистрация и обла�
 
 Установщики доступны для **macOS Apple Silicon (ARM64)** в формате `.dmg` и **Windows x64** в формате `.exe`.
 
-Для сборки прошивок ESP32, ESP32-S3 и ESP32-P4 требуется **ESP-IDF 5.4.4**, для Arduino Nano – **Arduino AVR Boards 1.8.6**. Другие версии этих SDK не поддерживаются.
+Для сборки прошивок ESP32, ESP32-C3, ESP32-S3 и ESP32-P4 требуется **ESP-IDF 5.4.4**, для Arduino Nano – **Arduino AVR Boards 1.8.6**. Другие версии этих SDK не поддерживаются.
 
 Платы в каталоге:
 
 - ESP32-C3 Super Mini: 4 МБ Flash, USB Serial/JTAG, GPIO, SPI-дисплеи, Wi-Fi, MQTT и ESP-NOW. [Распиновка и ограничения](docs/boards.md#esp32-c3-super-mini).
 - ESP32 DevKit V1 (30 pin), ESP32-WROOM-32: 4 МБ Flash, UART через USB-UART. [Распиновка, совместимость и прошивка](docs/esp32-devkit-v1.md).
+- ESP32-CAM: 4 МБ Flash, PSRAM и разъём камеры. [Распиновка и подключение](docs/boards.md#esp32-cam).
 - Waveshare ESP32-S3-ETH.
 - Espressif ESP32-S3-DevKitC-1 v1.1 N8R8.
 - Arduino Nano ATmega328P/CH340G с USB Type-C: Arduino AVR Boards 1.8.6, обычный и старый загрузчик, GPIO, таймер, счетчик, секундомер, Serial и шаговые двигатели. [Подготовка и первый проект](docs/arduino-nano.md).

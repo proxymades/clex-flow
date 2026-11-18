@@ -2,12 +2,15 @@ import {resolveButtonModule} from '../buttons/model.js';
 import {isResistor} from '../electrical/model.js';
 import {resolveMosfetModule} from '../mosfet/model.js';
 import {resolveRelayModule} from '../relay/model.js';
+import {resolveBts7960Module} from '../hardware/dc-motor.js';
 export const componentContact=(id,terminal)=>`component:${id}:${terminal}`;
 export function parseContact(value){const match=/^component:([^:]+):([^:]+)$/.exec(value||'');return match?{componentId:match[1],terminalId:match[2]}:null;}
 export const wireSource=wire=>wire.sourceComponentId?componentContact(wire.sourceComponentId,wire.sourceTerminalId):wire.boardPinId;
 export const touches=(wire,id,terminal)=>wire.componentId===id&&(!terminal||wire.terminalId===terminal)||wire.sourceComponentId===id&&(!terminal||wire.sourceTerminalId===terminal);
 export function contactInfo(project,catalog,id,terminal){
- const component=project.components.find(c=>c.id===id),module=resolveButtonModule(component,resolveMosfetModule(component,resolveRelayModule(component,catalog.modules.find(m=>m.id===component?.moduleId))));
+ const component=project.components.find(c=>c.id===id);
+ const definition=catalog.modules.find(m=>m.id===component?.moduleId);
+ const module=resolveBts7960Module(component,resolveButtonModule(component,resolveMosfetModule(component,resolveRelayModule(component,definition))));
  return {component,module,terminal:module?.terminals.find(t=>t.id===terminal)};
 }
 export function normalizedContact(project,catalog,componentId,terminalId,value){
