@@ -16,7 +16,7 @@ export default function useIdf(project) {
   const [flashedBuild,setFlashedBuild]=useState(null);
   const [readingMac,setReadingMac]=useState(false), [deviceMacs,setDeviceMacs]=useState({}), [macError,setMacError]=useState(null);
   const [toolsPrepared,setToolsPrepared]=useState(()=>localStorage.getItem('clex-flow:tools-prepared')==='yes');
-  const [sdks,setSdks]=useState(null), [sdkLoading,setSdkLoading]=useState(false);
+  const [sdks,setSdks]=useState(null), [sdkLoading,setSdkLoading]=useState(false), [catalogError,setCatalogError]=useState('');
   const board = getBoard(project?.boardId || 'waveshare-esp32-s3-eth');
   const requirement=sdkRequirement(board);
   const target = requirement?.target || 'esp32s3';
@@ -152,13 +152,20 @@ export default function useIdf(project) {
     setSdkLoading(true);setError('');
     try{await invoke(command,args);await refreshSdk();return true;}catch(error){setError(String(error));return false;}finally{setSdkLoading(false);}
   };
+  const refreshCatalog=async()=>{
+    if(flight.current||checking||sdkLoading)return false;
+    setSdkLoading(true);setError('');setCatalogError('');
+    try{await invoke('sdk_refresh_versions');await refreshSdk();return true;}
+    catch(error){setCatalogError(String(error));return false;}
+    finally{setSdkLoading(false);}
+  };
   const fresh=Boolean(compatible&&build&&fingerprint&&build.fingerprint===fingerprint&&environment?.identity===build.environmentIdentity);
   const flashed=Boolean(fresh&&flashedBuild?.buildId===build.id&&flashedBuild.port===port);
   return {sdks,sdkLoading,refreshSdk,requirement,compatible,toolsPrepared,
     planTools:async()=>{setSdkLoading(true);try{return await invoke('tooling_plan');}finally{setSdkLoading(false);}},
     prepareAll:(targets,allowPrerequisites)=>start('sdk_prepare_all',{targets,target,confirmed:true,allowPrerequisites}),
     installPlan:version=>invoke('sdk_install_plan',{version,target}),
-    refreshCatalog:()=>sdkAction('sdk_refresh_versions'),registerSdk:(root,python,toolsPath)=>sdkAction('sdk_register',{root,python:python||null,toolsPath:toolsPath||null}),
+    refreshCatalog,catalogError,registerSdk:(root,python,toolsPath)=>sdkAction('sdk_register',{root,python:python||null,toolsPath:toolsPath||null}),
     selectSdk:sdkId=>start('sdk_select',{sdkId,target}),installSdk:(version,allowPrerequisites)=>start('sdk_install',{version,allowPrerequisites,target}),removeSdk:sdkId=>start('sdk_remove',{sdkId}),
     readingMac,readMac,deviceMac:deviceMacs[macKey]||null,macError:macError?.key===macKey?macError.message:'',
     desktop,environment,checking,check,ports,port,setPort,refreshPorts,consoleModes,consoleMode,setConsole,job,events,build,error,setError,preview,fingerprint,generationError,ready,

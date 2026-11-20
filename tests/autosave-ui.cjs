@@ -14,9 +14,9 @@ const { chromium } = require('playwright');
   });
   const writes = () => page.evaluate(() => window.__projectWrites);
   const stored = () => page.evaluate(() => JSON.parse(Object.values(JSON.parse(localStorage.getItem('clex-flow:projects:v1')))[0]));
-  const settings = () => page.getByRole('button', { name: 'Настройки', exact: true }).click();
+  const settings = () => page.getByRole('button', { name: /^(Настройки|Подготовить инструменты|Настроить инструменты)$/ }).first().click();
   const experiment = () => page.getByRole('button', { name: 'Текущий проект', exact: true }).click();
-  const toggle = () => page.getByRole('checkbox', { name: 'Автосохранение проектов', exact: true });
+  const toggle = () => page.getByRole('checkbox', { name: 'Сохранять автоматически', exact: true });
   const saved = () => page.getByText('Все изменения сохранены', { exact: true }).waitFor();
   try {
     await page.goto(process.env.CLEX_PREVIEW_URL || 'http://127.0.0.1:1420');
@@ -71,6 +71,17 @@ const { chromium } = require('playwright');
     assert.equal((await stored()).description, 'Keep this draft in Settings');
     const manualWrites = await writes(); await page.clock.fastForward(60_000); assert.equal(await writes(), manualWrites, 'Manual save leaves no duplicate scheduled write');
 
+    await page.getByRole('textbox', { name: 'Описание', exact: true }).fill('Keep this draft in Library');
+    const libraryWrites = await writes();
+    await page.getByRole('button', { name: /^Библиотека/ }).click();
+    await page.getByRole('region', { name: 'Библиотека компонентов', exact: true }).waitFor();
+    assert.equal(await page.getByRole('dialog', { name: 'Сохранить изменения?', exact: true }).count(), 0);
+    await page.clock.fastForward(60_000); assert.equal(await writes(), libraryWrites, 'Reading the library preserves the manual draft');
+    await experiment();
+    assert.equal(await page.getByRole('textbox', { name: 'Описание', exact: true }).inputValue(), 'Keep this draft in Library');
+    await page.keyboard.press('Meta+s'); await page.getByText('Проект сохранен', { exact: true }).waitFor();
+    assert.equal((await stored()).description, 'Keep this draft in Library');
+
     await page.reload(); await page.clock.fastForward(100);
     await settings(); assert.equal(await toggle().isChecked(), false, 'Preference survives reload');
     await page.getByRole('button', { name: /Мои проекты/ }).click(); await page.locator('.project-open').click();
@@ -78,9 +89,9 @@ const { chromium } = require('playwright');
     await page.getByRole('button', { name: /Мои проекты/ }).click();
     await page.getByRole('dialog', { name: 'Сохранить изменения?', exact: true }).waitFor();
     await page.clock.fastForward(60_000);
-    assert.equal((await stored()).description, 'Keep this draft in Settings');
+    assert.equal((await stored()).description, 'Keep this draft in Library');
     await page.getByRole('button', { name: 'Не сохранять', exact: true }).click(); await page.locator('.project-open').click();
-    assert.equal(await page.getByRole('textbox', { name: 'Описание', exact: true }).inputValue(), 'Keep this draft in Settings');
+    assert.equal(await page.getByRole('textbox', { name: 'Описание', exact: true }).inputValue(), 'Keep this draft in Library');
 
     await page.getByRole('button', { name: 'Логика', exact: true }).click();
     await page.getByRole('button', { name: 'Добавить блок: Таймер', exact: true }).click();
@@ -92,6 +103,6 @@ const { chromium } = require('playwright');
     await settings(); await page.setViewportSize({ width: 1000, height: 700 });
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth), false);
     assert.deepEqual(errors, []);
-    console.log('PASS: ten-second debounce for metadata/assembly/logic, drag pause, tabs and Settings preserve drafts, pending cancellation, manual shortcut, persistent preference, discard protection, re-enable and small layout.');
+    console.log('PASS: ten-second debounce for metadata/assembly/logic, drag pause, tabs, Settings and Library preserve drafts, pending cancellation, manual shortcut, persistent preference, discard protection, re-enable and small layout.');
   } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; });

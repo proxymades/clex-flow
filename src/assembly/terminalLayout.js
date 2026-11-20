@@ -15,7 +15,8 @@ export function terminalLayout(module, overrides = {}) {
   const width = Math.max(module.visual.width, Math.max(grouped.top.length, grouped.bottom.length) * 82 + 24);
   const pitch=module.visual.terminalPitch, startY=module.visual.terminalStartY;
   const count=Math.max(grouped.left.length,grouped.right.length);
-  const height = Math.max(module.visual.height + headerOffset, pitch?startY+headerOffset+Math.max(0,count-1)*pitch+24:110 + headerOffset + count * 35);
+  const baseHeight = module.terminals?.length ? module.visual.height : 185;
+  const height = Math.max(baseHeight + headerOffset, pitch?startY+headerOffset+Math.max(0,count-1)*pitch+24:110 + headerOffset + count * 35);
   return { width, height, headerOffset, terminals: (module.terminals || []).map((terminal, index) => {
     const side = terminalSide(module, terminal, overrides), siblings = grouped[side], slot = siblings.indexOf(terminal);
     const x = side === 'left' ? 0 : side === 'right' ? width : width * (slot + 1) / (siblings.length + 1);

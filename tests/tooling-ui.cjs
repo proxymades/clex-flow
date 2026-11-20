@@ -30,11 +30,12 @@ const assert=require('node:assert/strict');const {chromium}=require('playwright'
  try{
   await page.goto(process.env.CLEX_PREVIEW_URL||'http://127.0.0.1:1430');await page.locator('.project-open').click();await page.getByRole('button',{name:'Настройки',exact:true}).click();
   await page.getByRole('heading',{name:/Инструменты Arduino Nano/}).waitFor();
+  await page.locator('#tooling-setup').getByText('Папка инструментов',{exact:true}).click();
   await page.getByRole('button',{name:'Выбрать папку инструментов',exact:true}).click();await page.locator('#tooling-setup .storage-path').filter({hasText:'X:\\CLEX Tools'}).waitFor();
-  await page.getByRole('button',{name:'Проверить и подготовить все',exact:true}).click();const modal=page.getByRole('dialog');await modal.waitFor();assert.equal(await modal.locator('.tooling-bundle').count(),3);assert.equal(await modal.getByRole('button',{name:'Подготовить все',exact:true}).isDisabled(),true);
-  assert.match(await modal.innerText(),/65 МиБ-85 МиБ/);assert.equal((await page.evaluate(()=>window.__toolCalls)).some(c=>c.command==='sdk_prepare_all'),false);
+  await page.getByRole('button',{name:'Проверить и подготовить',exact:true}).click();const modal=page.getByRole('dialog');await modal.waitFor();assert.equal(await modal.locator('.tooling-bundle').count(),3);assert.equal(await modal.getByRole('button',{name:'Подготовить все',exact:true}).isDisabled(),true);
+  assert.match(await modal.innerText(),/65 МиБ–85 МиБ/);assert.equal((await page.evaluate(()=>window.__toolCalls)).some(c=>c.command==='sdk_prepare_all'),false);
   await modal.evaluate(element=>Promise.all(element.getAnimations({subtree:true}).map(animation=>animation.finished)));await page.screenshot({path:'.artifacts/nano-support/tooling-plan.png'});
-  await modal.getByRole('checkbox',{name:'Разрешаю указанную загрузку и установку инструментов.',exact:true}).check();await modal.getByRole('button',{name:'Подготовить все',exact:true}).click();await page.getByRole('heading',{name:/Инструменты Arduino Nano/}).getByText('Окружение готово',{exact:true}).waitFor();
+  await modal.getByRole('checkbox',{name:'Разрешаю загрузить и установить указанные инструменты.',exact:true}).check();await modal.getByRole('button',{name:'Подготовить все',exact:true}).click();await page.getByRole('heading',{name:/Инструменты Arduino Nano/}).getByText('Готово к работе',{exact:true}).waitFor();
   const calls=await page.evaluate(()=>window.__toolCalls);const prepare=calls.find(c=>c.command==='sdk_prepare_all');assert.deepEqual(prepare.args.targets,['atmega328p']);assert.equal(prepare.args.target,'atmega328p');assert.equal(prepare.args.confirmed,true);assert.equal(calls.some(c=>c.command==='sdk_install'),false);
   await page.getByRole('button',{name:'Текущий проект',exact:true}).click();await page.getByRole('button',{name:'Собрать',exact:true}).click();await page.waitForFunction(()=>!window.document.querySelector('.topbar-actions button.primary').disabled);
   await page.getByRole('button',{name:'Собрано',exact:true}).waitFor();

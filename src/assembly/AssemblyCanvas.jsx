@@ -1,10 +1,10 @@
 import {componentContact,wireSource,touches,connectionLabel} from './endpoints.js';
-import { formatCount } from '../utils/plural.js';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ReactFlow, Background, BackgroundVariant, ConnectionMode } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import { Unplug, Move, MousePointer2, Undo2, Redo2 } from 'lucide-react';
+import { Unplug, Move, Undo2, Redo2 } from 'lucide-react';
 import CanvasControls from '../components/CanvasControls.jsx';
+import { canvasProOptions } from '../components/canvasOptions.js';
 import useCanvasKeys from '../components/useCanvasKeys.js';
 import { moduleFor, pinProblem, connectionProblem } from './model.js';
 import { physicalConnection } from './flow.js';
@@ -243,21 +243,21 @@ export default function AssemblyCanvas({ project, board, catalog, selection, set
   }, [focusComponentId, ready, instance, busy, nodes, size, interaction, onTransform, onFocusDone]);
 
   return <div className={['assembly-canvas', busy ? 'canvas-busy' : '', spaceHeld ? 'canvas-space-pan' : ''].join(' ')}>
-    <div className="canvas-top"><span className="badge purple"><MousePointer2 size={12} />МОНТАЖ / {formatCount(project.components.length, ['компонент', 'компонента', 'компонентов'])}</span><div className="assembly-history-controls"><button className="icon-button" title="Отменить · ⌘/Ctrl Z" aria-label="Отменить изменение монтажа" disabled={busy || !history.canUndo} onClick={history.undo}><Undo2 size={16} /></button><button className="icon-button" title="Повторить · ⌘/Ctrl Shift Z" aria-label="Повторить изменение монтажа" disabled={busy || !history.canRedo} onClick={history.redo}><Redo2 size={16} /></button><span className="canvas-scale">{Math.round(zoom * 100)}%</span></div></div>
-    {pending && <div className="connection-prompt"><span className="dot green-dot" />{pending.componentId ? 'Выберите совместимый контакт платы или компонента' : 'Выберите контакт компонента'}<button aria-label="Отменить соединение" className="icon-button" onClick={() => setPending(null)}><Unplug size={15} /></button></div>}
+    <div className="canvas-top"><div className="assembly-history-controls"><button className="icon-button" title="Отменить · ⌘/Ctrl Z" aria-label="Отменить изменение монтажа" disabled={busy || !history.canUndo} onClick={history.undo}><Undo2 size={16} /></button><button className="icon-button" title="Повторить · ⌘/Ctrl Shift Z" aria-label="Повторить изменение монтажа" disabled={busy || !history.canRedo} onClick={history.redo}><Redo2 size={16} /></button><span className="canvas-scale">{Math.round(zoom * 100)}%</span></div></div>
+    {pending && <div className="connection-prompt">{pending.componentId ? 'Выберите совместимый контакт платы или компонента' : 'Выберите контакт компонента'}<button aria-label="Отменить соединение" className="icon-button" onClick={() => setPending(null)}><Unplug size={15} /></button></div>}
     <div ref={root} className="assembly-flow-region" data-ready={ready} aria-label="Холст монтажа">
       {/* Fix node styles as well as routing layers: React Flow resets its selection elevation during Strict Mode initialization. */}
-      <ReactFlow zIndexMode="manual" elevateNodesOnSelect={false} nodes={nodes} edges={edges} nodeTypes={nodeTypes} edgeTypes={edgeTypes} defaultViewport={project.assembly.viewport}
+      <ReactFlow proOptions={canvasProOptions} zIndexMode="manual" elevateNodesOnSelect={false} nodes={nodes} edges={edges} nodeTypes={nodeTypes} edgeTypes={edgeTypes} defaultViewport={project.assembly.viewport}
         onInit={setInstance} onNodesChange={changeNodes} onNodeClick={(_event, node) => selectNode(node.id)}
         onNodeDragStart={beginDrag} onNodeDragStop={finishDrag}
         onMoveStart={moveStart} onMoveEnd={moveEnd} onConnect={connect} onConnectStart={connectStart} onConnectEnd={connectEnd}
         isValidConnection={connection => !problemFor(connection)} connectionMode={ConnectionMode.Loose} connectOnClick={false}
         onPaneClick={() => { setSelection({ type: 'board', id: 'board' }); setPending(null); }}
         nodesDraggable={ready && !busy && !spaceHeld} nodesConnectable={ready && !busy && !spaceHeld} panOnDrag={ready} zoomOnScroll={ready} zoomOnPinch={ready} edgesReconnectable={false}
-        selectionKeyCode={null} multiSelectionKeyCode={null} deleteKeyCode={null} minZoom={0.1} maxZoom={3} colorMode="dark"
+        selectionKeyCode={null} multiSelectionKeyCode={null} deleteKeyCode={null} minZoom={0.1} maxZoom={3} colorMode="light"
         ariaLabelConfig={{ 'node.a11yDescription.default': 'Плата или компонент. Стрелки перемещают. Delete или Backspace удаляет компонент. Пробел и перетаскивание перемещают камеру.', 'edge.a11yDescription.default': 'Физическое соединение. Enter выбирает провод, Delete или Backspace удаляет.' }}
         onError={(_code, message) => onError(message)}>
-        <Background variant={BackgroundVariant.Dots} gap={24} size={0.8} color="#3b465d" />
+        <Background variant={BackgroundVariant.Dots} gap={24} size={0.8} color="var(--ui-grid, #ccd2d7)" />
       </ReactFlow>
     </div>
     <div className="canvas-toolbar"><span className="canvas-navigation-hint"><Move size={13} />Пробел + перетаскивание · панорама</span><CanvasControls subject="монтаж" zoom={zoom} busy={busy || !ready} onZoomOut={() => zoomBy(1 / 1.2)} onZoomIn={() => zoomBy(1.2)} onFit={fitView} /></div>

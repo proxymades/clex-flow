@@ -4,4 +4,4 @@ export function sdkRequirement(board) {
   const target = board?.target || (board?.id === 'esp32-s3-generic' ? 'esp32s3' : null);
   return compilers[target] ? { family: 'esp-idf', version: board.espIdfVersion || '5.4.4', target, compiler: board.firmware?.compiler || compilers[target], name: 'ESP-IDF' } : null;
 }
-export const SDK_STATES={detected:'Обнаружен',ready:'Проверен',missing:'Недоступен',invalid:'Требует проверки / восстановления',installing:'Устанавливается',interrupted:'Установка прервана',failed:'Ошибка установки'};
+export const SDK_STATES={detected:'Найдена',ready:'Проверена',missing:'Папка недоступна',invalid:'Не прошла проверку',installing:'Устанавливается',interrupted:'Установка прервана',failed:'Ошибка установки'};
